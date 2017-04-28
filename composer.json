@@ -1,13 +1,15 @@
 {
-    "autoload": {
-        "psr-4": {"BambooHR\\Guardrail\\": "src/"}
-    },
+
+    "name": "bamboohr\\guardrail",
     "license": "Apache-2.0",
     "author": [
       {
         "name": "Jon Gardiner"
       }
     ],
+    "autoload": {
+      "psr-4": {"BambooHR\\Guardrail\\": "src/"}
+    },
     "require": {
       "nikic/php-parser": "^2.0",
       "webmozart/glob":"4.1.0",
