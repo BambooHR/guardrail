@@ -1,0 +1,9 @@
+vendor
+composer.lock
+.vagrant
+Vagrantfile
+nbproject
+.idea
+composer.phar
+guardrail.phar
+symbol_table.sqlite3

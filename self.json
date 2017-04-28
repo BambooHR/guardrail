@@ -1,0 +1,7 @@
+{
+  "index": ["src","vendor"],
+  "test": ["src"],
+  "ignore": ["**/vendor/phpstubs/**/*", "**/src/ExtraStubs/**/*"],
+  "test-ignore": ["**/vender/phpstubs/**/*", "**/src/ExtraStubs/**/*"]
+
+}
