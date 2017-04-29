@@ -13,7 +13,6 @@
     "require": {
       "nikic/php-parser": "^2.0",
       "webmozart/glob":"4.1.0",
-      "phpstubs/phpstubs":"dev-master",
       "n98/junit-xml":"1.0.0"
     },
     "require-dev": {
