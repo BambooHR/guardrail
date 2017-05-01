@@ -46,7 +46,6 @@ class StaticAnalyzer implements NodeVisitor {
 		$checkers = [
 			new \BambooHR\Guardrail\Checks\DocBlockTypesCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\UndefinedVariableCheck($this->index, $output),
-			new \BambooHR\Guardrail\Checks\ImpossibleInjectionCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\DefinedConstantCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\BacktickOperatorCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\PropertyFetch($this->index, $output),

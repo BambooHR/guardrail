@@ -7,7 +7,10 @@
 
 namespace BambooHR\Guardrail;
 
+use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 
 class Config {
 	const MEMORY_SYMBOL_TABLE=1;
@@ -106,13 +109,18 @@ class Config {
 	}
 
 	/**
-	 * @return array
+	 * @var SymbolTable     $index
+	 * @var OutputInterface $output
+	 * @return BaseCheck[]
 	 */
-	function getPlugins($index, $output) {
+	function getPlugins(SymbolTable $index, OutputInterface $output) {
 		$plugins = [];
 		if(isset($this->config['plugins']) && is_array($this->config['plugins'])) {
 			foreach($this->config['plugins'] as $fileName) {
-				$function = require $fileName;
+				$fullPath = strpos($fileName,DIRECTORY_SEPARATOR)===0 ?
+					$fileName :
+					$this->basePath . DIRECTORY_SEPARATOR . $fileName;
+				$function = require $fullPath;
 				$plugins[] = call_user_func( $function, $index, $output );
 			}
 		}
