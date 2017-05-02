@@ -10,7 +10,7 @@
     "autoload": {
       "psr-4": {"BambooHR\\Guardrail\\": "src/"}
     },
-    "bin": [ "bin/guardrail.php" ],
+    "bin": [ "src/bin/guardrail.php" ],
     "require": {
       "nikic/php-parser": "^2.0",
       "webmozart/glob":"4.1.0",

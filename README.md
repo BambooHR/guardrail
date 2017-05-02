@@ -204,7 +204,9 @@ use -v to enable verbose output.
 By default, a report is output in Xunit format to standard out.  If you
 would prefer to output to a file use -o to specify an output filename.
 
+# Links
 
+[Plugin architecture](docs/plugins.md)
  
  
 
