@@ -23,7 +23,7 @@ return function($index, $output) {
 };
 ```
 
-This line reclares an anonymous function and returns that function.  Guardrail will call
+This line declares an anonymous function and returns that function.  Guardrail will call
 that function to create your plugin.  By having the plugin responsible for instantiating 
 itself, we avoid any issues with namespaces or autoloading.  If you need to autoload 
 additional classes, add an autoloader for them in your plugin.  Most plugins will only 
