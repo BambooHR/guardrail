@@ -2,7 +2,7 @@
 Copyright (c) 2017 Jonathan Gardiner and BambooHR
 
 ## Theory of operation
-A plugin to Guardrail is responsible for inspecting the abstract syntax treee (AST) and possibly 
+A plugin to Guardrail is responsible for inspecting the abstract syntax tree (AST) and possibly 
 the symbol table in order to perform some type of validation of the code.  The AST the tree
 from Nikita Popov's nikic/php-parser package.
 

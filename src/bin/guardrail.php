@@ -7,7 +7,13 @@
 
 namespace BambooHR\Guardrail;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
 
+// Deals with installation inside /vendor or out.
+foreach ([__DIR__ . '/../../../../autoload.php', __DIR__ . '/../../vendor/autoload.php'] as $file) {
+	if (file_exists($file)) {
+		require $file;
+		break;
+	}
+}
 $runner=new CommandLineRunner();
 $runner->run($_SERVER["argv"]);
