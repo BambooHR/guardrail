@@ -4,7 +4,8 @@ Copyright (c) 2017 Jonathan Gardiner and BambooHR
 ## Theory of operation
 A plugin to Guardrail is responsible for inspecting the abstract syntax tree (AST) and possibly 
 the symbol table in order to perform some type of validation of the code.  The AST the tree
-from Nikita Popov's nikic/php-parser package.
+from Nikita Popov's nikic/php-parser package.  Most checks identify a specific type of node in the AST and 
+then check for various child nodes in the symbol table to verify correctness.
 
 A plugin registers itself to be notified when one or more types of AST nodes are encountered.  The
 static analysis portion of Guardrail will use a node visitor to walk the entire AST and at each node
@@ -35,14 +36,15 @@ retrieve an abstract representation of the symbol (it's name, methods, member co
 it can return the actual AST for that symbol.  The AST will already have been adjusted to use
 full namespace names and to import any traits into class as appropriate.
 
-It is prefereable to use the abstract symbol objects.  Those objects wrap PHP's reflection 
+It is far better to use the abstract symbol objects.  Those objects wrap PHP's reflection 
 mechanisms and make it possible to inspect built-in symbols just as easily as symbols from the AST. 
+They are also much faster than parsing the PHP to produce the AST nodes for you.
 
 
 ## Registering for AST nodes
 
-Each plugin should implement getCheckNodesTypes().  This method simply returns a list of
-full qualified calass names.  We recommend you use the ::class notation to avoid errors.
+Each plugin should implement getCheckNodesTypes().  This method simply returns an array of
+fully qualified ATS class names.  We recommend you use the ::class notation to avoid errors.
 
 
 ## Emitting errors
@@ -71,7 +73,7 @@ class CatchCheck extends BaseCheck
 			return;
 		}
 		$this->incTests();
-		if (!$this->symbolTable->getAbstractedClass($name)) {
+		if (!$this->symbolTable->isDefinedClass($name)) {
 			$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
 		}
 	}

@@ -28,7 +28,7 @@ class ParamTypesCheck extends BaseCheck
 			return true;
 		}
 		if ($nameLower != "" && !Util::isLegalNonObject($name)) {
-			$class = $this->symbolTable->getAbstractedClass($name);
+			$class = $this->symbolTable->isDefinedClass($name);
 			if (!$class && !$this->symbolTable->ignoreType($name)) {
 				return false;
 			}
@@ -55,7 +55,7 @@ class ParamTypesCheck extends BaseCheck
 		if($method->returnType) {
 			$returnType = strval($method->returnType);
 			if(!$this->isAllowed($returnType, $inside)) {
-				$this->emitError($fileName, $method, self::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in return value of $displayName");
+				$this->emitError($fileName, $method, self::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 			}
 		}
 	}

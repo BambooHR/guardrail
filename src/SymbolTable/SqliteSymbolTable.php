@@ -7,24 +7,19 @@
 
 namespace BambooHR\Guardrail\SymbolTable;
 
+use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
-use PhpParser\Node\Expr\FuncCall;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
 
 /**
  * Class SqliteSymbolTable
  */
 class SqliteSymbolTable extends SymbolTable {
 	private $con;
-	const TYPE_CLASS=1;
-	const TYPE_FUNCTION=2;
-	const TYPE_INTERFACE=3;
-	const TYPE_TRAIT=4;
-	const TYPE_DEFINE=5;
+
 
 	function __construct($fileName, $basePath) {
 		parent::__construct($basePath);
@@ -34,14 +29,14 @@ class SqliteSymbolTable extends SymbolTable {
 
 	function init() {
 		$this->con->exec('
-			create table symbol_table( name text not null, type integer not null, file text not null, primary key(name,type)  );
+			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data text not null, primary key(name,type)  );
 		');
 	}
 
-	private function addType($name, $file, $type) {
-		$sql="INSERT INTO symbol_table(name,file,type) values(?,?,?)";
+	private function addType($name, $file, $type, $hasTrait=0, $data="") {
+		$sql="INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
 		try {
-			$this->con->prepare($sql)->execute([strtolower($name), $file, $type]);
+			$this->con->prepare($sql)->execute([strtolower($name), $file, $type, $hasTrait, $data]);
 		}
 		catch(\PDOException $e) {
 			throw new \Exception("Class $name has already been declared");
@@ -61,23 +56,152 @@ class SqliteSymbolTable extends SymbolTable {
 		}
 	}
 
+
+
+
+
+
+	function getClassOrInterfaceData($name) {
+		return $this->getData($name);
+
+	}
+
+	function getData($name, $type=self::TYPE_CLASS) {
+		$sql = "SELECT data FROM symbol_table WHERE name=?";
+		$params = [strtolower($name)];
+		if ($type==self::TYPE_FUNCTION) {
+			$sql .= " AND type=?";
+			$params[]=$type;
+		} else if($type==self::TYPE_CLASS) {
+			$sql .= " AND type in (?,?)";
+			$params[] = self::TYPE_CLASS;
+			$params[] = self::TYPE_INTERFACE;
+		}
+		$statement = $this->con->prepare($sql);
+		$statement->execute($params);
+
+		$result=$statement->fetch(\Pdo::FETCH_NUM);
+		if($result) {
+			return unserialize($result[0]);
+		} else {
+			return "";
+		}
+	}
+
+	function getInterface($name) {
+		return $this->getClassOrInterface($name);
+	}
+
+
+
+	function getAbstractedFunction($name) {
+		$ob=$this->cache->get("AFunction:".$name);
+		if(!$ob) {
+			$ob = $this->getData($name, self::TYPE_FUNCTION);
+			if($ob) {
+				$ob = new \BambooHR\Guardrail\Abstractions\Function_($ob);
+			}  else {
+				try {
+					$refl = new \ReflectionFunction($name);
+					$ob = new \BambooHR\Guardrail\Abstractions\ReflectedFunction($refl);
+				}
+				catch(\ReflectionException $e) {
+					$ob = null;
+				}
+			}
+		}
+		if($ob) {
+			$this->cache->add("AFunction:".$name, $ob);
+		}
+		return $ob;
+	}
+
+	function getClassesThatUseATrait() {
+		$ret = [];
+		$sql = 'SELECT name FROM symbol_table WHERE type=? and has_trait=1';
+		$statement = $this->con->prepare($sql);
+		$statement->execute([self::TYPE_CLASS]);
+		while ($row = $statement->fetch(\Pdo::FETCH_NUM)) {
+			$ret[] = $row[0];
+		}
+		return $ret;
+	}
+
+	function updateClass(Node\Stmt\ClassLike $class) {
+		$name = strtolower($class->namespacedName);
+		$clone = $this->stripMethodContents($class);
+		$type = $class instanceof Trait_ ? self::TYPE_TRAIT : self::TYPE_CLASS;
+		$sql='UPDATE symbol_table SET data=? WHERE name=? and type=?';
+		$statement = $this->con->prepare($sql);
+		$statement->execute( [ serialize($clone), $name, $type] );
+	}
+
 	function removeFileFromIndex($name) {
 		$sql="DELETE FROM symbol_table WHERE file=?";
 		$statement=$this->con->prepare($sql);
 		$statement->execute($name);
 	}
 
+	function stripMethodContents(Node\Stmt\ClassLike $class) {
+		// Make a deep copy and then remove implementation code (to save space).
+		$clone=unserialize(serialize($class));
+		foreach($clone->stmts as $index=>&$stmt) {
+			if($stmt instanceof Node\Stmt\ClassMethod) {
+				$stmt->setAttribute("variadic_implementation",VariadicCheckVisitor::isVariadic($stmt->stmts) );
+				$stmt->stmts = [];
+			}
+		}
+		return $clone;
+	}
+
 
 	function addClass($name, Class_ $class, $file) {
-		$this->addType($name, $file, self::TYPE_CLASS);
+		$usesTrait = 0;
+		foreach($class->stmts as $stmt) {
+			if($stmt instanceof Node\Stmt\TraitUse) {
+				$usesTrait = 1;
+			}
+		}
+		$clone=$this->stripMethodContents($class);
+
+		$this->addType($name, $file, self::TYPE_CLASS, $usesTrait, serialize($clone));
+	}
+
+	/**
+	 * @param $name
+	 * @return \BambooHR\Guardrail\Abstractions\Class_
+	 */
+	function getAbstractedClass($name) {
+		$cacheName=strtolower($name);
+		$ob=$this->cache->get("AClass:".$cacheName);
+		if(!$ob) {
+			$tmp = $this->getClassOrInterfaceData($name);
+			if ($tmp) {
+				$ob = new \BambooHR\Guardrail\Abstractions\Class_($tmp);
+			} else if (strpos($name, "\\") === false) {
+				try {
+					$refl = new \ReflectionClass($name);
+					$ob = new \BambooHR\Guardrail\Abstractions\ReflectedClass($refl);
+				} catch (\ReflectionException $e) {
+					$ob = null;
+				}
+			}
+			if ($ob) {
+				$this->cache->add("AClass:" . $cacheName, $ob);
+			}
+		}
+		return $ob;
 	}
 
 	function addInterface($name, Interface_ $interface, $file) {
-		$this->addType($name, $file, self::TYPE_INTERFACE);
+		$this->addType($name, $file, self::TYPE_INTERFACE, 0, serialize($interface));
 	}
 
 	function addFunction($name, Function_ $function, $file) {
-		$this->addType($name, $file, self::TYPE_FUNCTION);
+		$clone = clone $function;
+		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic( $function->stmts ));
+		$clone->stmts = [];
+		$this->addType($name, $file, self::TYPE_FUNCTION, 0 , serialize($clone));
 	}
 
 	function addTrait($name, Trait_ $trait, $file) {

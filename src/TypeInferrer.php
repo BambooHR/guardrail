@@ -53,8 +53,9 @@ class TypeInferrer
 		} else if ($expr instanceof Node\Expr\Closure) {
 			return "callable";
 		} else if ($expr instanceof Node\Expr\FuncCall && $expr->name instanceof Node\Name) {
-			$func = $this->index->getFunction($expr->name);
+
 			/*
+			 * $func = $this->index->getFunction($expr->name);
 			if($func) {
 				$namespacedReturn =$func->getAttribute("namespacedReturn");
 				return $namespacedReturn ?: Scope::MIXED_TYPE;
@@ -91,20 +92,21 @@ class TypeInferrer
 		$class = $this->inferType($inside, $expr->var, $scope);
 		if(!empty($class) && $class[0]!="!") {
 			if(gettype($expr->name)=='string') {
+				/*
 				$classDef = $this->index->getClass($class);
 				if($classDef) {
 					$prop = Util::findProperty($classDef, strval($expr->name), $this->index );
 					if($prop) {
-						/*
 						$type = $prop->getAttribute("namespacedType") ?: "";
 						if(!empty($type)) {
 							if($type[0]=='\\') {
 								$type=substr($type,1);
 							}
 							return $type;
-						}*/
+						}
 					}
 				}
+				*/
 			}
 		}
 		return Scope::MIXED_TYPE;

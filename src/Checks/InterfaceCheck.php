@@ -21,13 +21,14 @@ class InterfaceCheck extends BaseCheck {
 		return [\PhpParser\Node\Stmt\Class_::class];
 	}
 
-	protected function checkMethod(Class_ $class, ClassMethod $method, ClassInterface $parentClass, MethodInterface $parentMethod) {
+	protected function checkMethod($fileName, Class_ $class, ClassMethod $method, ClassInterface $parentClass, MethodInterface $parentMethod) {
 
 		$visibility = $method->getAccessLevel();
 		$oldVisibility = $parentMethod->getAccessLevel();
 
-		$fileName = $this->symbolTable->getClassFile( strval($class->namespacedName) );
 		$this->incTests();
+
+		$className = (isset($class->namespacedName) ? strval($class->namespacedName) : "anonymous class");
 
 		// "public" and "protected" can be redefined," private can not.
 		if (
@@ -41,7 +42,7 @@ class InterfaceCheck extends BaseCheck {
 		$count1 = count($params);
 		$count2 = count($parentMethodParams);
 		if ($count1 < $count2) {
-			$this->emitError($fileName,$class,self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $count1 vs $count2 in method ".$class->namespacedName."->".$method->getName());
+			$this->emitError($fileName,$class,self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $count1 vs $count2 in method ".$className."->".$method->getName());
 		} else foreach ($params as $index => $param) {
 			/** @var FunctionLikeParameter $param */
 			// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
@@ -52,15 +53,15 @@ class InterfaceCheck extends BaseCheck {
 				if (
 					strcasecmp($name1, $name2) !== 0
 				) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch ".$class->namespacedName."::".$method->getName()." : $name1 vs $name2");
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch ".$className."::".$method->getName()." : $name1 vs $name2");
 					break;
 				}
 				if($param->isReference() != $parentParam->isReference()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method ".$class->name."::".$method->getName()." add or removes & in \$".$param->getName());
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method ".$className."::".$method->getName()." add or removes & in \$".$param->getName());
 					break;
 				}
 				if(!$param->isOptional() && $parentParam->isOptional()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method ".$class->name."::".$method->getName()." changes parameter \$".$param->getName()." to be required.");
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method ".$className."::".$method->getName()." changes parameter \$".$param->getName()." to be required.");
 					break;
 				}
 			} else {
@@ -75,6 +76,7 @@ class InterfaceCheck extends BaseCheck {
 	protected function implementsMethod( $fileName, Class_ $node, $interfaceMethod) {
 		$current = new \BambooHR\Guardrail\Abstractions\Class_($node);
 		while (true) {
+
 			// Is it directly in the class
 			$classMethod = $current->getMethod($interfaceMethod);
 			if ($classMethod) {
@@ -115,7 +117,7 @@ class InterfaceCheck extends BaseCheck {
 									}
 								} else {
 									$this->checkMethod(
-										$node,$classMethod, $interface, $interface->getMethod($interfaceMethod)
+										$fileName, $node,$classMethod, $interface, $interface->getMethod($interfaceMethod)
 									);
 								}
 							}
@@ -135,7 +137,7 @@ class InterfaceCheck extends BaseCheck {
 				if($methodName!="__construct") {
 					$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
 					if ($method) {
-						$this->checkMethod($node, $class->getMethod($methodName), $parentClass, $method);
+						$this->checkMethod( $fileName, $node, $class->getMethod($methodName), $parentClass, $method);
 					}
 				}
 			}

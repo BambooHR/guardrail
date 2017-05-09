@@ -8,6 +8,7 @@
 namespace BambooHR\Guardrail\Phases;
 
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
+use BambooHR\Guardrail\NodeVisitors\DoWhileVisitor;
 use BambooHR\Guardrail\Output\XUnitOutput;
 use PhpParser\Error;
 use PhpParser\ParserFactory;
@@ -38,6 +39,7 @@ class AnalyzingPhase
 
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor(new DocBlockNameResolver());
+		$traverser1->addVisitor(new DoWhileVisitor());
 		$analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $output, $config);
 
 		$traverser2 = new NodeTraverser();
@@ -57,10 +59,12 @@ class AnalyzingPhase
 				$fileData = file_get_contents($file);
 				$stmts = $parser->parse($fileData);
 				if ($stmts) {
+					$start=microtime(true);
 					$analyzer->setFile($name);
 					$stmts=$traverser1->traverse($stmts);
 					$stmts=$traverser2->traverse($stmts);
 					$traverser3->traverse($stmts);
+					$end=microtime(true);
 				}
 			} catch (Error $e) {
 				$output->emitError( __CLASS__, $file, 0, "Parse error", $e->getMessage() );

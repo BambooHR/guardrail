@@ -60,7 +60,7 @@ class MethodCall extends BaseCheck
 			$className = $this->inferenceEngine->inferType($inside, $node->var, $scope);
 		}
 		if($className!="" && $className[0]!="!") {
-			if(!$this->symbolTable->getAbstractedClass($className)) {
+			if(!$this->symbolTable->isDefinedClass($className)) {
 				$this->emitError($fileName, $node, self::TYPE_UNKNOWN_CLASS, "Unknown class $className in method call to $methodName()");
 				return;
 			}

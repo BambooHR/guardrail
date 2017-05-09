@@ -63,6 +63,24 @@ applied to any code base.
  the abstract syntax tree for to enable additional checks. At BambooHR, we use this plugin mechanism
  to run some additional checks that are only relevant to our stack.
  
+ ## Limitations
+ 
+ - Guardrail assumes that all classes and functions are available in all locations.  It does 
+ not check your autoloader or require statements.  
+ - Guardrail does not conditionally process functions.  If the function is defined either at 
+ the top level or in a function, then it will be indexed and considered as globally available.
+ - Guardrail relies upon reflection to determine availability of internal PHP methods and functions.  You will
+ want to run Guardrail in the same environment that your code is expected to run in.
+ - Guardrail is capable of doing some simple type inference.  If your variable is certain
+  to only contain one type of data then that type will be enforced.  If the variable could
+  contain multiple different values then Guardrail will have to assume you are using the variable
+  correctly.
+  
+  ## Requirements
+  
+ Requires PHP 5.5, Sqlite extension, and composer.  Runs significantly faster in PHP 7.  
+
+ 
  ## Installation
  
  Guardrail is available as a composer packaged BambooHR/Guardrail.

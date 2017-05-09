@@ -45,49 +45,10 @@ class FunctionCallCheck extends BaseCheck
 	}
 
 	function getMinimumParams($name) {
-		$symbolMin = $this->getSymbolMinimumParams($name);
-		return $symbolMin >= 0 ? $symbolMin : $this->getReflectedMinimumParams($name);
-	}
-
-	function getSymbolMinimumParams($name) {
-		$function = $this->symbolTable->getFunction($name);
-		if(!$function) {
-			return -1;
-		}
-
-		$minimumArgs = 0;
-		foreach($function->params as $param) {
-			if($param->default) break;
-			$minimumArgs++;
-		}
-		return $minimumArgs;
-	}
-
-	function getReflectedMinimumParams($name) {
-		// Reflection gets this one wrong.
-		if(strcasecmp($name,'define')==0) {
-			return 2;
-		}
-		if(strcasecmp($name,'strtok')==0) {
-			return 1;
-		}
-		if(strcasecmp($name,'implode')==0) {
-			return 1;
-		}
-		if(strcasecmp($name,"sprintf")==0) {
-			return 1;
-		}
-		if(strcasecmp($name,"array_merge")==0) {
-			return 1;
-		}
-		if(strcasecmp($name,"stream_set_timeout")==0) {
-			return 2;
-		}
-		try {
-			$func=new \ReflectionFunction($name);
-			return $func->getNumberOfRequiredParameters();
-		}
-		catch(\ReflectionException $e) {
+		$ob = $this->symbolTable->getAbstractedFunction($name);
+		if($ob) {
+			return $ob->getMinimumRequiredParameters();
+		} else {
 			return -1;
 		}
 	}

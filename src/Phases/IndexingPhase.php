@@ -7,6 +7,9 @@
 
 namespace BambooHR\Guardrail\Phases;
 
+use BambooHR\Guardrail\Abstractions\Class_;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\TraitImporter;
 use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
@@ -71,6 +74,17 @@ class IndexingPhase
 		return $count;
 	}
 
+	function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
+		$output->outputVerbose("Importing traits\n");
+		$count = 0;
+		foreach($symbolTable->getClassesThatUseATrait() as $className) {
+			$class = $symbolTable->getClass($className);
+			$symbolTable->updateClass( $class );
+			$classAb = new Class_($class);
+			$output->output(".", " - (++$count): ".$className);
+		}
+	}
+
 	function run(Config $config, OutputInterface $output) {
 		$configArr = $config->getConfigArray();
 		$indexPaths = $configArr['index'];
@@ -86,6 +100,8 @@ class IndexingPhase
 		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
 		$it2 = new \RecursiveIteratorIterator($it);
 		$this->index($config, $output, $it2, true);
+
+		$this->indexTraitClasses($config->getSymbolTable(), $output);
 /*
 
 		$it = new \RecursiveDirectoryIterator(dirname(dirname(__DIR__)) . "/vendor/phpstubs/phpstubs/res");

@@ -102,8 +102,6 @@ class DefinedConstantCheck extends BaseCheck {
 
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		$name = $node->name;
-		// Note: defined() will check the global defines available in the current process, which could differ from the run-time environment the
-		// code is executed under.  Unfortunately, there isn't a good way to enumerate extension constants.
 		if (!$this->symbolTable->isDefined($name) && !$this->isLanguageConst($name) && !$this->isMagicConstant($name) && !$this->isExtensionConstant($name)) {
 			$this->emitError($fileName, $node, self::TYPE_UNKNOWN_GLOBAL_CONSTANT, "That's not a thing.  Can't find define named \"$name\"");
 			return;

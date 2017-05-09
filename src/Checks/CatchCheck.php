@@ -29,7 +29,7 @@ class CatchCheck extends BaseCheck
 			return;
 		}
 		$this->incTests();
-		if (!$this->symbolTable->getAbstractedClass($name)) {
+		if (!$this->symbolTable->isDefinedClass($name)) {
 			$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
 		}
 	}

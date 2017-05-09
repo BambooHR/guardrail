@@ -69,8 +69,7 @@ class StaticCallCheck extends BaseCheck
 			}
 
 			$this->incTests();
-			$class = $this->symbolTable->getAbstractedClass($name);
-			if (!$class) {
+			if (!$this->symbolTable->isDefinedClass($name)) {
 				if (!$this->symbolTable->ignoreType($name)) {
 					$this->emitError($fileName,$call,self::TYPE_UNKNOWN_CLASS, "Static call to unknown class $name::" . $call->name);
 				}

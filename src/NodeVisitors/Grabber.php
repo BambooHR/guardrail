@@ -11,12 +11,13 @@ use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeVisitor;
+use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 
-class Grabber implements NodeVisitor {
+class Grabber extends NodeVisitorAbstract {
 	const FROM_NAME=1;
 	const FROM_FQN=2;
 
@@ -45,10 +46,6 @@ class Grabber implements NodeVisitor {
 		return $this->foundClass;
 	}
 
-	function beforeTraverse(array $nodes) {
-		return null;
-	}
-
 	function enterNode(Node $node) {
 		if (strcasecmp(get_class($node),$this->classType)==0) {
 
@@ -58,14 +55,6 @@ class Grabber implements NodeVisitor {
 
 			}
 		}
-	}
-
-	function leaveNode(Node $node) {
-		return null;
-	}
-
-	function afterTraverse(array $nodes) {
-		return null;
 	}
 
 	static function filterByType($stmts, $type) {
@@ -136,8 +125,6 @@ class Grabber implements NodeVisitor {
 		}
 		return null;
 	}
-
-
 }
 
 ?>

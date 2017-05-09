@@ -31,7 +31,7 @@ class DocBlockTypesCheck extends BaseCheck
 	function checkOrEmit($typeName, $fileName, $node, $class, $message) {
 		foreach(explode('|', $typeName) as $typeName) {
 			$typeName = str_replace("[]","", $typeName);
-			if ($typeName && !self::isScalar($typeName) && !$this->symbolTable->getAbstractedClass($typeName)) {
+			if ($typeName && !self::isScalar($typeName) && !$this->symbolTable->isDefinedClass($typeName)) {
 				if ($typeName == "type" || strrpos($typeName, "\\type") == strlen($typeName) - 5) {
 					$this->emitError($fileName, $node, self::TYPE_DOCBLOCK_TYPE, $message);
 				} else {

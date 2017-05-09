@@ -45,7 +45,22 @@ class ReflectedFunction implements FunctionLikeInterface {
 	}
 
 	function getMinimumRequiredParameters() {
-		return $this->refl->getNumberOfRequiredParameters();
+		$min = self::getOverriddenMinimumParams($this->refl->name);
+		return $min>=0 ? $min : $this->refl->getNumberOfRequiredParameters();
+	}
+
+	private static function getOverriddenMinimumParams($name) {
+		static $overrides = [
+			"define"=>2,
+			"implode"=>1,
+			"strtok"=>1,
+			"sprintf"=>1,
+			"array_merge"=>1,
+			"stream_set_timeout"=>2
+		];
+		$name = strtolower($name);
+
+		return isset($overrides[$name]) ? $overrides[$name] : -1;
 	}
 
 

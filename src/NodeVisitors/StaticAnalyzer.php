@@ -18,8 +18,9 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
 use BambooHR\Guardrail\TypeInferrer;
+use PhpParser\NodeVisitorAbstract;
 
-class StaticAnalyzer implements NodeVisitor {
+class StaticAnalyzer extends NodeVisitorAbstract {
 	/** @var  SymbolTable */
 	private $index;
 
@@ -72,10 +73,6 @@ class StaticAnalyzer implements NodeVisitor {
 				}
 			}
 		}
-	}
-
-	function beforeTraverse(array $nodes) {
-		return null;
 	}
 
 	function setFile($name) {
@@ -350,11 +347,4 @@ class StaticAnalyzer implements NodeVisitor {
 		}
 		return null;
 	}
-
-	function afterTraverse(array $nodes) {
-		return null;
-	}
-
-
-
 }

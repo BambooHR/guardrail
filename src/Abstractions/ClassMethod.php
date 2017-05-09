@@ -7,11 +7,7 @@
 
 namespace BambooHR\Guardrail\Abstractions;
 
-use PhpParser\Node\Stmt\Function_ as ParserFunction;
-use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use BambooHR\Guardrail\Util;
-use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
-use BambooHR\Guardrail\Abstractions\MethodInterface;
 
 class ClassMethod implements MethodInterface {
 	private $method;
@@ -78,8 +74,8 @@ class ClassMethod implements MethodInterface {
 				return true;
 			}
 		}
-		if($this->method instanceof ParserFunction || $this->method instanceof \PhpParser\Node\Stmt\ClassMethod) {
-			return VariadicCheckVisitor::isVariadic($this->method->getStmts());
+		if($this->method->getAttribute("variadic_implementation")) {
+			return true;
 		}
 		return false;
 	}

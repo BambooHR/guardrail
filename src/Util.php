@@ -72,30 +72,6 @@ class Util {
 	}
 
 	/**
-	 * @param Class_      $node
-	 * @param             $name
-	 * @param SymbolTable $symbolTable
-	 * @return ClassMethod
-	 */
-	static function findMethod(Class_ $node, $name, SymbolTable $symbolTable) {
-		while ($node) {
-			$methods = \BambooHR\Guardrail\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\ClassMethod::class);
-			foreach($methods as $method) {
-				if(strcasecmp($method->name,$name)==0) {
-					return $method;
-				}
-			}
-			if ($node->extends) {
-				$parent = $node->extends->toString();
-				$node = $symbolTable->getClass($parent);
-			} else {
-				return null;
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * @param             $className
 	 * @param             $name
 	 * @param SymbolTable $symbolTable
@@ -135,35 +111,6 @@ class Util {
 				}
 			}
 			$className=$class->getParentClassName();
-		}
-		return null;
-	}
-
-
-	/**
-	 * @param Class_      $node
-	 * @param             $name
-	 * @param SymbolTable $symbolTable
-	 * @return ClassMethod
-	 */
-	static function findProperty(Class_ $node, $name, SymbolTable $symbolTable) {
-		while ($node) {
-			$properties = \BambooHR\Guardrail\NodeVisitors\Grabber::filterByType($node->stmts, \PhpParser\Node\Stmt\Property::class);
-			/** @var Property[] $propertyList */
-			foreach($properties as $props) {
-				/** @var Property $props */
-				foreach($props->props as $prop) {
-					if (strcasecmp($prop->name, $name) == 0) {
-						return $prop;
-					}
-				}
-			}
-			if ($node->extends) {
-				$parent = $node->extends->toString();
-				$node = $symbolTable->getClass($parent);
-			} else {
-				return null;
-			}
 		}
 		return null;
 	}

@@ -16,6 +16,11 @@ use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\ClassMethod;
 
 abstract class SymbolTable  {
+	const TYPE_CLASS=1;
+	const TYPE_FUNCTION=2;
+	const TYPE_INTERFACE=3;
+	const TYPE_TRAIT=4;
+	const TYPE_DEFINE=5;
 
 	/**
 	 * @var ObjectCache
@@ -45,6 +50,8 @@ abstract class SymbolTable  {
 		return $ob;
 	}
 
+
+
 	/**
 	 * Checks all parent classes and parent interfaces to see if $child is can be used in their place.
 	 * @param $potentialParent
@@ -69,6 +76,28 @@ abstract class SymbolTable  {
 		}
 		return false;
 	}
+
+	/*
+	 * More efficient than getAbstractedClass, for the cases where you don't need the class.
+	 */
+	function isDefinedClass($name) {
+		$cacheName=strtolower($name);
+		if (
+			$this->cache->get("AClass:".$cacheName) ||
+			$this->getType($name, self::TYPE_CLASS) ||
+			$this->getType($name, self::TYPE_INTERFACE)
+		) {
+			return true;
+		}
+		try {
+			$unused = new \ReflectionClass($name);
+			return true;
+		}
+		catch(\ReflectionException $e) {
+			return false;
+		}
+	}
+
 
 	/**
 	 * @param $name
@@ -212,16 +241,6 @@ abstract class SymbolTable  {
 	abstract function addClass($name, Class_ $class, $file);
 
 	abstract function addInterface($name, Interface_ $interface, $file);
-
-	/**
-	 * @param string      $className  Full namespace path to a class name
-	 * @param string      $methodName Name of the method
-	 * @param ClassMethod $method     Class method
-	 * @return void
-	 */
-	function addMethod($className, $methodName, ClassMethod $method) {
-		// Do nothing.
-	}
 
 	/**
 	 * @param $className
