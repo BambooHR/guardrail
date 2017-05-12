@@ -8,6 +8,8 @@
 namespace BambooHR\Guardrail;
 
 
+use PhpParser\Node\FunctionLike;
+
 class Scope
 {
 	const UNDEFINED = "!0";
@@ -22,9 +24,13 @@ class Scope
 	/** @var  bool */
 	private $isGlobal;
 
-	function __construct($isStatic, $isGlobal=false) {
+	/** @var FunctionLike */
+	private $inside;
+
+	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
 		$this->isStatic=$isStatic;
 		$this->isGlobal=$isGlobal;
+		$this->inside=$inside;
 	}
 
 	function isStatic() {
@@ -33,6 +39,13 @@ class Scope
 
 	function isGlobal() {
 		return $this->isGlobal;
+	}
+
+	/**
+	 * @return FunctionLike
+	 */
+	function getInsideFunction() {
+		return $this->inside;
 	}
 
 	function setVarType($name, $type) {

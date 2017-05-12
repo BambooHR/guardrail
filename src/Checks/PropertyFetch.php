@@ -10,6 +10,7 @@ namespace BambooHR\Guardrail\Checks;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeInferrer;
+use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Class_;
@@ -30,7 +31,7 @@ class PropertyFetch extends BaseCheck
 	}
 
 	function getCheckNodeTypes() {
-		return [ \PhpParser\Node\Expr\PropertyFetch::class ];
+		return [ \PhpParser\Node\Expr\PropertyFetch::class];
 	}
 
 	/**
@@ -45,16 +46,20 @@ class PropertyFetch extends BaseCheck
 				// Variable property name.  Yuck!
 				return;
 			}
-			$method = Util::findAbstractedMethod($type, $node->name, $this->symbolTable );
-			if($method) {
-				$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to fetch a property rather than call method ".$node->name);
+
+			$property = Util::findAbstractedProperty($type, $node->name, $this->symbolTable );
+			if(!$property) {
+				$method = Util::findAbstractedMethod($type, $node->name, $this->symbolTable );
+				if($method) {
+					$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to fetch a property rather than call method ".$node->name);
+				}
+
+				static $reported = [];
+				if(!isset($reported[$type.'::'.$node->name])) {
+					$reported[$type.'::'.$node->name]=true;
+					$this->emitError($fileName, $node, BaseCheck::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
+				}
 			}
-			//echo "Access ".$node->var->name."->".$node->name."\n";
-			//$property = Util::findProperty($inside,$node->name, $this->symbolTable);
-			//if(!$property) {
-				//$this->emitError($fileName, $node, "Unknown property", "Accessing unknown property of $inside->namespacedName: \$this->" . $node->name);
-			//	return;
-			//}
 		}
 	}
 }

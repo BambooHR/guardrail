@@ -11,6 +11,7 @@ use PhpParser\Node\Stmt\Interface_;
 use BambooHR\Guardrail\NodeVisitors\Grabber;
 use BambooHR\Guardrail\Abstractions\ClassInterface;
 use BambooHR\Guardrail\Abstractions\ClassMethod;
+use PhpParser\Node\Stmt\PropertyProperty;
 
 class Class_ implements ClassInterface {
 	private $class;
@@ -71,5 +72,37 @@ class Class_ implements ClassInterface {
 			}
 		}
 		return false;
+	}
+
+	function getPropertyNames() {
+		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
+		foreach($properties as $prop) {
+			/** @var \PhpParser\Node\Stmt\Property $prop */
+			foreach($prop->props as $propertyProperty) {
+				/** @var PropertyProperty $propertyProperty */
+				$ret[] = $propertyProperty->name;
+			}
+		}
+		return $ret;
+	}
+
+	function getProperty($name) {
+		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
+		foreach($properties as $prop) {
+			/** @var \PhpParser\Node\Stmt\Property $prop */
+			foreach($prop->props as $propertyProperty) {
+				/** @var PropertyProperty $propertyProperty */
+				if($propertyProperty->name==$name) {
+					if($prop->isPrivate()) {
+						$access="private";
+					} else if($prop->isProtected()) {
+						$access="protected";
+					} else {
+						$access="public";
+					}
+					return new Property($propertyProperty->name, "", $prop->type , $prop->isStatic());
+				}
+			}
+		}
 	}
 }

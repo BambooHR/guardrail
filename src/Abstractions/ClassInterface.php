@@ -15,6 +15,8 @@ interface ClassInterface {
 	function getParentClassName();
 	function getInterfaceNames();
 	function getMethod($name);
+	function getProperty($name);
+	function getPropertyNames();
 	function hasConstant($name);
 	function isInterface();
 }

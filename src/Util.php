@@ -93,6 +93,28 @@ class Util {
 		return null;
 	}
 
+	/**
+	 * @param             $className
+	 * @param             $name
+	 * @param SymbolTable $symbolTable
+	 * @return null|\BambooHR\Guardrail\Abstractions\Class_|\BambooHR\Guardrail\Abstractions\ClassMethod|\BambooHR\Guardrail\Abstractions\ReflectedClassMethod
+	 */
+	static function findAbstractedProperty($className, $name, SymbolTable $symbolTable) {
+		while ($className) {
+			$class = $symbolTable->getAbstractedClass($className);
+			if(!$class) {
+				return null;
+			}
+
+			$method = $class->getProperty($name);
+			if($method) {
+				return $method;
+			}
+			$className=$class->getParentClassName();
+		}
+		return null;
+	}
+
 	static function findAbstractedSignature($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);

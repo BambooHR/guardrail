@@ -53,13 +53,13 @@ class TypeInferrer
 		} else if ($expr instanceof Node\Expr\Closure) {
 			return "callable";
 		} else if ($expr instanceof Node\Expr\FuncCall && $expr->name instanceof Node\Name) {
-
-			/*
-			 * $func = $this->index->getFunction($expr->name);
+			$func = $this->index->getAbstractedFunction($expr->name);
 			if($func) {
-				$namespacedReturn =$func->getAttribute("namespacedReturn");
-				return $namespacedReturn ?: Scope::MIXED_TYPE;
-			}*/
+				$type = $func->getReturnType();
+				if($type) {
+					return $type;
+				}
+			}
 		} else if( $expr instanceof Node\Expr\MethodCall && gettype($expr->name)=="string") {
 			$class = $this->inferType($inside, $expr->var, $scope);
 			if(!empty($class) && $class[0]!="!") {

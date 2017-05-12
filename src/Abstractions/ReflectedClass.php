@@ -64,4 +64,35 @@ class ReflectedClass implements ClassInterface {
 	function getName() {
 		return $this->refl->getName();
 	}
+
+	function getProperty($name) {
+		try {
+			$prop = $this->refl->getProperty($name);
+			if($prop) {
+				$modifiers = $prop->getModifiers();
+
+				if ($modifiers & \ReflectionProperty::IS_PRIVATE) {
+					$access="private";
+				} else if($modifiers & \ReflectionProperty::IS_PROTECTED) {
+					$access="protected";
+				} else {
+					$access="public";
+				}
+				return new Property($prop->getName(), $access, "", $modifiers & \ReflectionProperty::IS_STATIC );
+			}
+			return null;
+		}
+		catch(\ReflectionException $e) {
+			return null;
+		}
+	}
+
+	function getPropertyNames() {
+		$ret = [];
+		$props = $this->refl->getProperties();
+		foreach($props as $prop) {
+			$ret[]=$prop->getName();
+		}
+		return $ret;
+	}
 }

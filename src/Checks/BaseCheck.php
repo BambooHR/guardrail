@@ -17,7 +17,7 @@ abstract class BaseCheck {
 	const TYPE_AUTOLOAD_ERROR ="Standard.Autoload.Unsafe";
 
 	const TYPE_SECURITY_BACKTICK="Standard.Security.Backtick";
-	const TYPE_SECURITY_DANGEROUS="Standard.Security.Dangerous";
+	const TYPE_SECURITY_DANGEROUS="Standard.Security.Shell";
 
 	const TYPE_UNKNOWN_CLASS="Standard.Unknown.Class";
 	const TYPE_UNKNOWN_CLASS_CONSTANT="Standard.Unknown.Class.Constant";
@@ -25,6 +25,7 @@ abstract class BaseCheck {
 	const TYPE_UNKNOWN_METHOD="Standard.Unknown.Class.Method";
 	const TYPE_UNKNOWN_FUNCTION="Standard.Unknown.Function";
 	const TYPE_UNKNOWN_VARIABLE="Standard.Unknown.Variable";
+	const TYPE_UNKNOWN_PROPERTY="Standard.Unknown.Property";
 
 	const TYPE_INHERITANCE="Standard.Inheritance";
 	const TYPE_PHP7_INHERITANCE="Standard.Inheritance.Php7";
@@ -37,6 +38,7 @@ abstract class BaseCheck {
 	const TYPE_SIGNATURE_COUNT="Standard.Param.Count";
 	const TYPE_SIGNATURE_COUNT_EXCESS="Standard.Param.Count.Excess";
 	const TYPE_SIGNATURE_TYPE="Standard.Param.Type";
+	const TYPE_SIGNATURE_RETURN="Standard.Return.Type";
 
 	const TYPE_MISSING_BREAK="Standard.Switch.Break";
 	const TYPE_BREAK_NUMBER="Standard.Switch.BreakMultiple";

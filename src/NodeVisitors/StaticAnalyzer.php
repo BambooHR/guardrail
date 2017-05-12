@@ -62,7 +62,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new \BambooHR\Guardrail\Checks\SwitchCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\BreakCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\ConstructorCheck($this->index, $output),
-			new \BambooHR\Guardrail\Checks\GotoCheck($this->index, $output)
+			new \BambooHR\Guardrail\Checks\GotoCheck($this->index, $output),
+			new \BambooHR\Guardrail\Checks\ReturnCheck($this->index, $output),
+			new \BambooHR\Guardrail\Checks\StaticPropertyFetch($this->index, $output)
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );
@@ -256,7 +258,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if($func instanceof Node\Stmt\ClassMethod) {
 			$isStatic = $func->isStatic();
 		}
-		$scope = new Scope( $isStatic );
+		$scope = new Scope( $isStatic, false, $func );
 		foreach ($func->getParams() as $param) {
 			if($param->variadic) {
 				// TODO: Track the type of a variadic array
