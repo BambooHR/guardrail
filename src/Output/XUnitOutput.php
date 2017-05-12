@@ -10,6 +10,7 @@ namespace BambooHR\Guardrail\Output;
 use BambooHR\Guardrail\Output\OutputInterface;
 use N98\JUnitXml;
 use PhpParser\Node;
+use Webmozart\Glob\Glob;
 
 
 class XUnitOutput implements OutputInterface {
@@ -53,8 +54,26 @@ class XUnitOutput implements OutputInterface {
 		//$this->suite->addTestCase();
 	}
 
+	function shouldEmit($fileName, $name) {
+		foreach($this->emitList as $entry) {
+			 if(
+				is_array($entry) &&
+				isset($entry['glob']) &&
+				isset($entry['emit']) &&
+				$entry['emit'] == $name &&
+				Glob::match( "/".$fileName, "/".$entry['glob'])
+			) {
+			 	return !Glob::match("/".$fileName, "/".$entry['ignore']);
+			} else if(is_string($entry) && $entry == $name) {
+				 return true;
+			}
+		}
+		return false;
+	}
+
 	function emitError($className, $fileName, $lineNumber, $name, $message="") {
-		if(!in_array($name, $this->emitList) && count($this->emitList)>0) {
+
+		if (!$this->shouldEmit($fileName, $name)) {
 			return;
 		}
 		$suite = $this->getClass($className);

@@ -81,7 +81,7 @@ class IndexingPhase
 			$class = $symbolTable->getClass($className);
 			$symbolTable->updateClass( $class );
 			$classAb = new Class_($class);
-			$output->output(".", " - (++$count): ".$className);
+			$output->output(".", " - ".(++$count).": ".$className);
 		}
 	}
 

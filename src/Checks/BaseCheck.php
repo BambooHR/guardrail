@@ -14,6 +14,8 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\Output\OutputInterface;
 
 abstract class BaseCheck {
+	const TYPE_AUTOLOAD_ERROR ="Standard.Autoload.Unsafe";
+
 	const TYPE_SECURITY_BACKTICK="Standard.Security.Backtick";
 	const TYPE_SECURITY_DANGEROUS="Standard.Security.Dangerous";
 
@@ -37,7 +39,12 @@ abstract class BaseCheck {
 	const TYPE_SIGNATURE_TYPE="Standard.Param.Type";
 
 	const TYPE_MISSING_BREAK="Standard.Switch.Break";
+	const TYPE_BREAK_NUMBER="Standard.Switch.BreakMultiple";
 	const TYPE_PARSE_ERROR="Standard.Parse.Error";
+
+	const TYPE_MISSING_CONSTRUCT="Standard.Constructor.MissingCall";
+
+	const TYPE_GOTO = "Standard.Goto";
 
 	/** @var SymbolTable */
 	protected $symbolTable;

@@ -7,10 +7,16 @@
 
 namespace BambooHR\Guardrail\Phases;
 
+use BambooHR\Guardrail\Abstractions\Class_;
+use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\NodeVisitors\DoWhileVisitor;
 use BambooHR\Guardrail\Output\XUnitOutput;
+use PhpParser\Comment;
 use PhpParser\Error;
+use PhpParser\Node;
+use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Trait_;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
@@ -32,6 +38,30 @@ class AnalyzingPhase
 				}
 				$toProcess[] = $file->getPathname();
 			}
+		}
+	}
+
+	static function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
+		if($node instanceof Node\Stmt\Namespace_) {
+			foreach($node->stmts as $child) {
+				if(!self::checkForSafeAutoloadNode($file, $child, $output)) {
+					return false;
+				}
+			}
+			return true;
+		} else if (
+			$node instanceof Node\Stmt\Nop ||
+			$node instanceof Node\Expr\Include_ ||
+			$node instanceof Node\Stmt\Class_ ||
+			$node instanceof Node\Stmt\Interface_ ||
+			$node instanceof  Node\Stmt\Trait_ ||
+			$node instanceof Node\Stmt\Use_ ||
+			$node instanceof Comment
+		) {
+			return true;
+		} else {
+			$output->emitError(__CLASS__, $file, $node->getLine(), BaseCheck::TYPE_AUTOLOAD_ERROR, "File is not safe to autoload.  It contains code other than a class:".$node->getType());
+			return false;
 		}
 	}
 
@@ -59,6 +89,14 @@ class AnalyzingPhase
 				$fileData = file_get_contents($file);
 				$stmts = $parser->parse($fileData);
 				if ($stmts) {
+					// We could do this with a node visitor, but it would be more complex and add unnecessary cycles when
+					// it is so easy to inspect at the top level of the file.
+					foreach($stmts as $stmt) {
+						if( !self::checkForSafeAutoloadNode($file, $stmt, $output)) {
+							break;
+						}
+					}
+
 					$start=microtime(true);
 					$analyzer->setFile($name);
 					$stmts=$traverser1->traverse($stmts);

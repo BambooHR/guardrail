@@ -59,7 +59,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new \BambooHR\Guardrail\Checks\ClassConstantCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\FunctionCallCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\MethodCall($this->index, $output),
-			new \BambooHR\Guardrail\Checks\SwitchCheck($this->index, $output)
+			new \BambooHR\Guardrail\Checks\SwitchCheck($this->index, $output),
+			new \BambooHR\Guardrail\Checks\BreakCheck($this->index, $output),
+			new \BambooHR\Guardrail\Checks\ConstructorCheck($this->index, $output),
+			new \BambooHR\Guardrail\Checks\GotoCheck($this->index, $output)
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );

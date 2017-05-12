@@ -13,6 +13,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
+use PhpParser\PrettyPrinter\Standard;
 
 /**
  * Class SqliteSymbolTable
@@ -29,7 +30,7 @@ class SqliteSymbolTable extends SymbolTable {
 
 	function init() {
 		$this->con->exec('
-			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data text not null, primary key(name,type)  );
+			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data blob not null, primary key(name,type)  );
 		');
 	}
 
@@ -57,10 +58,6 @@ class SqliteSymbolTable extends SymbolTable {
 	}
 
 
-
-
-
-
 	function getClassOrInterfaceData($name) {
 		return $this->getData($name);
 
@@ -82,7 +79,7 @@ class SqliteSymbolTable extends SymbolTable {
 
 		$result=$statement->fetch(\Pdo::FETCH_NUM);
 		if($result) {
-			return unserialize($result[0]);
+			return self::unserializeObject($result[0]);
 		} else {
 			return "";
 		}
@@ -130,10 +127,11 @@ class SqliteSymbolTable extends SymbolTable {
 	function updateClass(Node\Stmt\ClassLike $class) {
 		$name = strtolower($class->namespacedName);
 		$clone = $this->stripMethodContents($class);
+		$serializedString = self::serializeObject($clone);
 		$type = $class instanceof Trait_ ? self::TYPE_TRAIT : self::TYPE_CLASS;
 		$sql='UPDATE symbol_table SET data=? WHERE name=? and type=?';
 		$statement = $this->con->prepare($sql);
-		$statement->execute( [ serialize($clone), $name, $type] );
+		$statement->execute( [ $serializedString, $name, $type] );
 	}
 
 	function removeFileFromIndex($name) {
@@ -154,6 +152,27 @@ class SqliteSymbolTable extends SymbolTable {
 		return $clone;
 	}
 
+	/**
+	 * PHP's serialize() is very fast, but it produces a bloated serialization string.  We deflate it to make it 10x smaller
+	 * Then we base64_encode to make it a little bit safer to deal with in the db layer.
+	 * @param $string
+	 * @return string
+	 */
+	private static function serializeObject($string) {
+		//return ( gzdeflate( serialize( $string ) ) );
+		return base64_encode( gzdeflate( serialize( $string ) ) );
+		//return serialize( $string );
+	}
+
+	/**
+	 * @param $string
+	 * @return mixed
+	 */
+	private static function unserializeObject($string) {
+		//return unserialize( gzinflate( ( $string ) ) );
+		return unserialize( gzinflate( base64_decode( $string ) ) );
+		//return unserialize( $string );
+	}
 
 	function addClass($name, Class_ $class, $file) {
 		$usesTrait = 0;
@@ -162,9 +181,8 @@ class SqliteSymbolTable extends SymbolTable {
 				$usesTrait = 1;
 			}
 		}
-		$clone=$this->stripMethodContents($class);
-
-		$this->addType($name, $file, self::TYPE_CLASS, $usesTrait, serialize($clone));
+		$clone = $this->stripMethodContents($class);
+		$this->addType($name, $file, self::TYPE_CLASS, $usesTrait, self::serializeObject($clone));
 	}
 
 	/**
@@ -194,14 +212,14 @@ class SqliteSymbolTable extends SymbolTable {
 	}
 
 	function addInterface($name, Interface_ $interface, $file) {
-		$this->addType($name, $file, self::TYPE_INTERFACE, 0, serialize($interface));
+		$this->addType($name, $file, self::TYPE_INTERFACE, 0, self::serializeObject($interface));
 	}
 
 	function addFunction($name, Function_ $function, $file) {
 		$clone = clone $function;
 		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic( $function->stmts ));
 		$clone->stmts = [];
-		$this->addType($name, $file, self::TYPE_FUNCTION, 0 , serialize($clone));
+		$this->addType($name, $file, self::TYPE_FUNCTION, 0 , self::serializeObject($clone) );
 	}
 
 	function addTrait($name, Trait_ $trait, $file) {

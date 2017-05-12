@@ -3,7 +3,7 @@ Copyright (c) 2017 Jon Gardiner and BambooHR
 
 ## Introduction
 
-Guardrail is a static analysis engine for PHP.  Guardrail will index your code base, learn
+Guardrail is a static analysis engine for PHP 5 - 7.  Guardrail will index your code base, learn
 every symbol, and then confirm that every file in the system uses those symbols in a way that
 makes sense.  For example, if you have a function call to an undefined function, it will be
 found by Guardrail.
@@ -24,24 +24,28 @@ Guardrail uses Nikita Popov's excellent PHP parser library. (See https://github.
 
 According to W3Techs (https://w3techs.com/technologies/overview/programming_language/all) in 2017 PHP 
 is running on 82% of all the sites whose server-side language they can determine.  Other documentation
-confirms that a vast majority of dynamic content on the Internet is served from PHP.  Facebook powers
-such massive sites as Facebook and Wikipedia.
+confirms that a vast majority of dynamic content on the Internet is served from PHP.  PHP powers
+massive sites such as Facebook and Wikipedia.
 
 Often these sites start from a small home grown code base, a Wordpress install, or a few customizations 
 on top of a framework.  These are great options that play to the strengths of PHP.  You can quickly 
 prop up a website and prove the business model before you spend a lot of time and money worrying 
 about enterprise scale.  The PHP language performs reasonably well and is very quick to develop 
-with.    The language is very forgiving, has a very mature library ecosystem with Composer, several robust frameworks, 
+with.  The language is very forgiving, has a very mature library ecosystem with Composer, several robust frameworks, 
 and broad hosting availability.
 
 For a small website PHP works exceedingly well.  If you are lucky enough to have a formerly small website that 
 has grown up, you will start to run into difficulties dealing with large code base in PHP.  Many of these 
-complications are due to the lack of enforcements of contracts in the language.  If you choose to do so, you
-can pass around arbitrary objects of any type to any method.  There are also artifacts dating back to the
-days when PHP didn't support object oriented programming particularly well.
+complications are due to the fact that PHP is a weakly typed language.  The lack of enforcements of 
+contracts in the language makes it difficult to know what to expect about any given variable.  On a small
+team and code base this is no problem.  On a large team or large code base, this becomes unmanageable.
+Also, as your start to use more strongly typed improvements to PHP, you discover that those errrors are
+not reported until run time.  It would be far better to know prior to release that errors existed in your
+application.
 
-Guardrail is a tool that allows developers that want to be more rigorous than stock PHP requires.  It can be
-applied to any code base.  
+Guardrail is a tool that allows you to find some subset of the errors in your application.  If you make
+heavy use of type hinting, you'll find that Guardrail enables you to actually be quite rigorous.  It can be
+applied to any PHP 5 - PHP 7 code base.  
 
    
 ## Supported checks
@@ -57,7 +61,13 @@ applied to any code base.
  - Method and function calls that don't pass enough parameters or pass to many parameters.
  - Type mismatches for type-hinted parameters.
  - Property fetches for members that were not previously declared.
- - Catching exceptions that don't exist.
+ - Catching exceptions that don't exist.  (Commonly due to namespace errors.)
+ - The ill-advised "continue $num" and "break 2" style jumps.
+ - The goto statement
+ - Constructor overrides that don't call the parent constructor
+ 
+ 
+ Guardrail has support for advanced PHP features, such as traits, interfaces, anonymous functions & classes, etc.
  
  Additionally, a simple plugin system exists that allows you to register node visitors for 
  the abstract syntax tree for to enable additional checks. At BambooHR, we use this plugin mechanism
@@ -66,20 +76,25 @@ applied to any code base.
  ## Limitations
  
  - Guardrail assumes that all classes and functions are available in all locations.  It does 
- not check your autoloader or require statements.  
+ not check your autoloader or require statements to confirm that you have actually loaded a source 
+ file in any particular context.
  - Guardrail does not conditionally process functions.  If the function is defined either at 
- the top level or in a function, then it will be indexed and considered as globally available.
- - Guardrail relies upon reflection to determine availability of internal PHP methods and functions.  You will
- want to run Guardrail in the same environment that your code is expected to run in.
- - Guardrail is capable of doing some simple type inference.  If your variable is certain
-  to only contain one type of data then that type will be enforced.  If the variable could
-  contain multiple different values then Guardrail will have to assume you are using the variable
-  correctly.
+ the top level or nested in a function, then it will be indexed and considered as globally available.
+ - Guardrail relies upon reflection to determine availability of internal PHP methods and functions.
+ You will want to run Guardrail in the same environment that your code is expected to run in.  Note that it
+ is common for command line installs of PHP to use a different config file (and, therefore, different extensions) 
+ than the fastcgi/modphp config.  If you are testing a website, make sure your CLI config loads the
+ same extensions as your server config.
+ - Guardrail is capable of doing simple type inference.  If your variable is certain
+  to only contain one type of data then checks will be enforced on that variable.  If the variable 
+  could contain multiple different values then Guardrail will have to assume you are using the 
+  variable correctly.
   
   ## Requirements
   
- Requires PHP 5.5, Sqlite extension, and composer.  Runs significantly faster in PHP 7.  
-
+ - Requires PHP 5.5, Sqlite extension, Gzip extension, and Composer.  
+ - The more memory the better.  Moderately large code bases can use up to 500MB.  
+ - Runs significantly faster in PHP 7.  
  
  ## Installation
  
