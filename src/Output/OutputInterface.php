@@ -17,4 +17,6 @@ interface OutputInterface
 	function outputExtraVerbose($string);
 	function incTests();
 	function getErrorCount();
+	function silenceType($name);
+	function resumeType($name);
 }

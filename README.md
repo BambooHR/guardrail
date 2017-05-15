@@ -189,8 +189,6 @@ Sample config file:
         "Standard.Unknown.Function",
         "Standard.Unknown.Variable",
 
-        "Standard.Inheritance",
-        "Standard.Inheritance.Php7",
         "Standard.Inheritance.Unimplemented",
  
         "Standard.Scope",
@@ -200,6 +198,12 @@ Sample config file:
         "Standard.Switch.Break",
         "Standard.Parse.Error",
         
+        {
+        	"emit":"Standard.Security.Shell",
+        	"glob":"**/System/**/*",
+        	"glob-igore": "**/System/Shell/**/*"
+        },
+        
         "BambooHR.Impossible.Inject"
     ], 
     "plugins": [
@@ -207,6 +211,15 @@ Sample config file:
     ]
 }
 ```
+
+The simplest version of an emit entry is a simple string that identifies the type of error to always emit.
+A longer form is a nested JSON object.  It may contain a single glob string that the filename must match and,
+ optionally, a glob-ignore string to ignore.  You may define multiple globbing rules per type of error.  
+ If the error passes any one section it will be emitted.
+
+You can also disable an error for the duration of a function by adding `@guardrail-ignore [type1],[type2]`
+in your function's docblock.  (Where [type#] is the name of the check to disable.)   Any check you disable will not
+ be emitted during the analysis of that particular function.
 
 ### Command line
 

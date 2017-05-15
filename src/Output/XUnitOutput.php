@@ -32,6 +32,8 @@ class XUnitOutput implements OutputInterface {
 
 	private $counts = [];
 
+	private $silenced = [];
+
 	function __construct(\BambooHR\Guardrail\Config $config) {
 		$this->doc=new JUnitXml\Document();
 		$this->doc->formatOutput=true;
@@ -55,6 +57,9 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	function shouldEmit($fileName, $name) {
+		if(isset($this->silenced[$name]) && $this->silenced[$name]>0) {
+			return false;
+		}
 		foreach($this->emitList as $entry) {
 			 if(
 				is_array($entry) &&
@@ -73,6 +78,18 @@ class XUnitOutput implements OutputInterface {
 			}
 		}
 		return false;
+	}
+
+	function silenceType($name) {
+		if(!isset($this->silenced[$name])) {
+			$this->silenced[$name] = 1;
+		} else {
+			$this->silenced[$name]++;
+		}
+	}
+
+	function resumeType($name) {
+		$this->silenced[$name]--;
 	}
 
 	function emitError($className, $fileName, $lineNumber, $name, $message="") {

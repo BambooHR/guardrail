@@ -38,10 +38,14 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/** @var TypeInferrer */
 	private $typeInferrer;
 
+	/** @var OutputInterface */
+	private $output;
+
 	function __construct($basePath, $index, OutputInterface $output, $config) {
 		$this->index = $index;
 		$this->scopeStack = [new Scope(true, true)];
 		$this->typeInferrer = new TypeInferrer($index);
+		$this->output = $output;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
@@ -250,7 +254,28 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($cond->expr instanceof Node\Expr\Variable && gettype($cond->expr->name) == "string" && $cond->class instanceof Node\Name) {
 			$newScope->setVarType($cond->expr->name, strval($cond->class));
 		}
+	}
 
+	function updateFunctionEmit(Node\FunctionLike $func, $pushOrPop) {
+
+		$docBlock = trim($func->getDocComment());
+		$ignoreList = [];
+
+		if(preg_match_all("/@guardrail-ignore ([A-Za-z. ,]*)/", $docBlock, $ignoreList)) {
+			foreach($ignoreList[1] as $ignoreListEntry) {
+				$toIgnore = explode(",", $ignoreListEntry);
+				foreach ($toIgnore as $type) {
+					$type = trim($type);
+					if (!empty($type)) {
+						if ($pushOrPop == "push") {
+							$this->output->silenceType($type);
+						} else {
+							$this->output->resumeType($type);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	function pushFunctionScope(Node\FunctionLike $func) {
@@ -276,6 +301,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				}
 				$scope->setVarType($variable->var, $type);
 			}
+		}
+
+		if($func instanceof Node\Stmt\ClassMethod || $func instanceof Node\Stmt\Function_) {
+			$this->updateFunctionEmit($func, "push");
 		}
 		array_push($this->scopeStack, $scope);
 	}
@@ -344,6 +373,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 		if ($node instanceof Node\FunctionLike) {
 			array_pop($this->scopeStack);
+			if($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+				$this->updateFunctionEmit($node,"pop");
+			}
 		}
 
 		if ($node instanceof Node\Stmt\If_ && $node->else==null) {
