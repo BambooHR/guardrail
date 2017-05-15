@@ -50,37 +50,37 @@ applied to any PHP 5 - PHP 7 code base.
    
 ## Supported checks
 
-Guardrail classifies checks by name.  Here is the standard list of errors.  Not that all Guardrail errors
+Guardrail classifies checks by name.  Here is the standard list of errors.  Note that all Guardrail errors
  start with the word "Standard."  Custom plugins, should begin with a different string.  (Ideally, an 
  organization name for the organization creating the plugin.)
 
 Name | Description
 --- | ---
+Standard.Access.Violation | Accessing a protected/private variable in a context where you are not allowed to access them.
 Standard.Autoload.Unsafe | Code that executes any statements other than a class declaration.
-Standard.Security.Shell | Code that runs a shell (exec, passthru, system, etc)
-Standard.Security.Backtick | The backtick operator
-Standard.Unknown.Class | Reference to an undefined class
-Standard.Unknown.Class.Constant | Reference to an undefined constant inside of a class
-Standard.Unknown.Global.Constant | Reference to an undefined global constant (define or const)
-Standard.Unknown.Class.Method | Reference to an unknown class method
-Standard.Unknown.Function | Reference to an unknown function
-Standard.Unknown.Variable | Reference to a variable that has not previously been assigned
-Standard.Unknown.Property | Reference to a property that has not previously been declared
-Standard.Inheritance.Unimplemented | Class implementing an interface fails to implement on of it's methods.
+Standard.Constructor.MissingCall | Overriding a constructor without calling the parent constructor.
 Standard.Incorrect.Static | Static reference to a dynamic variable/method
 Standard.Incorrect.Dynamic | Dynamic reference to a static variable/method
-Standard.Scope | Usage of parent:: or self:: when in a context where they are not available.
+Standard.Inheritance.Unimplemented | Class implementing an interface fails to implement on of it's methods.
+Standard.Goto | Any instance of a "goto" statement
 Standard.Param.Count | Failure to pass all the declared parameters to a function.
 Standard.Param.Count.Excess | Passing too many variables to a function (ignores variadic functions)
 Standard.Param.Type | Type mismatch on a parameter to a function
-Standard.Return.Type | Type mismatch on a return from a function.
+Standard.Parse.Error | A parse error
+Standard.Return.Type | Type mismatch on a return from a function
+Standard.Scope | Usage of parent:: or self:: when in a context where they are not available.
+Standard.Security.Shell | Code that runs a shell (exec, passthru, system, etc)
+Standard.Security.Backtick | The backtick operator
 Standard.Switch.Break | A switch case: statement that falls through (generally these are unintentional)
 Standard.Switch.BreakMultiple | A "continue #;" or "break #;" statement (where # is an integer)
-Standard.Parse.Error | A parse error
-Standard.Access.Violation | Accessing a protected/private variable in a context where you are not allowed to access them.
-Standard.Goto | Any instance of a "goto" statement 
-Standard.Constructor.MissingCall | Overriding a constructor without calling the parent constructor.
- 
+Standard.Unknown.Class | Reference to an undefined class
+Standard.Unknown.Class.Constant | Reference to an undefined constant inside of a class
+Standard.Unknown.Class.Method | Reference to an unknown class method
+Standard.Unknown.Function | Reference to an unknown function
+Standard.Unknown.Global.Constant | Reference to an undefined global constant (define or const)
+Standard.Unknown.Property | Reference to a property that has not previously been declared
+Standard.Unknown.Variable | Reference to a variable that has not previously been assigned
+
   
  Guardrail has support for advanced PHP features, such as traits, interfaces, anonymous functions & classes, etc.
  
