@@ -97,7 +97,7 @@ class Util {
 	 * @param             $className
 	 * @param             $name
 	 * @param SymbolTable $symbolTable
-	 * @return null|\BambooHR\Guardrail\Abstractions\Class_|\BambooHR\Guardrail\Abstractions\ClassMethod|\BambooHR\Guardrail\Abstractions\ReflectedClassMethod
+	 * @return null|\BambooHR\Guardrail\Abstractions\Property
 	 */
 	static function findAbstractedProperty($className, $name, SymbolTable $symbolTable) {
 		while ($className) {

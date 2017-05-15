@@ -27,8 +27,6 @@ abstract class BaseCheck {
 	const TYPE_UNKNOWN_VARIABLE="Standard.Unknown.Variable";
 	const TYPE_UNKNOWN_PROPERTY="Standard.Unknown.Property";
 
-	const TYPE_INHERITANCE="Standard.Inheritance";
-	const TYPE_PHP7_INHERITANCE="Standard.Inheritance.Php7";
 	const TYPE_UNIMPLEMENTED_METHOD="Standard.Inheritance.Unimplemented";
 
 	const TYPE_INCORRECT_STATIC_CALL="Standard.Incorrect.Static";
@@ -43,6 +41,8 @@ abstract class BaseCheck {
 	const TYPE_MISSING_BREAK="Standard.Switch.Break";
 	const TYPE_BREAK_NUMBER="Standard.Switch.BreakMultiple";
 	const TYPE_PARSE_ERROR="Standard.Parse.Error";
+
+	const TYPE_ACCESS_VIOLATION="Standard.Access.Violation";
 
 	const TYPE_MISSING_CONSTRUCT="Standard.Constructor.MissingCall";
 

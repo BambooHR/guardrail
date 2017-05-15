@@ -84,6 +84,9 @@ class TypeInferrer
 			if(substr($type,-2)=="[]") {
 				return substr($type,0,-2);
 			}
+		} else if ($expr instanceof Node\Expr\Clone_) {
+			// A cloned node will be the same type as whatever we're cloning.
+			return $this->inferType($inside, $expr->expr, $scope);
 		}
 		return Scope::MIXED_TYPE;
 	}

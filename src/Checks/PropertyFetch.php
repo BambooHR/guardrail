@@ -10,15 +10,9 @@ namespace BambooHR\Guardrail\Checks;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeInferrer;
-use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\Trait_;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\Interface_;
-use PhpParser\Node\Stmt\ClassMethod;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
-use PhpParser\Node\Expr\Variable;
 
 
 class PropertyFetch extends BaseCheck
@@ -48,17 +42,26 @@ class PropertyFetch extends BaseCheck
 			}
 
 			$property = Util::findAbstractedProperty($type, $node->name, $this->symbolTable );
-			if(!$property) {
-				$method = Util::findAbstractedMethod($type, $node->name, $this->symbolTable );
-				if($method) {
-					$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to fetch a property rather than call method ".$node->name);
-				}
 
-				static $reported = [];
-				if(!isset($reported[$type.'::'.$node->name])) {
-					$reported[$type.'::'.$node->name]=true;
-					$this->emitError($fileName, $node, BaseCheck::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
+			if(!$property) {
+				// Unknown property, but maybe they use magic methods to retrieve.
+				$hasGet = Util::findAbstractedMethod($type, "__get", $this->symbolTable);
+				if (!$hasGet) {
+					$method = Util::findAbstractedMethod($type, $node->name, $this->symbolTable);
+					if ($method) {
+						$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to fetch a property rather than call method " . $node->name);
+					}
+
+					static $reported = [];
+					if (!isset($reported[$type . '::' . $node->name])) {
+						$reported[$type . '::' . $node->name] = true;
+						$this->emitError($fileName, $node, BaseCheck::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
+					}
 				}
+			} else if($property->getAccess()=="private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($type, $inside->namespacedName)!=0)) {
+				$this->emitError($fileName, $node, BaseCheck::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property ".$node->name);
+			} else if($property->getAccess()=="protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($type, $inside->namespacedName))) {
+				$this->emitError($fileName, $node, BaseCheck::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property ".$node->name);
 			}
 		}
 	}

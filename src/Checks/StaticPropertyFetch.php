@@ -36,21 +36,26 @@ class StaticPropertyFetch extends BaseCheck
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 		$class = $node->class;
 		if($class instanceof Name && is_string($node->name)) {
-			$property = Util::findAbstractedProperty($class, $node->name, $this->symbolTable );
-			if(!$property) {
-				$method = Util::findAbstractedMethod($class, $node->name, $this->symbolTable );
-				if($method) {
-					$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_STATIC_CALL, "Attempt to fetch a static property rather than call method ".$node->name);
+			$property = Util::findAbstractedProperty($class, $node->name, $this->symbolTable);
+			if (!$property) {
+				$method = Util::findAbstractedMethod($class, $node->name, $this->symbolTable);
+				if ($method) {
+					$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_STATIC_CALL, "Attempt to fetch a static property rather than call method " . $node->name);
 				}
 
 				static $reported = [];
-				if(!isset($reported[$class.'::'.$node->name])) {
-					$reported[$class.'::'.$node->name]=true;
+				if (!isset($reported[$class . '::' . $node->name])) {
+					$reported[$class . '::' . $node->name] = true;
 					$this->emitError($fileName, $node, BaseCheck::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $class::" . $node->name);
 				}
 			} else {
-				if(!$property->isStatic()) {
-					$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_STATIC_CALL, "Attempt to fetch a dynamic variable statically $class::".$node->name);
+				if (!$property->isStatic()) {
+					$this->emitError($fileName, $node, BaseCheck::TYPE_INCORRECT_STATIC_CALL, "Attempt to fetch a dynamic variable statically $class::" . $node->name);
+				}
+				if ($property->getAccess() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($inside->namespacedName, $class) != 0)) {
+					$this->emitError($fileName, $node, BaseCheck::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property " . $node->name);
+				} else if ($property->getAccess() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($class, $inside->namespacedName))) {
+					$this->emitError($fileName, $node, BaseCheck::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property " . $node->name);
 				}
 			}
 		}
