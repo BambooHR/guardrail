@@ -16,8 +16,15 @@ use BambooHR\Guardrail\Output\OutputInterface;
 abstract class BaseCheck {
 	const TYPE_AUTOLOAD_ERROR ="Standard.Autoload.Unsafe";
 
+	const TYPE_VARIABLE_VARIABLE      = "Standard.VariableVariable";
+	const TYPE_VARIABLE_FUNCTION_NAME = "Standard.VariableFunctionCall";
+	const TYPE_EVAL                   = "Standard.Security.Eval";
+
 	const TYPE_SECURITY_BACKTICK="Standard.Security.Backtick";
 	const TYPE_SECURITY_DANGEROUS="Standard.Security.Shell";
+
+	const TYPE_DEPRECATED_INTERNAL="Standard.Deprecated.Internal";
+	const TYPE_DEPRECATED_USER="Standard.Deprecated.User";
 
 	const TYPE_UNKNOWN_CLASS="Standard.Unknown.Class";
 	const TYPE_UNKNOWN_CLASS_CONSTANT="Standard.Unknown.Class.Constant";

@@ -36,11 +36,15 @@ class ConstructorCheck extends BaseCheck {
 		/** var \PhpParser\Node\Stmt\ClassMethod $node */
 		if (strcasecmp($node->name,"__construct")==0 &&
 			$inside instanceof Node\Stmt\Class_ &&
-			$inside->extends &&
-			Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable) &&
-			!self::containsConstructorCall($node->stmts)
+			$inside->extends
 		) {
+			$ob = Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable);
+			if ($ob &&
+				!$ob->isAbstract() &&
+				!self::containsConstructorCall($node->stmts)
+			) {
 				$this->emitError($fileName, $node, BaseCheck::TYPE_MISSING_CONSTRUCT, "Class " . $inside->name . " overrides __construct, but does not call parent constructor");
+			}
 		}
 	}
 }

@@ -19,6 +19,13 @@ class ClassMethod implements MethodInterface {
 		return strval($this->method->returnType);
 	}
 
+	function isDeprecated() {
+		$docBlock = $this->method->getDocComment();
+		if(strpos($docBlock, "@deprecated")!==false) {
+			return true;
+		}
+	}
+
 	function getDocBlockReturnType() {
 		return $this->method->getAttribute('namespacedReturn');
 	}

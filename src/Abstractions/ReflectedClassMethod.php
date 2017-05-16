@@ -22,6 +22,10 @@ class ReflectedClassMethod implements MethodInterface {
 		return $this->refl->isStatic();
 	}
 
+	function isDeprecated() {
+		return $this->refl->isDeprecated();
+	}
+
 	function isInternal() {
 		return true;
 	}

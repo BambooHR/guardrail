@@ -58,6 +58,8 @@ Name | Description
 --- | ---
 Standard.Access.Violation | Accessing a protected/private variable in a context where you are not allowed to access them.
 Standard.Autoload.Unsafe | Code that executes any statements other than a class declaration.
+Standard.Deprecated.Internal | Call to an internal PHP function that is deprecated
+Standard.Deprecated.User | Call to a user function that has @deprecated in the docblock.
 Standard.Constructor.MissingCall | Overriding a constructor without calling the parent constructor.
 Standard.Incorrect.Static | Static reference to a dynamic variable/method
 Standard.Incorrect.Dynamic | Dynamic reference to a static variable/method

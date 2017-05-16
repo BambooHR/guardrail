@@ -45,7 +45,7 @@ class MethodCall extends BaseCheck
 			return;
 		}
 		if($node->name instanceof Expr) {
-			// Variable method name.  Yuck!
+			$this->emitError($fileName, $node, self::TYPE_VARIABLE_FUNCTION_NAME, "Variable function name detected");
 			return;
 		}
 		$methodName = strval($node->name);
@@ -74,7 +74,7 @@ class MethodCall extends BaseCheck
 					!Util::findAbstractedMethod( $className, "__call", $this->symbolTable) &&
 					!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className)
 				) {
-					$this->emitError($fileName, $node, self::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className: \$".$varName."->" .$methodName);
+					$this->emitError($fileName, $node, self::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className::$methodName");
 				}
 			}
 		}
@@ -99,6 +99,10 @@ class MethodCall extends BaseCheck
 		}
 		if(count($node->args) > count($params) && !$method->isVariadic()) {
 			$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT_EXCESS, "Too many parameters to non-variadic method ".$method->getName()." (passed ".count($node->args). " only takes ".count($params).")");
+		}
+		if($method->isDeprecated()) {
+			$errorType = $method->isInternal() ? self::TYPE_DEPRECATED_INTERNAL : self::TYPE_DEPRECATED_USER;
+			$this->emitError($fileName, $node, $errorType, "Call to deprecated function ".$method->getName());
 		}
 
 		foreach ($node->args as $index => $arg) {

@@ -16,7 +16,7 @@ interface FunctionLikeInterface {
 	function getReturnType();
 	function getDocBlockReturnType();
 	function isInternal();
-
+	function isDeprecated();
 
 	function getName();
 

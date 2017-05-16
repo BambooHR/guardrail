@@ -9,4 +9,5 @@ class Exception {
 	function getLine() { }
 	function getTrace() { }
 	function getTraceAsString() { }
+	function __toString() { return ""; }
 }

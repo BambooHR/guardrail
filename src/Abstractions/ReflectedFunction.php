@@ -22,6 +22,10 @@ class ReflectedFunction implements FunctionLikeInterface {
 		return $this->refl->isStatic();
 	}
 
+	function isDeprecated() {
+		return $this->refl->isDeprecated();
+	}
+
 	function isInternal() {
 		return true;
 	}

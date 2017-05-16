@@ -21,6 +21,14 @@ class Function_ implements FunctionLikeInterface {
 		return strval($this->function->returnType);
 	}
 
+	function isDeprecated() {
+		$docBlock = $this->function->getDocComment();
+		if(strpos($docBlock,"@deprecated")!==false) {
+			return true;
+		}
+		return false;
+	}
+
 
 	function getDocBlockReturnType() {
 		return $this->function->getAttribute('namespacedReturn');
