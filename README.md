@@ -95,6 +95,9 @@ Standard.Unknown.Variable | Reference to a variable that has not previously been
  - Guardrail assumes that all classes and functions are available in all locations.  It does 
  not check your autoloader or require statements to confirm that you have actually loaded a source 
  file in any particular context.
+ - PHP allows you to declare a function inside of another function.  This nested function
+  actually has global scope, but is only visible after the outer function has executed.  Guardrail 
+  does not support this use pattern.
  - Guardrail does not conditionally process functions.  If the function is defined either at 
  the top level or nested in a function, then it will be indexed and considered as globally available.
  - Guardrail relies upon reflection to determine availability of internal PHP methods and functions.
