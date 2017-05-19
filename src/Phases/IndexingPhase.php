@@ -97,9 +97,14 @@ class IndexingPhase
 			$this->index($config, $output, $it2);
 		}
 
-		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
-		$it2 = new \RecursiveIteratorIterator($it);
-		$this->index($config, $output, $it2, true);
+		// If Guardrail is in vendor and you index vendor (which you should) then it won't need to
+		// re-index the extra stubs.  If guardrail is outside of vendor then we need to make sure
+		// we index the extra stubs.
+		if (!$config->getSymbolTable()->isDefinedClass('closure') ) {
+			$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
+			$it2 = new \RecursiveIteratorIterator($it);
+			$this->index($config, $output, $it2, true);
+		}
 
 		$this->indexTraitClasses($config->getSymbolTable(), $output);
 /*
