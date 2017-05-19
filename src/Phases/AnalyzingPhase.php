@@ -185,7 +185,7 @@ class AnalyzingPhase
 		$configArray = $config->getConfigArray();
 		foreach($configArray['test'] as $directory) {
 			$directory=$basePath."/".$directory;
-			$output->outputVerbose("Directory: $directory\n");
+			$output->outputVerbose("\n\nDirectory: $directory\n");
 			$it = new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS);
 	 		$it2 = new \RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $output, $it2, $toProcess);
@@ -200,7 +200,7 @@ class AnalyzingPhase
 			: array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1), $groupSize);
 
 
-		$output->outputVerbose("Analyzing ".count($toProcess)." files\n");
+		$output->outputVerbose("\n\nAnalyzing ".count($toProcess)." files\n");
 
 		if($config->getProcessCount()>1) {
 			return $this->runChildProcesses($config, $output, $toProcess);

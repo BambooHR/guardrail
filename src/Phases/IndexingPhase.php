@@ -75,7 +75,7 @@ class IndexingPhase
 	}
 
 	function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
-		$output->outputVerbose("Importing traits\n");
+		$output->outputVerbose("\n\nImporting traits\n");
 		$count = 0;
 		foreach($symbolTable->getClassesThatUseATrait() as $className) {
 			$class = $symbolTable->getClass($className);
@@ -90,8 +90,8 @@ class IndexingPhase
 		$indexPaths = $configArr['index'];
 
 		foreach ($indexPaths as $directory) {
-			$tmpDirectory = strpos($directory, "/") === 0 ? $directory : $config->getBasePath() . "/" . $directory;
-			$output->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
+			$tmpDirectory = strpos($directory, "/") === 0 ? $directory : $config->getBasePath() . $directory;
+			$output->outputVerbose("\n\nIndexing Directory: " . $tmpDirectory . "\n");
 			$it = new \RecursiveDirectoryIterator($tmpDirectory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
 			$this->index($config, $output, $it2);
