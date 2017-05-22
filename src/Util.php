@@ -7,12 +7,9 @@
 
 namespace BambooHR\Guardrail;
 
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Stmt\Property;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\Abstractions;
 use Webmozart\Glob\Glob;
 
 class Util {
@@ -139,6 +136,41 @@ class Util {
 
 	static function callIsCompatible(ClassMethod $method,MethodCall $call) {
 
+	}
+
+	/**
+	 * configDirectoriesAreValid
+	 *
+	 * @param string $baseDirectory The base directory
+	 * @param array  $paths         The list of paths to test from the config file
+	 *
+	 * @return bool
+	 */
+	static function configDirectoriesAreValid($baseDirectory, $paths) {
+		if (is_object($baseDirectory) || !is_array($paths) || empty($paths)) {
+			throw new \InvalidArgumentException('The config data is bad');
+		}
+		$results = true;
+		foreach ($paths as $path) {
+			$location = static::fullDirectoryPath($baseDirectory, $path);
+			if (! is_dir($location)) {
+				$results = false;
+			}
+		}
+		return $results;
+	}
+
+	/**
+	 * fullDirectoryPath
+	 *
+	 * @param string $baseDirectory The base directory from the config
+	 * @param string $path          The path we are checking
+	 *
+	 * @return string
+	 */
+	static function fullDirectoryPath($baseDirectory, $path) {
+		$baseDirectory = substr($baseDirectory, -1) === '/' ? $baseDirectory : $baseDirectory . '/';
+		return strpos($path, "/") === 0 ? $path : $baseDirectory . $path;
 	}
 }
 

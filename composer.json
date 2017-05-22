@@ -15,10 +15,10 @@
       "nikic/php-parser": "^2.0",
       "webmozart/glob":"4.1.0",
       "n98/junit-xml":"1.0.0",
-        "league/json-guard": "^1.0",
-        "league/json-reference": "^1.0"
+        "webmozart/json": "^1.2"
     },
     "require-dev": {
-      "phpunit/phpunit": "4.8.*"
+      "phpunit/phpunit": "4.8.*",
+        "bamboohr/phpcs": "^0.1.5"
     }
 }
