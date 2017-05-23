@@ -10,6 +10,7 @@ namespace BambooHR\Guardrail;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Expr\MethodCall;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use Seld\JsonLint\JsonParser;
 use Webmozart\Glob\Glob;
 
 class Util {
@@ -171,6 +172,26 @@ class Util {
 	static function fullDirectoryPath($baseDirectory, $path) {
 		$baseDirectory = substr($baseDirectory, -1) === '/' ? $baseDirectory : $baseDirectory . '/';
 		return strpos($path, "/") === 0 ? $path : $baseDirectory . $path;
+	}
+
+	/**
+	 * jsonFileContentIsValid
+	 *
+	 * @param string $jsonFile The path to the json file to validate
+	 *
+	 * @return array
+	 */
+	static function jsonFileContentIsValid($jsonFile) {
+		$status = ['success' => true, 'message' => 'json is valid'];
+		if (!file_exists($jsonFile)) {
+			throw new \InvalidArgumentException('File does not exist.');
+		}
+		$parser = new JsonParser();
+		$results = $parser->lint(file_get_contents($jsonFile));
+		if (null !== $results) {
+			$status = ['success' => false, 'message' => $results->getMessage()];
+		}
+		return $status;
 	}
 }
 
