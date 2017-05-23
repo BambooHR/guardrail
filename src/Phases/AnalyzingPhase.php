@@ -179,14 +179,28 @@ class AnalyzingPhase
 		return $error ? 1 : 0;
 	}
 
-	function run(Config $config, OutputInterface $output) {
-		$basePath=$config->getBasePath();
-		$toProcess=[];
+	/**
+	 * run
+	 *
+	 * @param Config          $config Instance of Config
+	 * @param OutputInterface $output Instance of OutputInterface
+	 *
+	 * @return int
+	 */
+	public function run(Config $config, OutputInterface $output) {
 		$configArray = $config->getConfigArray();
-		foreach($configArray['test'] as $directory) {
-			$directory=$basePath."/".$directory;
-			$output->outputVerbose("\n\nDirectory: $directory\n");
-			$it = new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS);
+		$baseDirectory = $config->getBasePath();
+		$indexPaths = $configArray['test'];
+		if (! Util::configDirectoriesAreValid($baseDirectory, $indexPaths)) {
+			$output->output("Invalid or missing paths in your test config section.\n", "Invalid or missing paths in your test config section.\n");
+			exit;
+		}
+		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
+		$toProcess = [];
+		foreach ($indexPaths as $path) {
+			$directory = Util::fullDirectoryPath($baseDirectory, $path);
+			$output->outputVerbose("\n\nDirectory: $path\n");
+			$it = new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS);
 	 		$it2 = new \RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $output, $it2, $toProcess);
 		}
@@ -199,10 +213,9 @@ class AnalyzingPhase
 			? array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1))
 			: array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1), $groupSize);
 
-
 		$output->outputVerbose("\n\nAnalyzing ".count($toProcess)." files\n");
 
-		if($config->getProcessCount()>1) {
+		if ($config->getProcessCount() > 1) {
 			return $this->runChildProcesses($config, $output, $toProcess);
 		} else {
 			return $this->phase2($config, $output, $toProcess);
