@@ -44,8 +44,5 @@
   "not-used": [
     "Standard.Unknown.Method",
     "Standard.Param.Count.Excess"
-  ],
-  "plugins": [
-    "plugins/guardrail/ImpossibleInjectionCheck.php"
   ]
 }

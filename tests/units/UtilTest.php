@@ -1,9 +1,12 @@
-<?php namespace BambooHR\Guardrail;
+<?php namespace BambooHR\Guardrail\Tests;
+
+use BambooHR\Guardrail\Util;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class UtilTest
  */
-class UtilTest  extends \PHPUnit_Framework_TestCase {
+class UtilTest  extends TestCase {
 
 	/**
 	 * testConfigDirectoriesAreValid
