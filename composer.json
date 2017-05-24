@@ -1,24 +1,24 @@
 {
-
     "name": "bamboohr/guardrail",
+    "description": "BambooHR's home grown PHP Static Analysis tool",
     "license": "Apache-2.0",
-    "author": [
+    "authors": [
       {
         "name": "Jon Gardiner"
       }
     ],
     "autoload": {
-      "psr-4": {"BambooHR\\Guardrail\\": "src/"}
+        "psr-4": {"BambooHR\\Guardrail\\": "src/"}
     },
     "bin": [ "src/bin/guardrail.php" ],
     "require": {
-      "nikic/php-parser": "^2.0",
-      "webmozart/glob":"4.1.0",
-      "n98/junit-xml":"1.0.0",
-        "webmozart/json": "^1.2"
+        "nikic/php-parser": "^2.0",
+        "webmozart/glob":"^4.1.0",
+        "n98/junit-xml":"^1.0.0",
+        "seld/jsonlint": "^1.6"
     },
     "require-dev": {
-      "phpunit/phpunit": "4.8.*",
-        "bamboohr/phpcs": "^0.1.5"
+        "bamboohr/phpcs": "^0.1.5",
+        "phpunit/phpunit": "^6.1"
     }
 }
