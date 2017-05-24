@@ -100,10 +100,20 @@ class DefinedConstantCheck extends BaseCheck {
 		return isset( $this->reflectedConstants[strval($name)] );
 	}
 
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
+	/**
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
+	 */
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		$name = $node->name;
 		if (!$this->symbolTable->isDefined($name) && !$this->isLanguageConst($name) && !$this->isMagicConstant($name) && !$this->isExtensionConstant($name)) {
-			$this->emitError($fileName, $node, self::TYPE_UNKNOWN_GLOBAL_CONSTANT, "That's not a thing.  Can't find define named \"$name\"");
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT, "That's not a thing.  Can't find define named \"$name\"");
 			return;
 		}
 	}

@@ -7,8 +7,8 @@
 
 namespace BambooHR\Guardrail\Checks;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Scope;
 
 class BacktickOperatorCheck extends BaseCheck
@@ -18,11 +18,17 @@ class BacktickOperatorCheck extends BaseCheck
 	}
 
 	/**
-	 * @param string $fileName
-	 * @param \PhpParser\Node\Stmt\Catch_ $node
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
 	 */
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		$this->incTests();
-		$this->emitError($fileName,$node,self::TYPE_SECURITY_BACKTICK, "Unsafe operator (backtick)");
+		$this->emitError($fileName,$node,ErrorConstants::TYPE_SECURITY_BACKTICK, "Unsafe operator (backtick)");
 	}
 }

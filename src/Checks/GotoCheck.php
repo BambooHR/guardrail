@@ -10,7 +10,7 @@ namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
-use PhpParser\Node\Stmt\Break_;
+use PhpParser\Node\Stmt\ClassLike;
 
 class GotoCheck extends BaseCheck {
 
@@ -18,7 +18,17 @@ class GotoCheck extends BaseCheck {
 		return [ Node\Stmt\Goto_::class ];
 	}
 
-	function run($fileName, $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
-		$this->emitError($fileName, $node, BaseCheck::TYPE_GOTO, "Usage of goto command");
+	/**
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
+	 */
+	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+		$this->emitError($fileName, $node, ErrorConstants::TYPE_GOTO, "Usage of goto command");
 	}
 }
