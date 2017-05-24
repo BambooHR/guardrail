@@ -81,10 +81,15 @@ class Config {
 		if(!$this->configFileName) {
 			throw new InvalidConfigException;
 		}
+		$jsonConfigValid = Util::jsonFileContentIsValid($this->configFileName);
+		if (true !== $jsonConfigValid['success']) {
+			echo $jsonConfigValid['message'] . "\n";
+			throw new InvalidConfigException;
+		}
 
-		$this->basePath=dirname(realpath($this->configFileName))."/";
-		$this->config=json_decode(file_get_contents($this->configFileName),true);
-		if(isset($this->config['emit']) && is_array($this->config['emit'])) {
+		$this->basePath = dirname(realpath($this->configFileName))."/";
+		$this->config = json_decode(file_get_contents($this->configFileName),true);
+		if (isset($this->config['emit']) && is_array($this->config['emit'])) {
 			$this->emitList = $this->config['emit'];
 		}
 

@@ -1,0 +1,48 @@
+{
+  "index": [
+    "app",
+    "vendor",
+    "/usr/share/php"
+  ],
+  "test": [
+    "app/Core",
+    "app/html",
+    "app/includes"
+  ],
+  "ignore":[
+    "**/nusoap.php",
+    "**/migrations/**/*",
+    "**/vendor/**/tests/**/*",
+    "**/vendor/**/Tests/**/*"
+  ],
+  "test-ignore":[
+    "**/nusoap.php",
+    "**/nusoap/**/*",
+    "**/saml/SAML2/**/*",
+    "**/json_encode.php",
+    "**/vendor/**/*"
+  ],
+  "emit":[
+    "BambooHR.Impossible.Inject",
+
+    "Standard.Unknown.Class",
+    "Standard.Unknown.Class.Constant",
+    "Standard.Unknown.Function",
+    "Standard.Unknown.Variable",
+
+    "Standard.Inheritance",
+    "Standard.Inheritance.Php7",
+    "Standard.Inheritance.Unimplemented",
+
+    "Standard.Scope",
+    "Standard.Param.Count",
+    "Standard.Param.Type",
+
+    "Standard.Switch.Break",
+    "Standard.Parse.Error"
+  ],
+  "not-used": [
+    "Standard.Unknown.Method",
+    "Standard.Param.Count.Excess"
+  ]
+}
