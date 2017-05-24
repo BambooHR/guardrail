@@ -12,6 +12,7 @@ use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassLike;
 
 class ConstructorCheck extends BaseCheck {
 	function getCheckNodeTypes() {
@@ -32,10 +33,20 @@ class ConstructorCheck extends BaseCheck {
 		return $found;
 	}
 
-	function run($fileName, $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	/**
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
+	 */
+	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		/** var \PhpParser\Node\Stmt\ClassMethod $node */
 		if (strcasecmp($node->name,"__construct")==0 &&
-			$inside instanceof Node\Stmt\Class_ &&
+			$inside instanceof Class_ &&
 			$inside->extends
 		) {
 			$ob = Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable);
@@ -43,7 +54,7 @@ class ConstructorCheck extends BaseCheck {
 				!$ob->isAbstract() &&
 				!self::containsConstructorCall($node->stmts)
 			) {
-				$this->emitError($fileName, $node, BaseCheck::TYPE_MISSING_CONSTRUCT, "Class " . $inside->name . " overrides __construct, but does not call parent constructor");
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_MISSING_CONSTRUCT, "Class " . $inside->name . " overrides __construct, but does not call parent constructor");
 			}
 		}
 	}

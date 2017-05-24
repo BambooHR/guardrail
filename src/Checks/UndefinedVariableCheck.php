@@ -7,31 +7,37 @@
 
 namespace BambooHR\Guardrail\Checks;
 
+use PhpParser\Node;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 
 class UndefinedVariableCheck extends BaseCheck
 {
 	function getCheckNodeTypes() {
-		return [\PhpParser\Node\Expr\Variable::class];
+		return [Variable::class];
 	}
 
 	/**
-	 * @param string $fileName
-	 * @param \PhpParser\Node\Expr\Variable $node
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
 	 */
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
-		if(
-			$node instanceof \PhpParser\Node\Expr\Variable &&
-			$node->name instanceof \PhpParser\Node\Expr
-		) {
-			$this->emitError($fileName, $node, self::TYPE_VARIABLE_VARIABLE, "Variable variable detected");
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+		if ($node instanceof Variable &&$node->name instanceof Expr) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_VARIABLE, "Variable variable detected");
 		} else if(gettype($node->name)=='string' && $scope && !$scope->isGlobal()) {
 			$name = $name=$node->name;
 			if($name!="GLOBALS" && $name!="_GET" && $name!="_POST" && $name!="_COOKIE" && $name!="_REQUEST" && $name!="this" && $name!="_SERVER" && $name!="_SESSION" && $name!="_FILES" && $name!="http_response_header") {
 				$this->incTests();
 				if($scope->getVarType($name)==Scope::UNDEFINED) {
-					$this->emitError($fileName, $node, self::TYPE_UNKNOWN_VARIABLE, "Undefined variable: $name");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Undefined variable: $name");
 				}
 			}
 		}

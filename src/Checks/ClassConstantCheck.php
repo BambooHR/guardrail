@@ -8,6 +8,7 @@
 namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Checks\BaseCheck;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
@@ -49,7 +50,17 @@ class ClassConstantCheck extends BaseCheck {
 		return false;
 	}
 
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
+	/**
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
+	 */
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			$constantName = strval($node->name);
@@ -62,20 +73,20 @@ class ClassConstantCheck extends BaseCheck {
 				case 'self':
 				case 'static':
 					if(!$inside) {
-						$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't access using self:: outside of a class");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using self:: outside of a class");
 						return;
 					}
 					$name = $inside->namespacedName;
 					break;
 				case 'parent':
 					if(!$inside) {
-						$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't access using parent:: outside of a class");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: outside of a class");
 						return;
 					}
 					if ($inside->extends) {
 						$name = strval($inside->extends);
 					} else {
-						$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Can't access using parent:: in a class with no parent");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: in a class with no parent");
 						return;
 					}
 					break;
@@ -84,12 +95,12 @@ class ClassConstantCheck extends BaseCheck {
 			$this->incTests();
 			$class = $this->symbolTable->getAbstractedClass($name);
 			if (!$class) {
-				$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
+				$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
 				return;
 			}
 
 			if(strcasecmp($constantName,"class")!=0 && !$this->findConstant($class, $constantName)) {
-				$this->emitError($fileName, $node, self::TYPE_UNKNOWN_CLASS_CONSTANT, "Reference to unknown constant $name::$constantName");
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT, "Reference to unknown constant $name::$constantName");
 			}
 		}
 	}

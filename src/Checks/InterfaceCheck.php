@@ -10,11 +10,13 @@ namespace BambooHR\Guardrail\Checks;
 use BambooHR\Guardrail\Abstractions\ClassInterface;
 use BambooHR\Guardrail\Abstractions\ClassMethod;
 use BambooHR\Guardrail\Abstractions\MethodInterface;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Class_;
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
+use BambooHR\Guardrail\Abstractions\Class_ as AbstractedClass_;
 
 class InterfaceCheck extends BaseCheck {
 	function getCheckNodeTypes() {
@@ -74,7 +76,7 @@ class InterfaceCheck extends BaseCheck {
 	}
 
 	protected function implementsMethod( $fileName, Class_ $node, $interfaceMethod) {
-		$current = new \BambooHR\Guardrail\Abstractions\Class_($node);
+		$current = new AbstractedClass_($node);
 		while (true) {
 
 			// Is it directly in the class
@@ -92,10 +94,16 @@ class InterfaceCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param $fileName
-	 * @param \PhpParser\Node\Stmt\Class_ $node
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
 	 */
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 
 		if ($node->implements) {
 			$arr = is_array($node->implements) ? $node->implements : [$node->implements];
@@ -105,7 +113,7 @@ class InterfaceCheck extends BaseCheck {
 				if ($name) {
 					$interface = $this->symbolTable->getAbstractedClass($name);
 					if (!$interface) {
-						$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS,  $node->name . " implements unknown interface " . $name);
+						$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS,  $node->name . " implements unknown interface " . $name);
 					} else {
 						// Don't force abstract classes to implement all methods.
 						if(!$node->isAbstract()) {
@@ -113,7 +121,7 @@ class InterfaceCheck extends BaseCheck {
 								$classMethod = $this->implementsMethod($fileName, $node, $interfaceMethod);
 								if (!$classMethod) {
 									if(!$node->isAbstract()) {
-										$this->emitError($fileName,$node,self::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
+										$this->emitError($fileName,$node,ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
 									}
 								} else {
 									$this->checkMethod(
@@ -128,10 +136,10 @@ class InterfaceCheck extends BaseCheck {
 		}
 
 		if($node->extends) {
-			$class = new \BambooHR\Guardrail\Abstractions\Class_($node);
+			$class = new AbstractedClass_($node);
 			$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 			if(!$parentClass) {
-				$this->emitError($fileName,$node->extends,self::TYPE_UNKNOWN_CLASS, "Unable to find parent ".$node->extends);
+				$this->emitError($fileName,$node->extends,ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent ".$node->extends);
 			}
 			foreach ($class->getMethodNames() as $methodName) {
 				if($methodName!="__construct") {

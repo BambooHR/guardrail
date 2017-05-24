@@ -1,9 +1,12 @@
-<?php namespace BambooHR\Guardrail;
+<?php namespace BambooHR\Guardrail\Tests;
+
+use BambooHR\Guardrail\Util;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class UtilTest
  */
-class UtilTest  extends \PHPUnit_Framework_TestCase {
+class UtilTest  extends TestCase {
 
 	/**
 	 * testConfigDirectoriesAreValid
@@ -115,4 +118,60 @@ class UtilTest  extends \PHPUnit_Framework_TestCase {
 			['/test/', '/somewhere/else', '/somewhere/else'],
 		];
 	}
+
+	/**
+	 * testJsonFileContentIsValid
+	 *
+	 * @param string $file     The file to test
+	 * @param array  $expected The expected results
+	 *
+	 * @return void
+	 * @dataProvider jsonFileData
+	 * @rapid-unit Util:JsonFileValidation:Json files will return an array with success and message of validation status
+	 */
+	public function testJsonFileContentIsValid($file, $expected) {
+		$results = Util::jsonFileContentIsValid($file);
+		$this->assertArrayHasKey('success', $results);
+		$this->assertArrayHasKey('message', $results);
+		$this->assertEquals($expected, $results['success']);
+	}
+
+	/**
+	 * jsonFileData
+	 *
+	 * @return array
+	 */
+	public function jsonFileData() {
+		return [
+			[__DIR__ . '/sampleData/good.json', true],
+			[__DIR__ . '/sampleData/bad.json', false],
+		];
+	}
+
+	/**
+	 * testJsonFileContentIsValidThrowsException
+	 *
+	 * @param string $file     The file to test
+	 *
+	 * @return void
+	 * @expectedException \InvalidArgumentException
+	 * @dataProvider missingJsonFiles
+	 * @rapid-unit Util:JsonFileValidation:Missing files will throw exceptions
+	 */
+	public function testJsonFileContentIsValidThrowsException($file) {
+		Util::jsonFileContentIsValid($file);
+	}
+
+	/**
+	 * missingJsonFiles
+	 *
+	 * @return array
+	 */
+	public function missingJsonFiles() {
+		return [
+			[__DIR__ . '/sampleData/missing.json'],
+			[__DIR__ . '/sampleData/nothingHere.json'],
+		];
+	}
+
 }

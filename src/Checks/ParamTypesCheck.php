@@ -8,6 +8,7 @@
 namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Util;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
@@ -36,26 +37,36 @@ class ParamTypesCheck extends BaseCheck
 		return true;
 	}
 
-	function run($fileName, $method, ClassLike $inside=null, Scope $scope=null) {
-		if(!property_exists($method,'name')) {
+	/**
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
+	 */
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+		if(!property_exists($node,'name')) {
 			$displayName="closure function";
 		} else {
-			$displayName=$method->name;
+			$displayName=$node->name;
 		}
 
-		foreach ($method->params as $index => $param) {
+		foreach ($node->params as $index => $param) {
 			if($param->type) {
 				$name = strval($param->type);
 				if(!$this->isAllowed( $name, $inside )) {
-					$this->emitError($fileName, $method, self::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in parameter $index of $displayName");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in parameter $index of $displayName");
 				}
 			}
 		}
 
-		if($method->returnType) {
-			$returnType = strval($method->returnType);
+		if($node->returnType) {
+			$returnType = strval($node->returnType);
 			if(!$this->isAllowed($returnType, $inside)) {
-				$this->emitError($fileName, $method, self::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 			}
 		}
 	}
