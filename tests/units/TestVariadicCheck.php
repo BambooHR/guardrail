@@ -1,8 +1,13 @@
-<?php
+<?php namespace BambooHR\Guardrail\Tests;
+
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use PhpParser\ParserFactory;
+use PHPUnit\Framework\TestCase;
 
-class TestVariadicCheck extends \PHPUnit_Framework_TestCase {
+/**
+ * Class TestVariadicCheck
+ */
+class TestVariadicCheck extends TestCase {
 
 	/**
 	 * parseText
@@ -22,21 +27,21 @@ class TestVariadicCheck extends \PHPUnit_Framework_TestCase {
 	 * @return void
 	 */
 	public function testMissingBreak() {
-		$code = '<?
+		$code = '<?php
 			if(true) {
 				func_get_args();
 			}
 		';
 
-		$code1 = '<?
+		$code1 = '<?php
 			func_num_args();
 		';
 
-		$code2= '<?
+		$code2= '<?php
 			func_get_arg(1);
 		';
 
-		$code3 = '<?
+		$code3 = '<?php
 			safe_func();
 		';
 
