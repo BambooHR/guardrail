@@ -7,11 +7,9 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-use PhpParser\Node\Expr;
+use PhpParser\Node;
 use PhpParser\Node\Name;
-use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 
@@ -22,21 +20,27 @@ class InstantiationCheck extends BaseCheck
 	}
 
 	/**
-	 * @param $fileName
-	 * @param \PhpParser\Node\Expr\New_ $node
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
 	 */
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {
 			$name = $node->class->toString();
 			if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {
 				$this->incTests();
 				$class = $this->symbolTable->getAbstractedClass($name);
 				if (!$class) {
-					$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "Attempt to instantiate unknown class $name");
+					$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to instantiate unknown class $name");
 					return;
 				}
 				if($class->isDeclaredAbstract()) {
-					$this->emitError($fileName, $node,self::TYPE_SIGNATURE_TYPE,"Attempt to instantiate abstract class $name");
+					$this->emitError($fileName, $node,ErrorConstants::TYPE_SIGNATURE_TYPE,"Attempt to instantiate abstract class $name");
 					return;
 				}
 

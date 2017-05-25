@@ -13,6 +13,7 @@ use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassLike;
 
 class ReturnCheck extends BaseCheck {
 	private $typeInferer;
@@ -26,7 +27,17 @@ class ReturnCheck extends BaseCheck {
 		return [ Node\Stmt\Return_::class ];
 	}
 
-	function run($fileName, $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	/**
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
+	 */
+	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		/** @var Node\Stmt\Return_ $node */
 		$type = $this->typeInferer->inferType($inside, $node->expr, $scope );
 
@@ -46,7 +57,7 @@ class ReturnCheck extends BaseCheck {
 					$msg = "Variable returned from function $functionName()";
 				}
 				$msg.= " must be a $expectedType, returning $type";
-				$this->emitError($fileName, $node, self::TYPE_SIGNATURE_RETURN, $msg );
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg );
 			}
 		}
 	}

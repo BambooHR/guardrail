@@ -9,13 +9,14 @@ use PhpParser\Node;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\Output\OutputInterface;
+use PhpParser\Node\Stmt\ClassLike;
 
 /**
  * Class BaseCheck
  *
  * @package BambooHR\Guardrail\Checks
  */
-abstract class BaseCheck extends BaseCheckConstants {
+abstract class BaseCheck extends ErrorConstants {
 
 	/** @var SymbolTable */
 	protected $symbolTable;
@@ -45,5 +46,15 @@ abstract class BaseCheck extends BaseCheckConstants {
 	 */
 	abstract function getCheckNodeTypes();
 
-	abstract function run($fileName, $node, Node\Stmt\ClassLike $inside=null, Scope $scope=null);
+	/**
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
+	 */
+	abstract public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null);
 }

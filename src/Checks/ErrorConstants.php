@@ -1,18 +1,25 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 /**
- * Class BaseCheckConstants
+ * Class ErrorConstants
  *
  * @package BambooHR\Guardrail\Checks
  */
-class BaseCheckConstants {
+class ErrorConstants {
 
 	const TYPE_ACCESS_VIOLATION = 'Standard.Access.Violation';
 	const TYPE_AUTOLOAD_ERROR = 'Standard.Autoload.Unsafe';
 	const TYPE_BREAK_NUMBER = 'Standard.Switch.BreakMultiple';
 	const TYPE_DEPRECATED_INTERNAL = 'Standard.Deprecated.Internal';
 	const TYPE_DEPRECATED_USER = 'Standard.Deprecated.User';
+	const TYPE_DOC_BLOCK_MISMATCH = 'Standard.DocBlock.Mismatch';
+	const TYPE_DOC_BLOCK_PARAM = 'Standard.DocBlock.Param';
+	const TYPE_DOC_BLOCK_RETURN = 'Standard.DocBlock.Return';
+	const TYPE_DOC_BLOCK_TYPE = 'Standard.DocBlock.Type';
+	const TYPE_DOC_BLOCK_VAR = 'Standard.DocBlock.Variable';
 	const TYPE_EVAL = 'Standard.Security.Eval';
+	const TYPE_GLOBAL_EXPRESSION_ACCESSED = 'Standard.Global.Expression';
+	const TYPE_GLOBAL_STRING_ACCESSED = 'Standard.Global.String';
 	const TYPE_GOTO = 'Standard.Goto';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';
 	const TYPE_INCORRECT_STATIC_CALL = 'Standard.Incorrect.Static';

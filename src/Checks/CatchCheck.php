@@ -7,10 +7,9 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-use BambooHR\Guardrail\Checks\BaseCheck;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 
 class CatchCheck extends BaseCheck
 {
@@ -19,18 +18,23 @@ class CatchCheck extends BaseCheck
 	}
 
 	/**
-	 * @param string $fileName
-	 * @param \PhpParser\Node\Stmt\Catch_ $node
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
 	 */
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
-
+	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		$name = $node->type->toString();
 		if ($this->symbolTable->ignoreType($name)) {
 			return;
 		}
 		$this->incTests();
 		if (!$this->symbolTable->isDefinedClass($name)) {
-			$this->emitError($fileName,$node,self::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
+			$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
 		}
 	}
 }

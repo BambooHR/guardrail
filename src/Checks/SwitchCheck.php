@@ -7,6 +7,7 @@
 
 namespace BambooHR\Guardrail\Checks;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassLike;
@@ -114,10 +115,16 @@ class SwitchCheck extends BaseCheck
 	}
 
 	/**
-	 * @param                              $fileName
-	 * @param \PhpParser\Node\Stmt\Switch_ $node
+	 * run
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return mixed
 	 */
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 
 		if ($node instanceof Switch_) {
 			if (! self::allBranchesExit([$node]) && is_array($node->cases)) {
@@ -137,7 +144,7 @@ class SwitchCheck extends BaseCheck
 							}
 						}
 						if ($nextError) {
-							$this->emitError($fileName, $nextError, self::TYPE_MISSING_BREAK, "Switch case does not end with break statement");
+							$this->emitError($fileName, $nextError, ErrorConstants::TYPE_MISSING_BREAK, "Switch case does not end with break statement");
 							$nextError = null;
 						}
 					}
