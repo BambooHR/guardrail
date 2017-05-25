@@ -1,36 +1,24 @@
-<?php namespace BambooHR\Guardrail\Tests;
+<?php namespace BambooHR\Guardrail\Tests\Checks;
 
+use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Checks\SwitchCheck;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
-use PhpParser\ParserFactory;
-use PHPUnit\Framework\TestCase;
+use BambooHR\Guardrail\Tests\TestSuiteSetup;
 
 /**
  * Class TestSwitchCheck
  */
-class TestSwitchCheck extends TestCase {
-
-	/**
-	 * parseText
-	 *
-	 * @param string $txt The text to parse
-	 *
-	 * @return null|\PhpParser\Node[]
-	 */
-	static function parseText($txt) {
-		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
-		return $parser->parse($txt);
-	}
+class TestSwitchCheck extends TestSuiteSetup {
 
 	/**
 	 * testAllBranchesExit
 	 *
 	 * @return void
+	 * @rapid-unit Check:SwitchCheck:Detects when all branches in a switch contains an safe exit
 	 */
-	public function testAllBranchesExit() {
+	public function testAllBranchesExitReturnsTrue() {
 		$code = '<?php
-
 		switch($detail->type) {
 			case \'date\':   return 1;
 			case \'currency\':
@@ -52,17 +40,15 @@ class TestSwitchCheck extends TestCase {
 			default:       return $detail->type;
 		}
 		';
+		$statements = $this->parseText($code);
+		$this->checkClassNeverEmitsError(SwitchCheck::class, $statements[0]);
 
 		$builder = $this->getMockBuilder(OutputInterface::class);
 		$output = $builder
 			->setMethods(["emitError"])
 			->getMockForAbstractClass();
-
-		$output->expects($this->never())->method("emitError");
-
 		$emptyTable = new InMemorySymbolTable(__DIR__);
-
-		$stmts = self::parseText($code);
+		$stmts = $this->parseText($code);
 		$check = new SwitchCheck($emptyTable, $output);
 		$this->assertTrue($check->allBranchesExit( $stmts ) );
 	}
@@ -71,6 +57,7 @@ class TestSwitchCheck extends TestCase {
 	 * testMissingBreak
 	 *
 	 * @return void
+	 * @rapic-unit Checks:SwitchCheck:Detects when a switch case is missing a break statement
 	 */
 	public function testMissingBreak() {
 		$code = '<?php
@@ -89,39 +76,29 @@ class TestSwitchCheck extends TestCase {
 					// Last case, also not an error
 			}
 		';
-
-
-		$builder = $this->getMockBuilder(OutputInterface::class);
-		$output = $builder
-			->setMethods(["emitError"])
-			->getMockForAbstractClass();
-
-		$output->expects($this->exactly(2))->method("emitError")->withConsecutive(
+		$errorData = [
 			[
 				$this->anything(), $this->anything(),
 				$this->equalTo(5),
-				$this->stringContains(SwitchCheck::TYPE_MISSING_BREAK),
+				$this->stringContains(ErrorConstants::TYPE_MISSING_BREAK),
 				$this->anything()
 			],
 			[
 				$this->anything(), $this->anything(),
 				$this->equalTo(8),
-				$this->stringContains(SwitchCheck::TYPE_MISSING_BREAK),
+				$this->stringContains(ErrorConstants::TYPE_MISSING_BREAK),
 				$this->anything()
 			]
-		);
-
-		$emptyTable = new InMemorySymbolTable(__DIR__);
-
-		$stmts = self::parseText($code);
-		$check = new SwitchCheck($emptyTable, $output);
-		$check->run(__FILE__, $stmts[0], null, null);
+		];
+		$statements = $this->parseText($code);
+		$this->checkClassEmitsErrorExact(SwitchCheck::class, $statements[0], 2, $errorData);
 	}
 
 	/**
 	 * testGoodSwitch
 	 *
 	 * @return void
+	 * @rapid-unit Checks:SwitchCase:Does not emit an error on a valid switch statement
 	 */
 	public function testGoodSwitch() {
 		$code = '<?php
@@ -138,18 +115,7 @@ class TestSwitchCheck extends TestCase {
 					return true;
 			}
 			';
-
-		$builder = $this->getMockBuilder(OutputInterface::class);
-		$output = $builder
-			->setMethods(["emitError"])
-			->getMockForAbstractClass();
-
-		$output->expects($this->never())->method("emitError");
-
-		$emptyTable = new InMemorySymbolTable(__DIR__);
-
-		$stmts = self::parseText($code);
-		$check = new SwitchCheck($emptyTable, $output);
-		$check->run(__FILE__, $stmts[0], null, null);
+		$statements = $this->parseText($code);
+		$this->checkClassNeverEmitsError(SwitchCheck::class, $statements[0]);
 	}
 }
