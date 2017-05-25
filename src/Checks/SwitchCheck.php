@@ -119,30 +119,31 @@ class SwitchCheck extends BaseCheck
 	 */
 	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
 
-		if(!self::allBranchesExit([$node]) && is_array($node->cases)) {
-			$nextError=null;
-			/* Note: this algorithm (intentionally) doesn't output an error in the
-			   final case clause.  A missing break there has no effect.
-			*/
-
-			foreach($node->cases as $index=>$case) {
-				if($nextError) {
-					$comments = $case->getAttribute('comments');
-					if(is_array($comments)) {
-						/** @var \PhpParser\Comment\Doc $comment */
-						foreach ($comments as $comment) {
-							if(preg_match("/fall *through/i", $comment)) {
-								$nextError = null;
+		if ($node instanceof Switch_) {
+			if (! self::allBranchesExit([$node]) && is_array($node->cases)) {
+				$nextError = null;
+				/* Note: this algorithm (intentionally) doesn't output an error in the
+				   final case clause.  A missing break there has no effect.
+				*/
+				foreach ($node->cases as $index => $case) {
+					if ($nextError) {
+						$comments = $case->getAttribute('comments');
+						if (is_array($comments)) {
+							/** @var \PhpParser\Comment\Doc $comment */
+							foreach ($comments as $comment) {
+								if (preg_match("/fall *through/i", $comment)) {
+									$nextError = null;
+								}
 							}
 						}
+						if ($nextError) {
+							$this->emitError($fileName, $nextError, self::TYPE_MISSING_BREAK, "Switch case does not end with break statement");
+							$nextError = null;
+						}
 					}
-					if($nextError) {
-						$this->emitError($fileName, $nextError, self::TYPE_MISSING_BREAK, "Switch case does not end with break statement");
-						$nextError = null;
+					if (! self::endWithBreak($case->stmts) && ! self::allBranchesExit($case->stmts)) {
+						$nextError = $case;
 					}
-				}
-				if (!self::endWithBreak($case->stmts) && !self::allBranchesExit($case->stmts)) {
-					$nextError = $case;
 				}
 			}
 		}
