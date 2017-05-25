@@ -8,7 +8,10 @@
       }
     ],
     "autoload": {
-        "psr-4": {"BambooHR\\Guardrail\\": "src/"}
+        "psr-4": { "BambooHR\\Guardrail\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "BambooHR\\Guardrail\\Tests\\": "tests/" }
     },
     "bin": [ "src/bin/guardrail.php" ],
     "require": {
