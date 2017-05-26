@@ -15,11 +15,11 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Error;
 
 class Config {
-	const MEMORY_SYMBOL_TABLE=1;
-	const SQLITE_SYMBOL_TABLE=2;
+	const MEMORY_SYMBOL_TABLE = 1;
+	const SQLITE_SYMBOL_TABLE = 2;
 
 	/** @var int Number of analyzer processes to run.  If 1 then we don't run a child process.  */
-	private $processes=1;
+	private $processes = 1;
 
 	/** @var string Directory containing the config file.  All files are relative to this directory */
 	private $basePath = "";
@@ -37,10 +37,10 @@ class Config {
 	private $symbolTableFile = "symbol_table.sqlite3";
 
 	/** @var int The number of partitions */
-	private $partitions=1;
+	private $partitions = 1;
 
 	/** @var int Which partition this server is running  */
-	private $partitionNumber=1;
+	private $partitionNumber = 1;
 
 	/** @var string  */
 	private $outputFile = "";
@@ -52,14 +52,14 @@ class Config {
 	private $symbolTable = null;
 
 	/** @var string[]|false The list of files to process */
-	private $fileList=false;
+	private $fileList = false;
 
 
 	/** @var bool  */
-	private $forceIndex=false;
+	private $forceIndex = false;
 
 	/** @var bool  */
-	private $forceAnalysis=false;
+	private $forceAnalysis = false;
 
 	/** @var string */
 	private $configFileName = "";
@@ -74,13 +74,13 @@ class Config {
 	 * @param string $file File to import.
 	 */
 	function __construct($argv) {
-		if(count($argv)<2) {
+		if (count($argv) < 2) {
 			throw new InvalidConfigException;
 		}
 
 		$this->parseArgv($argv);
 
-		if(!$this->configFileName) {
+		if (!$this->configFileName) {
 			throw new InvalidConfigException;
 		}
 		$jsonConfigValid = Util::jsonFileContentIsValid($this->configFileName);
@@ -89,27 +89,27 @@ class Config {
 			throw new InvalidConfigException;
 		}
 
-		$this->basePath = dirname(realpath($this->configFileName))."/";
-		$this->config = json_decode(file_get_contents($this->configFileName),true);
+		$this->basePath = dirname(realpath($this->configFileName)) . "/";
+		$this->config = json_decode(file_get_contents($this->configFileName), true);
 		if (isset($this->config['emit']) && is_array($this->config['emit'])) {
 			$this->emitList = $this->config['emit'];
 		}
 
-		if($this->processes>1) {
+		if ($this->processes > 1) {
 			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 		}
 
-		if($this->preferredTable==self::SQLITE_SYMBOL_TABLE) {
-			if(!file_exists($this->getSymbolTableFile())) {
+		if ($this->preferredTable == self::SQLITE_SYMBOL_TABLE) {
+			if (!file_exists($this->getSymbolTableFile())) {
 				$this->forceIndex = true;
 			}
-			if($this->forceIndex && file_exists($this->getSymbolTableFile())) {
+			if ($this->forceIndex && file_exists($this->getSymbolTableFile())) {
 				unlink($this->getSymbolTableFile());
 			}
 
 			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile(), $this->getBasePath() );
 		} else {
-			$this->forceIndex=true;
+			$this->forceIndex = true;
 			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
 		}
 
@@ -122,11 +122,9 @@ class Config {
 	 */
 	function getPlugins(SymbolTable $index, OutputInterface $output) {
 		$plugins = [];
-		if(isset($this->config['plugins']) && is_array($this->config['plugins'])) {
-			foreach($this->config['plugins'] as $fileName) {
-				$fullPath = strpos($fileName,DIRECTORY_SEPARATOR)===0 ?
-					$fileName :
-					$this->basePath . DIRECTORY_SEPARATOR . $fileName;
+		if (isset($this->config['plugins']) && is_array($this->config['plugins'])) {
+			foreach ($this->config['plugins'] as $fileName) {
+				$fullPath = strpos($fileName, DIRECTORY_SEPARATOR) === 0 ? $fileName : $this->basePath . DIRECTORY_SEPARATOR . $fileName;
 				$function = require $fullPath;
 				$plugins[] = call_user_func( $function, $index, $output );
 			}
@@ -145,7 +143,7 @@ class Config {
 	 * @return void
 	 */
 	function showStandardTests() {
-		echo "The following constants are supported:\n    ".implode("\n    ", ErrorConstants::getConstants())."\n";
+		echo "The following constants are supported:\n    " . implode("\n    ", ErrorConstants::getConstants()) . "\n";
 	}
 
 	/**
@@ -154,33 +152,33 @@ class Config {
 	 * @throws InvalidConfigException
 	 */
 	private function parseArgv(array $argv) {
-		$nextArg=0;
-		for($i=1;$i<count($argv);++$i) {
+		$nextArg = 0;
+		for ($i = 1; $i < count($argv); ++$i) {
 			switch ($argv[$i]) {
 				case '-a':
-					$this->forceAnalysis=true;
+					$this->forceAnalysis = true;
 					break;
 
 				case '-l':
 					$this->showStandardTests();
 					break;
 				case '-i':
-					$this->forceIndex=true;
+					$this->forceIndex = true;
 					break;
 				case '-s':
-					$this->preferredTable=self::SQLITE_SYMBOL_TABLE;
+					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 					break;
 				case '-m':
-					$this->preferredTable=self::MEMORY_SYMBOL_TABLE;
+					$this->preferredTable = self::MEMORY_SYMBOL_TABLE;
 					break;
 				case '-p':
 					$params = [];
-					if ($i+1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$i+1], $params) ) {
+					if ($i + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$i + 1], $params) ) {
 						throw new InvalidConfigException;
 					}
 					++$i;
 					list($wholeMatch, $this->partitionNumber, $this->partitions) = $params;
-					if($this->partitionNumber<1 || $this->partitionNumber>$this->partitions) {
+					if ($this->partitionNumber < 1 || $this->partitionNumber > $this->partitions) {
 						throw new InvalidConfigException;
 					}
 					break;
@@ -193,8 +191,8 @@ class Config {
 					break;
 				case '-f':
 					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
-					$this->preferredTable=self::SQLITE_SYMBOL_TABLE;
-					$this->fileList=[ $argv[++$i] ];
+					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
+					$this->fileList = [ $argv[++$i] ];
 					$this->reindex = true;
 					break;
 				case '-o':
@@ -206,7 +204,7 @@ class Config {
 					throw new InvalidConfigException;
 					break;
 				default:
-					switch($nextArg) {
+					switch ($nextArg) {
 						case 0:
 							$this->configFileName = $argv[$i];
 							break;
@@ -219,7 +217,7 @@ class Config {
 					$nextArg++;
 			}
 		}
-		if($this->preferredTable==self::MEMORY_SYMBOL_TABLE) {
+		if ($this->preferredTable == self::MEMORY_SYMBOL_TABLE) {
 			$this->forceIndex = true;
 		}
 	}
@@ -269,7 +267,7 @@ class Config {
 	}
 
 	private function getSymbolTableFile() {
-		return $this->basePath."/".$this->symbolTableFile;
+		return $this->basePath . "/" . $this->symbolTableFile;
 	}
 
 	function shouldReindex() {

@@ -15,5 +15,5 @@ foreach ([__DIR__ . '/../../../../autoload.php', __DIR__ . '/../../vendor/autolo
 		break;
 	}
 }
-$runner=new CommandLineRunner();
+$runner = new CommandLineRunner();
 $runner->run($_SERVER["argv"]);

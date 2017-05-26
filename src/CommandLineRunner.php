@@ -12,8 +12,7 @@ use BambooHR\Guardrail\Phases\AnalyzingPhase;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
 
-class CommandLineRunner
-{
+class CommandLineRunner {
 
 	function usage() {
 		echo "
@@ -49,29 +48,28 @@ where: -p #/#                 = Define the number of partitions and the current 
 		date_default_timezone_set("UTC");
 
 		try {
-			$config=new Config($argv);
-		}
-		catch(InvalidConfigException $exception) {
+			$config = new Config($argv);
+		} catch (InvalidConfigException $exception) {
 			$this->usage();
 			exit(1);
 		}
 
 		$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
 
-		if($config->shouldIndex()) {
+		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
-			$indexer=new IndexingPhase();
+			$indexer = new IndexingPhase();
 			$indexer->run($config, $output);
 			$output->outputExtraVerbose("\nDone\n\n");
 			//$output->renderResults();
 			exit(0);
 		}
 
-		if($config->shouldAnalyze()) {
+		if ($config->shouldAnalyze()) {
 			$analyzer = new AnalyzingPhase();
 			$output->outputExtraVerbose("Analyzing\n");
 
-			if(!$config->hasFileList()) {
+			if (!$config->hasFileList()) {
 				$exitCode = $analyzer->run($config, $output);
 			} else {
 				$list = $config->getFileList();

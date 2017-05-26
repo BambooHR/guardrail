@@ -35,24 +35,23 @@ class SqliteSymbolTable extends SymbolTable {
 	}
 
 	private function addType($name, $file, $type, $hasTrait=0, $data="") {
-		$sql="INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
+		$sql = "INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
 		try {
 			$this->con->prepare($sql)->execute([strtolower($name), $file, $type, $hasTrait, $data]);
-		}
-		catch(\PDOException $e) {
+		} catch (\PDOException $e) {
 			throw new \Exception("Class $name has already been declared");
 		}
 	}
 
 	function getType($name, $type) {
-		$sql="SELECT file FROM symbol_table WHERE name=? and type=?";
-		$statement=$this->con->prepare($sql);
+		$sql = "SELECT file FROM symbol_table WHERE name=? and type=?";
+		$statement = $this->con->prepare($sql);
 		$statement->execute([strtolower($name), $type]);
 
-		$result=$statement->fetch(\Pdo::FETCH_NUM);
-		if($result) {
+		$result = $statement->fetch(\Pdo::FETCH_NUM);
+		if ($result) {
 			return $this->adjustBasePath($result[0]);
-	 	} else {
+		 } else {
 			return "";
 		}
 	}
@@ -66,10 +65,10 @@ class SqliteSymbolTable extends SymbolTable {
 	function getData($name, $type=self::TYPE_CLASS) {
 		$sql = "SELECT data FROM symbol_table WHERE name=?";
 		$params = [strtolower($name)];
-		if ($type==self::TYPE_FUNCTION) {
+		if ($type == self::TYPE_FUNCTION) {
 			$sql .= " AND type=?";
-			$params[]=$type;
-		} else if($type==self::TYPE_CLASS) {
+			$params[] = $type;
+		} else if ($type == self::TYPE_CLASS) {
 			$sql .= " AND type in (?,?)";
 			$params[] = self::TYPE_CLASS;
 			$params[] = self::TYPE_INTERFACE;
@@ -77,8 +76,8 @@ class SqliteSymbolTable extends SymbolTable {
 		$statement = $this->con->prepare($sql);
 		$statement->execute($params);
 
-		$result=$statement->fetch(\Pdo::FETCH_NUM);
-		if($result) {
+		$result = $statement->fetch(\Pdo::FETCH_NUM);
+		if ($result) {
 			return self::unserializeObject($result[0]);
 		} else {
 			return "";
@@ -92,23 +91,22 @@ class SqliteSymbolTable extends SymbolTable {
 
 
 	function getAbstractedFunction($name) {
-		$ob=$this->cache->get("AFunction:".$name);
-		if(!$ob) {
+		$ob = $this->cache->get("AFunction:" . $name);
+		if (!$ob) {
 			$ob = $this->getData($name, self::TYPE_FUNCTION);
-			if($ob) {
+			if ($ob) {
 				$ob = new \BambooHR\Guardrail\Abstractions\Function_($ob);
-			}  else {
+			} else {
 				try {
 					$refl = new \ReflectionFunction($name);
 					$ob = new \BambooHR\Guardrail\Abstractions\ReflectedFunction($refl);
-				}
-				catch(\ReflectionException $e) {
+				} catch (\ReflectionException $e) {
 					$ob = null;
 				}
 			}
 		}
-		if($ob) {
-			$this->cache->add("AFunction:".$name, $ob);
+		if ($ob) {
+			$this->cache->add("AFunction:" . $name, $ob);
 		}
 		return $ob;
 	}
@@ -129,23 +127,23 @@ class SqliteSymbolTable extends SymbolTable {
 		$clone = $this->stripMethodContents($class);
 		$serializedString = self::serializeObject($clone);
 		$type = $class instanceof Trait_ ? self::TYPE_TRAIT : self::TYPE_CLASS;
-		$sql='UPDATE symbol_table SET data=? WHERE name=? and type=?';
+		$sql = 'UPDATE symbol_table SET data=? WHERE name=? and type=?';
 		$statement = $this->con->prepare($sql);
 		$statement->execute( [ $serializedString, $name, $type] );
 	}
 
 	function removeFileFromIndex($name) {
-		$sql="DELETE FROM symbol_table WHERE file=?";
-		$statement=$this->con->prepare($sql);
+		$sql = "DELETE FROM symbol_table WHERE file=?";
+		$statement = $this->con->prepare($sql);
 		$statement->execute($name);
 	}
 
 	function stripMethodContents(Node\Stmt\ClassLike $class) {
 		// Make a deep copy and then remove implementation code (to save space).
-		$clone=unserialize(serialize($class));
-		foreach($clone->stmts as $index=>&$stmt) {
-			if($stmt instanceof Node\Stmt\ClassMethod) {
-				$stmt->setAttribute("variadic_implementation",VariadicCheckVisitor::isVariadic($stmt->stmts) );
+		$clone = unserialize(serialize($class));
+		foreach ($clone->stmts as $index => &$stmt) {
+			if ($stmt instanceof Node\Stmt\ClassMethod) {
+				$stmt->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic($stmt->stmts) );
 				$stmt->stmts = [];
 			}
 		}
@@ -176,8 +174,8 @@ class SqliteSymbolTable extends SymbolTable {
 
 	function addClass($name, Class_ $class, $file) {
 		$usesTrait = 0;
-		foreach($class->stmts as $stmt) {
-			if($stmt instanceof Node\Stmt\TraitUse) {
+		foreach ($class->stmts as $stmt) {
+			if ($stmt instanceof Node\Stmt\TraitUse) {
 				$usesTrait = 1;
 			}
 		}
@@ -190,9 +188,9 @@ class SqliteSymbolTable extends SymbolTable {
 	 * @return \BambooHR\Guardrail\Abstractions\Class_
 	 */
 	function getAbstractedClass($name) {
-		$cacheName=strtolower($name);
-		$ob=$this->cache->get("AClass:".$cacheName);
-		if(!$ob) {
+		$cacheName = strtolower($name);
+		$ob = $this->cache->get("AClass:" . $cacheName);
+		if (!$ob) {
 			$tmp = $this->getClassOrInterfaceData($name);
 			if ($tmp) {
 				$ob = new \BambooHR\Guardrail\Abstractions\Class_($tmp);
@@ -219,7 +217,7 @@ class SqliteSymbolTable extends SymbolTable {
 		$clone = clone $function;
 		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic( $function->stmts ));
 		$clone->stmts = [];
-		$this->addType($name, $file, self::TYPE_FUNCTION, 0 , self::serializeObject($clone) );
+		$this->addType($name, $file, self::TYPE_FUNCTION, 0, self::serializeObject($clone) );
 	}
 
 	function addTrait($name, Trait_ $trait, $file) {

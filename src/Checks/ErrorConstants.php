@@ -53,7 +53,7 @@ class ErrorConstants {
 		$selfReflection = new \ReflectionClass(self::class);
 		$constants = $selfReflection->getConstants();
 		sort($constants);
-		foreach ($constants as $name=>$value) {
+		foreach ($constants as $name => $value) {
 			$ret[] = $value;
 		}
 		return $ret;

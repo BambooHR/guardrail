@@ -12,8 +12,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 
-class InstanceOfCheck extends BaseCheck
-{
+class InstanceOfCheck extends BaseCheck {
 	function getCheckNodeTypes() {
 		return [\PhpParser\Node\Expr\Instanceof_::class];
 	}
@@ -34,7 +33,7 @@ class InstanceOfCheck extends BaseCheck
 			if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {
 				$this->incTests();
 				if (!$this->symbolTable->isDefinedClass($name)) {
-					$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS, "Instance of references unknown class $name");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Instance of references unknown class $name");
 				}
 			}
 		}

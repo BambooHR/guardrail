@@ -1,20 +1,18 @@
 <?php
 
 /** @phpstub */
-class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAccess
-{
+class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAccess {
 	const BZ2 = "BZ2";
 	const GZ = "GZ";
-	
+
 	/**
 	 * Construct a Phar archive object
 	 *
 	 * @param string $fname
-	 * @param int $flags
+	 * @param int    $flags
 	 * @param string $alias
 	 */
-	public function __construct($fname, $flags = NULL, $alias = NULL)
-	{
+	public function __construct($fname, $flags = null, $alias = null) {
 	}
 
 	/**
@@ -24,8 +22,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void no return value, exception is thrown on failure.
 	 */
-	public function addEmptyDir($dirname)
-	{
+	public function addEmptyDir($dirname) {
 	}
 
 	/**
@@ -36,8 +33,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void no return value, exception is thrown on failure.
 	 */
-	public function addFile($file, $localname = NULL)
-	{
+	public function addFile($file, $localname = null) {
 	}
 
 	/**
@@ -48,8 +44,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void no return value, exception is thrown on failure.
 	 */
-	public function addFromString($localname, $contents)
-	{
+	public function addFromString($localname, $contents) {
 	}
 
 	/**
@@ -57,8 +52,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return string The API version string as in .
 	 */
-	public function apiVersion()
-	{
+	public function apiVersion() {
 	}
 
 	/**
@@ -71,22 +65,20 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *               mapping internal path of file to the full path of the file on the
 	 *               filesystem.
 	 */
-	public function buildFromDirectory($base_dir, $regex = NULL)
-	{
+	public function buildFromDirectory($base_dir, $regex = null) {
 	}
 
 	/**
 	 * Construct a phar archive from an iterator.
 	 *
 	 * @param Iterator $iter
-	 * @param string $base_directory
+	 * @param string   $base_directory
 	 *
 	 * @return array returns an associative array
 	 *               mapping internal path of file to the full path of the file on the
 	 *               filesystem.
 	 */
-	public function buildFromIterator($iter, $base_directory = NULL)
-	{
+	public function buildFromIterator($iter, $base_directory = null) {
 	}
 
 	/**
@@ -96,8 +88,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool true if compression/decompression is available, false if not.
 	 */
-	public function canCompress($type = false)
-	{
+	public function canCompress($type = false) {
 	}
 
 	/**
@@ -105,20 +96,18 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool true if write access is enabled, false if it is disabled.
 	 */
-	public function canWrite()
-	{
+	public function canWrite() {
 	}
 
 	/**
 	 * Compresses the entire Phar archive using Gzip or Bzip2 compression
 	 *
-	 * @param int $compression
+	 * @param int    $compression
 	 * @param string $extension
 	 *
 	 * @return object Returns a ``Phar`` object.
 	 */
-	public function compress($compression, $extension = NULL)
-	{
+	public function compress($compression, $extension = null) {
 	}
 
 	/**
@@ -126,8 +115,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function compressAllFilesBZIP2()
-	{
+	public function compressAllFilesBZIP2() {
 	}
 
 	/**
@@ -135,8 +123,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function compressAllFilesGZ()
-	{
+	public function compressAllFilesGZ() {
 	}
 
 	/**
@@ -146,36 +133,33 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void
 	 */
-	public function compressFiles($compression)
-	{
+	public function compressFiles($compression) {
 	}
 
 	/**
 	 * Convert a phar archive to a non-executable tar or zip file
 	 *
-	 * @param int $format
-	 * @param int $compression
+	 * @param int    $format
+	 * @param int    $compression
 	 * @param string $extension
 	 *
 	 * @return PharData The method returns a ``PharData`` object on success and throws an
 	 *                  exception on failure.
 	 */
-	public function convertToData($format = 9021976, $compression = 9021976, $extension = NULL)
-	{
+	public function convertToData($format = 9021976, $compression = 9021976, $extension = null) {
 	}
 
 	/**
 	 * Convert a phar archive to another executable phar archive file format
 	 *
-	 * @param int $format
-	 * @param int $compression
+	 * @param int    $format
+	 * @param int    $compression
 	 * @param string $extension
 	 *
 	 * @return Phar The method returns a ``Phar`` object on success and throws an
 	 *              exception on failure.
 	 */
-	public function convertToExecutable($format = 9021976, $compression = 9021976, $extension = NULL)
-	{
+	public function convertToExecutable($format = 9021976, $compression = 9021976, $extension = null) {
 	}
 
 	/**
@@ -187,8 +171,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return bool returns true on success, but it is safer to encase method call in a
 	 *              try/catch block and assume success if no exception is thrown.
 	 */
-	public function copy($oldfile, $newfile)
-	{
+	public function copy($oldfile, $newfile) {
 	}
 
 	/**
@@ -197,8 +180,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return int The number of files contained within this phar, or  (the number zero)
 	 *             if none.
 	 */
-	public function count()
-	{
+	public function count() {
 	}
 
 	/**
@@ -211,8 +193,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *                that allows the created Phar archive to work with or without the Phar extension
 	 *                enabled.
 	 */
-	public function createDefaultStub($indexfile = NULL, $webindexfile = NULL)
-	{
+	public function createDefaultStub($indexfile = null, $webindexfile = null) {
 	}
 
 	/**
@@ -222,8 +203,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return object A ``Phar`` object is returned.
 	 */
-	public function decompress($extension = NULL)
-	{
+	public function decompress($extension = null) {
 	}
 
 	/**
@@ -231,8 +211,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function decompressFiles()
-	{
+	public function decompressFiles() {
 	}
 
 	/**
@@ -241,8 +220,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return bool returns true on success, but it is better to check for thrown exception,
 	 *              and assume success if none is thrown.
 	 */
-	public function delMetadata()
-	{
+	public function delMetadata() {
 	}
 
 	/**
@@ -253,22 +231,20 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return bool returns true on success, but it is better to check for thrown exception,
 	 *              and assume success if none is thrown.
 	 */
-	public function delete($entry)
-	{
+	public function delete($entry) {
 	}
 
 	/**
 	 * Extract the contents of a phar archive to a directory
 	 *
-	 * @param string $pathto
+	 * @param string       $pathto
 	 * @param string|array $files
-	 * @param bool $overwrite
+	 * @param bool         $overwrite
 	 *
 	 * @return bool returns true on success, but it is better to check for thrown exception,
 	 *              and assume success if none is thrown.
 	 */
-	public function extractTo($pathto, $files = NULL, $overwrite = false)
-	{
+	public function extractTo($pathto, $files = null, $overwrite = false) {
 	}
 
 	/**
@@ -277,8 +253,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return mixed any PHP variable that can be serialized and is stored as meta-data for the Phar archive,
 	 *               or null if no meta-data is stored.
 	 */
-	public function getMetadata()
-	{
+	public function getMetadata() {
 	}
 
 	/**
@@ -286,8 +261,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool true if the phar has been modified since opened, false if not.
 	 */
-	public function getModified()
-	{
+	public function getModified() {
 	}
 
 	/**
@@ -302,8 +276,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *               INI variable
 	 *               is set to true.
 	 */
-	public function getSignature()
-	{
+	public function getSignature() {
 	}
 
 	/**
@@ -312,8 +285,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return string Returns a string containing the contents of the bootstrap loader (stub) of
 	 *                the current Phar archive.
 	 */
-	public function getStub()
-	{
+	public function getStub() {
 	}
 
 	/**
@@ -324,8 +296,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *               the  extension or the
 	 *               extension.
 	 */
-	public function getSupportedCompression()
-	{
+	public function getSupportedCompression() {
 	}
 
 	/**
@@ -334,8 +305,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return array Returns an array containing any of , ,
 	 *               , , or .
 	 */
-	public function getSupportedSignatures()
-	{
+	public function getSupportedSignatures() {
 	}
 
 	/**
@@ -347,8 +317,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *                its manifest.  See
 	 *                documentation for more information.
 	 */
-	public function getVersion()
-	{
+	public function getVersion() {
 	}
 
 	/**
@@ -356,8 +325,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool Returns true if meta-data has been set, and false if not.
 	 */
-	public function hasMetadata()
-	{
+	public function hasMetadata() {
 	}
 
 	/**
@@ -365,8 +333,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void
 	 */
-	public function interceptFileFuncs()
-	{
+	public function interceptFileFuncs() {
 	}
 
 	/**
@@ -374,8 +341,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool Returns true if the write operations are being buffer, false otherwise.
 	 */
-	public function isBuffering()
-	{
+	public function isBuffering() {
 	}
 
 	/**
@@ -383,8 +349,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return mixed ,  or false
 	 */
-	public function isCompressed()
-	{
+	public function isCompressed() {
 	}
 
 	/**
@@ -394,20 +359,18 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool Returns true if the phar archive matches the file format requested by the parameter
 	 */
-	public function isFileFormat($format)
-	{
+	public function isFileFormat($format) {
 	}
 
 	/**
 	 * Returns whether the given filename is a valid phar filename
 	 *
 	 * @param string $filename
-	 * @param bool $executable
+	 * @param bool   $executable
 	 *
 	 * @return bool Returns true if the filename is valid, false if not.
 	 */
-	public function isValidPharFilename($filename, $executable = true)
-	{
+	public function isValidPharFilename($filename, $executable = true) {
 	}
 
 	/**
@@ -415,8 +378,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool Returns true if the phar archive can be modified
 	 */
-	public function isWritable()
-	{
+	public function isWritable() {
 	}
 
 	/**
@@ -427,20 +389,18 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function loadPhar($filename, $alias = NULL)
-	{
+	public function loadPhar($filename, $alias = null) {
 	}
 
 	/**
 	 * Reads the currently executed file (a phar) and registers its manifest
 	 *
 	 * @param string $alias
-	 * @param int $dataoffset
+	 * @param int    $dataoffset
 	 *
 	 * @return bool
 	 */
-	public function mapPhar($alias = NULL, $dataoffset = false)
-	{
+	public function mapPhar($alias = null, $dataoffset = false) {
 	}
 
 	/**
@@ -451,8 +411,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void No return.   is thrown on failure.
 	 */
-	public function mount($pharpath, $externalpath)
-	{
+	public function mount($pharpath, $externalpath) {
 	}
 
 	/**
@@ -462,8 +421,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void No return.
 	 */
-	public function mungServer($munglist)
-	{
+	public function mungServer($munglist) {
 	}
 
 	/**
@@ -473,8 +431,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool Returns true if the file exists within the phar, or false if not.
 	 */
-	public function offsetExists($offset)
-	{
+	public function offsetExists($offset) {
 	}
 
 	/**
@@ -485,8 +442,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @return int A ``PharFileInfo`` object is returned that can be used to
 	 *             iterate over a file's contents or to retrieve information about the current file.
 	 */
-	public function offsetGet($offset)
-	{
+	public function offsetGet($offset) {
 	}
 
 	/**
@@ -497,8 +453,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void No return values.
 	 */
-	public function offsetSet($offset, $value)
-	{
+	public function offsetSet($offset, $value) {
 	}
 
 	/**
@@ -508,8 +463,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function offsetUnset($offset)
-	{
+	public function offsetUnset($offset) {
 	}
 
 	/**
@@ -519,8 +473,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return string Returns the filename if valid, empty string otherwise.
 	 */
-	public static function running($retphar = true)
-	{
+	public static function running($retphar = true) {
 	}
 
 	/**
@@ -530,8 +483,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function setAlias($alias)
-	{
+	public function setAlias($alias) {
 	}
 
 	/**
@@ -542,8 +494,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function setDefaultStub($index = NULL, $webindex = NULL)
-	{
+	public function setDefaultStub($index = null, $webindex = null) {
 	}
 
 	/**
@@ -553,20 +504,18 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void
 	 */
-	public function setMetadata($metadata)
-	{
+	public function setMetadata($metadata) {
 	}
 
 	/**
 	 * set the signature algorithm for a phar and apply it.
 	 *
-	 * @param int $sigtype
+	 * @param int    $sigtype
 	 * @param string $privatekey
 	 *
 	 * @return void
 	 */
-	public function setSignatureAlgorithm($sigtype, $privatekey = NULL)
-	{
+	public function setSignatureAlgorithm($sigtype, $privatekey = null) {
 	}
 
 	/**
@@ -576,8 +525,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function setStub($stub)
-	{
+	public function setStub($stub) {
 	}
 
 	/**
@@ -585,8 +533,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void
 	 */
-	public function startBuffering()
-	{
+	public function startBuffering() {
 	}
 
 	/**
@@ -594,8 +541,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return void
 	 */
-	public function stopBuffering()
-	{
+	public function stopBuffering() {
 	}
 
 	/**
@@ -603,8 +549,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function uncompressAllFiles()
-	{
+	public function uncompressAllFiles() {
 	}
 
 	/**
@@ -614,8 +559,7 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 *
 	 * @return bool
 	 */
-	public function unlinkArchive($archive)
-	{
+	public function unlinkArchive($archive) {
 	}
 
 	/**
@@ -624,12 +568,11 @@ class Phar extends \RecursiveDirectoryIterator implements \Countable, \ArrayAcce
 	 * @param string $alias
 	 * @param string $index
 	 * @param string $f404
-	 * @param array $mimetypes
-	 * @param array $rewrites
+	 * @param array  $mimetypes
+	 * @param array  $rewrites
 	 *
 	 * @return void
 	 */
-	public function webPhar($alias = NULL, $index = 'index.php', $f404 = NULL, $mimetypes = array(), $rewrites = array())
-	{
+	public function webPhar($alias = null, $index = 'index.php', $f404 = null, $mimetypes = array(), $rewrites = array()) {
 	}
 }

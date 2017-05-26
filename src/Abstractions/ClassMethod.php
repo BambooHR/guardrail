@@ -21,7 +21,7 @@ class ClassMethod implements MethodInterface {
 
 	function isDeprecated() {
 		$docBlock = $this->method->getDocComment();
-		if(strpos($docBlock, "@deprecated")!==false) {
+		if (strpos($docBlock, "@deprecated") !== false) {
 			return true;
 		}
 	}
@@ -46,7 +46,7 @@ class ClassMethod implements MethodInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
-			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default!=null, $param->byRef);
+			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default != null, $param->byRef);
 		}
 		return $ret;
 	}
@@ -76,12 +76,12 @@ class ClassMethod implements MethodInterface {
 	}
 
 	function isVariadic() {
-		foreach($this->method->getParams() as $param) {
-			if($param->variadic) {
+		foreach ($this->method->getParams() as $param) {
+			if ($param->variadic) {
 				return true;
 			}
 		}
-		if($this->method->getAttribute("variadic_implementation")) {
+		if ($this->method->getAttribute("variadic_implementation")) {
 			return true;
 		}
 		return false;

@@ -1,115 +1,113 @@
 <?php
 
 /** @phpstub */
-class PDO
-{
-	const ATTR_AUTOCOMMIT = NULL;
-	const ATTR_CASE = NULL;
-	const ATTR_CLIENT_VERSION = NULL;
-	const ATTR_CONNECTION_STATUS = NULL;
-	const ATTR_CURSOR = NULL;
-	const ATTR_CURSOR_NAME = NULL;
-	const ATTR_DEFAULT_FETCH_MODE = NULL;
-	const ATTR_DRIVER_NAME = NULL;
-	const ATTR_EMULATE_PREPARES = NULL;
-	const ATTR_ERRMODE = NULL;
-	const ATTR_FETCH_CATALOG_NAMES = NULL;
-	const ATTR_FETCH_TABLE_NAMES = NULL;
-	const ATTR_MAX_COLUMN_LEN = NULL;
-	const ATTR_ORACLE_NULLS = NULL;
-	const ATTR_PERSISTENT = NULL;
-	const ATTR_PREFETCH = NULL;
-	const ATTR_SERVER_INFO = NULL;
-	const ATTR_SERVER_VERSION = NULL;
-	const ATTR_STATEMENT_CLASS = NULL;
-	const ATTR_STRINGIFY_FETCHES = NULL;
-	const ATTR_TIMEOUT = NULL;
-	const CASE_LOWER = NULL;
-	const CASE_NATURAL = NULL;
-	const CASE_UPPER = NULL;
-	const CURSOR_FWDONLY = NULL;
-	const CURSOR_SCROLL = NULL;
-	const ERR_NONE = NULL;
-	const ERRMODE_EXCEPTION = NULL;
-	const ERRMODE_SILENT = NULL;
-	const ERRMODE_WARNING = NULL;
-	const FB_ATTR_DATE_FORMAT = NULL;
-	const FB_ATTR_TIME_FORMAT = NULL;
-	const FB_ATTR_TIMESTAMP_FORMAT = NULL;
-	const FETCH_ASSOC = NULL;
-	const FETCH_BOTH = NULL;
-	const FETCH_BOUND = NULL;
-	const FETCH_CLASS = NULL;
-	const FETCH_CLASSTYPE = NULL;
-	const FETCH_COLUMN = NULL;
-	const FETCH_FUNC = NULL;
-	const FETCH_GROUP = NULL;
-	const FETCH_INTO = NULL;
-	const FETCH_KEY_PAIR = NULL;
-	const FETCH_LAZY = NULL;
-	const FETCH_NAMED = NULL;
-	const FETCH_NUM = NULL;
-	const FETCH_OBJ = NULL;
-	const FETCH_ORI_ABS = NULL;
-	const FETCH_ORI_FIRST = NULL;
-	const FETCH_ORI_LAST = NULL;
-	const FETCH_ORI_NEXT = NULL;
-	const FETCH_ORI_PRIOR = NULL;
-	const FETCH_ORI_REL = NULL;
-	const FETCH_PROPS_LATE = NULL;
-	const FETCH_SERIALIZE = NULL;
-	const FETCH_UNIQUE = NULL;
-	const MYSQL_ATTR_CIPHER = NULL;
-	const MYSQL_ATTR_COMPRESS = NULL;
-	const MYSQL_ATTR_DIRECT_QUERY = NULL;
-	const MYSQL_ATTR_FOUND_ROWS = NULL;
-	const MYSQL_ATTR_IGNORE_SPACE = NULL;
-	const MYSQL_ATTR_INIT_COMMAND = NULL;
-	const MYSQL_ATTR_KEY = NULL;
-	const MYSQL_ATTR_LOCAL_INFILE = NULL;
-	const MYSQL_ATTR_MAX_BUFFER_SIZE = NULL;
-	const MYSQL_ATTR_READ_DEFAULT_FILE = NULL;
-	const MYSQL_ATTR_READ_DEFAULT_GROUP = NULL;
-	const MYSQL_ATTR_SSL_CA = NULL;
-	const MYSQL_ATTR_SSL_CAPATH = NULL;
-	const MYSQL_ATTR_SSL_CERT = NULL;
-	const MYSQL_ATTR_USE_BUFFERED_QUERY = NULL;
-	const NULL_EMPTY_STRING = NULL;
-	const NULL_NATURAL = NULL;
-	const NULL_TO_STRING = NULL;
-	const PARAM_BOOL = NULL;
-	const PARAM_EVT_ALLOC = NULL;
-	const PARAM_EVT_EXEC_POST = NULL;
-	const PARAM_EVT_EXEC_PRE = NULL;
-	const PARAM_EVT_FETCH_POST = NULL;
-	const PARAM_EVT_FETCH_PRE = NULL;
-	const PARAM_EVT_FREE = NULL;
-	const PARAM_EVT_NORMALIZE = NULL;
-	const PARAM_INPUT_OUTPUT = NULL;
-	const PARAM_INT = NULL;
-	const PARAM_LOB = NULL;
-	const PARAM_NULL = NULL;
-	const PARAM_STMT = NULL;
-	const PARAM_STR = NULL;
-	const SQLSRV_ATTR_DIRECT_QUERY = NULL;
-	const SQLSRV_ATTR_QUERY_TIMEOUT = NULL;
-	const SQLSRV_ENCODING_BINARY = NULL;
-	const SQLSRV_ENCODING_DEFAULT = NULL;
-	const SQLSRV_ENCODING_SYSTEM = NULL;
-	const SQLSRV_ENCODING_UTF8 = NULL;
-	const SQLSRV_TXN_READ_COMMITTED = NULL;
-	const SQLSRV_TXN_READ_UNCOMMITTED = NULL;
-	const SQLSRV_TXN_REPEATABLE_READ = NULL;
-	const SQLSRV_TXN_SERIALIZABLE = NULL;
-	const SQLSRV_TXN_SNAPSHOT = NULL;
+class PDO {
+	const ATTR_AUTOCOMMIT = null;
+	const ATTR_CASE = null;
+	const ATTR_CLIENT_VERSION = null;
+	const ATTR_CONNECTION_STATUS = null;
+	const ATTR_CURSOR = null;
+	const ATTR_CURSOR_NAME = null;
+	const ATTR_DEFAULT_FETCH_MODE = null;
+	const ATTR_DRIVER_NAME = null;
+	const ATTR_EMULATE_PREPARES = null;
+	const ATTR_ERRMODE = null;
+	const ATTR_FETCH_CATALOG_NAMES = null;
+	const ATTR_FETCH_TABLE_NAMES = null;
+	const ATTR_MAX_COLUMN_LEN = null;
+	const ATTR_ORACLE_NULLS = null;
+	const ATTR_PERSISTENT = null;
+	const ATTR_PREFETCH = null;
+	const ATTR_SERVER_INFO = null;
+	const ATTR_SERVER_VERSION = null;
+	const ATTR_STATEMENT_CLASS = null;
+	const ATTR_STRINGIFY_FETCHES = null;
+	const ATTR_TIMEOUT = null;
+	const CASE_LOWER = null;
+	const CASE_NATURAL = null;
+	const CASE_UPPER = null;
+	const CURSOR_FWDONLY = null;
+	const CURSOR_SCROLL = null;
+	const ERR_NONE = null;
+	const ERRMODE_EXCEPTION = null;
+	const ERRMODE_SILENT = null;
+	const ERRMODE_WARNING = null;
+	const FB_ATTR_DATE_FORMAT = null;
+	const FB_ATTR_TIME_FORMAT = null;
+	const FB_ATTR_TIMESTAMP_FORMAT = null;
+	const FETCH_ASSOC = null;
+	const FETCH_BOTH = null;
+	const FETCH_BOUND = null;
+	const FETCH_CLASS = null;
+	const FETCH_CLASSTYPE = null;
+	const FETCH_COLUMN = null;
+	const FETCH_FUNC = null;
+	const FETCH_GROUP = null;
+	const FETCH_INTO = null;
+	const FETCH_KEY_PAIR = null;
+	const FETCH_LAZY = null;
+	const FETCH_NAMED = null;
+	const FETCH_NUM = null;
+	const FETCH_OBJ = null;
+	const FETCH_ORI_ABS = null;
+	const FETCH_ORI_FIRST = null;
+	const FETCH_ORI_LAST = null;
+	const FETCH_ORI_NEXT = null;
+	const FETCH_ORI_PRIOR = null;
+	const FETCH_ORI_REL = null;
+	const FETCH_PROPS_LATE = null;
+	const FETCH_SERIALIZE = null;
+	const FETCH_UNIQUE = null;
+	const MYSQL_ATTR_CIPHER = null;
+	const MYSQL_ATTR_COMPRESS = null;
+	const MYSQL_ATTR_DIRECT_QUERY = null;
+	const MYSQL_ATTR_FOUND_ROWS = null;
+	const MYSQL_ATTR_IGNORE_SPACE = null;
+	const MYSQL_ATTR_INIT_COMMAND = null;
+	const MYSQL_ATTR_KEY = null;
+	const MYSQL_ATTR_LOCAL_INFILE = null;
+	const MYSQL_ATTR_MAX_BUFFER_SIZE = null;
+	const MYSQL_ATTR_READ_DEFAULT_FILE = null;
+	const MYSQL_ATTR_READ_DEFAULT_GROUP = null;
+	const MYSQL_ATTR_SSL_CA = null;
+	const MYSQL_ATTR_SSL_CAPATH = null;
+	const MYSQL_ATTR_SSL_CERT = null;
+	const MYSQL_ATTR_USE_BUFFERED_QUERY = null;
+	const NULL_EMPTY_STRING = null;
+	const NULL_NATURAL = null;
+	const NULL_TO_STRING = null;
+	const PARAM_BOOL = null;
+	const PARAM_EVT_ALLOC = null;
+	const PARAM_EVT_EXEC_POST = null;
+	const PARAM_EVT_EXEC_PRE = null;
+	const PARAM_EVT_FETCH_POST = null;
+	const PARAM_EVT_FETCH_PRE = null;
+	const PARAM_EVT_FREE = null;
+	const PARAM_EVT_NORMALIZE = null;
+	const PARAM_INPUT_OUTPUT = null;
+	const PARAM_INT = null;
+	const PARAM_LOB = null;
+	const PARAM_NULL = null;
+	const PARAM_STMT = null;
+	const PARAM_STR = null;
+	const SQLSRV_ATTR_DIRECT_QUERY = null;
+	const SQLSRV_ATTR_QUERY_TIMEOUT = null;
+	const SQLSRV_ENCODING_BINARY = null;
+	const SQLSRV_ENCODING_DEFAULT = null;
+	const SQLSRV_ENCODING_SYSTEM = null;
+	const SQLSRV_ENCODING_UTF8 = null;
+	const SQLSRV_TXN_READ_COMMITTED = null;
+	const SQLSRV_TXN_READ_UNCOMMITTED = null;
+	const SQLSRV_TXN_REPEATABLE_READ = null;
+	const SQLSRV_TXN_SERIALIZABLE = null;
+	const SQLSRV_TXN_SNAPSHOT = null;
 
 	/**
 	 *
 	Creates a PDO instance representing a connection to a database
 
 	 */
-	public function __construct()
-	{
+	public function __construct() {
 	}
 
 	/**
@@ -119,8 +117,7 @@ class PDO
 	 *
 	 * @return bool
 	 */
-	public function beginTransaction()
-	{
+	public function beginTransaction() {
 	}
 
 	/**
@@ -130,21 +127,19 @@ class PDO
 	 *
 	 * @return bool
 	 */
-	public function commit()
-	{
+	public function commit() {
 	}
 
 	/**
 	 * Get the requested schema information
 	 *
-	 * @param int $schema_type
+	 * @param int    $schema_type
 	 * @param string $table_name
 	 * @param string $col_name
 	 *
 	 * @return array Array containing the schema information, when process is successful;
 	 */
-	public function cubrid_schema($schema_type, $table_name = NULL, $col_name = NULL)
-	{
+	public function cubrid_schema($schema_type, $table_name = null, $col_name = null) {
 	}
 
 	/**
@@ -162,8 +157,7 @@ class PDO
 	 *               if you're using the ODBC driver) itself.  The subclass value '000' in any
 	 *               class indicates that there is no subclass for that SQLSTATE.
 	 */
-	public function errorCode()
-	{
+	public function errorCode() {
 	}
 
 	/**
@@ -175,8 +169,7 @@ class PDO
 	 *               about the last operation performed by this database handle. The array
 	 *               consists of the following fields:
 	 */
-	public function errorInfo()
-	{
+	public function errorInfo() {
 	}
 
 	/**
@@ -190,8 +183,7 @@ class PDO
 	 *             or deleted by the SQL statement you issued. If no rows were affected,
 	 *             returns .
 	 */
-	public function exec($statement)
-	{
+	public function exec($statement) {
 	}
 
 	/**
@@ -204,8 +196,7 @@ class PDO
 	 * @return mixed A successful call returns the value of the requested PDO attribute.
 	 *               An unsuccessful call returns .
 	 */
-	public function getAttribute($attribute)
-	{
+	public function getAttribute($attribute) {
 	}
 
 	/**
@@ -216,8 +207,7 @@ class PDO
 	 * @return array returns an array of PDO driver names. If
 	 *               no drivers are available, it returns an empty array.
 	 */
-	public function getAvailableDrivers()
-	{
+	public function getAvailableDrivers() {
 	}
 
 	/**
@@ -227,8 +217,7 @@ class PDO
 	 *
 	 * @return bool Returns true if a transaction is currently active, and false if not.
 	 */
-	public function inTransaction()
-	{
+	public function inTransaction() {
 	}
 
 	/**
@@ -243,8 +232,7 @@ class PDO
 	 *                string representing the row ID of the last row that was inserted into
 	 *                the database.
 	 */
-	public function lastInsertId($name = NULL)
-	{
+	public function lastInsertId($name = null) {
 	}
 
 	/**
@@ -253,8 +241,7 @@ class PDO
 	 * @return string Returns the OID of the newly created large object on success, or false
 	 *                on failure.
 	 */
-	public function pgsqlLOBCreate()
-	{
+	public function pgsqlLOBCreate() {
 	}
 
 	/**
@@ -265,8 +252,7 @@ class PDO
 	 *
 	 * @return resource Returns a stream resource on success.
 	 */
-	public function pgsqlLOBOpen($oid, $mode = 'rb')
-	{
+	public function pgsqlLOBOpen($oid, $mode = 'rb') {
 	}
 
 	/**
@@ -276,8 +262,7 @@ class PDO
 	 *
 	 * @return bool
 	 */
-	public function pgsqlLOBUnlink($oid)
-	{
+	public function pgsqlLOBUnlink($oid) {
 	}
 
 	/**
@@ -286,7 +271,7 @@ class PDO
 
 	 *
 	 * @param string $statement
-	 * @param array $driver_options
+	 * @param array  $driver_options
 	 *
 	 * @return PDOStatement If the database server successfully prepares the statement,
 	 *                      returns a
@@ -295,8 +280,7 @@ class PDO
 	 *                      returns false or emits
 	 *                      ``PDOException`` (depending on ).
 	 */
-	public function prepare($statement, $driver_options = array())
-	{
+	public function prepare($statement, $driver_options = array()) {
 	}
 
 	/**
@@ -306,22 +290,21 @@ class PDO
 	 *
 	 * @param string $statement
 	 * @param string $statement
-	 * @param int $PDO::FETCH_COLUMN
-	 * @param int $colno
+	 * @param int    $PDO::FETCH_COLUMN
+	 * @param int    $colno
 	 * @param string $statement
-	 * @param int $PDO::FETCH_CLASS
+	 * @param int    $PDO::FETCH_CLASS
 	 * @param string $classname
-	 * @param array $ctorargs
+	 * @param array  $ctorargs
 	 * @param string $statement
-	 * @param int $PDO::FETCH_INTO
+	 * @param int    $PDO::FETCH_INTO
 	 * @param object $object
 	 *
 	 * @return PDOStatement returns a PDOStatement object, or false
 	 *                      on failure.
 	 */
-	public function query($statement, $statement, $pdoFetchColumn, $colno, $statement, $pdoFetchClass, $classname, $ctorargs, $statement, $pdoFetchInto, $object)
-    {
-    }
+	public function query($statement, $statement, $pdoFetchColumn, $colno, $statement, $pdoFetchClass, $classname, $ctorargs, $statement, $pdoFetchInto, $object) {
+	}
 
 /**
  *
@@ -329,14 +312,13 @@ Quotes a string for use in a query.
 
  *
  * @param string $string
- * @param int $parameter_type
+ * @param int    $parameter_type
  *
  * @return string Returns a quoted string that is theoretically safe to pass into an
  *                SQL statement.  Returns false if the driver does not support quoting in
  *                this way.
  */
-public function quote($string, $parameter_type = false)
-{
+public function quote($string, $parameter_type = false) {
 }
 
 /**
@@ -346,8 +328,7 @@ Rolls back a transaction
  *
  * @return bool
  */
-public function rollBack()
-{
+public function rollBack() {
 }
 
 /**
@@ -355,13 +336,12 @@ public function rollBack()
 Set an attribute
 
  *
- * @param int $attribute
+ * @param int   $attribute
  * @param mixed $value
  *
  * @return bool
  */
-public function setAttribute($attribute, $value)
-{
+public function setAttribute($attribute, $value) {
 }
 
 /**
@@ -369,15 +349,14 @@ public function setAttribute($attribute, $value)
 Registers an aggregating User Defined Function for use in SQL statements
 
  *
- * @param string $function_name
+ * @param string   $function_name
  * @param callable $step_func
  * @param callable $finalize_func
- * @param int $num_args
+ * @param int      $num_args
  *
  * @return bool
  */
-public function sqliteCreateAggregate($function_name, $step_func, $finalize_func, $num_args = NULL)
-{
+public function sqliteCreateAggregate($function_name, $step_func, $finalize_func, $num_args = null) {
 }
 
 /**
@@ -385,13 +364,12 @@ public function sqliteCreateAggregate($function_name, $step_func, $finalize_func
 Registers a User Defined Function for use in SQL statements
 
  *
- * @param string $function_name
+ * @param string   $function_name
  * @param callable $callback
- * @param int $num_args
+ * @param int      $num_args
  *
  * @return bool
  */
-public function sqliteCreateFunction($function_name, $callback, $num_args = NULL)
-{
+public function sqliteCreateFunction($function_name, $callback, $num_args = null) {
 }
 }

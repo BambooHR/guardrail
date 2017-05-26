@@ -17,36 +17,36 @@ namespace BambooHR\Guardrail;
 class ObjectCache {
 
 	private $objects;
-	private $objectCount=0;
-	private $maxObjects=0;
+	private $objectCount = 0;
+	private $maxObjects = 0;
 
 	function __construct($size=500) {
-		$this->objects=[];
-		$this->objectCount=0;
-		$this->maxObjects=$size;
+		$this->objects = [];
+		$this->objectCount = 0;
+		$this->maxObjects = $size;
 	}
 
 	function add($key,$value) {
-		if(!isset($this->objects[$key])) {
-			if($this->objectCount==$this->maxObjects) {
+		if (!isset($this->objects[$key])) {
+			if ($this->objectCount == $this->maxObjects) {
 				$this->removeLru();
 			}
 			$this->objectCount++;
 		} else {
 			unset($this->objects[$key]);
 		}
-		$this->objects[$key]=$value;
+		$this->objects[$key] = $value;
 	}
 
 	function get($key) {
-		static $hits=0;
-		static $misses=0;
+		static $hits = 0;
+		static $misses = 0;
 
-		if(isset($this->objects[$key])) {
-			$value=$this->objects[$key];
+		if (isset($this->objects[$key])) {
+			$value = $this->objects[$key];
 			// Remove the key from the current position, and re-add it as the newest item.
 			unset($this->objects[$key]);
-			$this->objects[$key]=$value;
+			$this->objects[$key] = $value;
 			$hits++;
 			//printf(" %.1f ($hits/$misses)", $hits/($hits+$misses)*100);
 			return $value;

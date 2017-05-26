@@ -30,7 +30,7 @@ class BreakCheck extends BaseCheck {
 	 * @return mixed
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		if ($node->num!=null) {
+		if ($node->num != null) {
 			$name = $node instanceof Break_ ? "break" : "continue";
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_BREAK_NUMBER, "Usage of unsafe \"$name [expression]\" form");
 		}

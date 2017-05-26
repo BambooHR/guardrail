@@ -1,7 +1,7 @@
 <?php
 
 class Exception {
-	function __construct($message="", $code=0, $previous=NULL) { }
+	function __construct($message="", $code=0, $previous=null) { }
 	function getMessage() { }
 	function getPrevious() { }
 	function getCode() { }
@@ -9,5 +9,6 @@ class Exception {
 	function getLine() { }
 	function getTrace() { }
 	function getTraceAsString() { }
-	function __toString() { return ""; }
+	function __toString() {
+ return ""; }
 }
