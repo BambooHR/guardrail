@@ -68,7 +68,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new \BambooHR\Guardrail\Checks\ConstructorCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\GotoCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\ReturnCheck($this->index, $output),
-			new \BambooHR\Guardrail\Checks\StaticPropertyFetch($this->index, $output)
+			new \BambooHR\Guardrail\Checks\StaticPropertyFetch($this->index, $output),
+			new \BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck($this->index, $output),
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );

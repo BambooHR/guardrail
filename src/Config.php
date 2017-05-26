@@ -8,9 +8,11 @@
 namespace BambooHR\Guardrail;
 
 use BambooHR\Guardrail\Checks\BaseCheck;
+use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use PhpParser\Error;
 
 class Config {
 	const MEMORY_SYMBOL_TABLE=1;
@@ -140,6 +142,13 @@ class Config {
 	}
 
 	/**
+	 * @return void
+	 */
+	function showStandardTests() {
+		echo "The following constants are supported:\n    ".implode("\n    ", ErrorConstants::getConstants())."\n";
+	}
+
+	/**
 	 * @param array $argv
 	 * @return array
 	 * @throws InvalidConfigException
@@ -150,6 +159,10 @@ class Config {
 			switch ($argv[$i]) {
 				case '-a':
 					$this->forceAnalysis=true;
+					break;
+
+				case '-l':
+					$this->showStandardTests();
 					break;
 				case '-i':
 					$this->forceIndex=true;

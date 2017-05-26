@@ -44,4 +44,18 @@ class ErrorConstants {
 	const TYPE_UNKNOWN_VARIABLE = 'Standard.Unknown.Variable';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
+
+	/**
+	 * @return string[]
+	 */
+	static function getConstants() {
+		$ret = [];
+		$selfReflection = new \ReflectionClass(self::class);
+		$constants = $selfReflection->getConstants();
+		sort($constants);
+		foreach ($constants as $name=>$value) {
+			$ret[] = $value;
+		}
+		return $ret;
+	}
 }

@@ -56,6 +56,26 @@ class XUnitOutput implements OutputInterface {
 		//$this->suite->addTestCase();
 	}
 
+	function getTypeCounts() {
+		$count = [];
+		$failures = $this->doc->getElementsByTagName("failure");
+		foreach($failures as $failure) {
+			$type = $failure->getAttribute('type');
+			$count[ $type ] = isset( $count[$type] ) ? $count[$type]+1 : 1;
+		}
+		return $count;
+	}
+
+	static function emitPatternMatches($name, $pattern) {
+		if(substr($pattern, -2)=='.*') {
+			$start = substr($pattern, 0, -2);
+			return (strpos($name, $start)===0);
+		} else {
+			return $name==$pattern;
+		}
+	}
+
+
 	function shouldEmit($fileName, $name) {
 		if(isset($this->silenced[$name]) && $this->silenced[$name]>0) {
 			return false;
@@ -65,7 +85,7 @@ class XUnitOutput implements OutputInterface {
 				is_array($entry) &&
 				isset($entry['glob']) &&
 				isset($entry['emit']) &&
-				$entry['emit'] == $name &&
+				self::emitPatternMatches($name, $entry['emit']) &&
 				Glob::match( "/".$fileName, "/".$entry['glob'])
 			) {
 			 	if(isset($entry['ignore'])) {
@@ -73,7 +93,7 @@ class XUnitOutput implements OutputInterface {
 				} else {
 			 		return true;
 				}
-			} else if(is_string($entry) && $entry == $name) {
+			} else if(is_string($entry) && self::emitPatternMatches($name, $entry)) {
 				 return true;
 			}
 		}
@@ -160,6 +180,7 @@ class XUnitOutput implements OutputInterface {
 		} else {
 			echo $this->doc->saveXml();
 		}
+		//print_r($this->getTypeCounts());
 	}
 
 	function getErrorsByFile() {
