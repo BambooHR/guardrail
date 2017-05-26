@@ -23,7 +23,7 @@ class Function_ implements FunctionLikeInterface {
 
 	function isDeprecated() {
 		$docBlock = $this->function->getDocComment();
-		if(strpos($docBlock,"@deprecated")!==false) {
+		if (strpos($docBlock, "@deprecated") !== false) {
 			return true;
 		}
 		return false;
@@ -50,7 +50,7 @@ class Function_ implements FunctionLikeInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->function->params as $param) {
-			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default!=null, $param->byRef);
+			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default != null, $param->byRef);
 		}
 		return $ret;
 	}
@@ -70,12 +70,12 @@ class Function_ implements FunctionLikeInterface {
 
 
 	function isVariadic() {
-		foreach($this->function->getParams() as $param) {
-			if($param->variadic) {
+		foreach ($this->function->getParams() as $param) {
+			if ($param->variadic) {
 				return true;
 			}
 		}
-		if($this->function instanceof Function_ || $this->function instanceof \PhpParser\Node\Stmt\ClassMethod) {
+		if ($this->function instanceof Function_ || $this->function instanceof \PhpParser\Node\Stmt\ClassMethod) {
 			return VariadicCheckVisitor::isVariadic($this->function->getStmts());
 		}
 		return false;

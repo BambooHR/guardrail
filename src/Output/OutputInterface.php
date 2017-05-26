@@ -9,8 +9,7 @@ namespace BambooHR\Guardrail\Output;
 
 use PhpParser\Node;
 
-interface OutputInterface
-{
+interface OutputInterface {
 	function emitError($className, $file, $line, $type, $message="");
 	function output($verbose, $extraVerbose);
 	function outputVerbose($string);

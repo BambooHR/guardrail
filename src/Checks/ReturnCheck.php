@@ -42,7 +42,7 @@ class ReturnCheck extends BaseCheck {
 		$type = $this->typeInferer->inferType($inside, $node->expr, $scope );
 
 		$insideFunc = $scope->getInsideFunction();
-		if($inside && $insideFunc && $type) {
+		if ($inside && $insideFunc && $type) {
 			$expectedType = $insideFunc->getReturnType();
 			if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) &&
 				$type != "" &&
@@ -51,12 +51,12 @@ class ReturnCheck extends BaseCheck {
 			) {
 				$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
 				$functionName = strval($inside->name) ?: "anonymous function";
-				if($class) {
+				if ($class) {
 					$msg = "Variable returned from method $class::$functionName()";
 				} else {
 					$msg = "Variable returned from function $functionName()";
 				}
-				$msg.= " must be a $expectedType, returning $type";
+				$msg .= " must be a $expectedType, returning $type";
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg );
 			}
 		}

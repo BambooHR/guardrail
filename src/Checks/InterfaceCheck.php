@@ -36,7 +36,7 @@ class InterfaceCheck extends BaseCheck {
 		if (
 			$oldVisibility != $visibility && $oldVisibility == "private"
 		) {
-			$this->emitError($fileName, $class,self::TYPE_SIGNATURE_TYPE, "Access level mismatch in ".$method->getName()."() ".$visibility." vs ".$oldVisibility);
+			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_TYPE, "Access level mismatch in " . $method->getName() . "() " . $visibility . " vs " . $oldVisibility);
 		}
 
 		$params = $method->getParameters();
@@ -44,31 +44,31 @@ class InterfaceCheck extends BaseCheck {
 		$count1 = count($params);
 		$count2 = count($parentMethodParams);
 		if ($count1 < $count2) {
-			$this->emitError($fileName,$class,self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $count1 vs $count2 in method ".$className."->".$method->getName());
+			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $count1 vs $count2 in method " . $className . "->" . $method->getName());
 		} else foreach ($params as $index => $param) {
 			/** @var FunctionLikeParameter $param */
 			// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
-			if($index<$count2) {
+			if ($index < $count2) {
 				$parentParam = $parentMethodParams[$index];
 				$name1 = strval($param->getType());
 				$name2 = strval($parentParam->getType());
 				if (
 					strcasecmp($name1, $name2) !== 0
 				) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch ".$className."::".$method->getName()." : $name1 vs $name2");
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
 					break;
 				}
-				if($param->isReference() != $parentParam->isReference()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method ".$className."::".$method->getName()." add or removes & in \$".$param->getName());
+				if ($param->isReference() != $parentParam->isReference()) {
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method " . $className . "::" . $method->getName() . " add or removes & in \$" . $param->getName());
 					break;
 				}
-				if(!$param->isOptional() && $parentParam->isOptional()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method ".$className."::".$method->getName()." changes parameter \$".$param->getName()." to be required.");
+				if (!$param->isOptional() && $parentParam->isOptional()) {
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $param->getName() . " to be required.");
 					break;
 				}
 			} else {
-				if(!$param->isOptional()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method ".$method->getName()." adds parameter \$".$param->getName()." that doesn't have a default value");
+				if (!$param->isOptional()) {
+					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $method->getName() . " adds parameter \$" . $param->getName() . " that doesn't have a default value");
 					break;
 				}
 			}
@@ -113,19 +113,19 @@ class InterfaceCheck extends BaseCheck {
 				if ($name) {
 					$interface = $this->symbolTable->getAbstractedClass($name);
 					if (!$interface) {
-						$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS,  $node->name . " implements unknown interface " . $name);
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, $node->name . " implements unknown interface " . $name);
 					} else {
 						// Don't force abstract classes to implement all methods.
-						if(!$node->isAbstract()) {
+						if (!$node->isAbstract()) {
 							foreach ($interface->getMethodNames() as $interfaceMethod) {
 								$classMethod = $this->implementsMethod($fileName, $node, $interfaceMethod);
 								if (!$classMethod) {
-									if(!$node->isAbstract()) {
-										$this->emitError($fileName,$node,ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
+									if (!$node->isAbstract()) {
+										$this->emitError($fileName, $node, ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
 									}
 								} else {
 									$this->checkMethod(
-										$fileName, $node,$classMethod, $interface, $interface->getMethod($interfaceMethod)
+										$fileName, $node, $classMethod, $interface, $interface->getMethod($interfaceMethod)
 									);
 								}
 							}
@@ -135,14 +135,14 @@ class InterfaceCheck extends BaseCheck {
 			}
 		}
 
-		if($node->extends) {
+		if ($node->extends) {
 			$class = new AbstractedClass_($node);
 			$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
-			if(!$parentClass) {
-				$this->emitError($fileName,$node->extends,ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent ".$node->extends);
+			if (!$parentClass) {
+				$this->emitError($fileName, $node->extends, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent " . $node->extends);
 			}
 			foreach ($class->getMethodNames() as $methodName) {
-				if($methodName!="__construct") {
+				if ($methodName != "__construct") {
 					$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
 					if ($method) {
 						$this->checkMethod( $fileName, $node, $class->getMethod($methodName), $parentClass, $method);

@@ -29,7 +29,7 @@ class ClassConstantCheck extends BaseCheck {
 	 * @return ClassConst
 	 */
 	function findConstant(\BambooHR\Guardrail\Abstractions\ClassInterface $class, $constantName) {
-		if($class->hasConstant($constantName)) {
+		if ($class->hasConstant($constantName)) {
 			return true;
 		}
 
@@ -40,9 +40,9 @@ class ClassConstantCheck extends BaseCheck {
 			}
 		}
 
-		foreach($class->getInterfaceNames() as $interfaceName) {
-			$interface=$this->symbolTable->getAbstractedClass($interfaceName);
-			if($interface && $this->findConstant($interface, $constantName)) {
+		foreach ($class->getInterfaceNames() as $interfaceName) {
+			$interface = $this->symbolTable->getAbstractedClass($interfaceName);
+			if ($interface && $this->findConstant($interface, $constantName)) {
 				return true;
 			}
 		}
@@ -69,17 +69,17 @@ class ClassConstantCheck extends BaseCheck {
 				return;
 			}
 
-			switch(strtolower($name)) {
+			switch (strtolower($name)) {
 				case 'self':
 				case 'static':
-					if(!$inside) {
+					if (!$inside) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using self:: outside of a class");
 						return;
 					}
 					$name = $inside->namespacedName;
 					break;
 				case 'parent':
-					if(!$inside) {
+					if (!$inside) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: outside of a class");
 						return;
 					}
@@ -95,11 +95,11 @@ class ClassConstantCheck extends BaseCheck {
 			$this->incTests();
 			$class = $this->symbolTable->getAbstractedClass($name);
 			if (!$class) {
-				$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
 				return;
 			}
 
-			if(strcasecmp($constantName,"class")!=0 && !$this->findConstant($class, $constantName)) {
+			if (strcasecmp($constantName, "class") != 0 && !$this->findConstant($class, $constantName)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT, "Reference to unknown constant $name::$constantName");
 			}
 		}

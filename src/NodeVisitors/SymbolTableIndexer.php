@@ -27,17 +27,17 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	private $output;
 
 	function __construct($index, \BambooHR\Guardrail\Output\OutputInterface $output) {
-		$this->index=$index;
-		$this->output=$output;
+		$this->index = $index;
+		$this->output = $output;
 	}
 
 	function setFilename($filename) {
 		$this->classStack = [];
-		$this->filename=$filename;
+		$this->filename = $filename;
 	}
 
 	function enterNode(Node $node) {
-		switch(get_class($node)) {
+		switch (get_class($node)) {
 			case Class_::class:
 				$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "anonymous class";
 				if ($name) {
@@ -92,11 +92,10 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	}
 
 	function leaveNode(Node $node) {
-		if( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_) {
+		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_) {
 			array_pop($this->classStack);
 		}
 		return null;
 	}
 }
 
-?>

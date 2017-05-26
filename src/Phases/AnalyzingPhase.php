@@ -27,10 +27,9 @@ use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
 use BambooHR\Guardrail\Output\OutputInterface;
 
 
-class AnalyzingPhase
-{
+class AnalyzingPhase {
 	function getPhase2Files(Config $config, OutputInterface $output, \RecursiveIteratorIterator $it2, &$toProcess) {
-		$configArr=$config->getConfigArray();
+		$configArr = $config->getConfigArray();
 		foreach ($it2 as $file) {
 			if ($file->getExtension() == "php" && $file->isFile()) {
 				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getPathname(), $configArr['test-ignore'])) {
@@ -42,9 +41,9 @@ class AnalyzingPhase
 	}
 
 	static function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
-		if($node instanceof Node\Stmt\Namespace_) {
-			foreach($node->stmts as $child) {
-				if(!self::checkForSafeAutoloadNode($file, $child, $output)) {
+		if ($node instanceof Node\Stmt\Namespace_) {
+			foreach ($node->stmts as $child) {
+				if (!self::checkForSafeAutoloadNode($file, $child, $output)) {
 					return false;
 				}
 			}
@@ -60,7 +59,7 @@ class AnalyzingPhase
 		) {
 			return true;
 		} else {
-			$output->emitError(__CLASS__, $file, $node->getLine(), BaseCheck::TYPE_AUTOLOAD_ERROR, "File is not safe to autoload.  It contains code other than a class:".$node->getType());
+			$output->emitError(__CLASS__, $file, $node->getLine(), BaseCheck::TYPE_AUTOLOAD_ERROR, "File is not safe to autoload.  It contains code other than a class:" . $node->getType());
 			return false;
 		}
 	}
@@ -83,7 +82,7 @@ class AnalyzingPhase
 		foreach ($toProcess as $file) {
 			try {
 				$name = Util::removeInitialPath($config->getBasePath(), $file);
-			 	$output->output(".", $name);
+				 $output->output(".", $name);
 				$processingCount++;
 				//echo " - $processingCount:" . $file . "\n";
 				$fileData = file_get_contents($file);
@@ -91,66 +90,64 @@ class AnalyzingPhase
 				if ($stmts) {
 					// We could do this with a node visitor, but it would be more complex and add unnecessary cycles when
 					// it is so easy to inspect at the top level of the file.
-					foreach($stmts as $stmt) {
-						if( !self::checkForSafeAutoloadNode($file, $stmt, $output)) {
+					foreach ($stmts as $stmt) {
+						if ( !self::checkForSafeAutoloadNode($file, $stmt, $output)) {
 							break;
 						}
 					}
 
-					$start=microtime(true);
+					$start = microtime(true);
 					$analyzer->setFile($name);
-					$stmts=$traverser1->traverse($stmts);
-					$stmts=$traverser2->traverse($stmts);
+					$stmts = $traverser1->traverse($stmts);
+					$stmts = $traverser2->traverse($stmts);
 					$traverser3->traverse($stmts);
-					$end=microtime(true);
+					$end = microtime(true);
 				}
 			} catch (Error $e) {
 				$output->emitError( __CLASS__, $file, 0, "Parse error", $e->getMessage() );
-			} catch(\BambooHR\Guardrail\Exceptions\UnknownTraitException $e) {
+			} catch (\BambooHR\Guardrail\Exceptions\UnknownTraitException $e) {
 				$output->emitError( __CLASS__, $file, 0, "Unknown trait error", $e->getMessage() );
 			}
 
 		}
-		if($output instanceof XUnitOutput) {
+		if ($output instanceof XUnitOutput) {
 		//	print_r($output->getCounts());
 		}
-		return ($output->getErrorCount()>0 ? 1 : 0);
+		return ($output->getErrorCount() > 0 ? 1 : 0);
 	}
 
 	function getMultipartFileName(Config $config, $part) {
-		$outputFileName=$config->getOutputFile();
-		$lastPart = strrpos($outputFileName,".");
-		if($lastPart>0) {
-			$outputFileName=substr($outputFileName,0, $lastPart+1).$part.".xml";
+		$outputFileName = $config->getOutputFile();
+		$lastPart = strrpos($outputFileName, ".");
+		if ($lastPart > 0) {
+			$outputFileName = substr($outputFileName, 0, $lastPart + 1) . $part . ".xml";
 		} else {
-			$outputFileName=$outputFileName.$part;
+			$outputFileName = $outputFileName . $part;
 		}
 		return $outputFileName;
 	}
 
 	function runChildProcesses(Config $config, OutputInterface $output, array $toProcess) {
-		$error=false;
+		$error = false;
 		$files = [];
 		$groupSize = intval(count($toProcess) / $config->getProcessCount());
 		for ($i = 0; $i < $config->getProcessCount(); ++$i) {
-			$group = ($i == $config->getProcessCount() -1) ?
-				array_slice($toProcess, $groupSize * $i) :
-				array_slice($toProcess, $groupSize * $i, $groupSize);
+			$group = ($i == $config->getProcessCount() - 1) ? array_slice($toProcess, $groupSize * $i) : array_slice($toProcess, $groupSize * $i, $groupSize);
 			file_put_contents("scan.tmp.$i", implode("\n", $group));
-			$cmd=escapeshellarg($GLOBALS['argv'][0]);
+			$cmd = escapeshellarg($GLOBALS['argv'][0]);
 			$cmdLine = "php -d memory_limit=1G $cmd -a -s ";
-			if($config->getOutputFile()) {
-				$outputFileName=$this->getMultipartFileName($config, $i);
-				$cmdLine.=" -o ".escapeshellarg($outputFileName)." ";
+			if ($config->getOutputFile()) {
+				$outputFileName = $this->getMultipartFileName($config, $i);
+				$cmdLine .= " -o " . escapeshellarg($outputFileName) . " ";
 			}
-			if($config->getOutputLevel()==1) {
-				$cmdLine.=" -v ";
+			if ($config->getOutputLevel() == 1) {
+				$cmdLine .= " -v ";
 			}
-			if($config->getOutputLevel()==2) {
-				$cmdLine.=" -v -v ";
+			if ($config->getOutputLevel() == 2) {
+				$cmdLine .= " -v -v ";
 			}
-			$cmdLine.= escapeshellarg($config->getConfigFileName()) . " ".escapeshellarg("scan.tmp.$i");
-			$output->outputExtraVerbose($cmdLine."\n");
+			$cmdLine .= escapeshellarg($config->getConfigFileName()) . " " . escapeshellarg("scan.tmp.$i");
+			$output->outputExtraVerbose($cmdLine . "\n");
 			$file = popen($cmdLine, "r");
 			$files[] = $file;
 		}
@@ -162,18 +159,18 @@ class AnalyzingPhase
 				foreach ($readFile as $index => $file) {
 					echo fread($file, 1000);
 					if (feof($file)) {
-						unset($files[ array_search($file, $files) ]);
-						if(!$error) {
+						unset($files[array_search($file, $files)]);
+						if (!$error) {
 							$error = pclose($file) == 0;
 						}
 						$output->outputExtraVerbose("Child process completed\n");
 					}
 				}
 			} else {
-				$output->output("T","Timed out waiting for next file to scan");
+				$output->output("T", "Timed out waiting for next file to scan");
 			}
 		}
-		for($i=0;$i<$config->getProcessCount();++$i) {
+		for ($i = 0; $i < $config->getProcessCount(); ++$i) {
 			unlink("scan.tmp.$i");
 		}
 		return $error ? 1 : 0;
@@ -201,7 +198,7 @@ class AnalyzingPhase
 			$directory = Util::fullDirectoryPath($baseDirectory, $path);
 			$output->outputVerbose("\n\nDirectory: $path\n");
 			$it = new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS);
-	 		$it2 = new \RecursiveIteratorIterator($it);
+			 $it2 = new \RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $output, $it2, $toProcess);
 		}
 		sort($toProcess);
@@ -209,11 +206,9 @@ class AnalyzingPhase
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.
 		$groupSize = intval(count($toProcess) / $config->getPartitions());
-		$toProcess = ($config->getPartitionNumber() == $config->getPartitions())
-			? array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1))
-			: array_slice($toProcess, $groupSize * ($config->getPartitionNumber()-1), $groupSize);
+		$toProcess = ($config->getPartitionNumber() == $config->getPartitions()) ? array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1)) : array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1), $groupSize);
 
-		$output->outputVerbose("\n\nAnalyzing ".count($toProcess)." files\n");
+		$output->outputVerbose("\n\nAnalyzing " . count($toProcess) . " files\n");
 
 		if ($config->getProcessCount() > 1) {
 			return $this->runChildProcesses($config, $output, $toProcess);

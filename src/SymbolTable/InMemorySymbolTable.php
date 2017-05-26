@@ -23,23 +23,23 @@ class InMemorySymbolTable extends SymbolTable {
 	private $traits = [];
 
 	function addFunction($name, Function_ $function, $file) {
-		$this->functions[strtolower($name)]=$file;
+		$this->functions[strtolower($name)] = $file;
 	}
 
 	function addClass($name, Class_ $class, $file) {
-		$this->classes[strtolower($name)]= $file;
+		$this->classes[strtolower($name)] = $file;
 	}
 
 	function addInterface($name, Interface_ $interface, $file) {
-		$this->interfaces[strtolower($name)]=$file;
+		$this->interfaces[strtolower($name)] = $file;
 	}
 
 	function addTrait($name, Trait_ $trait, $file) {
-		$this->traits[strtolower($name)]=$file;
+		$this->traits[strtolower($name)] = $file;
 	}
 
 	function addDefine($name, Node $define, $file) {
-		$this->defines[strtolower($name)]=$file;
+		$this->defines[strtolower($name)] = $file;
 	}
 
 	function getDefineFile($name) {
@@ -66,12 +66,12 @@ class InMemorySymbolTable extends SymbolTable {
 		self::removeFileFromOneIndex($this->traits, $name);
 		self::removeFileFromOneIndex($this->interfaces, $name);
 		self::removeFileFromOneIndex($this->functions, $name);
-		self::removeFileFromOneIndex($this->classes,$name);
+		self::removeFileFromOneIndex($this->classes, $name);
 	}
 
 	private static function removeFileFromOneIndex(&$index, $name) {
-		foreach($index as $key=>$value) {
-			if($value==$name) {
+		foreach ($index as $key => $value) {
+			if ($value == $name) {
 				unset($index[$key]);
 			}
 		}

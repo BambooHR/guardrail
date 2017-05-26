@@ -26,7 +26,7 @@ class TraitImporter {
 	private $index;
 
 	function __construct( SymbolTable $index) {
-		$this->index=$index;
+		$this->index = $index;
 	}
 
 	/**
@@ -34,32 +34,32 @@ class TraitImporter {
 	 * @param array                $methods
 	 */
 	private function resolveAdaptations(array $adaptations, array &$methods) {
-		foreach($adaptations as $adaptation) {
-			if($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
+		foreach ($adaptations as $adaptation) {
+			if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
 				// Alias adaptation renames the alias
-				if(!array_key_exists($adaptation->method, $methods)) {
+				if (!array_key_exists($adaptation->method, $methods)) {
 					continue;
 				}
 
-				if($adaptation->trait=="") {
+				if ($adaptation->trait == "") {
 					$method = end($methods[$adaptation->method]);
 				} else {
 					$method = $methods[$adaptation->method][$adaptation->trait];
 				}
 
 				$method->name = $adaptation->newName;
-				if(property_exists($method, 'type')) {
+				if (property_exists($method, 'type')) {
 					$method->type = $method->type & ~( Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
 					$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
 
 					// Unset it from the old name.
 					unset($methods[$adaptation->method][$adaptation->trait]);
 					// Add it with the new name.
-					$methods[$adaptation->newName][$adaptation->trait]=$method;
+					$methods[$adaptation->newName][$adaptation->trait] = $method;
 				}
-			} else if($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
+			} else if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
-				foreach($adaptation->insteadof as $name) {
+				foreach ($adaptation->insteadof as $name) {
 					unset($methods[$adaptation->method][$name]);
 				}
 			}
@@ -68,12 +68,12 @@ class TraitImporter {
 
 	private function importMethods(ClassLike $class, array $methods) {
 		$stmts = [];
-		foreach($methods as $methodName=>$methodArr) {
-			if(count($methodArr)>1) {
+		foreach ($methods as $methodName => $methodArr) {
+			if (count($methodArr) > 1) {
 				echo "Too many implementations for $methodName\n";
 			}
-			foreach($methodArr as $traitName=>$method) {
-				if(!$class->getMethod($method->name)) {
+			foreach ($methodArr as $traitName => $method) {
+				if (!$class->getMethod($method->name)) {
 					$stmts[] = $method;
 				}
 			}
@@ -98,11 +98,11 @@ class TraitImporter {
 			}
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
-					foreach($stmt->props as $prop) {
+					foreach ($stmt->props as $prop) {
 						// Make a deep copy of the node
 						$properties[$prop->name] = unserialize( serialize( $prop ) );
 					}
-				} else if($stmt instanceof Node\Stmt\ClassMethod) {
+				} else if ($stmt instanceof Node\Stmt\ClassMethod) {
 					// Make a deep copy of the node
 					$methods[$stmt->name][$traitName] = unserialize( serialize( $stmt ) );
 				}
@@ -130,8 +130,8 @@ class TraitImporter {
 
 	function resolveClassTraits(Node\Stmt\ClassLike $class) {
 		$replacements = [];
-		foreach($class->stmts as $index=>$stmt) {
-			if($stmt instanceof Node\Stmt\TraitUse) {
+		foreach ($class->stmts as $index => $stmt) {
+			if ($stmt instanceof Node\Stmt\TraitUse) {
 				unset($class->stmts[$index]);
 				$replacements[] = $this->resolveTraits($stmt, $class);
 			}

@@ -43,24 +43,24 @@ class ReflectedFunction implements FunctionLikeInterface {
 	}
 
 	function getAccessLevel() {
-		if($this->refl->isPrivate()) return "private";
-		if($this->refl->isPublic()) return "public";
-		if($this->refl->isProtected()) return "protected";
+		if ($this->refl->isPrivate()) return "private";
+		if ($this->refl->isPublic()) return "public";
+		if ($this->refl->isProtected()) return "protected";
 	}
 
 	function getMinimumRequiredParameters() {
 		$min = self::getOverriddenMinimumParams($this->refl->name);
-		return $min>=0 ? $min : $this->refl->getNumberOfRequiredParameters();
+		return $min >= 0 ? $min : $this->refl->getNumberOfRequiredParameters();
 	}
 
 	private static function getOverriddenMinimumParams($name) {
 		static $overrides = [
-			"define"=>2,
-			"implode"=>1,
-			"strtok"=>1,
-			"sprintf"=>1,
-			"array_merge"=>1,
-			"stream_set_timeout"=>2
+			"define" => 2,
+			"implode" => 1,
+			"strtok" => 1,
+			"sprintf" => 1,
+			"array_merge" => 1,
+			"stream_set_timeout" => 2
 		];
 		$name = strtolower($name);
 
@@ -72,13 +72,13 @@ class ReflectedFunction implements FunctionLikeInterface {
 		$ret = [];
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
-		foreach($params as $index=>$param) {
+		foreach ($params as $index => $param) {
 			$type = $param->getClass() ? $param->getClass()->name : '';
 			$isPassedByReference = $param->isPassedByReference();
-			if($this->getName()=="preg_match" && $index==2) {
+			if ($this->getName() == "preg_match" && $index == 2) {
 				$isPassedByReference = true;
 			}
-			$ret[] = new FunctionLikeParameter( $type , $param->name, $param->isOptional(), $isPassedByReference);
+			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $isPassedByReference);
 		}
 		return $ret;
 	}
@@ -92,7 +92,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	}
 
 	function isVariadic() {
-		if(method_exists($this->refl,"isVariadic")) {
+		if (method_exists($this->refl, "isVariadic")) {
 			return $this->refl->isVariadic();
 		} else {
 			return true; // We assume internal functions are variadic so that we don't get bombarded with warnings.

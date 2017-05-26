@@ -13,12 +13,11 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\Util;
 
 
-class TypeInferrer
-{
+class TypeInferrer {
 	/** @var SymbolTable */
 	private $index;
 	function __construct(SymbolTable $table) {
-		$this->index= $table;
+		$this->index = $table;
 	}
 
 	/**
@@ -43,7 +42,7 @@ class TypeInferrer
 			return $className;
 		} else if ($expr instanceof Node\Expr\Variable && gettype($expr->name) == "string") {
 			$varName = strval($expr->name);
-			if($varName=="this" && $inside) {
+			if ($varName == "this" && $inside) {
 				return strval($inside->namespacedName);
 			}
 			$scopeType = $scope->getVarType($varName);
@@ -54,19 +53,19 @@ class TypeInferrer
 			return "callable";
 		} else if ($expr instanceof Node\Expr\FuncCall && $expr->name instanceof Node\Name) {
 			$func = $this->index->getAbstractedFunction($expr->name);
-			if($func) {
+			if ($func) {
 				$type = $func->getReturnType();
-				if($type) {
+				if ($type) {
 					return $type;
 				}
 			}
-		} else if( $expr instanceof Node\Expr\MethodCall && gettype($expr->name)=="string") {
+		} else if ( $expr instanceof Node\Expr\MethodCall && gettype($expr->name) == "string") {
 			$class = $this->inferType($inside, $expr->var, $scope);
-			if(!empty($class) && $class[0]!="!") {
+			if (!empty($class) && $class[0] != "!") {
 				$method = $this->index->getAbstractedMethod($class, strval($expr->name));
-				if($method) {
+				if ($method) {
 					$type = $method->getReturnType();
-					if($type) {
+					if ($type) {
 						return $type;
 					}
 					/*
@@ -77,12 +76,12 @@ class TypeInferrer
 					*/
 				}
 			}
-		} else if( $expr instanceof Node\Expr\PropertyFetch ) {
+		} else if ( $expr instanceof Node\Expr\PropertyFetch ) {
 			return $this->inferPropertyFetch($expr, $inside, $scope);
-		} else if( $expr instanceof Node\Expr\ArrayDimFetch ) {
+		} else if ( $expr instanceof Node\Expr\ArrayDimFetch ) {
 			$type = $this->inferType($inside, $expr->var, $scope);
-			if(substr($type,-2)=="[]") {
-				return substr($type,0,-2);
+			if (substr($type, -2) == "[]") {
+				return substr($type, 0, -2);
 			}
 		} else if ($expr instanceof Node\Expr\Clone_) {
 			// A cloned node will be the same type as whatever we're cloning.
@@ -93,8 +92,8 @@ class TypeInferrer
 
 	function inferPropertyFetch(Node\Expr\PropertyFetch $expr, $inside, $scope) {
 		$class = $this->inferType($inside, $expr->var, $scope);
-		if(!empty($class) && $class[0]!="!") {
-			if(gettype($expr->name)=='string') {
+		if (!empty($class) && $class[0] != "!") {
+			if (gettype($expr->name) == 'string') {
 				/*
 				$classDef = $this->index->getClass($class);
 				if($classDef) {

@@ -15,12 +15,12 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\ClassMethod;
 
-abstract class SymbolTable  {
-	const TYPE_CLASS=1;
-	const TYPE_FUNCTION=2;
-	const TYPE_INTERFACE=3;
-	const TYPE_TRAIT=4;
-	const TYPE_DEFINE=5;
+abstract class SymbolTable {
+	const TYPE_CLASS = 1;
+	const TYPE_FUNCTION = 2;
+	const TYPE_INTERFACE = 3;
+	const TYPE_TRAIT = 4;
+	const TYPE_DEFINE = 5;
 
 	/**
 	 * @var ObjectCache
@@ -30,21 +30,21 @@ abstract class SymbolTable  {
 	protected $basePath;
 
 	function __construct($basePath) {
-		$this->cache=new ObjectCache();
+		$this->cache = new ObjectCache();
 		$this->basePath = $basePath;
 	}
 
 	function getClass($name) {
-		$cacheName=strtolower($name);
-		$file=$this->getClassFile($name);
-		if(!$file) {
+		$cacheName = strtolower($name);
+		$file = $this->getClassFile($name);
+		if (!$file) {
 			return null;
 		}
-		$ob=$this->cache->get("Class:".$cacheName);
-		if(!$ob) {
+		$ob = $this->cache->get("Class:" . $cacheName);
+		if (!$ob) {
 			$ob = Grabber::getClassFromFile($this, $file, $name, Class_::class);
-			if($ob) {
-				$this->cache->add("Class:".$cacheName, $ob);
+			if ($ob) {
+				$this->cache->add("Class:" . $cacheName, $ob);
 			}
 		}
 		return $ob;
@@ -59,16 +59,16 @@ abstract class SymbolTable  {
 	 * @return bool
 	 */
 	function isParentClassOrInterface($potentialParent, $child) {
-		while($child) {
-			if(strcasecmp($potentialParent,$child)==0) {
+		while ($child) {
+			if (strcasecmp($potentialParent, $child) == 0) {
 				return true;
 			}
 			$child = $this->getAbstractedClass($child);
-			if(!$child) {
+			if (!$child) {
 				return false;
 			}
-			foreach($child->getInterfaceNames() as $interface) {
-				if($this->isParentClassOrInterface($potentialParent, $interface)) {
+			foreach ($child->getInterfaceNames() as $interface) {
+				if ($this->isParentClassOrInterface($potentialParent, $interface)) {
 					return true;
 				}
 			}
@@ -81,9 +81,9 @@ abstract class SymbolTable  {
 	 * More efficient than getAbstractedClass, for the cases where you don't need the class.
 	 */
 	function isDefinedClass($name) {
-		$cacheName=strtolower($name);
+		$cacheName = strtolower($name);
 		if (
-			$this->cache->get("AClass:".$cacheName) ||
+			$this->cache->get("AClass:" . $cacheName) ||
 			$this->getType($name, self::TYPE_CLASS) ||
 			$this->getType($name, self::TYPE_INTERFACE)
 		) {
@@ -92,8 +92,7 @@ abstract class SymbolTable  {
 		try {
 			$unused = new \ReflectionClass($name);
 			return true;
-		}
-		catch(\ReflectionException $e) {
+		} catch (\ReflectionException $e) {
 			return false;
 		}
 	}
@@ -104,9 +103,9 @@ abstract class SymbolTable  {
 	 * @return \BambooHR\Guardrail\Abstractions\Class_
 	 */
 	function getAbstractedClass($name) {
-		$cacheName=strtolower($name);
-		$ob=$this->cache->get("AClass:".$cacheName);
-		if(!$ob) {
+		$cacheName = strtolower($name);
+		$ob = $this->cache->get("AClass:" . $cacheName);
+		if (!$ob) {
 			$tmp = $this->getClassOrInterface($name);
 			if ($tmp) {
 				$ob = new \BambooHR\Guardrail\Abstractions\Class_($tmp);
@@ -126,9 +125,9 @@ abstract class SymbolTable  {
 	}
 
 	function getAbstractedMethod($className, $methodName) {
-		$cacheName=strtolower($className."::".$methodName);
-		$ob=$this->cache->get("AClassMethod:".$cacheName);
-		if(!$ob) {
+		$cacheName = strtolower($className . "::" . $methodName);
+		$ob = $this->cache->get("AClassMethod:" . $cacheName);
+		if (!$ob) {
 			$ob = \BambooHR\Guardrail\Util::findAbstractedMethod($className, $methodName, $this);
 			if (!$ob && strpos($className, "\\") === false) {
 				try {
@@ -147,14 +146,13 @@ abstract class SymbolTable  {
 
 	function getAbstractedFunction($name) {
 		$func = $this->getFunction($name);
-		if($func) {
-			$ob= new \BambooHR\Guardrail\Abstractions\Function_($func);
+		if ($func) {
+			$ob = new \BambooHR\Guardrail\Abstractions\Function_($func);
 		} else {
 			try {
 				$refl = new \ReflectionFunction($name);
 				$ob = new \BambooHR\Guardrail\Abstractions\ReflectedFunction($refl);
-			}
-			catch(\ReflectionException $e) {
+			} catch (\ReflectionException $e) {
 				$ob = null;
 			}
 		}
@@ -162,22 +160,22 @@ abstract class SymbolTable  {
 	}
 
 	function getTrait($name) {
-		$file=$this->getTraitFile($name);
-		if(!$file) {
+		$file = $this->getTraitFile($name);
+		if (!$file) {
 			return null;
 		}
-		$ob=$this->cache->get("Trait:".$name);
-		if(!$ob) {
+		$ob = $this->cache->get("Trait:" . $name);
+		if (!$ob) {
 			$ob = Grabber::getClassFromFile( $this, $file, $name, Trait_::class);
-			if($ob) {
-				$this->cache->add("Trait:".$name, $ob);
+			if ($ob) {
+				$this->cache->add("Trait:" . $name, $ob);
 			}
 		}
 		return $ob;
 	}
 
 	function isDefined($name) {
-		$file=$this->getDefineFile($name);
+		$file = $this->getDefineFile($name);
 		return boolval($file);
 	}
 
@@ -191,39 +189,39 @@ abstract class SymbolTable  {
 	 * @return string
 	 */
 	function adjustBasePath($fileName) {
-		if(strpos($fileName, "phar://")===0) {
+		if (strpos($fileName, "phar://") === 0) {
 			$fileName = substr($fileName, 7);
-		} else if(!empty($fileName) && strpos($fileName,"/")!==0) {
-			$fileName = $this->basePath."/".$fileName;
+		} else if (!empty($fileName) && strpos($fileName, "/") !== 0) {
+			$fileName = $this->basePath . "/" . $fileName;
 		}
 		return $fileName;
 	}
 
 	function getInterface($name) {
-		$file=$this->getInterfaceFile($name);
-		if(!$file) {
+		$file = $this->getInterfaceFile($name);
+		if (!$file) {
 			return null;
 		}
-		$ob=$this->cache->get("Interface:".$name);
-		if(!$ob) {
+		$ob = $this->cache->get("Interface:" . $name);
+		if (!$ob) {
 			$ob = Grabber::getClassFromFile($this, $file, $name, Interface_::class);
-			if($ob) {
-				$this->cache->add("Interface:".$name, $ob);
+			if ($ob) {
+				$this->cache->add("Interface:" . $name, $ob);
 			}
 		}
 		return $ob;
 	}
 
 	function getFunction($name) {
-		$file=$this->getFunctionFile($name);
-		if(!$file) {
+		$file = $this->getFunctionFile($name);
+		if (!$file) {
 			return null;
 		}
-		$ob=$this->cache->get("Function:".$name);
-		if(!$ob) {
+		$ob = $this->cache->get("Function:" . $name);
+		if (!$ob) {
 			$ob = Grabber::getClassFromFile($this, $file, $name, Function_::class);
-			if($ob) {
-				$this->cache->add("Function:".$name, $ob);
+			if ($ob) {
+				$this->cache->add("Function:" . $name, $ob);
 			}
 		}
 		return $ob;
@@ -234,8 +232,8 @@ abstract class SymbolTable  {
 	}
 
 	function ignoreType($name) {
-		$name=strtolower($name);
-		return ($name=='exception' || $name=='stdclass' || $name=='iterator');
+		$name = strtolower($name);
+		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator');
 	}
 
 	abstract function addClass($name, Class_ $class, $file);
