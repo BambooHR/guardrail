@@ -61,9 +61,12 @@ Standard.Autoload.Unsafe | Code that executes any statements other than a class 
 Standard.Deprecated.Internal | Call to an internal PHP function that is deprecated
 Standard.Deprecated.User | Call to a user function that has @deprecated in the docblock.
 Standard.Constructor.MissingCall | Overriding a constructor without calling the parent constructor.
+Standard.Exception.Base | Catching the base \Exception class instead of something more specific.
 Standard.Incorrect.Static | Static reference to a dynamic variable/method
 Standard.Incorrect.Dynamic | Dynamic reference to a static variable/method
 Standard.Inheritance.Unimplemented | Class implementing an interface fails to implement on of it's methods.
+Standard.Global.Expression | Referencing $GLOBALS[ $expr ]
+Standard.Global.String | Referencing a global with either global $var or $GLOBALS['var']
 Standard.Goto | Any instance of a "goto" statement
 Standard.Param.Count | Failure to pass all the declared parameters to a function.
 Standard.Param.Count.Excess | Passing too many variables to a function (ignores variadic functions)
@@ -71,6 +74,7 @@ Standard.Param.Type | Type mismatch on a parameter to a function
 Standard.Parse.Error | A parse error
 Standard.Return.Type | Type mismatch on a return from a function
 Standard.Scope | Usage of parent:: or self:: when in a context where they are not available.
+Standard.Security.Eval | Code that runs eval() or create_function()
 Standard.Security.Shell | Code that runs a shell (exec, passthru, system, etc)
 Standard.Security.Backtick | The backtick operator
 Standard.Switch.Break | A switch case: statement that falls through (generally these are unintentional)
@@ -82,6 +86,8 @@ Standard.Unknown.Function | Reference to an unknown function
 Standard.Unknown.Global.Constant | Reference to an undefined global constant (define or const)
 Standard.Unknown.Property | Reference to a property that has not previously been declared
 Standard.Unknown.Variable | Reference to a variable that has not previously been assigned
+Standard.VariableFunctionCall | Call a method $foo() when $foo is a string.  (Still ok if $foo is a callable)
+Standard.VariableVariable | Referencing a variable with $$var
 
   
  Guardrail has support for advanced PHP features, such as traits, interfaces, anonymous functions & classes, etc.
@@ -161,7 +167,9 @@ The *index* section is a list of subdirectories to index.
  The *emit* section is used to control which errors are reported.  Most
  code bases will not pass with all of the standard checks emitted.  We
  recommend adding a single check at a time and incrementally improving
- your codebase until all tests pass.
+ your codebase until all tests pass.  If an emit string ends with ".*" then any
+ rule matching everything before the final ".*" in the pattern is considered a match and
+ will be output.  Example: `emit: ["Standard.Security.*"]` to emit all security warnings.
  
  The *plugins* section is a lot of plugins to use in the analysis.
  Plugins allow you to extend Guardrail with your own checks.  
@@ -269,6 +277,32 @@ use -v to enable verbose output.
 
 By default, a report is output in Xunit format to standard out.  If you
 would prefer to output to a file use -o to specify an output filename.
+
+### Object casting
+
+Languages like Java or C# support casting an object reference from one type 
+ to another.  This allows you to convert an object that supports multiple 
+ interfaces from one interface to another.  That nature of the object hasn't changed, 
+ just the way the compiler understands it.
+ 
+ In PHP this type of conversion is unnecessary.  If an object has a method 
+ with the correct name then it can be invoked. 
+ 
+ For purposes of static analysis it is important that you only invoke documented 
+ methods of an interface.  If you are passing an object that implements multiple
+ interfaces, you need to "cast" that object to access one of the interfaces.  
+ Guardrail will honor the result of a simple if() statement containing only a 
+ variable and an "instanceof" operation.  This is usually a benign change to make because
+ you would never want to call an interface method if the object didn't implement that 
+ interface.
+ 
+ <pre>
+ if($var instanceof Foo) { 
+ 	$var->fooInterfaceMethod(); // $var assumed to be a "Foo" inside this clause.
+ }
+ </pre>
+
+
 
 # Links
 
