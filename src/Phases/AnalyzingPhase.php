@@ -33,7 +33,7 @@ class AnalyzingPhase
 		$configArr=$config->getConfigArray();
 		foreach ($it2 as $file) {
 			if ($file->getExtension() == "php" && $file->isFile()) {
-				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getPathname(), $configArr['test-ignore'])) {
+				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getRealPath(), $configArr['test-ignore'])) {
 					continue;
 				}
 				$toProcess[] = $file->getPathname();

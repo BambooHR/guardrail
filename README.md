@@ -86,6 +86,7 @@ Standard.Unknown.Function | Reference to an unknown function
 Standard.Unknown.Global.Constant | Reference to an undefined global constant (define or const)
 Standard.Unknown.Property | Reference to a property that has not previously been declared
 Standard.Unknown.Variable | Reference to a variable that has not previously been assigned
+Standard.Unused.Variable | A local variable is assigned but never read from.
 Standard.VariableFunctionCall | Call a method $foo() when $foo is a string.  (Still ok if $foo is a callable)
 Standard.VariableVariable | Referencing a variable with $$var
 

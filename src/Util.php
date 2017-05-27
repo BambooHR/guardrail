@@ -49,7 +49,7 @@ class Util {
 					return true;
 				}
 			} else {
-				if(Glob::match($path, $basePath."/".$glob)) {
+				if(Glob::match($path, $basePath.$glob)) {
 					return true;
 				}
 			}

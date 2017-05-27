@@ -339,6 +339,21 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 	}
 
+	private function setAllScopeUsed() {
+		$scope = end($this->scopeStack);
+		$scope->markAllVarsUsed();
+	}
+
+	private function setScopeUsed($varName) {
+		$scope = end($this->scopeStack);
+		$scope->setVarUsed($varName);
+	}
+
+	private function setScopeWritten($varName, $lineNumber) {
+		$scope = end($this->scopeStack);
+		$scope->setVarWritten($varName, $lineNumber);
+	}
+
 
 	/**
 	 * Assignment can cause a new variable to come into scope.  We infer the type of the expression (if possible) and
@@ -347,6 +362,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 */
 	private function handleAssignment( $op) {
 		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name)=="string") {
+			$op->var->setAttribute('assignment',true);
 			$varName = strval($op->var->name);
 			$this->setScopeExpression($varName, $op->expr);
 		} else if ($op->var instanceof Node\Expr\List_) {
@@ -369,11 +385,44 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	}
 
 	function leaveNode(Node $node) {
+		if ($node instanceof Node\Expr\Variable &&
+			is_string($node->name) &&
+			!$node->hasAttribute('assignment')
+		) {
+			$this->setScopeUsed($node->name);
+		}
+		if ($node instanceof Node\Expr\ClosureUse && is_string($node->var)) {
+			$this->setScopeUsed($node->var);
+		}
+
+		if ($node instanceof Node\Expr\FuncCall &&
+			$node->name instanceof Node\Name &&
+			strcasecmp(strval($node->name), "get_defined_vars()") == 0
+		) {
+			$this->setAllScopeUsed();
+		}
+
+		if (
+			($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) &&
+			$node->var instanceof Node\Expr\Variable &&
+			is_string($node->var->name)
+		) {
+			$this->setScopeWritten($node->var->name, $node->getLine());
+		}
+
 		if ($node instanceof Class_) {
 			array_pop($this->classStack);
 		}
 		if ($node instanceof Node\FunctionLike) {
-			array_pop($this->scopeStack);
+			$scope = array_pop($this->scopeStack);
+			$unusedVars = $scope->getUnusedVars();
+
+			if (count($unusedVars) > 0 ) {
+				foreach($unusedVars as $varName=>$lineNumber) {
+					$this->output->emitError(__CLASS__, $this->file, $lineNumber, Checks\ErrorConstants::TYPE_UNUSED_VARIABLE, '$'.$varName." is assigned but never referenced");
+				}
+			}
+
 			if($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 				$this->updateFunctionEmit($node,"pop");
 			}

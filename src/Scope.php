@@ -27,6 +27,12 @@ class Scope
 	/** @var FunctionLike */
 	private $inside;
 
+	/** @var bool[] */
+	private $written = [];
+
+	/** @var int[]  */
+	private $line = [];
+
 	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
 		$this->isStatic=$isStatic;
 		$this->isGlobal=$isGlobal;
@@ -52,6 +58,33 @@ class Scope
 		$this->vars[$name]=$type;
 	}
 
+	function setVarWritten($name, $line) {
+		if(!isset($this->written[$name])) {
+			$this->written[$name] = true;
+			$this->line[$name] = $line;
+		}
+	}
+
+	function setVarUsed($name) {
+		$this->written[$name] = false;
+	}
+
+	function markAllVarsUsed() {
+		foreach(array_keys($this->written) as $name) {
+			$this->written[$name] = false;
+		}
+	}
+
+	function getUnusedVars() {
+		$ret = [];
+		foreach($this->written as $key=>$unused) {
+			if($unused) {
+				$ret[$key]=$this->line[$key];
+			}
+		}
+		return $ret;
+	}
+
 	function getVarType($name) {
 		if(isset($this->vars[$name])) {
 			return $this->vars[$name];
@@ -65,6 +98,8 @@ class Scope
 	function getScopeClone() {
 		$ret = new Scope($this->isStatic, $this->isGlobal);
 		$ret->vars = $this->vars;
+		$ret->written = $this->written;
+		$ret->line = $this->line;
 		return $ret;
 	}
 }
