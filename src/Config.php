@@ -1,19 +1,21 @@
-<?php
+<?php namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail;
-
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use PhpParser\Error;
 
+/**
+ * Class Config
+ *
+ * @package BambooHR\Guardrail
+ */
 class Config {
 	const MEMORY_SYMBOL_TABLE = 1;
 	const SQLITE_SYMBOL_TABLE = 2;
@@ -71,9 +73,13 @@ class Config {
 	private $outputLevel = 0;
 
 	/**
-	 * @param string $file File to import.
+	 * Config constructor.
+	 *
+	 * @param string $argv The list of arguments
+	 *
+	 * @throws InvalidConfigException
 	 */
-	function __construct($argv) {
+	public function __construct($argv) {
 		if (count($argv) < 2) {
 			throw new InvalidConfigException;
 		}
@@ -116,11 +122,14 @@ class Config {
 	}
 
 	/**
-	 * @var SymbolTable     $index
-	 * @var OutputInterface $output
+	 * getPlugins
+	 *
+	 * @param SymbolTable     $index  Instance of SymbolTable
+	 * @param OutputInterface $output Instance of OutputInterface
+	 *
 	 * @return BaseCheck[]
 	 */
-	function getPlugins(SymbolTable $index, OutputInterface $output) {
+	public function getPlugins(SymbolTable $index, OutputInterface $output) {
 		$plugins = [];
 		if (isset($this->config['plugins']) && is_array($this->config['plugins'])) {
 			foreach ($this->config['plugins'] as $fileName) {
@@ -133,28 +142,35 @@ class Config {
 	}
 
 	/**
+	 * getOutputLevel
+	 *
 	 * @return int
 	 */
-	function getOutputLevel() {
+	public function getOutputLevel() {
 		return $this->outputLevel;
 	}
 
 	/**
+	 * showStandardTests
+	 *
 	 * @return void
 	 */
-	function showStandardTests() {
+	public function showStandardTests() {
 		echo "The following constants are supported:\n    " . implode("\n    ", ErrorConstants::getConstants()) . "\n";
 	}
 
 	/**
-	 * @param array $argv
-	 * @return array
+	 * parseArgv
+	 *
+	 * @param array $argv List of arguments
+	 *
+	 * @return void
 	 * @throws InvalidConfigException
 	 */
 	private function parseArgv(array $argv) {
 		$nextArg = 0;
-		for ($i = 1; $i < count($argv); ++$i) {
-			switch ($argv[$i]) {
+		for ($argCount = 1; $argCount < count($argv); ++$argCount) {
+			switch ($argv[$argCount]) {
 				case '-a':
 					$this->forceAnalysis = true;
 					break;
@@ -173,10 +189,10 @@ class Config {
 					break;
 				case '-p':
 					$params = [];
-					if ($i + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$i + 1], $params) ) {
+					if ($argCount + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$argCount + 1], $params) ) {
 						throw new InvalidConfigException;
 					}
-					++$i;
+					++$argCount;
 					list($wholeMatch, $this->partitionNumber, $this->partitions) = $params;
 					if ($this->partitionNumber < 1 || $this->partitionNumber > $this->partitions) {
 						throw new InvalidConfigException;
@@ -186,18 +202,24 @@ class Config {
 					$this->outputLevel++;
 					break;
 				case '-n':
-					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
-					$this->processes = intval($argv[++$i]);
+					if ($argCount + 1 >= count($argv)) {
+						throw new InvalidConfigException;
+					}
+					$this->processes = intval($argv[++$argCount]);
 					break;
 				case '-f':
-					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
+					if ($argCount + 1 >= count($argv)) {
+						throw new InvalidConfigException;
+					}
 					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
-					$this->fileList = [ $argv[++$i] ];
+					$this->fileList = [ $argv[++$argCount] ];
 					$this->reindex = true;
 					break;
 				case '-o':
-					if ($i + 1 >= count($argv)) throw new InvalidConfigException;
-					$this->outputFile = $argv[++$i];
+					if ($argCount + 1 >= count($argv)) {
+						throw new InvalidConfigException;
+					}
+					$this->outputFile = $argv[++$argCount];
 					break;
 				case '-h':
 				case '--help':
@@ -206,10 +228,10 @@ class Config {
 				default:
 					switch ($nextArg) {
 						case 0:
-							$this->configFileName = $argv[$i];
+							$this->configFileName = $argv[$argCount];
 							break;
 						case 1:
-							$this->fileList = explode("\n", file_get_contents($argv[$i]));
+							$this->fileList = explode("\n", file_get_contents($argv[$argCount]));
 							break;
 						default:
 							throw new InvalidConfigException;
@@ -222,67 +244,147 @@ class Config {
 		}
 	}
 
-	function getProcessCount() {
+	/**
+	 * getProcessCount
+	 *
+	 * @return int
+	 */
+	public function getProcessCount() {
 		return $this->processes;
 	}
 
-	function getConfigArray() {
+	/**
+	 * getConfigArray
+	 *
+	 * @return array|mixed
+	 */
+	public function getConfigArray() {
 		return $this->config;
 	}
 
-	function hasFileList() {
+	/**
+	 * hasFileList
+	 *
+	 * @return bool
+	 */
+	public function hasFileList() {
 		return $this->fileList !== false;
 	}
 
-	function getFileList() {
+	/**
+	 * getFileList
+	 *
+	 * @return false|\string[]
+	 */
+	public function getFileList() {
 		return $this->fileList;
 	}
 
-	function getConfigFileName() {
+	/**
+	 * getConfigFileName
+	 *
+	 * @return string
+	 */
+	public function getConfigFileName() {
 		return $this->configFileName;
 	}
 
-	function getPartitions() {
+	/**
+	 * getPartitions
+	 *
+	 * @return int
+	 */
+	public function getPartitions() {
 		return $this->partitions;
 	}
 
-	function getPartitionNumber() {
+	/**
+	 * getPartitionNumber
+	 *
+	 * @return int
+	 */
+	public function getPartitionNumber() {
 		return $this->partitionNumber;
 	}
 
-	function getBasePath() {
+	/**
+	 * getBasePath
+	 *
+	 * @return string
+	 */
+	public function getBasePath() {
 		return $this->basePath;
 	}
 
-	function getSymbolTable() {
+	/**
+	 * getSymbolTable
+	 *
+	 * @return SymbolTable
+	 */
+	public function getSymbolTable() {
 		return $this->symbolTable;
 	}
 
-	function shouldIndex() {
+	/**
+	 * shouldIndex
+	 *
+	 * @return bool
+	 */
+	public function shouldIndex() {
 		return $this->forceIndex;
 	}
 
-	function shouldAnalyze() {
+	/**
+	 * shouldAnalyze
+	 *
+	 * @return bool
+	 */
+	public function shouldAnalyze() {
 		return $this->forceAnalysis;
 	}
 
+	/**
+	 * getSymbolTableFile
+	 *
+	 * @return string
+	 */
 	private function getSymbolTableFile() {
 		return $this->basePath . "/" . $this->symbolTableFile;
 	}
 
-	function shouldReindex() {
+	/**
+	 * shouldReindex
+	 *
+	 * @return bool
+	 */
+	public function shouldReindex() {
 		return $this->reindex;
 	}
 
-	function getEmitList() {
+	/**
+	 * getEmitList
+	 *
+	 * @return mixed|\string[]
+	 */
+	public function getEmitList() {
 		return $this->emitList;
 	}
 
-	function processCount() {
+	/**
+	 * processCount
+	 *
+	 * @return int
+	 */
+	public function processCount() {
 		return $this->processes;
 	}
 
-	function getOutputFile() {
+	/**
+	 * getOutputFile
+	 *
+	 * @return string
+	 */
+	public function getOutputFile() {
 		return $this->outputFile;
 	}
 }

@@ -1,32 +1,61 @@
-<?php
+<?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\NodeVisitors;
-
-
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
+use phpDocumentor\Reflection\DocBlockFactory;
 use phpDocumentor\Reflection\Types\Context;
+use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeVisitor\NameResolver;
 use BambooHR\Guardrail\Abstractions\ClassMethod;
 
+/**
+ * Class DocBlockNameResolver
+ *
+ * @package BambooHR\Guardrail\NodeVisitors
+ */
 class DocBlockNameResolver extends NameResolver {
+
+	/**
+	 * @var DocBlockFactory
+	 */
 	private $factory;
+
+	/**
+	 * @var array
+	 */
 	private $classAliases = [];
+
+	/**
+	 * @var bool
+	 */
 	private $useDocBlock = true;
 
+	/**
+	 * DocBlockNameResolver constructor.
+	 */
 	function __construct() {
-		$this->factory  = \phpDocumentor\Reflection\DocBlockFactory::createInstance();
+		$this->factory  = DocBlockFactory::createInstance();
 	}
 
-	protected function addAlias(Stmt\UseUse $use, $type, Name $prefix = null) {
+	/**
+	 * addAlias
+	 *
+	 * @param UseUse    $use    Instance of UseUse
+	 * @param string    $type   A constant (TYPE_*) from UseUse
+	 * @param Name|null $prefix Instance of name (or null)
+	 *
+	 * @return void
+	 */
+	protected function addAlias(UseUse $use, $type, Name $prefix = null) {
 		parent::addAlias($use, $type, $prefix);
 		if ($type == Stmt\Use_::TYPE_NORMAL) {
 			// Add prefix for group uses
@@ -35,13 +64,26 @@ class DocBlockNameResolver extends NameResolver {
 		}
 	}
 
-
+	/**
+	 * resetState
+	 *
+	 * @param Name|null $namespace Instance of Name (or null)
+	 *
+	 * @return void
+	 */
 	protected function resetState(Name $namespace = null) {
 		parent::resetState($namespace);
 		$this->classAliases = [];
 	}
 
-	function enterNode(\PhpParser\Node $node) {
+	/**
+	 * enterNode
+	 *
+	 * @param Node $node Instance of node
+	 *
+	 * @return void
+	 */
+	public function enterNode(Node $node) {
 		if ($this->useDocBlock) {
 			if ($node instanceof Function_ || $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
 				$this->importReturnValue($node);
@@ -51,14 +93,25 @@ class DocBlockNameResolver extends NameResolver {
 			}
 		}
 		parent::enterNode($node);
-
 	}
 
-	function getDocBlockContext() {
+	/**
+	 * getDocBlockContext
+	 *
+	 * @return Context
+	 */
+	public function getDocBlockContext() {
 		return new Context( strval($this->namespace), $this->classAliases );
 	}
 
-	function importVarType(Property $prop) {
+	/**
+	 * importVarType
+	 *
+	 * @param Property $prop Instance of Property
+	 *
+	 * @return void
+	 */
+	public function importVarType(Property $prop) {
 		$prop->getDocComment();
 		$comment = $prop->getDocComment();
 		if ($comment) {
@@ -79,7 +132,7 @@ class DocBlockNameResolver extends NameResolver {
 							$prop->props[0]->setAttribute("namespacedType", strval($type));
 						}
 					}
-				} catch (\InvalidArgumentException $e) {
+				} catch (\InvalidArgumentException $exception) {
 					// Skip it.
 				}
 			}
@@ -87,7 +140,11 @@ class DocBlockNameResolver extends NameResolver {
 	}
 
 	/**
-	 * @param Function_|ClassMethod $node
+	 * importReturnValue
+	 *
+	 * @param Function_|ClassMethod $node Instance of Function_ ClassMethod
+	 *
+	 * @return void
 	 */
 	function importReturnValue($node) {
 		$comment = $node->getDocComment();
@@ -111,7 +168,7 @@ class DocBlockNameResolver extends NameResolver {
 						}
 					}
 				}
-			} catch (\InvalidArgumentException $e) {
+			} catch (\InvalidArgumentException $exception) {
 				// Skip it.
 			}
 		}
