@@ -1,24 +1,31 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Checks;
-
-use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\Node;
+use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 
 class FunctionCallCheck extends BaseCheck {
-	function getCheckNodeTypes() {
-		return [\PhpParser\Node\Expr\FuncCall::class];
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [FuncCall::class];
 	}
 
+	/**
+	 * @var array
+	 */
 	static private $dangerous = ["exec" => true,"shell_exec" => true, "proc_open" => true, "passthru" => true, "popen" => true, "system" => true];
 
 	/**
@@ -29,7 +36,7 @@ class FunctionCallCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 
@@ -72,7 +79,14 @@ class FunctionCallCheck extends BaseCheck {
 		}
 	}
 
-	function getMinimumParams($name) {
+	/**
+	 * getMinimumParams
+	 *
+	 * @param string $name The name
+	 *
+	 * @return int
+	 */
+	public function getMinimumParams($name) {
 		$ob = $this->symbolTable->getAbstractedFunction($name);
 		if ($ob) {
 			return $ob->getMinimumRequiredParameters();

@@ -1,20 +1,27 @@
-<?php
+<?php namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail;
-
 use BambooHR\Guardrail\Phases\IndexingPhase;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
-use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
 
+/**
+ * Class CommandLineRunner
+ *
+ * @package BambooHR\Guardrail
+ */
 class CommandLineRunner {
 
-	function usage() {
+	/**
+	 * usage
+	 *
+	 * @return void
+	 */
+	public function usage() {
 		echo "
 Usage: php -d memory_limit=500M Scan.php [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
 
@@ -42,7 +49,14 @@ where: -p #/#                 = Define the number of partitions and the current 
 ";
 	}
 
-	function run(array $argv) {
+	/**
+	 * run
+	 *
+	 * @param array $argv The list of args
+	 *
+	 * @return void
+	 */
+	public function run(array $argv) {
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");

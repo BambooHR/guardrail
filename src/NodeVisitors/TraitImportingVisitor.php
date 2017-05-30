@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\NodeVisitors;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -21,27 +19,62 @@ use PhpParser\NodeVisitorAbstract;
  * the appropriate methods and properties.
  */
 class TraitImportingVisitor extends NodeVisitorAbstract {
+
 	/** @var  TraitImportingVisitor */
 	private $importer;
+
+	/**
+	 * @var string
+	 */
 	private $file;
+
+	/**
+	 * @var array
+	 */
 	private $classStack = [];
 
-	function __construct( SymbolTable $index) {
+	/**
+	 * TraitImportingVisitor constructor.
+	 *
+	 * @param SymbolTable $index Instance of SymbolTable
+	 */
+	public function __construct( SymbolTable $index) {
 		$this->importer  = new TraitImporter($index);
 	}
 
-	function setFile($name) {
+	/**
+	 * setFile
+	 *
+	 * @param string $name The filename
+	 *
+	 * @return void
+	 */
+	public function setFile($name) {
 		$this->file = $name;
 	}
 
-	function enterNode(Node $node) {
+	/**
+	 * enterNode
+	 *
+	 * @param Node $node Instance of Node
+	 *
+	 * @return null
+	 */
+	public function enterNode(Node $node) {
 		if ($node instanceof Class_ || $node instanceof Trait_) {
 			array_push($this->classStack, $node);
 		}
 		return null;
 	}
 
-	function leaveNode(Node $node) {
+	/**
+	 * leaveNode
+	 *
+	 * @param Node $node Instance of Node
+	 *
+	 * @return array|null
+	 */
+	public function leaveNode(Node $node) {
 		if ($node instanceof Class_ || $node instanceof Trait_) {
 			array_pop($this->classStack);
 		} else if ($node instanceof Node\Stmt\TraitUse) {

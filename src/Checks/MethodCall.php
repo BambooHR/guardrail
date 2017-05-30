@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Abstractions\MethodInterface;
 use PhpParser\Node;
@@ -19,17 +17,33 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeInferrer;
 use BambooHR\Guardrail\Util;
 
-
+/**
+ * Class MethodCall
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class MethodCall extends BaseCheck {
+
 	/** @var TypeInferrer */
 	private $inferenceEngine;
 
-	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+	/**
+	 * MethodCall constructor.
+	 *
+	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
+	 * @param OutputInterface $doc         Instance of OutputInterface
+	 */
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->inferenceEngine = new TypeInferrer($symbolTable);
 	}
 
-	function getCheckNodeTypes() {
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
 		return [\PhpParser\Node\Expr\MethodCall::class];
 	}
 
@@ -86,11 +100,15 @@ class MethodCall extends BaseCheck {
 	}
 
 	/**
-	 * @param           $fileName
-	 * @param           $node
-	 * @param string   $inside
-	 * @param Scope    $scope
-	 * @param           $method
+	 * checkMethod
+	 *
+	 * @param string          $fileName The name of the file
+	 * @param string          $node     The node
+	 * @param string          $inside   The inside method
+	 * @param Scope           $scope    Instance of Scope
+	 * @param MethodInterface $method   Instance of MethodInterface
+	 *
+	 * @return void
 	 */
 	protected function checkMethod($fileName, $node, $inside, Scope $scope, MethodInterface $method) {
 		if ($method->isStatic()) {

@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\Checks;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
@@ -17,13 +15,30 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
 use BambooHR\Guardrail\Scope;
 
-
+/**
+ * Class SwitchCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class SwitchCheck extends BaseCheck {
-	function getCheckNodeTypes() {
-		return [ \PhpParser\Node\Stmt\Switch_::class ];
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [ Switch_::class ];
 	}
 
-	static function getLastStatement(array $stmts) {
+	/**
+	 * getLastStatement
+	 *
+	 * @param array $stmts The statements
+	 *
+	 * @return mixed|null
+	 */
+	static protected function getLastStatement(array $stmts) {
 		$lastStatement = null;
 		foreach ($stmts as $stmt) {
 			if (!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
@@ -33,7 +48,14 @@ class SwitchCheck extends BaseCheck {
 		return $lastStatement;
 	}
 
-	static function endWithBreak(array $stmts) {
+	/**
+	 * endWithBreak
+	 *
+	 * @param array $stmts The statements
+	 *
+	 * @return bool
+	 */
+	static protected function endWithBreak(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
@@ -53,7 +75,14 @@ class SwitchCheck extends BaseCheck {
 			);
 	}
 
-	static function allIfBranchesExit(\PhpParser\Node\Stmt\If_ $lastStatement) {
+	/**
+	 * allIfBranchesExit
+	 *
+	 * @param If_ $lastStatement Instance of If_
+	 *
+	 * @return bool
+	 */
+	static protected function allIfBranchesExit(If_ $lastStatement) {
 		if (!$lastStatement->else && !$lastStatement->elseifs) {
 			return false;
 		}
@@ -74,7 +103,14 @@ class SwitchCheck extends BaseCheck {
 		return true;
 	}
 
-	static function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
+	/**
+	 * allSwitchCasesExit
+	 *
+	 * @param Switch_ $lastStatement Instance of Switch_
+	 *
+	 * @return bool
+	 */
+	static protected function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
 		$hasDefault = false;
 		foreach ($lastStatement->cases as $case) {
 			if (!$case->cond) {
@@ -92,12 +128,14 @@ class SwitchCheck extends BaseCheck {
 		return $hasDefault;
 	}
 
-
 	/**
-	 * @param \PhpParser\Node\Stmt[] $stmts
-	 * @param $allowBreak
+	 * allBranchesExit
+	 *
+	 * @param array $stmts List of statements
+	 *
+	 * @return bool
 	 */
-	static function allBranchesExit(array $stmts) {
+	static public function allBranchesExit(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
 
 		if (!$lastStatement) {
@@ -121,7 +159,7 @@ class SwitchCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 

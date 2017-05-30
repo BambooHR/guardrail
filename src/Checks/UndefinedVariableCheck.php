@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\Checks;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -13,8 +11,19 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 
+/**
+ * Class UndefinedVariableCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class UndefinedVariableCheck extends BaseCheck {
-	function getCheckNodeTypes() {
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
 		return [Variable::class];
 	}
 
@@ -26,7 +35,7 @@ class UndefinedVariableCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof Variable &&$node->name instanceof Expr) {

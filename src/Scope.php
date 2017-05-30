@@ -1,20 +1,25 @@
-<?php
+<?php namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail;
-
-
 use PhpParser\Node\FunctionLike;
 
+/**
+ * Class Scope
+ *
+ * @package BambooHR\Guardrail
+ */
 class Scope {
 	const UNDEFINED = "!0";
 	const MIXED_TYPE = "!1";
 	const SCALAR_TYPE = "!2";
 
+	/**
+	 * @var array
+	 */
 	private $vars = [];
 
 	/** @var  bool */
@@ -26,32 +31,66 @@ class Scope {
 	/** @var FunctionLike */
 	private $inside;
 
-	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
+	/**
+	 * Scope constructor.
+	 *
+	 * @param bool         $isStatic Set static
+	 * @param bool         $isGlobal Set global
+	 * @param FunctionLike $inside   Instance of FunctionLike (or null)
+	 */
+	public function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
 		$this->isStatic = $isStatic;
 		$this->isGlobal = $isGlobal;
 		$this->inside = $inside;
 	}
 
-	function isStatic() {
+	/**
+	 * isStatic
+	 *
+	 * @return bool
+	 */
+	public function isStatic() {
 		return $this->isStatic;
 	}
 
-	function isGlobal() {
+	/**
+	 * isGlobal
+	 *
+	 * @return bool
+	 */
+	public function isGlobal() {
 		return $this->isGlobal;
 	}
 
 	/**
+	 * getInsideFunction
+	 *
 	 * @return FunctionLike
 	 */
-	function getInsideFunction() {
+	public function getInsideFunction() {
 		return $this->inside;
 	}
 
-	function setVarType($name, $type) {
+	/**
+	 * setVarType
+	 *
+	 * @param string $name The name
+	 * @param string $type The type
+	 *
+	 * @return void
+	 */
+	public function setVarType($name, $type) {
 		$this->vars[$name] = $type;
 	}
 
-	function getVarType($name) {
+	/**
+	 * getVarType
+	 *
+	 * @param string $name The name
+	 *
+	 * @return mixed|string
+	 */
+	public function getVarType($name) {
 		if (isset($this->vars[$name])) {
 			return $this->vars[$name];
 		}
@@ -59,9 +98,11 @@ class Scope {
 	}
 
 	/**
+	 * getScopeClone
+	 *
 	 * @return Scope
 	 */
-	function getScopeClone() {
+	public function getScopeClone() {
 		$ret = new Scope($this->isStatic, $this->isGlobal);
 		$ret->vars = $this->vars;
 		return $ret;

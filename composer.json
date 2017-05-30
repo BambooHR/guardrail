@@ -26,7 +26,7 @@
     },
     "scripts": {
         "add-standard" : "vendor/bin/phpcs --config-set installed_paths $(pwd)/vendor/bamboohr/phpcs/BambooHR",
-        "cs-check": "vendor/bin/phpcs --colors -p --extensions=php --standard=BambooHR ./src",
+        "cs-check": "vendor/bin/phpcs --ignore=./src/ExtraStubs/* --colors -p --extensions=php --standard=BambooHR ./src",
         "cs-fix": "vendor/bin/phpcbf --colors --extensions=php --standard=BambooHR ./src"
     }
 }

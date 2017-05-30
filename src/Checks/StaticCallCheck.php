@@ -1,21 +1,31 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Checks;
-
 use PhpParser\Node;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 
+/**
+ * Class StaticCallCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class StaticCallCheck extends BaseCheck {
-	function getCheckNodeTypes() {
-		return [\PhpParser\Node\Expr\StaticCall::class];
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [StaticCall::class];
 	}
 
 	/**
@@ -26,7 +36,7 @@ class StaticCallCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope = null) {
 		if ($node->class instanceof Name && gettype($node->name) == "string") {
