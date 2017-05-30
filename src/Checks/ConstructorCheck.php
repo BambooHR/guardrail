@@ -45,7 +45,7 @@ class ConstructorCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		/** var \PhpParser\Node\Stmt\ClassMethod $node */
-		if (strcasecmp($node->name,"__construct")==0 &&
+		if (strcasecmp($node->name, "__construct") == 0 &&
 			$inside instanceof Class_ &&
 			$inside->extends
 		) {

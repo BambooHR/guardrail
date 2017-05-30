@@ -10,8 +10,7 @@ namespace BambooHR\Guardrail;
 
 use PhpParser\Node\FunctionLike;
 
-class Scope
-{
+class Scope {
 	const UNDEFINED = "!0";
 	const MIXED_TYPE = "!1";
 	const SCALAR_TYPE = "!2";
@@ -28,9 +27,9 @@ class Scope
 	private $inside;
 
 	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
-		$this->isStatic=$isStatic;
-		$this->isGlobal=$isGlobal;
-		$this->inside=$inside;
+		$this->isStatic = $isStatic;
+		$this->isGlobal = $isGlobal;
+		$this->inside = $inside;
 	}
 
 	function isStatic() {
@@ -49,11 +48,11 @@ class Scope
 	}
 
 	function setVarType($name, $type) {
-		$this->vars[$name]=$type;
+		$this->vars[$name] = $type;
 	}
 
 	function getVarType($name) {
-		if(isset($this->vars[$name])) {
+		if (isset($this->vars[$name])) {
 			return $this->vars[$name];
 		}
 		return isset($this->vars[$name]) ? $this->vars[$name] : self::UNDEFINED;

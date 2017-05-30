@@ -39,7 +39,7 @@ class ReflectedClass implements ClassInterface {
 
 	function getMethodNames() {
 		$ret = [];
-		foreach($this->refl->getMethods() as $method) {
+		foreach ($this->refl->getMethods() as $method) {
 			$ret[] = $method->name;
 		}
 		return $ret;
@@ -54,8 +54,7 @@ class ReflectedClass implements ClassInterface {
 		try {
 			$method = $this->refl->getMethod($name);
 			if ($method) return new ReflectedClassMethod($method);
-		}
-		catch(\ReflectionException $e) {
+		} catch (\ReflectionException $e) {
 			return null;
 		}
 		return null;
@@ -68,21 +67,20 @@ class ReflectedClass implements ClassInterface {
 	function getProperty($name) {
 		try {
 			$prop = $this->refl->getProperty($name);
-			if($prop) {
+			if ($prop) {
 				$modifiers = $prop->getModifiers();
 
 				if ($modifiers & \ReflectionProperty::IS_PRIVATE) {
-					$access="private";
-				} else if($modifiers & \ReflectionProperty::IS_PROTECTED) {
-					$access="protected";
+					$access = "private";
+				} else if ($modifiers & \ReflectionProperty::IS_PROTECTED) {
+					$access = "protected";
 				} else {
-					$access="public";
+					$access = "public";
 				}
 				return new Property($prop->getName(), $access, "", $modifiers & \ReflectionProperty::IS_STATIC );
 			}
 			return null;
-		}
-		catch(\ReflectionException $e) {
+		} catch (\ReflectionException $e) {
 			return null;
 		}
 	}
@@ -90,8 +88,8 @@ class ReflectedClass implements ClassInterface {
 	function getPropertyNames() {
 		$ret = [];
 		$props = $this->refl->getProperties();
-		foreach($props as $prop) {
-			$ret[]=$prop->getName();
+		foreach ($props as $prop) {
+			$ret[] = $prop->getName();
 		}
 		return $ret;
 	}

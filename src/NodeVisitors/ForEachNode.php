@@ -11,8 +11,7 @@ use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 
-class ForEachNode extends NodeVisitorAbstract
-{
+class ForEachNode extends NodeVisitorAbstract {
 	private $callBack;
 
 	function __construct($callBack) {
@@ -25,7 +24,7 @@ class ForEachNode extends NodeVisitorAbstract
 	}
 
 	public static function run(array $nodes=null, callable $callback) {
-		if(is_array($nodes)) {
+		if (is_array($nodes)) {
 			$traverser = new NodeTraverser();
 			$traverser->addVisitor(new self($callback));
 			$traverser->traverse($nodes);

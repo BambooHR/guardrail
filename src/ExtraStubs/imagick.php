@@ -1,399 +1,397 @@
 <?php
 
 /** @phpstub */
-class Imagick implements \Iterator, \Traversable
-{
-	const ALIGN_CENTER = NULL;
-	const ALIGN_LEFT = NULL;
-	const ALIGN_RIGHT = NULL;
-	const ALIGN_UNDEFINED = NULL;
-	const ALPHACHANNEL_ACTIVATE = NULL;
-	const ALPHACHANNEL_COPY = NULL;
-	const ALPHACHANNEL_DEACTIVATE = NULL;
-	const ALPHACHANNEL_EXTRACT = NULL;
-	const ALPHACHANNEL_OPAQUE = NULL;
-	const ALPHACHANNEL_RESET = NULL;
-	const ALPHACHANNEL_SET = NULL;
-	const ALPHACHANNEL_SHAPE = NULL;
-	const ALPHACHANNEL_TRANSPARENT = NULL;
-	const ALPHACHANNEL_UNDEFINED = NULL;
-	const CHANNEL_ALL = NULL;
-	const CHANNEL_ALPHA = NULL;
-	const CHANNEL_BLACK = NULL;
-	const CHANNEL_BLUE = NULL;
-	const CHANNEL_CYAN = NULL;
-	const CHANNEL_DEFAULT = NULL;
-	const CHANNEL_GRAY = NULL;
-	const CHANNEL_GREEN = NULL;
-	const CHANNEL_INDEX = NULL;
-	const CHANNEL_MAGENTA = NULL;
-	const CHANNEL_MATTE = NULL;
-	const CHANNEL_OPACITY = NULL;
-	const CHANNEL_RED = NULL;
-	const CHANNEL_UNDEFINED = NULL;
-	const CHANNEL_YELLOW = NULL;
-	const COLOR_ALPHA = NULL;
-	const COLOR_BLACK = NULL;
-	const COLOR_BLUE = NULL;
-	const COLOR_CYAN = NULL;
-	const COLOR_FUZZ = NULL;
-	const COLOR_GREEN = NULL;
-	const COLOR_MAGENTA = NULL;
-	const COLOR_OPACITY = NULL;
-	const COLOR_RED = NULL;
-	const COLOR_YELLOW = NULL;
-	const COLORSPACE_CMY = NULL;
-	const COLORSPACE_CMYK = NULL;
-	const COLORSPACE_GRAY = NULL;
-	const COLORSPACE_HSB = NULL;
-	const COLORSPACE_HSL = NULL;
-	const COLORSPACE_HWB = NULL;
-	const COLORSPACE_LAB = NULL;
-	const COLORSPACE_LOG = NULL;
-	const COLORSPACE_OHTA = NULL;
-	const COLORSPACE_REC601LUMA = NULL;
-	const COLORSPACE_REC709LUMA = NULL;
-	const COLORSPACE_RGB = NULL;
-	const COLORSPACE_SRGB = NULL;
-	const COLORSPACE_TRANSPARENT = NULL;
-	const COLORSPACE_UNDEFINED = NULL;
-	const COLORSPACE_XYZ = NULL;
-	const COLORSPACE_YCBCR = NULL;
-	const COLORSPACE_YCC = NULL;
-	const COLORSPACE_YIQ = NULL;
-	const COLORSPACE_YPBPR = NULL;
-	const COLORSPACE_YUV = NULL;
-	const COMPOSITE_ADD = NULL;
-	const COMPOSITE_ATOP = NULL;
-	const COMPOSITE_BLEND = NULL;
-	const COMPOSITE_BUMPMAP = NULL;
-	const COMPOSITE_CLEAR = NULL;
-	const COMPOSITE_COLORBURN = NULL;
-	const COMPOSITE_COLORDODGE = NULL;
-	const COMPOSITE_COLORIZE = NULL;
-	const COMPOSITE_COPY = NULL;
-	const COMPOSITE_COPYBLACK = NULL;
-	const COMPOSITE_COPYBLUE = NULL;
-	const COMPOSITE_COPYCYAN = NULL;
-	const COMPOSITE_COPYGREEN = NULL;
-	const COMPOSITE_COPYMAGENTA = NULL;
-	const COMPOSITE_COPYOPACITY = NULL;
-	const COMPOSITE_COPYRED = NULL;
-	const COMPOSITE_COPYYELLOW = NULL;
-	const COMPOSITE_DARKEN = NULL;
-	const COMPOSITE_DEFAULT = NULL;
-	const COMPOSITE_DIFFERENCE = NULL;
-	const COMPOSITE_DISPLACE = NULL;
-	const COMPOSITE_DISSOLVE = NULL;
-	const COMPOSITE_DST = NULL;
-	const COMPOSITE_DSTATOP = NULL;
-	const COMPOSITE_DSTIN = NULL;
-	const COMPOSITE_DSTOUT = NULL;
-	const COMPOSITE_DSTOVER = NULL;
-	const COMPOSITE_EXCLUSION = NULL;
-	const COMPOSITE_HARDLIGHT = NULL;
-	const COMPOSITE_HUE = NULL;
-	const COMPOSITE_IN = NULL;
-	const COMPOSITE_LIGHTEN = NULL;
-	const COMPOSITE_LUMINIZE = NULL;
-	const COMPOSITE_MINUS = NULL;
-	const COMPOSITE_MODULATE = NULL;
-	const COMPOSITE_MULTIPLY = NULL;
-	const COMPOSITE_NO = NULL;
-	const COMPOSITE_OUT = NULL;
-	const COMPOSITE_OVER = NULL;
-	const COMPOSITE_OVERLAY = NULL;
-	const COMPOSITE_PLUS = NULL;
-	const COMPOSITE_REPLACE = NULL;
-	const COMPOSITE_SATURATE = NULL;
-	const COMPOSITE_SCREEN = NULL;
-	const COMPOSITE_SOFTLIGHT = NULL;
-	const COMPOSITE_SRC = NULL;
-	const COMPOSITE_SRCATOP = NULL;
-	const COMPOSITE_SRCIN = NULL;
-	const COMPOSITE_SRCOUT = NULL;
-	const COMPOSITE_SRCOVER = NULL;
-	const COMPOSITE_SUBTRACT = NULL;
-	const COMPOSITE_THRESHOLD = NULL;
-	const COMPOSITE_UNDEFINED = NULL;
-	const COMPOSITE_XOR = NULL;
-	const COMPRESSION_BZIP = NULL;
-	const COMPRESSION_DXT1 = NULL;
-	const COMPRESSION_DXT3 = NULL;
-	const COMPRESSION_DXT5 = NULL;
-	const COMPRESSION_FAX = NULL;
-	const COMPRESSION_GROUP4 = NULL;
-	const COMPRESSION_JPEG = NULL;
-	const COMPRESSION_JPEG2000 = NULL;
-	const COMPRESSION_LOSSLESSJPEG = NULL;
-	const COMPRESSION_LZW = NULL;
-	const COMPRESSION_NO = NULL;
-	const COMPRESSION_RLE = NULL;
-	const COMPRESSION_UNDEFINED = NULL;
-	const COMPRESSION_ZIP = NULL;
-	const DECORATION_LINETROUGH = NULL;
-	const DECORATION_NO = NULL;
-	const DECORATION_OVERLINE = NULL;
-	const DECORATION_UNDERLINE = NULL;
-	const DISPOSE_BACKGROUND = NULL;
-	const DISPOSE_NONE = NULL;
-	const DISPOSE_PREVIOUS = NULL;
-	const DISPOSE_UNDEFINED = NULL;
-	const DISPOSE_UNRECOGNIZED = NULL;
-	const DISTORTION_AFFINE = NULL;
-	const DISTORTION_AFFINEPROJECTION = NULL;
-	const DISTORTION_ARC = NULL;
-	const DISTORTION_BARREL = NULL;
-	const DISTORTION_BARRELINVERSE = NULL;
-	const DISTORTION_BILINEAR = NULL;
-	const DISTORTION_DEPOLAR = NULL;
-	const DISTORTION_PERSPECTIVE = NULL;
-	const DISTORTION_PERSPECTIVEPROJECTION = NULL;
-	const DISTORTION_POLAR = NULL;
-	const DISTORTION_POLYNOMIAL = NULL;
-	const DISTORTION_SCALEROTATETRANSLATE = NULL;
-	const DISTORTION_SENTINEL = NULL;
-	const DISTORTION_SHEPARDS = NULL;
-	const DISTORTION_UNDEFINED = NULL;
-	const DITHERMETHOD_FLOYDSTEINBERG = NULL;
-	const DITHERMETHOD_NO = NULL;
-	const DITHERMETHOD_RIEMERSMA = NULL;
-	const DITHERMETHOD_UNDEFINED = NULL;
-	const EVALUATE_ADD = NULL;
-	const EVALUATE_ADDMODULUS = NULL;
-	const EVALUATE_AND = NULL;
-	const EVALUATE_COSINE = NULL;
-	const EVALUATE_DIVIDE = NULL;
-	const EVALUATE_GAUSSIANNOISE = NULL;
-	const EVALUATE_IMPULSENOISE = NULL;
-	const EVALUATE_LAPLACIANNOISE = NULL;
-	const EVALUATE_LEFTSHIFT = NULL;
-	const EVALUATE_LOG = NULL;
-	const EVALUATE_MAX = NULL;
-	const EVALUATE_MIN = NULL;
-	const EVALUATE_MULTIPLICATIVENOISE = NULL;
-	const EVALUATE_MULTIPLY = NULL;
-	const EVALUATE_OR = NULL;
-	const EVALUATE_POISSONNOISE = NULL;
-	const EVALUATE_POW = NULL;
-	const EVALUATE_RIGHTSHIFT = NULL;
-	const EVALUATE_SET = NULL;
-	const EVALUATE_SINE = NULL;
-	const EVALUATE_SUBTRACT = NULL;
-	const EVALUATE_THRESHOLD = NULL;
-	const EVALUATE_THRESHOLDBLACK = NULL;
-	const EVALUATE_THRESHOLDWHITE = NULL;
-	const EVALUATE_UNDEFINED = NULL;
-	const EVALUATE_UNIFORMNOISE = NULL;
-	const EVALUATE_XOR = NULL;
-	const FILLRULE_EVENODD = NULL;
-	const FILLRULE_NONZERO = NULL;
-	const FILLRULE_UNDEFINED = NULL;
-	const FILTER_BESSEL = NULL;
-	const FILTER_BLACKMAN = NULL;
-	const FILTER_BOX = NULL;
-	const FILTER_CATROM = NULL;
-	const FILTER_CUBIC = NULL;
-	const FILTER_GAUSSIAN = NULL;
-	const FILTER_HAMMING = NULL;
-	const FILTER_HANNING = NULL;
-	const FILTER_HERMITE = NULL;
-	const FILTER_LANCZOS = NULL;
-	const FILTER_MITCHELL = NULL;
-	const FILTER_POINT = NULL;
-	const FILTER_QUADRATIC = NULL;
-	const FILTER_SINC = NULL;
-	const FILTER_TRIANGLE = NULL;
-	const FILTER_UNDEFINED = NULL;
-	const FUNCTION_POLYNOMIAL = NULL;
-	const FUNCTION_SINUSOID = NULL;
-	const FUNCTION_UNDEFINED = NULL;
-	const GRAVITY_CENTER = NULL;
-	const GRAVITY_EAST = NULL;
-	const GRAVITY_NORTH = NULL;
-	const GRAVITY_NORTHEAST = NULL;
-	const GRAVITY_NORTHWEST = NULL;
-	const GRAVITY_SOUTH = NULL;
-	const GRAVITY_SOUTHEAST = NULL;
-	const GRAVITY_SOUTHWEST = NULL;
-	const GRAVITY_WEST = NULL;
-	const IMGTYPE_BILEVEL = NULL;
-	const IMGTYPE_COLORSEPARATION = NULL;
-	const IMGTYPE_COLORSEPARATIONMATTE = NULL;
-	const IMGTYPE_GRAYSCALE = NULL;
-	const IMGTYPE_GRAYSCALEMATTE = NULL;
-	const IMGTYPE_OPTIMIZE = NULL;
-	const IMGTYPE_PALETTE = NULL;
-	const IMGTYPE_PALETTEMATTE = NULL;
-	const IMGTYPE_TRUECOLOR = NULL;
-	const IMGTYPE_TRUECOLORMATTE = NULL;
-	const IMGTYPE_UNDEFINED = NULL;
-	const INTERLACE_GIF = NULL;
-	const INTERLACE_JPEG = NULL;
-	const INTERLACE_LINE = NULL;
-	const INTERLACE_NO = NULL;
-	const INTERLACE_PARTITION = NULL;
-	const INTERLACE_PLANE = NULL;
-	const INTERLACE_PNG = NULL;
-	const INTERLACE_UNDEFINED = NULL;
-	const INTERPOLATE_AVERAGE = NULL;
-	const INTERPOLATE_BICUBIC = NULL;
-	const INTERPOLATE_BILINEAR = NULL;
-	const INTERPOLATE_FILTER = NULL;
-	const INTERPOLATE_INTEGER = NULL;
-	const INTERPOLATE_MESH = NULL;
-	const INTERPOLATE_NEARESTNEIGHBOR = NULL;
-	const INTERPOLATE_SPLINE = NULL;
-	const INTERPOLATE_UNDEFINED = NULL;
-	const LAYERMETHOD_COALESCE = NULL;
-	const LAYERMETHOD_COMPAREANY = NULL;
-	const LAYERMETHOD_COMPARECLEAR = NULL;
-	const LAYERMETHOD_COMPAREOVERLAY = NULL;
-	const LAYERMETHOD_COMPOSITE = NULL;
-	const LAYERMETHOD_DISPOSE = NULL;
-	const LAYERMETHOD_FLATTEN = NULL;
-	const LAYERMETHOD_MERGE = NULL;
-	const LAYERMETHOD_MOSAIC = NULL;
-	const LAYERMETHOD_OPTIMIZE = NULL;
-	const LAYERMETHOD_OPTIMIZEIMAGE = NULL;
-	const LAYERMETHOD_OPTIMIZEPLUS = NULL;
-	const LAYERMETHOD_OPTIMIZETRANS = NULL;
-	const LAYERMETHOD_REMOVEDUPS = NULL;
-	const LAYERMETHOD_REMOVEZERO = NULL;
-	const LAYERMETHOD_UNDEFINED = NULL;
-	const LINECAP_BUTT = NULL;
-	const LINECAP_ROUND = NULL;
-	const LINECAP_SQUARE = NULL;
-	const LINECAP_UNDEFINED = NULL;
-	const LINEJOIN_BEVEL = NULL;
-	const LINEJOIN_MITER = NULL;
-	const LINEJOIN_ROUND = NULL;
-	const LINEJOIN_UNDEFINED = NULL;
-	const METRIC_MEANABSOLUTEERROR = NULL;
-	const METRIC_MEANSQUAREERROR = NULL;
-	const METRIC_PEAKABSOLUTEERROR = NULL;
-	const METRIC_PEAKSIGNALTONOISERATIO = NULL;
-	const METRIC_ROOTMEANSQUAREDERROR = NULL;
-	const METRIC_UNDEFINED = NULL;
-	const MONTAGEMODE_CONCATENATE = NULL;
-	const MONTAGEMODE_FRAME = NULL;
-	const MONTAGEMODE_UNFRAME = NULL;
-	const NOISE_GAUSSIAN = NULL;
-	const NOISE_IMPULSE = NULL;
-	const NOISE_LAPLACIAN = NULL;
-	const NOISE_MULTIPLICATIVEGAUSSIAN = NULL;
-	const NOISE_POISSON = NULL;
-	const NOISE_RANDOM = NULL;
-	const NOISE_UNIFORM = NULL;
-	const ORIENTATION_BOTTOMLEFT = NULL;
-	const ORIENTATION_BOTTOMRIGHT = NULL;
-	const ORIENTATION_LEFTBOTTOM = NULL;
-	const ORIENTATION_LEFTTOP = NULL;
-	const ORIENTATION_RIGHTBOTTOM = NULL;
-	const ORIENTATION_RIGHTTOP = NULL;
-	const ORIENTATION_TOPLEFT = NULL;
-	const ORIENTATION_TOPRIGHT = NULL;
-	const ORIENTATION_UNDEFINED = NULL;
-	const PAINT_FILLTOBORDER = NULL;
-	const PAINT_FLOODFILL = NULL;
-	const PAINT_POINT = NULL;
-	const PAINT_REPLACE = NULL;
-	const PAINT_RESET = NULL;
-	const PATHUNITS_OBJECTBOUNDINGBOX = NULL;
-	const PATHUNITS_UNDEFINED = NULL;
-	const PATHUNITS_USERSPACE = NULL;
-	const PATHUNITS_USERSPACEONUSE = NULL;
-	const PIXEL_CHAR = NULL;
-	const PIXEL_DOUBLE = NULL;
-	const PIXEL_FLOAT = NULL;
-	const PIXEL_INTEGER = NULL;
-	const PIXEL_LONG = NULL;
-	const PIXEL_QUANTUM = NULL;
-	const PIXEL_SHORT = NULL;
-	const PREVIEW_ADDNOISE = NULL;
-	const PREVIEW_BLUR = NULL;
-	const PREVIEW_BRIGHTNESS = NULL;
-	const PREVIEW_CHARCOALDRAWING = NULL;
-	const PREVIEW_DESPECKLE = NULL;
-	const PREVIEW_DULL = NULL;
-	const PREVIEW_EDGEDETECT = NULL;
-	const PREVIEW_GAMMA = NULL;
-	const PREVIEW_GRAYSCALE = NULL;
-	const PREVIEW_HUE = NULL;
-	const PREVIEW_IMPLODE = NULL;
-	const PREVIEW_JPEG = NULL;
-	const PREVIEW_OILPAINT = NULL;
-	const PREVIEW_QUANTIZE = NULL;
-	const PREVIEW_RAISE = NULL;
-	const PREVIEW_REDUCENOISE = NULL;
-	const PREVIEW_ROLL = NULL;
-	const PREVIEW_ROTATE = NULL;
-	const PREVIEW_SATURATION = NULL;
-	const PREVIEW_SEGMENT = NULL;
-	const PREVIEW_SHADE = NULL;
-	const PREVIEW_SHARPEN = NULL;
-	const PREVIEW_SHEAR = NULL;
-	const PREVIEW_SOLARIZE = NULL;
-	const PREVIEW_SPIFF = NULL;
-	const PREVIEW_SPREAD = NULL;
-	const PREVIEW_SWIRL = NULL;
-	const PREVIEW_THRESHOLD = NULL;
-	const PREVIEW_UNDEFINED = NULL;
-	const PREVIEW_WAVE = NULL;
-	const RENDERINGINTENT_ABSOLUTE = NULL;
-	const RENDERINGINTENT_PERCEPTUAL = NULL;
-	const RENDERINGINTENT_RELATIVE = NULL;
-	const RENDERINGINTENT_SATURATION = NULL;
-	const RENDERINGINTENT_UNDEFINED = NULL;
-	const RESOLUTION_PIXELSPERCENTIMETER = NULL;
-	const RESOLUTION_PIXELSPERINCH = NULL;
-	const RESOLUTION_UNDEFINED = NULL;
-	const RESOURCETYPE_AREA = NULL;
-	const RESOURCETYPE_DISK = NULL;
-	const RESOURCETYPE_FILE = NULL;
-	const RESOURCETYPE_MAP = NULL;
-	const RESOURCETYPE_MEMORY = NULL;
-	const RESOURCETYPE_UNDEFINED = NULL;
-	const SPARSECOLORMETHOD_BARYCENTRIC = NULL;
-	const SPARSECOLORMETHOD_BILINEAR = NULL;
-	const SPARSECOLORMETHOD_POLYNOMIAL = NULL;
-	const SPARSECOLORMETHOD_SPEPARDS = NULL;
-	const SPARSECOLORMETHOD_UNDEFINED = NULL;
-	const SPARSECOLORMETHOD_VORONOI = NULL;
-	const STRETCH_ANY = NULL;
-	const STRETCH_CONDENSED = NULL;
-	const STRETCH_EXPANDED = NULL;
-	const STRETCH_EXTRAEXPANDED = NULL;
-	const STRETCH_NORMAL = NULL;
-	const STRETCH_SEMICONDENSED = NULL;
-	const STRETCH_SEMIEXPANDED = NULL;
-	const STRETCH_ULTRACONDENSED = NULL;
-	const STRETCH_ULTRAEXPANDED = NULL;
-	const STYLE_ANY = NULL;
-	const STYLE_ITALIC = NULL;
-	const STYLE_NORMAL = NULL;
-	const STYLE_OBLIQUE = NULL;
-	const VIRTUALPIXELMETHOD_BACKGROUND = NULL;
-	const VIRTUALPIXELMETHOD_BLACK = NULL;
-	const VIRTUALPIXELMETHOD_CONSTANT = NULL;
-	const VIRTUALPIXELMETHOD_EDGE = NULL;
-	const VIRTUALPIXELMETHOD_GRAY = NULL;
-	const VIRTUALPIXELMETHOD_HORIZONTALTILE = NULL;
-	const VIRTUALPIXELMETHOD_MASK = NULL;
-	const VIRTUALPIXELMETHOD_MIRROR = NULL;
-	const VIRTUALPIXELMETHOD_TILE = NULL;
-	const VIRTUALPIXELMETHOD_TRANSPARENT = NULL;
-	const VIRTUALPIXELMETHOD_UNDEFINED = NULL;
-	const VIRTUALPIXELMETHOD_VERTICALTILE = NULL;
-	const VIRTUALPIXELMETHOD_WHITE = NULL;
+class Imagick implements \Iterator, \Traversable {
+	const ALIGN_CENTER = null;
+	const ALIGN_LEFT = null;
+	const ALIGN_RIGHT = null;
+	const ALIGN_UNDEFINED = null;
+	const ALPHACHANNEL_ACTIVATE = null;
+	const ALPHACHANNEL_COPY = null;
+	const ALPHACHANNEL_DEACTIVATE = null;
+	const ALPHACHANNEL_EXTRACT = null;
+	const ALPHACHANNEL_OPAQUE = null;
+	const ALPHACHANNEL_RESET = null;
+	const ALPHACHANNEL_SET = null;
+	const ALPHACHANNEL_SHAPE = null;
+	const ALPHACHANNEL_TRANSPARENT = null;
+	const ALPHACHANNEL_UNDEFINED = null;
+	const CHANNEL_ALL = null;
+	const CHANNEL_ALPHA = null;
+	const CHANNEL_BLACK = null;
+	const CHANNEL_BLUE = null;
+	const CHANNEL_CYAN = null;
+	const CHANNEL_DEFAULT = null;
+	const CHANNEL_GRAY = null;
+	const CHANNEL_GREEN = null;
+	const CHANNEL_INDEX = null;
+	const CHANNEL_MAGENTA = null;
+	const CHANNEL_MATTE = null;
+	const CHANNEL_OPACITY = null;
+	const CHANNEL_RED = null;
+	const CHANNEL_UNDEFINED = null;
+	const CHANNEL_YELLOW = null;
+	const COLOR_ALPHA = null;
+	const COLOR_BLACK = null;
+	const COLOR_BLUE = null;
+	const COLOR_CYAN = null;
+	const COLOR_FUZZ = null;
+	const COLOR_GREEN = null;
+	const COLOR_MAGENTA = null;
+	const COLOR_OPACITY = null;
+	const COLOR_RED = null;
+	const COLOR_YELLOW = null;
+	const COLORSPACE_CMY = null;
+	const COLORSPACE_CMYK = null;
+	const COLORSPACE_GRAY = null;
+	const COLORSPACE_HSB = null;
+	const COLORSPACE_HSL = null;
+	const COLORSPACE_HWB = null;
+	const COLORSPACE_LAB = null;
+	const COLORSPACE_LOG = null;
+	const COLORSPACE_OHTA = null;
+	const COLORSPACE_REC601LUMA = null;
+	const COLORSPACE_REC709LUMA = null;
+	const COLORSPACE_RGB = null;
+	const COLORSPACE_SRGB = null;
+	const COLORSPACE_TRANSPARENT = null;
+	const COLORSPACE_UNDEFINED = null;
+	const COLORSPACE_XYZ = null;
+	const COLORSPACE_YCBCR = null;
+	const COLORSPACE_YCC = null;
+	const COLORSPACE_YIQ = null;
+	const COLORSPACE_YPBPR = null;
+	const COLORSPACE_YUV = null;
+	const COMPOSITE_ADD = null;
+	const COMPOSITE_ATOP = null;
+	const COMPOSITE_BLEND = null;
+	const COMPOSITE_BUMPMAP = null;
+	const COMPOSITE_CLEAR = null;
+	const COMPOSITE_COLORBURN = null;
+	const COMPOSITE_COLORDODGE = null;
+	const COMPOSITE_COLORIZE = null;
+	const COMPOSITE_COPY = null;
+	const COMPOSITE_COPYBLACK = null;
+	const COMPOSITE_COPYBLUE = null;
+	const COMPOSITE_COPYCYAN = null;
+	const COMPOSITE_COPYGREEN = null;
+	const COMPOSITE_COPYMAGENTA = null;
+	const COMPOSITE_COPYOPACITY = null;
+	const COMPOSITE_COPYRED = null;
+	const COMPOSITE_COPYYELLOW = null;
+	const COMPOSITE_DARKEN = null;
+	const COMPOSITE_DEFAULT = null;
+	const COMPOSITE_DIFFERENCE = null;
+	const COMPOSITE_DISPLACE = null;
+	const COMPOSITE_DISSOLVE = null;
+	const COMPOSITE_DST = null;
+	const COMPOSITE_DSTATOP = null;
+	const COMPOSITE_DSTIN = null;
+	const COMPOSITE_DSTOUT = null;
+	const COMPOSITE_DSTOVER = null;
+	const COMPOSITE_EXCLUSION = null;
+	const COMPOSITE_HARDLIGHT = null;
+	const COMPOSITE_HUE = null;
+	const COMPOSITE_IN = null;
+	const COMPOSITE_LIGHTEN = null;
+	const COMPOSITE_LUMINIZE = null;
+	const COMPOSITE_MINUS = null;
+	const COMPOSITE_MODULATE = null;
+	const COMPOSITE_MULTIPLY = null;
+	const COMPOSITE_NO = null;
+	const COMPOSITE_OUT = null;
+	const COMPOSITE_OVER = null;
+	const COMPOSITE_OVERLAY = null;
+	const COMPOSITE_PLUS = null;
+	const COMPOSITE_REPLACE = null;
+	const COMPOSITE_SATURATE = null;
+	const COMPOSITE_SCREEN = null;
+	const COMPOSITE_SOFTLIGHT = null;
+	const COMPOSITE_SRC = null;
+	const COMPOSITE_SRCATOP = null;
+	const COMPOSITE_SRCIN = null;
+	const COMPOSITE_SRCOUT = null;
+	const COMPOSITE_SRCOVER = null;
+	const COMPOSITE_SUBTRACT = null;
+	const COMPOSITE_THRESHOLD = null;
+	const COMPOSITE_UNDEFINED = null;
+	const COMPOSITE_XOR = null;
+	const COMPRESSION_BZIP = null;
+	const COMPRESSION_DXT1 = null;
+	const COMPRESSION_DXT3 = null;
+	const COMPRESSION_DXT5 = null;
+	const COMPRESSION_FAX = null;
+	const COMPRESSION_GROUP4 = null;
+	const COMPRESSION_JPEG = null;
+	const COMPRESSION_JPEG2000 = null;
+	const COMPRESSION_LOSSLESSJPEG = null;
+	const COMPRESSION_LZW = null;
+	const COMPRESSION_NO = null;
+	const COMPRESSION_RLE = null;
+	const COMPRESSION_UNDEFINED = null;
+	const COMPRESSION_ZIP = null;
+	const DECORATION_LINETROUGH = null;
+	const DECORATION_NO = null;
+	const DECORATION_OVERLINE = null;
+	const DECORATION_UNDERLINE = null;
+	const DISPOSE_BACKGROUND = null;
+	const DISPOSE_NONE = null;
+	const DISPOSE_PREVIOUS = null;
+	const DISPOSE_UNDEFINED = null;
+	const DISPOSE_UNRECOGNIZED = null;
+	const DISTORTION_AFFINE = null;
+	const DISTORTION_AFFINEPROJECTION = null;
+	const DISTORTION_ARC = null;
+	const DISTORTION_BARREL = null;
+	const DISTORTION_BARRELINVERSE = null;
+	const DISTORTION_BILINEAR = null;
+	const DISTORTION_DEPOLAR = null;
+	const DISTORTION_PERSPECTIVE = null;
+	const DISTORTION_PERSPECTIVEPROJECTION = null;
+	const DISTORTION_POLAR = null;
+	const DISTORTION_POLYNOMIAL = null;
+	const DISTORTION_SCALEROTATETRANSLATE = null;
+	const DISTORTION_SENTINEL = null;
+	const DISTORTION_SHEPARDS = null;
+	const DISTORTION_UNDEFINED = null;
+	const DITHERMETHOD_FLOYDSTEINBERG = null;
+	const DITHERMETHOD_NO = null;
+	const DITHERMETHOD_RIEMERSMA = null;
+	const DITHERMETHOD_UNDEFINED = null;
+	const EVALUATE_ADD = null;
+	const EVALUATE_ADDMODULUS = null;
+	const EVALUATE_AND = null;
+	const EVALUATE_COSINE = null;
+	const EVALUATE_DIVIDE = null;
+	const EVALUATE_GAUSSIANNOISE = null;
+	const EVALUATE_IMPULSENOISE = null;
+	const EVALUATE_LAPLACIANNOISE = null;
+	const EVALUATE_LEFTSHIFT = null;
+	const EVALUATE_LOG = null;
+	const EVALUATE_MAX = null;
+	const EVALUATE_MIN = null;
+	const EVALUATE_MULTIPLICATIVENOISE = null;
+	const EVALUATE_MULTIPLY = null;
+	const EVALUATE_OR = null;
+	const EVALUATE_POISSONNOISE = null;
+	const EVALUATE_POW = null;
+	const EVALUATE_RIGHTSHIFT = null;
+	const EVALUATE_SET = null;
+	const EVALUATE_SINE = null;
+	const EVALUATE_SUBTRACT = null;
+	const EVALUATE_THRESHOLD = null;
+	const EVALUATE_THRESHOLDBLACK = null;
+	const EVALUATE_THRESHOLDWHITE = null;
+	const EVALUATE_UNDEFINED = null;
+	const EVALUATE_UNIFORMNOISE = null;
+	const EVALUATE_XOR = null;
+	const FILLRULE_EVENODD = null;
+	const FILLRULE_NONZERO = null;
+	const FILLRULE_UNDEFINED = null;
+	const FILTER_BESSEL = null;
+	const FILTER_BLACKMAN = null;
+	const FILTER_BOX = null;
+	const FILTER_CATROM = null;
+	const FILTER_CUBIC = null;
+	const FILTER_GAUSSIAN = null;
+	const FILTER_HAMMING = null;
+	const FILTER_HANNING = null;
+	const FILTER_HERMITE = null;
+	const FILTER_LANCZOS = null;
+	const FILTER_MITCHELL = null;
+	const FILTER_POINT = null;
+	const FILTER_QUADRATIC = null;
+	const FILTER_SINC = null;
+	const FILTER_TRIANGLE = null;
+	const FILTER_UNDEFINED = null;
+	const FUNCTION_POLYNOMIAL = null;
+	const FUNCTION_SINUSOID = null;
+	const FUNCTION_UNDEFINED = null;
+	const GRAVITY_CENTER = null;
+	const GRAVITY_EAST = null;
+	const GRAVITY_NORTH = null;
+	const GRAVITY_NORTHEAST = null;
+	const GRAVITY_NORTHWEST = null;
+	const GRAVITY_SOUTH = null;
+	const GRAVITY_SOUTHEAST = null;
+	const GRAVITY_SOUTHWEST = null;
+	const GRAVITY_WEST = null;
+	const IMGTYPE_BILEVEL = null;
+	const IMGTYPE_COLORSEPARATION = null;
+	const IMGTYPE_COLORSEPARATIONMATTE = null;
+	const IMGTYPE_GRAYSCALE = null;
+	const IMGTYPE_GRAYSCALEMATTE = null;
+	const IMGTYPE_OPTIMIZE = null;
+	const IMGTYPE_PALETTE = null;
+	const IMGTYPE_PALETTEMATTE = null;
+	const IMGTYPE_TRUECOLOR = null;
+	const IMGTYPE_TRUECOLORMATTE = null;
+	const IMGTYPE_UNDEFINED = null;
+	const INTERLACE_GIF = null;
+	const INTERLACE_JPEG = null;
+	const INTERLACE_LINE = null;
+	const INTERLACE_NO = null;
+	const INTERLACE_PARTITION = null;
+	const INTERLACE_PLANE = null;
+	const INTERLACE_PNG = null;
+	const INTERLACE_UNDEFINED = null;
+	const INTERPOLATE_AVERAGE = null;
+	const INTERPOLATE_BICUBIC = null;
+	const INTERPOLATE_BILINEAR = null;
+	const INTERPOLATE_FILTER = null;
+	const INTERPOLATE_INTEGER = null;
+	const INTERPOLATE_MESH = null;
+	const INTERPOLATE_NEARESTNEIGHBOR = null;
+	const INTERPOLATE_SPLINE = null;
+	const INTERPOLATE_UNDEFINED = null;
+	const LAYERMETHOD_COALESCE = null;
+	const LAYERMETHOD_COMPAREANY = null;
+	const LAYERMETHOD_COMPARECLEAR = null;
+	const LAYERMETHOD_COMPAREOVERLAY = null;
+	const LAYERMETHOD_COMPOSITE = null;
+	const LAYERMETHOD_DISPOSE = null;
+	const LAYERMETHOD_FLATTEN = null;
+	const LAYERMETHOD_MERGE = null;
+	const LAYERMETHOD_MOSAIC = null;
+	const LAYERMETHOD_OPTIMIZE = null;
+	const LAYERMETHOD_OPTIMIZEIMAGE = null;
+	const LAYERMETHOD_OPTIMIZEPLUS = null;
+	const LAYERMETHOD_OPTIMIZETRANS = null;
+	const LAYERMETHOD_REMOVEDUPS = null;
+	const LAYERMETHOD_REMOVEZERO = null;
+	const LAYERMETHOD_UNDEFINED = null;
+	const LINECAP_BUTT = null;
+	const LINECAP_ROUND = null;
+	const LINECAP_SQUARE = null;
+	const LINECAP_UNDEFINED = null;
+	const LINEJOIN_BEVEL = null;
+	const LINEJOIN_MITER = null;
+	const LINEJOIN_ROUND = null;
+	const LINEJOIN_UNDEFINED = null;
+	const METRIC_MEANABSOLUTEERROR = null;
+	const METRIC_MEANSQUAREERROR = null;
+	const METRIC_PEAKABSOLUTEERROR = null;
+	const METRIC_PEAKSIGNALTONOISERATIO = null;
+	const METRIC_ROOTMEANSQUAREDERROR = null;
+	const METRIC_UNDEFINED = null;
+	const MONTAGEMODE_CONCATENATE = null;
+	const MONTAGEMODE_FRAME = null;
+	const MONTAGEMODE_UNFRAME = null;
+	const NOISE_GAUSSIAN = null;
+	const NOISE_IMPULSE = null;
+	const NOISE_LAPLACIAN = null;
+	const NOISE_MULTIPLICATIVEGAUSSIAN = null;
+	const NOISE_POISSON = null;
+	const NOISE_RANDOM = null;
+	const NOISE_UNIFORM = null;
+	const ORIENTATION_BOTTOMLEFT = null;
+	const ORIENTATION_BOTTOMRIGHT = null;
+	const ORIENTATION_LEFTBOTTOM = null;
+	const ORIENTATION_LEFTTOP = null;
+	const ORIENTATION_RIGHTBOTTOM = null;
+	const ORIENTATION_RIGHTTOP = null;
+	const ORIENTATION_TOPLEFT = null;
+	const ORIENTATION_TOPRIGHT = null;
+	const ORIENTATION_UNDEFINED = null;
+	const PAINT_FILLTOBORDER = null;
+	const PAINT_FLOODFILL = null;
+	const PAINT_POINT = null;
+	const PAINT_REPLACE = null;
+	const PAINT_RESET = null;
+	const PATHUNITS_OBJECTBOUNDINGBOX = null;
+	const PATHUNITS_UNDEFINED = null;
+	const PATHUNITS_USERSPACE = null;
+	const PATHUNITS_USERSPACEONUSE = null;
+	const PIXEL_CHAR = null;
+	const PIXEL_DOUBLE = null;
+	const PIXEL_FLOAT = null;
+	const PIXEL_INTEGER = null;
+	const PIXEL_LONG = null;
+	const PIXEL_QUANTUM = null;
+	const PIXEL_SHORT = null;
+	const PREVIEW_ADDNOISE = null;
+	const PREVIEW_BLUR = null;
+	const PREVIEW_BRIGHTNESS = null;
+	const PREVIEW_CHARCOALDRAWING = null;
+	const PREVIEW_DESPECKLE = null;
+	const PREVIEW_DULL = null;
+	const PREVIEW_EDGEDETECT = null;
+	const PREVIEW_GAMMA = null;
+	const PREVIEW_GRAYSCALE = null;
+	const PREVIEW_HUE = null;
+	const PREVIEW_IMPLODE = null;
+	const PREVIEW_JPEG = null;
+	const PREVIEW_OILPAINT = null;
+	const PREVIEW_QUANTIZE = null;
+	const PREVIEW_RAISE = null;
+	const PREVIEW_REDUCENOISE = null;
+	const PREVIEW_ROLL = null;
+	const PREVIEW_ROTATE = null;
+	const PREVIEW_SATURATION = null;
+	const PREVIEW_SEGMENT = null;
+	const PREVIEW_SHADE = null;
+	const PREVIEW_SHARPEN = null;
+	const PREVIEW_SHEAR = null;
+	const PREVIEW_SOLARIZE = null;
+	const PREVIEW_SPIFF = null;
+	const PREVIEW_SPREAD = null;
+	const PREVIEW_SWIRL = null;
+	const PREVIEW_THRESHOLD = null;
+	const PREVIEW_UNDEFINED = null;
+	const PREVIEW_WAVE = null;
+	const RENDERINGINTENT_ABSOLUTE = null;
+	const RENDERINGINTENT_PERCEPTUAL = null;
+	const RENDERINGINTENT_RELATIVE = null;
+	const RENDERINGINTENT_SATURATION = null;
+	const RENDERINGINTENT_UNDEFINED = null;
+	const RESOLUTION_PIXELSPERCENTIMETER = null;
+	const RESOLUTION_PIXELSPERINCH = null;
+	const RESOLUTION_UNDEFINED = null;
+	const RESOURCETYPE_AREA = null;
+	const RESOURCETYPE_DISK = null;
+	const RESOURCETYPE_FILE = null;
+	const RESOURCETYPE_MAP = null;
+	const RESOURCETYPE_MEMORY = null;
+	const RESOURCETYPE_UNDEFINED = null;
+	const SPARSECOLORMETHOD_BARYCENTRIC = null;
+	const SPARSECOLORMETHOD_BILINEAR = null;
+	const SPARSECOLORMETHOD_POLYNOMIAL = null;
+	const SPARSECOLORMETHOD_SPEPARDS = null;
+	const SPARSECOLORMETHOD_UNDEFINED = null;
+	const SPARSECOLORMETHOD_VORONOI = null;
+	const STRETCH_ANY = null;
+	const STRETCH_CONDENSED = null;
+	const STRETCH_EXPANDED = null;
+	const STRETCH_EXTRAEXPANDED = null;
+	const STRETCH_NORMAL = null;
+	const STRETCH_SEMICONDENSED = null;
+	const STRETCH_SEMIEXPANDED = null;
+	const STRETCH_ULTRACONDENSED = null;
+	const STRETCH_ULTRAEXPANDED = null;
+	const STYLE_ANY = null;
+	const STYLE_ITALIC = null;
+	const STYLE_NORMAL = null;
+	const STYLE_OBLIQUE = null;
+	const VIRTUALPIXELMETHOD_BACKGROUND = null;
+	const VIRTUALPIXELMETHOD_BLACK = null;
+	const VIRTUALPIXELMETHOD_CONSTANT = null;
+	const VIRTUALPIXELMETHOD_EDGE = null;
+	const VIRTUALPIXELMETHOD_GRAY = null;
+	const VIRTUALPIXELMETHOD_HORIZONTALTILE = null;
+	const VIRTUALPIXELMETHOD_MASK = null;
+	const VIRTUALPIXELMETHOD_MIRROR = null;
+	const VIRTUALPIXELMETHOD_TILE = null;
+	const VIRTUALPIXELMETHOD_TRANSPARENT = null;
+	const VIRTUALPIXELMETHOD_UNDEFINED = null;
+	const VIRTUALPIXELMETHOD_VERTICALTILE = null;
+	const VIRTUALPIXELMETHOD_WHITE = null;
 
 	/**
 	 * The Imagick constructor
 	 *
 	 * @param mixed $files
 	 */
-	public function __construct($files)
-	{
+	public function __construct($files) {
 	}
 
 	/**
@@ -401,25 +399,23 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $radius
 	 * @param float $sigma
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function adaptiveBlurImage($radius, $sigma, $channel = false)
-	{
+	public function adaptiveBlurImage($radius, $sigma, $channel = false) {
 	}
 
 	/**
 	 * Adaptively resize image with data dependent triangulation
 	 *
-	 * @param int $columns
-	 * @param int $rows
+	 * @param int  $columns
+	 * @param int  $rows
 	 * @param bool $bestfit
 	 *
 	 * @return bool
 	 */
-	public function adaptiveResizeImage($columns, $rows, $bestfit = false)
-	{
+	public function adaptiveResizeImage($columns, $rows, $bestfit = false) {
 	}
 
 	/**
@@ -427,12 +423,11 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $radius
 	 * @param float $sigma
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function adaptiveSharpenImage($radius, $sigma, $channel = false)
-	{
+	public function adaptiveSharpenImage($radius, $sigma, $channel = false) {
 	}
 
 	/**
@@ -444,8 +439,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function adaptiveThresholdImage($width, $height, $offset)
-	{
+	public function adaptiveThresholdImage($width, $height, $offset) {
 	}
 
 	/**
@@ -455,8 +449,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function addImage($source)
-	{
+	public function addImage($source) {
 	}
 
 	/**
@@ -467,8 +460,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function addNoiseImage($noise_type, $channel = false)
-	{
+	public function addNoiseImage($noise_type, $channel = false) {
 	}
 
 	/**
@@ -478,8 +470,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function affineTransformImage($matrix)
-	{
+	public function affineTransformImage($matrix) {
 	}
 
 	/**
@@ -489,23 +480,21 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function animateImages($x_server)
-	{
+	public function animateImages($x_server) {
 	}
 
 	/**
 	 * Annotates an image with text
 	 *
 	 * @param ImagickDraw $draw_settings
-	 * @param float $x
-	 * @param float $y
-	 * @param float $angle
-	 * @param string $text
+	 * @param float       $x
+	 * @param float       $y
+	 * @param float       $angle
+	 * @param string      $text
 	 *
 	 * @return bool
 	 */
-	public function annotateImage($draw_settings, $x, $y, $angle, $text)
-	{
+	public function annotateImage($draw_settings, $x, $y, $angle, $text) {
 	}
 
 	/**
@@ -515,8 +504,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Returns Imagick instance on success.
 	 */
-	public function appendImages($stack = false)
-	{
+	public function appendImages($stack = false) {
 	}
 
 	/**
@@ -524,8 +512,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Returns a new Imagick object on success.
 	 */
-	public function averageImages()
-	{
+	public function averageImages() {
 	}
 
 	/**
@@ -535,8 +522,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function blackThresholdImage($threshold)
-	{
+	public function blackThresholdImage($threshold) {
 	}
 
 	/**
@@ -544,25 +530,23 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $radius
 	 * @param float $sigma
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function blurImage($radius, $sigma, $channel = NULL)
-	{
+	public function blurImage($radius, $sigma, $channel = null) {
 	}
 
 	/**
 	 * Surrounds the image with a border
 	 *
 	 * @param mixed $bordercolor
-	 * @param int $width
-	 * @param int $height
+	 * @param int   $width
+	 * @param int   $height
 	 *
 	 * @return bool
 	 */
-	public function borderImage($bordercolor, $width, $height)
-	{
+	public function borderImage($bordercolor, $width, $height) {
 	}
 
 	/**
@@ -573,8 +557,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function charcoalImage($radius, $sigma)
-	{
+	public function charcoalImage($radius, $sigma) {
 	}
 
 	/**
@@ -587,8 +570,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function chopImage($width, $height, $x, $y)
-	{
+	public function chopImage($width, $height, $x, $y) {
 	}
 
 	/**
@@ -596,8 +578,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function clear()
-	{
+	public function clear() {
 	}
 
 	/**
@@ -605,20 +586,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function clipImage()
-	{
+	public function clipImage() {
 	}
 
 	/**
 	 * Clips along the named paths from the 8BIM profile
 	 *
 	 * @param string $pathname
-	 * @param bool $inside
+	 * @param bool   $inside
 	 *
 	 * @return bool
 	 */
-	public function clipPathImage($pathname, $inside)
-	{
+	public function clipPathImage($pathname, $inside) {
 	}
 
 	/**
@@ -626,20 +605,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick A copy of the Imagick object is returned.
 	 */
-	public function clone()
-	{
+	public function clone() {
 	}
 
 	/**
 	 * Replaces colors in the image
 	 *
 	 * @param Imagick $lookup_table
-	 * @param float $channel
+	 * @param float   $channel
 	 *
 	 * @return bool
 	 */
-	public function clutImage($lookup_table, $channel = false)
-	{
+	public function clutImage($lookup_table, $channel = false) {
 	}
 
 	/**
@@ -647,8 +624,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Returns a new Imagick object on success.
 	 */
-	public function coalesceImages()
-	{
+	public function coalesceImages() {
 	}
 
 	/**
@@ -657,13 +633,12 @@ class Imagick implements \Iterator, \Traversable
 	 * @param mixed $fill
 	 * @param float $fuzz
 	 * @param mixed $bordercolor
-	 * @param int $x
-	 * @param int $y
+	 * @param int   $x
+	 * @param int   $y
 	 *
 	 * @return bool
 	 */
-	public function colorFloodfillImage($fill, $fuzz, $bordercolor, $x, $y)
-	{
+	public function colorFloodfillImage($fill, $fuzz, $bordercolor, $x, $y) {
 	}
 
 	/**
@@ -674,8 +649,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function colorizeImage($colorize, $opacity)
-	{
+	public function colorizeImage($colorize, $opacity) {
 	}
 
 	/**
@@ -685,8 +659,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick
 	 */
-	public function combineImages($channelType)
-	{
+	public function combineImages($channelType) {
 	}
 
 	/**
@@ -696,22 +669,20 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function commentImage($comment)
-	{
+	public function commentImage($comment) {
 	}
 
 	/**
 	 * Returns the difference in one or more images
 	 *
 	 * @param Imagick $image
-	 * @param int $channelType
-	 * @param int $metricType
+	 * @param int     $channelType
+	 * @param int     $metricType
 	 *
 	 * @return array Array consisting of  and
 	 *               .
 	 */
-	public function compareImageChannels($image, $channelType, $metricType)
-	{
+	public function compareImageChannels($image, $channelType, $metricType) {
 	}
 
 	/**
@@ -721,35 +692,32 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick
 	 */
-	public function compareImageLayers($method)
-	{
+	public function compareImageLayers($method) {
 	}
 
 	/**
 	 * Compares an image to a reconstructed image
 	 *
 	 * @param Imagick $compare
-	 * @param int $metric
+	 * @param int     $metric
 	 *
 	 * @return array
 	 */
-	public function compareImages($compare, $metric)
-	{
+	public function compareImages($compare, $metric) {
 	}
 
 	/**
 	 * Composite one image onto another
 	 *
 	 * @param Imagick $composite_object
-	 * @param int $composite
-	 * @param int $x
-	 * @param int $y
-	 * @param int $channel
+	 * @param int     $composite
+	 * @param int     $x
+	 * @param int     $y
+	 * @param int     $channel
 	 *
 	 * @return bool
 	 */
-	public function compositeImage($composite_object, $composite, $x, $y, $channel = false)
-	{
+	public function compositeImage($composite_object, $composite, $x, $y, $channel = false) {
 	}
 
 	/**
@@ -759,8 +727,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function contrastImage($sharpen)
-	{
+	public function contrastImage($sharpen) {
 	}
 
 	/**
@@ -768,24 +735,22 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $black_point
 	 * @param float $white_point
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function contrastStretchImage($black_point, $white_point, $channel = false)
-	{
+	public function contrastStretchImage($black_point, $white_point, $channel = false) {
 	}
 
 	/**
 	 * Applies a custom convolution kernel to the image
 	 *
 	 * @param array $kernel
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function convolveImage($kernel, $channel = false)
-	{
+	public function convolveImage($kernel, $channel = false) {
 	}
 
 	/**
@@ -798,8 +763,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function cropImage($width, $height, $x, $y)
-	{
+	public function cropImage($width, $height, $x, $y) {
 	}
 
 	/**
@@ -810,8 +774,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function cropThumbnailImage($width, $height)
-	{
+	public function cropThumbnailImage($width, $height) {
 	}
 
 	/**
@@ -819,8 +782,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Returns self on success.
 	 */
-	public function current()
-	{
+	public function current() {
 	}
 
 	/**
@@ -830,8 +792,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function cycleColormapImage($displace)
-	{
+	public function cycleColormapImage($displace) {
 	}
 
 	/**
@@ -841,8 +802,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function decipherImage($passphrase)
-	{
+	public function decipherImage($passphrase) {
 	}
 
 	/**
@@ -850,8 +810,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Returns a new Imagick object on success.
 	 */
-	public function deconstructImages()
-	{
+	public function deconstructImages() {
 	}
 
 	/**
@@ -861,8 +820,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function deleteImageArtifact($artifact)
-	{
+	public function deleteImageArtifact($artifact) {
 	}
 
 	/**
@@ -872,8 +830,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function deskewImage($threshold)
-	{
+	public function deskewImage($threshold) {
 	}
 
 	/**
@@ -881,8 +838,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function despeckleImage()
-	{
+	public function despeckleImage() {
 	}
 
 	/**
@@ -890,8 +846,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function destroy()
-	{
+	public function destroy() {
 	}
 
 	/**
@@ -901,8 +856,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function displayImage($servername)
-	{
+	public function displayImage($servername) {
 	}
 
 	/**
@@ -912,21 +866,19 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function displayImages($servername)
-	{
+	public function displayImages($servername) {
 	}
 
 	/**
 	 * Distorts an image using various distortion methods
 	 *
-	 * @param int $method
+	 * @param int   $method
 	 * @param array $arguments
-	 * @param bool $bestfit
+	 * @param bool  $bestfit
 	 *
 	 * @return bool
 	 */
-	public function distortImage($method, $arguments, $bestfit)
-	{
+	public function distortImage($method, $arguments, $bestfit) {
 	}
 
 	/**
@@ -936,8 +888,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function drawImage($draw)
-	{
+	public function drawImage($draw) {
 	}
 
 	/**
@@ -947,8 +898,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function edgeImage($radius)
-	{
+	public function edgeImage($radius) {
 	}
 
 	/**
@@ -959,8 +909,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function embossImage($radius, $sigma)
-	{
+	public function embossImage($radius, $sigma) {
 	}
 
 	/**
@@ -970,8 +919,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function encipherImage($passphrase)
-	{
+	public function encipherImage($passphrase) {
 	}
 
 	/**
@@ -979,8 +927,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function enhanceImage()
-	{
+	public function enhanceImage() {
 	}
 
 	/**
@@ -988,37 +935,34 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function equalizeImage()
-	{
+	public function equalizeImage() {
 	}
 
 	/**
 	 * Applies an expression to an image
 	 *
-	 * @param int $op
+	 * @param int   $op
 	 * @param float $constant
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function evaluateImage($op, $constant, $channel = false)
-	{
+	public function evaluateImage($op, $constant, $channel = false) {
 	}
 
 	/**
 	 * Exports raw image pixels
 	 *
-	 * @param int $x
-	 * @param int $y
-	 * @param int $width
-	 * @param int $height
+	 * @param int    $x
+	 * @param int    $y
+	 * @param int    $width
+	 * @param int    $height
 	 * @param string $map
-	 * @param int $STORAGE
+	 * @param int    $STORAGE
 	 *
 	 * @return array Returns an array containing the pixels values.
 	 */
-	public function exportImagePixels($x, $y, $width, $height, $map, $STORAGE)
-	{
+	public function exportImagePixels($x, $y, $width, $height, $map, $STORAGE) {
 	}
 
 	/**
@@ -1031,8 +975,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function extentImage($width, $height, $x, $y)
-	{
+	public function extentImage($width, $height, $x, $y) {
 	}
 
 	/**
@@ -1040,8 +983,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick
 	 */
-	public function flattenImages()
-	{
+	public function flattenImages() {
 	}
 
 	/**
@@ -1049,8 +991,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function flipImage()
-	{
+	public function flipImage() {
 	}
 
 	/**
@@ -1059,15 +1000,14 @@ class Imagick implements \Iterator, \Traversable
 	 * @param mixed $fill
 	 * @param float $fuzz
 	 * @param mixed $target
-	 * @param int $x
-	 * @param int $y
-	 * @param bool $invert
-	 * @param int $channel
+	 * @param int   $x
+	 * @param int   $y
+	 * @param bool  $invert
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function floodFillPaintImage($fill, $fuzz, $target, $x, $y, $invert, $channel = false)
-	{
+	public function floodFillPaintImage($fill, $fuzz, $target, $x, $y, $invert, $channel = false) {
 	}
 
 	/**
@@ -1075,60 +1015,55 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function flopImage()
-	{
+	public function flopImage() {
 	}
 
 	/**
 	 * Adds a simulated three-dimensional border
 	 *
 	 * @param mixed $matte_color
-	 * @param int $width
-	 * @param int $height
-	 * @param int $inner_bevel
-	 * @param int $outer_bevel
+	 * @param int   $width
+	 * @param int   $height
+	 * @param int   $inner_bevel
+	 * @param int   $outer_bevel
 	 *
 	 * @return bool
 	 */
-	public function frameImage($matte_color, $width, $height, $inner_bevel, $outer_bevel)
-	{
+	public function frameImage($matte_color, $width, $height, $inner_bevel, $outer_bevel) {
 	}
 
 	/**
 	 * Applies a function on the image
 	 *
-	 * @param int $function
+	 * @param int   $function
 	 * @param array $arguments
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function functionImage($function, $arguments, $channel = false)
-	{
+	public function functionImage($function, $arguments, $channel = false) {
 	}
 
 	/**
 	 * Evaluate expression for each pixel in the image
 	 *
 	 * @param string $expression
-	 * @param int $channel
+	 * @param int    $channel
 	 *
 	 * @return Imagick
 	 */
-	public function fxImage($expression, $channel = false)
-	{
+	public function fxImage($expression, $channel = false) {
 	}
 
 	/**
 	 * Gamma-corrects an image
 	 *
 	 * @param float $gamma
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function gammaImage($gamma, $channel = false)
-	{
+	public function gammaImage($gamma, $channel = false) {
 	}
 
 	/**
@@ -1136,12 +1071,11 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $radius
 	 * @param float $sigma
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function gaussianBlurImage($radius, $sigma, $channel = false)
-	{
+	public function gaussianBlurImage($radius, $sigma, $channel = false) {
 	}
 
 	/**
@@ -1149,8 +1083,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns an integer which can be compared against .
 	 */
-	public function getColorspace()
-	{
+	public function getColorspace() {
 	}
 
 	/**
@@ -1158,8 +1091,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the compression constant
 	 */
-	public function getCompression()
-	{
+	public function getCompression() {
 	}
 
 	/**
@@ -1167,8 +1099,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns integer describing the compression quality
 	 */
-	public function getCompressionQuality()
-	{
+	public function getCompressionQuality() {
 	}
 
 	/**
@@ -1177,8 +1108,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return string Returns a string containing the copyright notice of Imagemagick and
 	 *                Magickwand C API.
 	 */
-	public function getCopyright()
-	{
+	public function getCopyright() {
 	}
 
 	/**
@@ -1186,8 +1116,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string on success.
 	 */
-	public function getFilename()
-	{
+	public function getFilename() {
 	}
 
 	/**
@@ -1195,8 +1124,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns the string containing the font name or false if not font is set.
 	 */
-	public function getFont()
-	{
+	public function getFont() {
 	}
 
 	/**
@@ -1204,8 +1132,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns the format of the image.
 	 */
-	public function getFormat()
-	{
+	public function getFormat() {
 	}
 
 	/**
@@ -1214,8 +1141,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return int Returns the gravity property. Refer to the list of
 	 *             .
 	 */
-	public function getGravity()
-	{
+	public function getGravity() {
 	}
 
 	/**
@@ -1223,8 +1149,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a link to the imagemagick homepage.
 	 */
-	public function getHomeURL()
-	{
+	public function getHomeURL() {
 	}
 
 	/**
@@ -1232,8 +1157,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Returns a new Imagick object with the current image sequence.
 	 */
-	public function getImage()
-	{
+	public function getImage() {
 	}
 
 	/**
@@ -1242,8 +1166,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return int Returns a constant defining the current alpha channel value. Refer to this
 	 *             list of .
 	 */
-	public function getImageAlphaChannel()
-	{
+	public function getImageAlphaChannel() {
 	}
 
 	/**
@@ -1253,8 +1176,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns the artifact value on success.
 	 */
-	public function getImageArtifact($artifact)
-	{
+	public function getImageArtifact($artifact) {
 	}
 
 	/**
@@ -1262,8 +1184,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return ImagickPixel Returns an ImagickPixel set to the background color of the image.
 	 */
-	public function getImageBackgroundColor()
-	{
+	public function getImageBackgroundColor() {
 	}
 
 	/**
@@ -1271,8 +1192,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string containing the image.
 	 */
-	public function getImageBlob()
-	{
+	public function getImageBlob() {
 	}
 
 	/**
@@ -1280,8 +1200,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Array consisting of "x" and "y" coordinates of point.
 	 */
-	public function getImageBluePrimary()
-	{
+	public function getImageBluePrimary() {
 	}
 
 	/**
@@ -1289,8 +1208,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return ImagickPixel
 	 */
-	public function getImageBorderColor()
-	{
+	public function getImageBorderColor() {
 	}
 
 	/**
@@ -1300,34 +1218,31 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int
 	 */
-	public function getImageChannelDepth($channel)
-	{
+	public function getImageChannelDepth($channel) {
 	}
 
 	/**
 	 * Compares image channels of an image to a reconstructed image
 	 *
 	 * @param Imagick $reference
-	 * @param int $channel
-	 * @param int $metric
+	 * @param int     $channel
+	 * @param int     $metric
 	 *
 	 * @return float
 	 */
-	public function getImageChannelDistortion($reference, $channel, $metric)
-	{
+	public function getImageChannelDistortion($reference, $channel, $metric) {
 	}
 
 	/**
 	 * Gets channel distortions
 	 *
 	 * @param Imagick $reference
-	 * @param int $metric
-	 * @param int $channel
+	 * @param int     $metric
+	 * @param int     $channel
 	 *
 	 * @return float Returns a double describing the channel distortion.
 	 */
-	public function getImageChannelDistortions($reference, $metric, $channel = false)
-	{
+	public function getImageChannelDistortions($reference, $metric, $channel = false) {
 	}
 
 	/**
@@ -1337,8 +1252,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array
 	 */
-	public function getImageChannelExtrema($channel)
-	{
+	public function getImageChannelExtrema($channel) {
 	}
 
 	/**
@@ -1349,8 +1263,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Returns an array with  and
 	 *               members.
 	 */
-	public function getImageChannelKurtosis($channel = false)
-	{
+	public function getImageChannelKurtosis($channel = false) {
 	}
 
 	/**
@@ -1360,8 +1273,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array
 	 */
-	public function getImageChannelMean($channel)
-	{
+	public function getImageChannelMean($channel) {
 	}
 
 	/**
@@ -1371,8 +1283,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns an array containing minima and maxima values of the channel(s).
 	 */
-	public function getImageChannelRange($channel)
-	{
+	public function getImageChannelRange($channel) {
 	}
 
 	/**
@@ -1380,8 +1291,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array
 	 */
-	public function getImageChannelStatistics()
-	{
+	public function getImageChannelStatistics() {
 	}
 
 	/**
@@ -1389,8 +1299,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Returns an Imagick object containing the clip mask.
 	 */
-	public function getImageClipMask()
-	{
+	public function getImageClipMask() {
 	}
 
 	/**
@@ -1400,8 +1309,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return ImagickPixel
 	 */
-	public function getImageColormapColor($index)
-	{
+	public function getImageColormapColor($index) {
 	}
 
 	/**
@@ -1409,8 +1317,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int
 	 */
-	public function getImageColors()
-	{
+	public function getImageColors() {
 	}
 
 	/**
@@ -1418,8 +1325,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int
 	 */
-	public function getImageColorspace()
-	{
+	public function getImageColorspace() {
 	}
 
 	/**
@@ -1427,8 +1333,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int
 	 */
-	public function getImageCompose()
-	{
+	public function getImageCompose() {
 	}
 
 	/**
@@ -1436,8 +1341,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the compression constant
 	 */
-	public function getImageCompression()
-	{
+	public function getImageCompression() {
 	}
 
 	/**
@@ -1445,8 +1349,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns integer describing the images compression quality
 	 */
-	public function getImageCompressionQuality()
-	{
+	public function getImageCompressionQuality() {
 	}
 
 	/**
@@ -1454,8 +1357,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image delay.
 	 */
-	public function getImageDelay()
-	{
+	public function getImageDelay() {
 	}
 
 	/**
@@ -1463,8 +1365,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int The image depth.
 	 */
-	public function getImageDepth()
-	{
+	public function getImageDepth() {
 	}
 
 	/**
@@ -1472,21 +1373,19 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the dispose method on success.
 	 */
-	public function getImageDispose()
-	{
+	public function getImageDispose() {
 	}
 
 	/**
 	 * Compares an image to a reconstructed image
 	 *
 	 * @param MagickWand $reference
-	 * @param int $metric
+	 * @param int        $metric
 	 *
 	 * @return float Returns the distortion metric used on the image (or the best guess
 	 *               thereof).
 	 */
-	public function getImageDistortion($reference, $metric)
-	{
+	public function getImageDistortion($reference, $metric) {
 	}
 
 	/**
@@ -1494,8 +1393,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns an associative array with the keys "min" and "max".
 	 */
-	public function getImageExtrema()
-	{
+	public function getImageExtrema() {
 	}
 
 	/**
@@ -1503,8 +1401,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string with the filename of the image.
 	 */
-	public function getImageFilename()
-	{
+	public function getImageFilename() {
 	}
 
 	/**
@@ -1512,8 +1409,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string containing the image format on success.
 	 */
-	public function getImageFormat()
-	{
+	public function getImageFormat() {
 	}
 
 	/**
@@ -1521,8 +1417,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return float Returns the image gamma on success.
 	 */
-	public function getImageGamma()
-	{
+	public function getImageGamma() {
 	}
 
 	/**
@@ -1530,8 +1425,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns an array with the width/height of the image.
 	 */
-	public function getImageGeometry()
-	{
+	public function getImageGeometry() {
 	}
 
 	/**
@@ -1540,8 +1434,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return int Returns the images gravity property. Refer to the list of
 	 *             .
 	 */
-	public function getImageGravity()
-	{
+	public function getImageGravity() {
 	}
 
 	/**
@@ -1550,8 +1443,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Returns an array with the keys "x" and "y" on success, throws an
 	 *               ImagickException on failure.
 	 */
-	public function getImageGreenPrimary()
-	{
+	public function getImageGreenPrimary() {
 	}
 
 	/**
@@ -1559,8 +1451,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image height in pixels.
 	 */
-	public function getImageHeight()
-	{
+	public function getImageHeight() {
 	}
 
 	/**
@@ -1568,8 +1459,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns the image histogram as an array of ImagickPixel objects.
 	 */
-	public function getImageHistogram()
-	{
+	public function getImageHistogram() {
 	}
 
 	/**
@@ -1577,8 +1467,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns an integer containing the index of the image in the stack.
 	 */
-	public function getImageIndex()
-	{
+	public function getImageIndex() {
 	}
 
 	/**
@@ -1586,8 +1475,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the interlace scheme as an integer on success.
 	 */
-	public function getImageInterlaceScheme()
-	{
+	public function getImageInterlaceScheme() {
 	}
 
 	/**
@@ -1595,8 +1483,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the interpolate method on success.
 	 */
-	public function getImageInterpolateMethod()
-	{
+	public function getImageInterpolateMethod() {
 	}
 
 	/**
@@ -1604,8 +1491,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image iterations as an integer.
 	 */
-	public function getImageIterations()
-	{
+	public function getImageIterations() {
 	}
 
 	/**
@@ -1613,8 +1499,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns an int containing the current image size.
 	 */
-	public function getImageLength()
-	{
+	public function getImageLength() {
 	}
 
 	/**
@@ -1622,8 +1507,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string containing the ImageMagick license.
 	 */
-	public function getImageMagickLicense()
-	{
+	public function getImageMagickLicense() {
 	}
 
 	/**
@@ -1631,8 +1515,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function getImageMatte()
-	{
+	public function getImageMatte() {
 	}
 
 	/**
@@ -1640,8 +1523,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return ImagickPixel Returns ImagickPixel object on success.
 	 */
-	public function getImageMatteColor()
-	{
+	public function getImageMatteColor() {
 	}
 
 	/**
@@ -1649,8 +1531,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns an int on success.
 	 */
-	public function getImageOrientation()
-	{
+	public function getImageOrientation() {
 	}
 
 	/**
@@ -1659,8 +1540,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Returns the page geometry associated with the image in an array with the
 	 *               keys "width", "height", "x", and "y".
 	 */
-	public function getImagePage()
-	{
+	public function getImagePage() {
 	}
 
 	/**
@@ -1671,8 +1551,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return ImagickPixel Returns an ImagickPixel instance for the color at the coordinates given.
 	 */
-	public function getImagePixelColor($x, $y)
-	{
+	public function getImagePixelColor($x, $y) {
 	}
 
 	/**
@@ -1682,32 +1561,29 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string containing the image profile.
 	 */
-	public function getImageProfile($name)
-	{
+	public function getImageProfile($name) {
 	}
 
 	/**
 	 * Returns the image profiles
 	 *
 	 * @param string $pattern
-	 * @param bool $only_names
+	 * @param bool   $only_names
 	 *
 	 * @return array Returns an array containing the image profiles or profile names.
 	 */
-	public function getImageProfiles($pattern = '*', $only_names = true)
-	{
+	public function getImageProfiles($pattern = '*', $only_names = true) {
 	}
 
 	/**
 	 * Returns the image properties
 	 *
 	 * @param string $pattern
-	 * @param bool $only_names
+	 * @param bool   $only_names
 	 *
 	 * @return array Returns an array containing the image properties or property names.
 	 */
-	public function getImageProperties($pattern = '*', $only_names = true)
-	{
+	public function getImageProperties($pattern = '*', $only_names = true) {
 	}
 
 	/**
@@ -1718,8 +1594,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return string Returns a string containing the image property, false if a
 	 *                property with the given name does not exist.
 	 */
-	public function getImageProperty($name)
-	{
+	public function getImageProperty($name) {
 	}
 
 	/**
@@ -1728,8 +1603,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Returns the chromaticity red primary point as an array with the keys "x"
 	 *               and "y".
 	 */
-	public function getImageRedPrimary()
-	{
+	public function getImageRedPrimary() {
 	}
 
 	/**
@@ -1742,8 +1616,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick Extracts a region of the image and returns it as a new wand.
 	 */
-	public function getImageRegion($width, $height, $x, $y)
-	{
+	public function getImageRegion($width, $height, $x, $y) {
 	}
 
 	/**
@@ -1751,8 +1624,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image .
 	 */
-	public function getImageRenderingIntent()
-	{
+	public function getImageRenderingIntent() {
 	}
 
 	/**
@@ -1760,8 +1632,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns the resolution as an array.
 	 */
-	public function getImageResolution()
-	{
+	public function getImageResolution() {
 	}
 
 	/**
@@ -1769,8 +1640,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image scene.
 	 */
-	public function getImageScene()
-	{
+	public function getImageScene() {
 	}
 
 	/**
@@ -1778,8 +1648,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string containing the SHA-256 hash of the file.
 	 */
-	public function getImageSignature()
-	{
+	public function getImageSignature() {
 	}
 
 	/**
@@ -1787,8 +1656,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns an int containing the current image size.
 	 */
-	public function getImageSize()
-	{
+	public function getImageSize() {
 	}
 
 	/**
@@ -1796,8 +1664,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image ticks-per-second.
 	 */
-	public function getImageTicksPerSecond()
-	{
+	public function getImageTicksPerSecond() {
 	}
 
 	/**
@@ -1805,8 +1672,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return float Returns the image total ink density of the image.
 	 */
-	public function getImageTotalInkDensity()
-	{
+	public function getImageTotalInkDensity() {
 	}
 
 	/**
@@ -1814,8 +1680,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the potential image type.
 	 */
-	public function getImageType()
-	{
+	public function getImageType() {
 	}
 
 	/**
@@ -1823,8 +1688,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image units of resolution.
 	 */
-	public function getImageUnits()
-	{
+	public function getImageUnits() {
 	}
 
 	/**
@@ -1832,8 +1696,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the virtual pixel method on success.
 	 */
-	public function getImageVirtualPixelMethod()
-	{
+	public function getImageVirtualPixelMethod() {
 	}
 
 	/**
@@ -1842,8 +1705,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Returns the chromaticity white point as an associative array with the keys
 	 *               "x" and "y".
 	 */
-	public function getImageWhitePoint()
-	{
+	public function getImageWhitePoint() {
 	}
 
 	/**
@@ -1851,8 +1713,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the image width.
 	 */
-	public function getImageWidth()
-	{
+	public function getImageWidth() {
 	}
 
 	/**
@@ -1861,8 +1722,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return string Returns a string containing the images. On failure, throws
 	 *                ImagickException.
 	 */
-	public function getImagesBlob()
-	{
+	public function getImagesBlob() {
 	}
 
 	/**
@@ -1870,8 +1730,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Gets the wand .
 	 */
-	public function getInterlaceScheme()
-	{
+	public function getInterlaceScheme() {
 	}
 
 	/**
@@ -1879,8 +1738,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns an integer containing the index of the image in the stack.
 	 */
-	public function getIteratorIndex()
-	{
+	public function getIteratorIndex() {
 	}
 
 	/**
@@ -1888,8 +1746,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the number of images associated with Imagick object.
 	 */
-	public function getNumberImages()
-	{
+	public function getNumberImages() {
 	}
 
 	/**
@@ -1899,8 +1756,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a value associated with a wand and the specified key.
 	 */
-	public function getOption($key)
-	{
+	public function getOption($key) {
 	}
 
 	/**
@@ -1908,8 +1764,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns the ImageMagick package name as a string.
 	 */
-	public function getPackageName()
-	{
+	public function getPackageName() {
 	}
 
 	/**
@@ -1919,8 +1774,7 @@ class Imagick implements \Iterator, \Traversable
 	 *               an associative array with the keys "width", "height", "x", and "y",
 	 *               throwing ImagickException on error.
 	 */
-	public function getPage()
-	{
+	public function getPage() {
 	}
 
 	/**
@@ -1928,8 +1782,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return ImagickPixelIterator Returns an ImagickPixelIterator on success.
 	 */
-	public function getPixelIterator()
-	{
+	public function getPixelIterator() {
 	}
 
 	/**
@@ -1942,8 +1795,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return ImagickPixelIterator Returns an ImagickPixelIterator for an image section.
 	 */
-	public function getPixelRegionIterator($x, $y, $columns, $rows)
-	{
+	public function getPixelRegionIterator($x, $y, $columns, $rows) {
 	}
 
 	/**
@@ -1951,8 +1803,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return float Returns a float containing the point size.
 	 */
-	public function getPointSize()
-	{
+	public function getPointSize() {
 	}
 
 	/**
@@ -1960,8 +1811,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns the Imagick quantum depth as a string.
 	 */
-	public function getQuantumDepth()
-	{
+	public function getQuantumDepth() {
 	}
 
 	/**
@@ -1969,8 +1819,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns the Imagick quantum range as a string.
 	 */
-	public function getQuantumRange()
-	{
+	public function getQuantumRange() {
 	}
 
 	/**
@@ -1978,8 +1827,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns the ImageMagick release date as a string.
 	 */
-	public function getReleaseDate()
-	{
+	public function getReleaseDate() {
 	}
 
 	/**
@@ -1989,8 +1837,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the specified resource's memory usage in megabytes.
 	 */
-	public function getResource($type)
-	{
+	public function getResource($type) {
 	}
 
 	/**
@@ -2000,8 +1847,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the specified resource limit in megabytes.
 	 */
-	public function getResourceLimit($type)
-	{
+	public function getResourceLimit($type) {
 	}
 
 	/**
@@ -2010,8 +1856,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Returns an associative array with the horizontal and vertical sampling
 	 *               factors of the image.
 	 */
-	public function getSamplingFactors()
-	{
+	public function getSamplingFactors() {
 	}
 
 	/**
@@ -2020,8 +1865,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Returns the size associated with the Imagick object as an array with the
 	 *               keys "columns" and "rows".
 	 */
-	public function getSize()
-	{
+	public function getSize() {
 	}
 
 	/**
@@ -2029,8 +1873,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return int Returns the size offset associated with the Imagick object.
 	 */
-	public function getSizeOffset()
-	{
+	public function getSizeOffset() {
 	}
 
 	/**
@@ -2038,20 +1881,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns the ImageMagick API version as a string and as a number.
 	 */
-	public function getVersion()
-	{
+	public function getVersion() {
 	}
 
 	/**
 	 * Replaces colors in the image
 	 *
 	 * @param Imagick $clut
-	 * @param int $channel
+	 * @param int     $channel
 	 *
 	 * @return bool
 	 */
-	public function haldClutImage($clut, $channel = false)
-	{
+	public function haldClutImage($clut, $channel = false) {
 	}
 
 	/**
@@ -2060,8 +1901,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return bool Returns true if the object has more images when traversing the list in the
 	 *              forward direction, returns false if there are none.
 	 */
-	public function hasNextImage()
-	{
+	public function hasNextImage() {
 	}
 
 	/**
@@ -2070,8 +1910,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return bool Returns true if the object has more images when traversing the list in the
 	 *              reverse direction, returns false if there are none.
 	 */
-	public function hasPreviousImage()
-	{
+	public function hasPreviousImage() {
 	}
 
 	/**
@@ -2082,8 +1921,7 @@ class Imagick implements \Iterator, \Traversable
 	 * @return array Identifies an image and returns the attributes.  Attributes include
 	 *               the image width, height, size, and others.
 	 */
-	public function identifyImage($appendRawOutput = false)
-	{
+	public function identifyImage($appendRawOutput = false) {
 	}
 
 	/**
@@ -2093,25 +1931,23 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function implodeImage($radius)
-	{
+	public function implodeImage($radius) {
 	}
 
 	/**
 	 * Imports image pixels
 	 *
-	 * @param int $x
-	 * @param int $y
-	 * @param int $width
-	 * @param int $height
+	 * @param int    $x
+	 * @param int    $y
+	 * @param int    $width
+	 * @param int    $height
 	 * @param string $map
-	 * @param int $storage
-	 * @param array $pixels
+	 * @param int    $storage
+	 * @param array  $pixels
 	 *
 	 * @return bool
 	 */
-	public function importImagePixels($x, $y, $width, $height, $map, $storage, $pixels)
-	{
+	public function importImagePixels($x, $y, $width, $height, $map, $storage, $pixels) {
 	}
 
 	/**
@@ -2121,8 +1957,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function labelImage($label)
-	{
+	public function labelImage($label) {
 	}
 
 	/**
@@ -2131,12 +1966,11 @@ class Imagick implements \Iterator, \Traversable
 	 * @param float $blackPoint
 	 * @param float $gamma
 	 * @param float $whitePoint
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function levelImage($blackPoint, $gamma, $whitePoint, $channel = false)
-	{
+	public function levelImage($blackPoint, $gamma, $whitePoint, $channel = false) {
 	}
 
 	/**
@@ -2147,22 +1981,20 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function linearStretchImage($blackPoint, $whitePoint)
-	{
+	public function linearStretchImage($blackPoint, $whitePoint) {
 	}
 
 	/**
 	 * Animates an image or images
 	 *
-	 * @param int $width
-	 * @param int $height
+	 * @param int   $width
+	 * @param int   $height
 	 * @param float $delta_x
 	 * @param float $rigidity
 	 *
 	 * @return bool
 	 */
-	public function liquidRescaleImage($width, $height, $delta_x, $rigidity)
-	{
+	public function liquidRescaleImage($width, $height, $delta_x, $rigidity) {
 	}
 
 	/**
@@ -2170,20 +2002,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function magnifyImage()
-	{
+	public function magnifyImage() {
 	}
 
 	/**
 	 * Replaces the colors of an image with the closest color from a reference image.
 	 *
 	 * @param Imagick $map
-	 * @param bool $dither
+	 * @param bool    $dither
 	 *
 	 * @return bool
 	 */
-	public function mapImage($map, $dither)
-	{
+	public function mapImage($map, $dither) {
 	}
 
 	/**
@@ -2192,13 +2022,12 @@ class Imagick implements \Iterator, \Traversable
 	 * @param float $alpha
 	 * @param float $fuzz
 	 * @param mixed $bordercolor
-	 * @param int $x
-	 * @param int $y
+	 * @param int   $x
+	 * @param int   $y
 	 *
 	 * @return bool
 	 */
-	public function matteFloodfillImage($alpha, $fuzz, $bordercolor, $x, $y)
-	{
+	public function matteFloodfillImage($alpha, $fuzz, $bordercolor, $x, $y) {
 	}
 
 	/**
@@ -2208,8 +2037,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function medianFilterImage($radius)
-	{
+	public function medianFilterImage($radius) {
 	}
 
 	/**
@@ -2219,8 +2047,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function mergeImageLayers($layer_method)
-	{
+	public function mergeImageLayers($layer_method) {
 	}
 
 	/**
@@ -2228,8 +2055,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function minifyImage()
-	{
+	public function minifyImage() {
 	}
 
 	/**
@@ -2241,23 +2067,21 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function modulateImage($brightness, $saturation, $hue)
-	{
+	public function modulateImage($brightness, $saturation, $hue) {
 	}
 
 	/**
 	 * Creates a composite image
 	 *
 	 * @param ImagickDraw $draw
-	 * @param string $tile_geometry
-	 * @param string $thumbnail_geometry
-	 * @param int $mode
-	 * @param string $frame
+	 * @param string      $tile_geometry
+	 * @param string      $thumbnail_geometry
+	 * @param int         $mode
+	 * @param string      $frame
 	 *
 	 * @return Imagick
 	 */
-	public function montageImage($draw, $tile_geometry, $thumbnail_geometry, $mode, $frame)
-	{
+	public function montageImage($draw, $tile_geometry, $thumbnail_geometry, $mode, $frame) {
 	}
 
 	/**
@@ -2267,8 +2091,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick This method returns a new Imagick object on success.
 	 */
-	public function morphImages($number_frames)
-	{
+	public function morphImages($number_frames) {
 	}
 
 	/**
@@ -2276,8 +2099,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick
 	 */
-	public function mosaicImages()
-	{
+	public function mosaicImages() {
 	}
 
 	/**
@@ -2286,51 +2108,47 @@ class Imagick implements \Iterator, \Traversable
 	 * @param float $radius
 	 * @param float $sigma
 	 * @param float $angle
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function motionBlurImage($radius, $sigma, $angle, $channel = false)
-	{
+	public function motionBlurImage($radius, $sigma, $angle, $channel = false) {
 	}
 
 	/**
 	 * Negates the colors in the reference image
 	 *
 	 * @param bool $gray
-	 * @param int $channel
+	 * @param int  $channel
 	 *
 	 * @return bool
 	 */
-	public function negateImage($gray, $channel = false)
-	{
+	public function negateImage($gray, $channel = false) {
 	}
 
 	/**
 	 * Creates a new image
 	 *
-	 * @param int $cols
-	 * @param int $rows
-	 * @param mixed $background
+	 * @param int    $cols
+	 * @param int    $rows
+	 * @param mixed  $background
 	 * @param string $format
 	 *
 	 * @return bool
 	 */
-	public function newImage($cols, $rows, $background, $format = NULL)
-	{
+	public function newImage($cols, $rows, $background, $format = null) {
 	}
 
 	/**
 	 * Creates a new image
 	 *
-	 * @param int $columns
-	 * @param int $rows
+	 * @param int    $columns
+	 * @param int    $rows
 	 * @param string $pseudoString
 	 *
 	 * @return bool
 	 */
-	public function newPseudoImage($columns, $rows, $pseudoString)
-	{
+	public function newPseudoImage($columns, $rows, $pseudoString) {
 	}
 
 	/**
@@ -2338,8 +2156,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function nextImage()
-	{
+	public function nextImage() {
 	}
 
 	/**
@@ -2349,8 +2166,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function normalizeImage($channel = false)
-	{
+	public function normalizeImage($channel = false) {
 	}
 
 	/**
@@ -2360,8 +2176,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function oilPaintImage($radius)
-	{
+	public function oilPaintImage($radius) {
 	}
 
 	/**
@@ -2370,13 +2185,12 @@ class Imagick implements \Iterator, \Traversable
 	 * @param mixed $target
 	 * @param mixed $fill
 	 * @param float $fuzz
-	 * @param bool $invert
-	 * @param int $channel
+	 * @param bool  $invert
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function opaquePaintImage($target, $fill, $fuzz, $invert, $channel = false)
-	{
+	public function opaquePaintImage($target, $fill, $fuzz, $invert, $channel = false) {
 	}
 
 	/**
@@ -2384,20 +2198,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function optimizeImageLayers()
-	{
+	public function optimizeImageLayers() {
 	}
 
 	/**
 	 * Performs an ordered dither
 	 *
 	 * @param string $threshold_map
-	 * @param int $channel
+	 * @param int    $channel
 	 *
 	 * @return bool
 	 */
-	public function orderedPosterizeImage($threshold_map, $channel = false)
-	{
+	public function orderedPosterizeImage($threshold_map, $channel = false) {
 	}
 
 	/**
@@ -2406,14 +2218,13 @@ class Imagick implements \Iterator, \Traversable
 	 * @param mixed $fill
 	 * @param float $fuzz
 	 * @param mixed $bordercolor
-	 * @param int $x
-	 * @param int $y
-	 * @param int $channel
+	 * @param int   $x
+	 * @param int   $y
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function paintFloodfillImage($fill, $fuzz, $bordercolor, $x, $y, $channel = false)
-	{
+	public function paintFloodfillImage($fill, $fuzz, $bordercolor, $x, $y, $channel = false) {
 	}
 
 	/**
@@ -2422,12 +2233,11 @@ class Imagick implements \Iterator, \Traversable
 	 * @param mixed $target
 	 * @param mixed $fill
 	 * @param float $fuzz
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function paintOpaqueImage($target, $fill, $fuzz, $channel = false)
-	{
+	public function paintOpaqueImage($target, $fill, $fuzz, $channel = false) {
 	}
 
 	/**
@@ -2439,8 +2249,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function paintTransparentImage($target, $alpha, $fuzz)
-	{
+	public function paintTransparentImage($target, $alpha, $fuzz) {
 	}
 
 	/**
@@ -2450,8 +2259,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function pingImage($filename)
-	{
+	public function pingImage($filename) {
 	}
 
 	/**
@@ -2461,44 +2269,40 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function pingImageBlob($image)
-	{
+	public function pingImageBlob($image) {
 	}
 
 	/**
 	 * Get basic image attributes in a lightweight manner
 	 *
 	 * @param resource $filehandle
-	 * @param string $fileName
+	 * @param string   $fileName
 	 *
 	 * @return bool
 	 */
-	public function pingImageFile($filehandle, $fileName = NULL)
-	{
+	public function pingImageFile($filehandle, $fileName = null) {
 	}
 
 	/**
 	 * Simulates a Polaroid picture
 	 *
 	 * @param ImagickDraw $properties
-	 * @param float $angle
+	 * @param float       $angle
 	 *
 	 * @return bool
 	 */
-	public function polaroidImage($properties, $angle)
-	{
+	public function polaroidImage($properties, $angle) {
 	}
 
 	/**
 	 * Reduces the image to a limited number of color level
 	 *
-	 * @param int $levels
+	 * @param int  $levels
 	 * @param bool $dither
 	 *
 	 * @return bool
 	 */
-	public function posterizeImage($levels, $dither)
-	{
+	public function posterizeImage($levels, $dither) {
 	}
 
 	/**
@@ -2508,8 +2312,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function previewImages($preview)
-	{
+	public function previewImages($preview) {
 	}
 
 	/**
@@ -2517,8 +2320,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function previousImage()
-	{
+	public function previousImage() {
 	}
 
 	/**
@@ -2529,51 +2331,47 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function profileImage($name, $profile)
-	{
+	public function profileImage($name, $profile) {
 	}
 
 	/**
 	 * Analyzes the colors within a reference image
 	 *
-	 * @param int $numberColors
-	 * @param int $colorspace
-	 * @param int $treedepth
+	 * @param int  $numberColors
+	 * @param int  $colorspace
+	 * @param int  $treedepth
 	 * @param bool $dither
 	 * @param bool $measureError
 	 *
 	 * @return bool
 	 */
-	public function quantizeImage($numberColors, $colorspace, $treedepth, $dither, $measureError)
-	{
+	public function quantizeImage($numberColors, $colorspace, $treedepth, $dither, $measureError) {
 	}
 
 	/**
 	 * Analyzes the colors within a sequence of images
 	 *
-	 * @param int $numberColors
-	 * @param int $colorspace
-	 * @param int $treedepth
+	 * @param int  $numberColors
+	 * @param int  $colorspace
+	 * @param int  $treedepth
 	 * @param bool $dither
 	 * @param bool $measureError
 	 *
 	 * @return bool
 	 */
-	public function quantizeImages($numberColors, $colorspace, $treedepth, $dither, $measureError)
-	{
+	public function quantizeImages($numberColors, $colorspace, $treedepth, $dither, $measureError) {
 	}
 
 	/**
 	 * Returns an array representing the font metrics
 	 *
 	 * @param ImagickDraw $properties
-	 * @param string $text
-	 * @param bool $multiline
+	 * @param string      $text
+	 * @param bool        $multiline
 	 *
 	 * @return array Returns a multi-dimensional array representing the font metrics.
 	 */
-	public function queryFontMetrics($properties, $text, $multiline = NULL)
-	{
+	public function queryFontMetrics($properties, $text, $multiline = null) {
 	}
 
 	/**
@@ -2583,8 +2381,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns an array containing the configured fonts.
 	 */
-	public function queryFonts($pattern = '*')
-	{
+	public function queryFonts($pattern = '*') {
 	}
 
 	/**
@@ -2594,35 +2391,32 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return array Returns an array containing the formats supported by Imagick.
 	 */
-	public function queryFormats($pattern = '*')
-	{
+	public function queryFormats($pattern = '*') {
 	}
 
 	/**
 	 * Radial blurs an image
 	 *
 	 * @param float $angle
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function radialBlurImage($angle, $channel = false)
-	{
+	public function radialBlurImage($angle, $channel = false) {
 	}
 
 	/**
 	 * Creates a simulated 3d button-like effect
 	 *
-	 * @param int $width
-	 * @param int $height
-	 * @param int $x
-	 * @param int $y
+	 * @param int  $width
+	 * @param int  $height
+	 * @param int  $x
+	 * @param int  $y
 	 * @param bool $raise
 	 *
 	 * @return bool
 	 */
-	public function raiseImage($width, $height, $x, $y, $raise)
-	{
+	public function raiseImage($width, $height, $x, $y, $raise) {
 	}
 
 	/**
@@ -2630,12 +2424,11 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $low
 	 * @param float $high
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function randomThresholdImage($low, $high, $channel = false)
-	{
+	public function randomThresholdImage($low, $high, $channel = false) {
 	}
 
 	/**
@@ -2645,8 +2438,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function readImage($filename)
-	{
+	public function readImage($filename) {
 	}
 
 	/**
@@ -2657,20 +2449,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function readImageBlob($image, $filename = NULL)
-	{
+	public function readImageBlob($image, $filename = null) {
 	}
 
 	/**
 	 * Reads image from open filehandle
 	 *
 	 * @param resource $filehandle
-	 * @param string $fileName
+	 * @param string   $fileName
 	 *
 	 * @return bool
 	 */
-	public function readImageFile($filehandle, $fileName = NULL)
-	{
+	public function readImageFile($filehandle, $fileName = null) {
 	}
 
 	/**
@@ -2680,8 +2470,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function recolorImage($matrix)
-	{
+	public function recolorImage($matrix) {
 	}
 
 	/**
@@ -2691,20 +2480,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function reduceNoiseImage($radius)
-	{
+	public function reduceNoiseImage($radius) {
 	}
 
 	/**
 	 * Remaps image colors
 	 *
 	 * @param Imagick $replacement
-	 * @param int $DITHER
+	 * @param int     $DITHER
 	 *
 	 * @return bool
 	 */
-	public function remapImage($replacement, $DITHER)
-	{
+	public function remapImage($replacement, $DITHER) {
 	}
 
 	/**
@@ -2712,8 +2499,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function removeImage()
-	{
+	public function removeImage() {
 	}
 
 	/**
@@ -2723,8 +2509,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return string Returns a string containing the profile of the image.
 	 */
-	public function removeImageProfile($name)
-	{
+	public function removeImageProfile($name) {
 	}
 
 	/**
@@ -2732,8 +2517,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function render()
-	{
+	public function render() {
 	}
 
 	/**
@@ -2741,13 +2525,12 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $x_resolution
 	 * @param float $y_resolution
-	 * @param int $filter
+	 * @param int   $filter
 	 * @param float $blur
 	 *
 	 * @return bool
 	 */
-	public function resampleImage($x_resolution, $y_resolution, $filter, $blur)
-	{
+	public function resampleImage($x_resolution, $y_resolution, $filter, $blur) {
 	}
 
 	/**
@@ -2757,23 +2540,21 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function resetImagePage($page)
-	{
+	public function resetImagePage($page) {
 	}
 
 	/**
 	 * Scales an image
 	 *
-	 * @param int $columns
-	 * @param int $rows
-	 * @param int $filter
+	 * @param int   $columns
+	 * @param int   $rows
+	 * @param int   $filter
 	 * @param float $blur
-	 * @param bool $bestfit
+	 * @param bool  $bestfit
 	 *
 	 * @return bool
 	 */
-	public function resizeImage($columns, $rows, $filter, $blur, $bestfit = false)
-	{
+	public function resizeImage($columns, $rows, $filter, $blur, $bestfit = false) {
 	}
 
 	/**
@@ -2784,8 +2565,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function rollImage($x, $y)
-	{
+	public function rollImage($x, $y) {
 	}
 
 	/**
@@ -2796,8 +2576,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function rotateImage($background, $degrees)
-	{
+	public function rotateImage($background, $degrees) {
 	}
 
 	/**
@@ -2811,8 +2590,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function roundCorners($x_rounding, $y_rounding, $stroke_width = 10, $displace = 5, $size_correction = -6)
-	{
+	public function roundCorners($x_rounding, $y_rounding, $stroke_width = 10, $displace = 5, $size_correction = -6) {
 	}
 
 	/**
@@ -2823,35 +2601,32 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function sampleImage($columns, $rows)
-	{
+	public function sampleImage($columns, $rows) {
 	}
 
 	/**
 	 * Scales the size of an image
 	 *
-	 * @param int $cols
-	 * @param int $rows
+	 * @param int  $cols
+	 * @param int  $rows
 	 * @param bool $bestfit
 	 *
 	 * @return bool
 	 */
-	public function scaleImage($cols, $rows, $bestfit = false)
-	{
+	public function scaleImage($cols, $rows, $bestfit = false) {
 	}
 
 	/**
 	 * Segments an image
 	 *
-	 * @param int $COLORSPACE
+	 * @param int   $COLORSPACE
 	 * @param float $cluster_threshold
 	 * @param float $smooth_threshold
-	 * @param bool $verbose
+	 * @param bool  $verbose
 	 *
 	 * @return bool
 	 */
-	public function segmentImage($COLORSPACE, $cluster_threshold, $smooth_threshold, $verbose = false)
-	{
+	public function segmentImage($COLORSPACE, $cluster_threshold, $smooth_threshold, $verbose = false) {
 	}
 
 	/**
@@ -2861,8 +2636,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function separateImageChannel($channel)
-	{
+	public function separateImageChannel($channel) {
 	}
 
 	/**
@@ -2872,8 +2646,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function sepiaToneImage($threshold)
-	{
+	public function sepiaToneImage($threshold) {
 	}
 
 	/**
@@ -2883,8 +2656,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setBackgroundColor($background)
-	{
+	public function setBackgroundColor($background) {
 	}
 
 	/**
@@ -2894,8 +2666,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setColorspace($COLORSPACE)
-	{
+	public function setColorspace($COLORSPACE) {
 	}
 
 	/**
@@ -2905,8 +2676,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setCompression($compression)
-	{
+	public function setCompression($compression) {
 	}
 
 	/**
@@ -2916,8 +2686,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setCompressionQuality($quality)
-	{
+	public function setCompressionQuality($quality) {
 	}
 
 	/**
@@ -2927,8 +2696,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setFilename($filename)
-	{
+	public function setFilename($filename) {
 	}
 
 	/**
@@ -2936,8 +2704,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setFirstIterator()
-	{
+	public function setFirstIterator() {
 	}
 
 	/**
@@ -2947,8 +2714,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setFont($font)
-	{
+	public function setFont($font) {
 	}
 
 	/**
@@ -2958,8 +2724,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setFormat($format)
-	{
+	public function setFormat($format) {
 	}
 
 	/**
@@ -2969,8 +2734,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setGravity($gravity)
-	{
+	public function setGravity($gravity) {
 	}
 
 	/**
@@ -2980,8 +2744,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImage($replace)
-	{
+	public function setImage($replace) {
 	}
 
 	/**
@@ -2991,8 +2754,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageAlphaChannel($mode)
-	{
+	public function setImageAlphaChannel($mode) {
 	}
 
 	/**
@@ -3003,8 +2765,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageArtifact($artifact, $value)
-	{
+	public function setImageArtifact($artifact, $value) {
 	}
 
 	/**
@@ -3014,8 +2775,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageBackgroundColor($background)
-	{
+	public function setImageBackgroundColor($background) {
 	}
 
 	/**
@@ -3025,8 +2785,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageBias($bias)
-	{
+	public function setImageBias($bias) {
 	}
 
 	/**
@@ -3037,8 +2796,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageBluePrimary($x, $y)
-	{
+	public function setImageBluePrimary($x, $y) {
 	}
 
 	/**
@@ -3048,8 +2806,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageBorderColor($border)
-	{
+	public function setImageBorderColor($border) {
 	}
 
 	/**
@@ -3060,8 +2817,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageChannelDepth($channel, $depth)
-	{
+	public function setImageChannelDepth($channel, $depth) {
 	}
 
 	/**
@@ -3071,20 +2827,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageClipMask($clip_mask)
-	{
+	public function setImageClipMask($clip_mask) {
 	}
 
 	/**
 	 * Sets the color of the specified colormap index
 	 *
-	 * @param int $index
+	 * @param int          $index
 	 * @param ImagickPixel $color
 	 *
 	 * @return bool
 	 */
-	public function setImageColormapColor($index, $color)
-	{
+	public function setImageColormapColor($index, $color) {
 	}
 
 	/**
@@ -3094,8 +2848,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageColorspace($colorspace)
-	{
+	public function setImageColorspace($colorspace) {
 	}
 
 	/**
@@ -3105,8 +2858,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageCompose($compose)
-	{
+	public function setImageCompose($compose) {
 	}
 
 	/**
@@ -3116,8 +2868,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageCompression($compression)
-	{
+	public function setImageCompression($compression) {
 	}
 
 	/**
@@ -3127,8 +2878,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageCompressionQuality($quality)
-	{
+	public function setImageCompressionQuality($quality) {
 	}
 
 	/**
@@ -3138,8 +2888,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageDelay($delay)
-	{
+	public function setImageDelay($delay) {
 	}
 
 	/**
@@ -3149,8 +2898,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageDepth($depth)
-	{
+	public function setImageDepth($depth) {
 	}
 
 	/**
@@ -3160,8 +2908,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageDispose($dispose)
-	{
+	public function setImageDispose($dispose) {
 	}
 
 	/**
@@ -3172,8 +2919,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageExtent($columns, $rows)
-	{
+	public function setImageExtent($columns, $rows) {
 	}
 
 	/**
@@ -3183,8 +2929,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageFilename($filename)
-	{
+	public function setImageFilename($filename) {
 	}
 
 	/**
@@ -3194,8 +2939,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageFormat($format)
-	{
+	public function setImageFormat($format) {
 	}
 
 	/**
@@ -3205,8 +2949,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageGamma($gamma)
-	{
+	public function setImageGamma($gamma) {
 	}
 
 	/**
@@ -3216,8 +2959,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageGravity($gravity)
-	{
+	public function setImageGravity($gravity) {
 	}
 
 	/**
@@ -3228,8 +2970,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageGreenPrimary($x, $y)
-	{
+	public function setImageGreenPrimary($x, $y) {
 	}
 
 	/**
@@ -3239,8 +2980,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageIndex($index)
-	{
+	public function setImageIndex($index) {
 	}
 
 	/**
@@ -3250,8 +2990,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageInterlaceScheme($interlace_scheme)
-	{
+	public function setImageInterlaceScheme($interlace_scheme) {
 	}
 
 	/**
@@ -3261,8 +3000,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageInterpolateMethod($method)
-	{
+	public function setImageInterpolateMethod($method) {
 	}
 
 	/**
@@ -3272,8 +3010,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageIterations($iterations)
-	{
+	public function setImageIterations($iterations) {
 	}
 
 	/**
@@ -3283,8 +3020,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageMatte($matte)
-	{
+	public function setImageMatte($matte) {
 	}
 
 	/**
@@ -3294,8 +3030,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageMatteColor($matte)
-	{
+	public function setImageMatteColor($matte) {
 	}
 
 	/**
@@ -3305,8 +3040,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageOpacity($opacity)
-	{
+	public function setImageOpacity($opacity) {
 	}
 
 	/**
@@ -3316,8 +3050,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageOrientation($orientation)
-	{
+	public function setImageOrientation($orientation) {
 	}
 
 	/**
@@ -3330,8 +3063,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImagePage($width, $height, $x, $y)
-	{
+	public function setImagePage($width, $height, $x, $y) {
 	}
 
 	/**
@@ -3342,8 +3074,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageProfile($name, $profile)
-	{
+	public function setImageProfile($name, $profile) {
 	}
 
 	/**
@@ -3354,8 +3085,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageProperty($name, $value)
-	{
+	public function setImageProperty($name, $value) {
 	}
 
 	/**
@@ -3366,8 +3096,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageRedPrimary($x, $y)
-	{
+	public function setImageRedPrimary($x, $y) {
 	}
 
 	/**
@@ -3377,8 +3106,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageRenderingIntent($rendering_intent)
-	{
+	public function setImageRenderingIntent($rendering_intent) {
 	}
 
 	/**
@@ -3389,8 +3117,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageResolution($x_resolution, $y_resolution)
-	{
+	public function setImageResolution($x_resolution, $y_resolution) {
 	}
 
 	/**
@@ -3400,8 +3127,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageScene($scene)
-	{
+	public function setImageScene($scene) {
 	}
 
 	/**
@@ -3411,8 +3137,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageTicksPerSecond($ticks_persecond)
-	{
+	public function setImageTicksPerSecond($ticks_persecond) {
 	}
 
 	/**
@@ -3422,8 +3147,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageType($image_type)
-	{
+	public function setImageType($image_type) {
 	}
 
 	/**
@@ -3433,8 +3157,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageUnits($units)
-	{
+	public function setImageUnits($units) {
 	}
 
 	/**
@@ -3444,8 +3167,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageVirtualPixelMethod($method)
-	{
+	public function setImageVirtualPixelMethod($method) {
 	}
 
 	/**
@@ -3456,8 +3178,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setImageWhitePoint($x, $y)
-	{
+	public function setImageWhitePoint($x, $y) {
 	}
 
 	/**
@@ -3467,8 +3188,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setInterlaceScheme($interlace_scheme)
-	{
+	public function setInterlaceScheme($interlace_scheme) {
 	}
 
 	/**
@@ -3478,8 +3198,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setIteratorIndex($index)
-	{
+	public function setIteratorIndex($index) {
 	}
 
 	/**
@@ -3487,8 +3206,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setLastIterator()
-	{
+	public function setLastIterator() {
 	}
 
 	/**
@@ -3499,8 +3217,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setOption($key, $value)
-	{
+	public function setOption($key, $value) {
 	}
 
 	/**
@@ -3513,8 +3230,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setPage($width, $height, $x, $y)
-	{
+	public function setPage($width, $height, $x, $y) {
 	}
 
 	/**
@@ -3524,8 +3240,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setPointSize($point_size)
-	{
+	public function setPointSize($point_size) {
 	}
 
 	/**
@@ -3536,8 +3251,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setResolution($x_resolution, $y_resolution)
-	{
+	public function setResolution($x_resolution, $y_resolution) {
 	}
 
 	/**
@@ -3548,8 +3262,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setResourceLimit($type, $limit)
-	{
+	public function setResourceLimit($type, $limit) {
 	}
 
 	/**
@@ -3559,8 +3272,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setSamplingFactors($factors)
-	{
+	public function setSamplingFactors($factors) {
 	}
 
 	/**
@@ -3571,8 +3283,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setSize($columns, $rows)
-	{
+	public function setSize($columns, $rows) {
 	}
 
 	/**
@@ -3584,8 +3295,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setSizeOffset($columns, $rows, $offset)
-	{
+	public function setSizeOffset($columns, $rows, $offset) {
 	}
 
 	/**
@@ -3595,21 +3305,19 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function setType($image_type)
-	{
+	public function setType($image_type) {
 	}
 
 	/**
 	 * Creates a 3D effect
 	 *
-	 * @param bool $gray
+	 * @param bool  $gray
 	 * @param float $azimuth
 	 * @param float $elevation
 	 *
 	 * @return bool
 	 */
-	public function shadeImage($gray, $azimuth, $elevation)
-	{
+	public function shadeImage($gray, $azimuth, $elevation) {
 	}
 
 	/**
@@ -3617,13 +3325,12 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $opacity
 	 * @param float $sigma
-	 * @param int $x
-	 * @param int $y
+	 * @param int   $x
+	 * @param int   $y
 	 *
 	 * @return bool
 	 */
-	public function shadowImage($opacity, $sigma, $x, $y)
-	{
+	public function shadowImage($opacity, $sigma, $x, $y) {
 	}
 
 	/**
@@ -3631,12 +3338,11 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $radius
 	 * @param float $sigma
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function sharpenImage($radius, $sigma, $channel = false)
-	{
+	public function sharpenImage($radius, $sigma, $channel = false) {
 	}
 
 	/**
@@ -3647,8 +3353,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function shaveImage($columns, $rows)
-	{
+	public function shaveImage($columns, $rows) {
 	}
 
 	/**
@@ -3660,22 +3365,20 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function shearImage($background, $x_shear, $y_shear)
-	{
+	public function shearImage($background, $x_shear, $y_shear) {
 	}
 
 	/**
 	 * Adjusts the contrast of an image
 	 *
-	 * @param bool $sharpen
+	 * @param bool  $sharpen
 	 * @param float $alpha
 	 * @param float $beta
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function sigmoidalContrastImage($sharpen, $alpha, $beta, $channel = false)
-	{
+	public function sigmoidalContrastImage($sharpen, $alpha, $beta, $channel = false) {
 	}
 
 	/**
@@ -3687,8 +3390,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function sketchImage($radius, $sigma, $angle)
-	{
+	public function sketchImage($radius, $sigma, $angle) {
 	}
 
 	/**
@@ -3698,21 +3400,19 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function solarizeImage($threshold)
-	{
+	public function solarizeImage($threshold) {
 	}
 
 	/**
 	 * Interpolates colors
 	 *
-	 * @param int $SPARSE_METHOD
+	 * @param int   $SPARSE_METHOD
 	 * @param array $arguments
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function sparseColorImage($SPARSE_METHOD, $arguments, $channel = false)
-	{
+	public function sparseColorImage($SPARSE_METHOD, $arguments, $channel = false) {
 	}
 
 	/**
@@ -3725,8 +3425,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function spliceImage($width, $height, $x, $y)
-	{
+	public function spliceImage($width, $height, $x, $y) {
 	}
 
 	/**
@@ -3736,20 +3435,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function spreadImage($radius)
-	{
+	public function spreadImage($radius) {
 	}
 
 	/**
 	 * Hides a digital watermark within the image
 	 *
 	 * @param Imagick $watermark_wand
-	 * @param int $offset
+	 * @param int     $offset
 	 *
 	 * @return Imagick
 	 */
-	public function steganoImage($watermark_wand, $offset)
-	{
+	public function steganoImage($watermark_wand, $offset) {
 	}
 
 	/**
@@ -3759,8 +3456,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function stereoImage($offset_wand)
-	{
+	public function stereoImage($offset_wand) {
 	}
 
 	/**
@@ -3768,8 +3464,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function stripImage()
-	{
+	public function stripImage() {
 	}
 
 	/**
@@ -3779,8 +3474,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function swirlImage($degrees)
-	{
+	public function swirlImage($degrees) {
 	}
 
 	/**
@@ -3790,34 +3484,31 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function textureImage($texture_wand)
-	{
+	public function textureImage($texture_wand) {
 	}
 
 	/**
 	 * Changes the value of individual pixels based on a threshold
 	 *
 	 * @param float $threshold
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function thresholdImage($threshold, $channel = false)
-	{
+	public function thresholdImage($threshold, $channel = false) {
 	}
 
 	/**
 	 * Changes the size of an image
 	 *
-	 * @param int $columns
-	 * @param int $rows
+	 * @param int  $columns
+	 * @param int  $rows
 	 * @param bool $bestfit
 	 * @param bool $fill
 	 *
 	 * @return bool
 	 */
-	public function thumbnailImage($columns, $rows, $bestfit = false, $fill = false)
-	{
+	public function thumbnailImage($columns, $rows, $bestfit = false, $fill = false) {
 	}
 
 	/**
@@ -3828,8 +3519,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function tintImage($tint, $opacity)
-	{
+	public function tintImage($tint, $opacity) {
 	}
 
 	/**
@@ -3840,8 +3530,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return Imagick
 	 */
-	public function transformImage($crop, $geometry)
-	{
+	public function transformImage($crop, $geometry) {
 	}
 
 	/**
@@ -3850,12 +3539,11 @@ class Imagick implements \Iterator, \Traversable
 	 * @param mixed $target
 	 * @param float $alpha
 	 * @param float $fuzz
-	 * @param bool $invert
+	 * @param bool  $invert
 	 *
 	 * @return bool
 	 */
-	public function transparentPaintImage($target, $alpha, $fuzz, $invert)
-	{
+	public function transparentPaintImage($target, $alpha, $fuzz, $invert) {
 	}
 
 	/**
@@ -3863,8 +3551,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function transposeImage()
-	{
+	public function transposeImage() {
 	}
 
 	/**
@@ -3872,8 +3559,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function transverseImage()
-	{
+	public function transverseImage() {
 	}
 
 	/**
@@ -3883,8 +3569,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function trimImage($fuzz)
-	{
+	public function trimImage($fuzz) {
 	}
 
 	/**
@@ -3892,8 +3577,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function uniqueImageColors()
-	{
+	public function uniqueImageColors() {
 	}
 
 	/**
@@ -3903,12 +3587,11 @@ class Imagick implements \Iterator, \Traversable
 	 * @param float $sigma
 	 * @param float $amount
 	 * @param float $threshold
-	 * @param int $channel
+	 * @param int   $channel
 	 *
 	 * @return bool
 	 */
-	public function unsharpMaskImage($radius, $sigma, $amount, $threshold, $channel = false)
-	{
+	public function unsharpMaskImage($radius, $sigma, $amount, $threshold, $channel = false) {
 	}
 
 	/**
@@ -3916,8 +3599,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function valid()
-	{
+	public function valid() {
 	}
 
 	/**
@@ -3925,13 +3607,12 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @param float $blackPoint
 	 * @param float $whitePoint
-	 * @param int $x
-	 * @param int $y
+	 * @param int   $x
+	 * @param int   $y
 	 *
 	 * @return bool
 	 */
-	public function vignetteImage($blackPoint, $whitePoint, $x, $y)
-	{
+	public function vignetteImage($blackPoint, $whitePoint, $x, $y) {
 	}
 
 	/**
@@ -3942,8 +3623,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function waveImage($amplitude, $length)
-	{
+	public function waveImage($amplitude, $length) {
 	}
 
 	/**
@@ -3953,8 +3633,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function whiteThresholdImage($threshold)
-	{
+	public function whiteThresholdImage($threshold) {
 	}
 
 	/**
@@ -3964,8 +3643,7 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function writeImage($filename = NULL)
-	{
+	public function writeImage($filename = null) {
 	}
 
 	/**
@@ -3975,20 +3653,18 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function writeImageFile($filehandle)
-	{
+	public function writeImageFile($filehandle) {
 	}
 
 	/**
 	 * Writes an image or image sequence
 	 *
 	 * @param string $filename
-	 * @param bool $adjoin
+	 * @param bool   $adjoin
 	 *
 	 * @return bool
 	 */
-	public function writeImages($filename, $adjoin)
-	{
+	public function writeImages($filename, $adjoin) {
 	}
 
 	/**
@@ -3998,7 +3674,6 @@ class Imagick implements \Iterator, \Traversable
 	 *
 	 * @return bool
 	 */
-	public function writeImagesFile($filehandle)
-	{
+	public function writeImagesFile($filehandle) {
 	}
 }

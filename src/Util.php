@@ -16,40 +16,40 @@ use Webmozart\Glob\Glob;
 class Util {
 
 	static function finalPart( $parts ) {
-		return property_exists($parts,"parts") && is_array($parts->parts) ? $parts->parts[ count($parts->parts)-1 ] : $parts;
+		return property_exists($parts, "parts") && is_array($parts->parts) ? $parts->parts[count($parts->parts) - 1] : $parts;
 	}
 
 	static function isScalarType($name) {
-		$name=strtolower($name);
-		return $name=='bool' || $name=='string' || $name=='int' || $name=='float';
+		$name = strtolower($name);
+		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float';
 	}
 
 	static function isLegalNonObject($name) {
-		return Util::isScalarType($name) || strcasecmp($name,"callable")==0 || strcasecmp($name,"array")==0;
+		return self::isScalarType($name) || strcasecmp($name, "callable") == 0 || strcasecmp($name, "array") == 0;
 	}
 
 	static function methodSignatureString(ClassMethod $method) {
 		$ret = [];
-		foreach($method->params as $param) {
-			$ret[]=$param->type ? static::finalPart($param->type) : '$'.$param->name;
+		foreach ($method->params as $param) {
+			$ret[] = $param->type ? static::finalPart($param->type) : '$' . $param->name;
 		}
-		return static::finalPart($method->name)."(".implode(",", $ret).")";
+		return static::finalPart($method->name) . "(" . implode(",", $ret) . ")";
 	}
 	static function getMethodAccessLevel(ClassMethod $level) {
-		if($level->isPublic()) return "public";
-		if($level->isPrivate()) return "private";
-		if($level->isProtected()) return "protected";
+		if ($level->isPublic()) return "public";
+		if ($level->isPrivate()) return "private";
+		if ($level->isProtected()) return "protected";
 		trigger_error("Impossible");
 	}
 
 	static function matchesGlobs($basePath, $path, $globArr) {
-		foreach($globArr as $glob) {
-			if($glob[0]=='/') {
-				if(Glob::match($path, $glob)) {
+		foreach ($globArr as $glob) {
+			if ($glob[0] == '/') {
+				if (Glob::match($path, $glob)) {
 					return true;
 				}
 			} else {
-				if(Glob::match($path, $basePath."/".$glob)) {
+				if (Glob::match($path, $basePath . "/" . $glob)) {
 					return true;
 				}
 			}
@@ -58,10 +58,10 @@ class Util {
 	}
 
 	static function removeInitialPath($path, $name) {
-		if(strpos($name,$path)===0) {
-			$name = substr($name,strlen($path));
-			while($name[0]=="/") {
-				$name=substr($name,1);
+		if (strpos($name, $path) === 0) {
+			$name = substr($name, strlen($path));
+			while ($name[0] == "/") {
+				$name = substr($name, 1);
 			}
 			return $name;
 		} else {
@@ -78,15 +78,15 @@ class Util {
 	static function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
-			if(!$class) {
+			if (!$class) {
 				return null;
 			}
 
 			$method = $class->getMethod($name);
-			if($method) {
+			if ($method) {
 				return $method;
 			}
-			$className=$class->getParentClassName();
+			$className = $class->getParentClassName();
 		}
 		return null;
 	}
@@ -100,15 +100,15 @@ class Util {
 	static function findAbstractedProperty($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
-			if(!$class) {
+			if (!$class) {
 				return null;
 			}
 
 			$method = $class->getProperty($name);
-			if($method) {
+			if ($method) {
 				return $method;
 			}
-			$className=$class->getParentClassName();
+			$className = $class->getParentClassName();
 		}
 		return null;
 	}
@@ -116,21 +116,21 @@ class Util {
 	static function findAbstractedSignature($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
-			if(!$class) {
+			if (!$class) {
 				return null;
 			}
 
 			$method = $class->getMethod($name);
-			if($method) {
+			if ($method) {
 				return $method;
 			}
-			foreach($class->getInterfaceNames() as $interfaceName) {
+			foreach ($class->getInterfaceNames() as $interfaceName) {
 				$method = self::findAbstractedSignature($interfaceName, $name, $symbolTable);
-				if($method) {
+				if ($method) {
 					return $method;
 				}
 			}
-			$className=$class->getParentClassName();
+			$className = $class->getParentClassName();
 		}
 		return null;
 	}

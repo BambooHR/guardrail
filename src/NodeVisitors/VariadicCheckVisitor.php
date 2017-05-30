@@ -13,8 +13,7 @@ use PhpParser\NodeVisitor;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 
-class VariadicCheckVisitor extends NodeVisitorAbstract
-{
+class VariadicCheckVisitor extends NodeVisitorAbstract {
 	private $foundVariatic = false;
 
 	/**
@@ -26,7 +25,7 @@ class VariadicCheckVisitor extends NodeVisitorAbstract
 
 
 	function enterNode(Node $node) {
-		if($node instanceof Node\FunctionLike) {
+		if ($node instanceof Node\FunctionLike) {
 			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
 		}
 
@@ -44,7 +43,7 @@ class VariadicCheckVisitor extends NodeVisitorAbstract
 	}
 
 	static function isVariadic($stmts) {
-		if(!is_array($stmts)) {
+		if (!is_array($stmts)) {
 			return false;
 		}
 		$visitor = new self;
@@ -55,4 +54,3 @@ class VariadicCheckVisitor extends NodeVisitorAbstract
 	}
 }
 
-?>

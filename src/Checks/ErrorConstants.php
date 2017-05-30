@@ -18,6 +18,7 @@ class ErrorConstants {
 	const TYPE_DOC_BLOCK_TYPE = 'Standard.DocBlock.Type';
 	const TYPE_DOC_BLOCK_VAR = 'Standard.DocBlock.Variable';
 	const TYPE_EVAL = 'Standard.Security.Eval';
+	const TYPE_EXCEPTION_BASE = 'Standard.Exception.Base';
 	const TYPE_GLOBAL_EXPRESSION_ACCESSED = 'Standard.Global.Expression';
 	const TYPE_GLOBAL_STRING_ACCESSED = 'Standard.Global.String';
 	const TYPE_GOTO = 'Standard.Goto';
@@ -43,4 +44,18 @@ class ErrorConstants {
 	const TYPE_UNKNOWN_VARIABLE = 'Standard.Unknown.Variable';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
+
+	/**
+	 * @return string[]
+	 */
+	static function getConstants() {
+		$ret = [];
+		$selfReflection = new \ReflectionClass(self::class);
+		$constants = $selfReflection->getConstants();
+		sort($constants);
+		foreach ($constants as $name => $value) {
+			$ret[] = $value;
+		}
+		return $ret;
+	}
 }

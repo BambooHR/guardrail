@@ -35,18 +35,18 @@ class XUnitOutput implements OutputInterface {
 	private $silenced = [];
 
 	function __construct(\BambooHR\Guardrail\Config $config) {
-		$this->doc=new JUnitXml\Document();
-		$this->doc->formatOutput=true;
-		$this->config=$config;
-		$this->emitErrors = $config->getOutputLevel()==1;
+		$this->doc = new JUnitXml\Document();
+		$this->doc->formatOutput = true;
+		$this->config = $config;
+		$this->emitErrors = $config->getOutputLevel() == 1;
 		$this->emitList = $config->getEmitList();
 	}
 
 	function getClass($className) {
-		if(!isset($this->suites[$className])) {
+		if (!isset($this->suites[$className])) {
 			$suite = $this->doc->addTestSuite();
 			$suite->setName($className);
-			$this->suites[$className]=$suite;
+			$this->suites[$className] = $suite;
 		}
 		return $this->suites[$className];
 
@@ -56,24 +56,44 @@ class XUnitOutput implements OutputInterface {
 		//$this->suite->addTestCase();
 	}
 
+	function getTypeCounts() {
+		$count = [];
+		$failures = $this->doc->getElementsByTagName("failure");
+		foreach ($failures as $failure) {
+			$type = $failure->getAttribute('type');
+			$count[$type] = isset( $count[$type] ) ? $count[$type] + 1 : 1;
+		}
+		return $count;
+	}
+
+	static function emitPatternMatches($name, $pattern) {
+		if (substr($pattern, -2) == '.*') {
+			$start = substr($pattern, 0, -2);
+			return (strpos($name, $start) === 0);
+		} else {
+			return $name == $pattern;
+		}
+	}
+
+
 	function shouldEmit($fileName, $name) {
-		if(isset($this->silenced[$name]) && $this->silenced[$name]>0) {
+		if (isset($this->silenced[$name]) && $this->silenced[$name] > 0) {
 			return false;
 		}
-		foreach($this->emitList as $entry) {
-			 if(
+		foreach ($this->emitList as $entry) {
+			 if (
 				is_array($entry) &&
 				isset($entry['glob']) &&
 				isset($entry['emit']) &&
-				$entry['emit'] == $name &&
-				Glob::match( "/".$fileName, "/".$entry['glob'])
+				self::emitPatternMatches($name, $entry['emit']) &&
+				Glob::match( "/" . $fileName, "/" . $entry['glob'])
 			) {
-			 	if(isset($entry['ignore'])) {
-					return !Glob::match("/".$fileName, "/".$entry['ignore']);
+				 if (isset($entry['ignore'])) {
+					return !Glob::match("/" . $fileName, "/" . $entry['ignore']);
 				} else {
-			 		return true;
+					 return true;
 				}
-			} else if(is_string($entry) && $entry == $name) {
+			} else if (is_string($entry) && self::emitPatternMatches($name, $entry)) {
 				 return true;
 			}
 		}
@@ -81,7 +101,7 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	function silenceType($name) {
-		if(!isset($this->silenced[$name])) {
+		if (!isset($this->silenced[$name])) {
 			$this->silenced[$name] = 1;
 		} else {
 			$this->silenced[$name]++;
@@ -98,27 +118,25 @@ class XUnitOutput implements OutputInterface {
 			return;
 		}
 		$suite = $this->getClass($className);
-		if(!isset($this->files[$className][$fileName])) {
-			$case=$suite->addTestCase();
+		if (!isset($this->files[$className][$fileName])) {
+			$case = $suite->addTestCase();
 			$case->setName($fileName);
 			$case->setClassname( $className );
-			if(!isset($this->files[$className])) {
-				$this->files[$className]=[];
+			if (!isset($this->files[$className])) {
+				$this->files[$className] = [];
 			}
-			$this->files[$className][$fileName]=$case;
+			$this->files[$className][$fileName] = $case;
 		} else {
-			$case=$this->files[$className][$fileName];
+			$case = $this->files[$className][$fileName];
 		}
 
-
-
-		$message.=" on line ".$lineNumber;
-		$case->addFailure($message , $name);
-		if($this->emitErrors) {
+		$message .= " on line " . $lineNumber;
+		$case->addFailure($message, $name);
+		if ($this->emitErrors) {
 			echo "E";
 		}
-		if(!isset($this->counts[$name])) {
-			$this->counts[$name]=1;
+		if (!isset($this->counts[$name])) {
+			$this->counts[$name] = 1;
 		} else {
 			++$this->counts[$name];
 		}
@@ -126,10 +144,12 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	function output($verbose, $extraVerbose) {
-		if($this->config->getOutputLevel()==1) {
-			echo $verbose;flush();
-		} else if($this->config->getOutputLevel()==2) {
-			echo $extraVerbose."\n";flush();
+		if ($this->config->getOutputLevel() == 1) {
+			echo $verbose;
+flush();
+		} else if ($this->config->getOutputLevel() == 2) {
+			echo $extraVerbose . "\n";
+flush();
 		}
 	}
 
@@ -138,14 +158,16 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	function outputVerbose($string) {
-		if($this->config->getOutputLevel()>=1) {
-			echo $string;flush();
+		if ($this->config->getOutputLevel() >= 1) {
+			echo $string;
+flush();
 		}
 	}
 
 	function outputExtraVerbose($string) {
-		if($this->config->getOutputLevel()>=2) {
-			echo $string;flush();
+		if ($this->config->getOutputLevel() >= 2) {
+			echo $string;
+flush();
 		}
 	}
 
@@ -155,20 +177,21 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	function renderResults() {
-		if($this->config->getOutputFile()) {
+		if ($this->config->getOutputFile()) {
 			$this->doc->save($this->config->getOutputFile());
 		} else {
 			echo $this->doc->saveXml();
 		}
+		//print_r($this->getTypeCounts());
 	}
 
 	function getErrorsByFile() {
-		$fileCount=[];
+		$fileCount = [];
 		$failures = $this->doc->getElementsByTagName("failure");
-		for($i=0; $i<$failures->length; ++$i) {
+		for ($i = 0; $i < $failures->length; ++$i) {
 			$item = $failures->item($i);
 			$name = $item->parentNode->attributes->getNamedItem("name")->textContent;
-			$fileCount[ $name ]++;
+			$fileCount[$name]++;
 		}
 		return $fileCount;
 	}

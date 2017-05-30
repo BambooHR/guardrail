@@ -68,14 +68,13 @@ class DefinedConstantCheck extends BaseCheck {
 	function __construct(SymbolTable $symbolTable, \BambooHR\Guardrail\Output\OutputInterface $output) {
 		parent::__construct($symbolTable, $output);
 
-		foreach(get_loaded_extensions() as $extension) {
+		foreach (get_loaded_extensions() as $extension) {
 			try {
 				$reflectedExtension = new \ReflectionExtension($extension);
-				foreach($reflectedExtension->getConstants() as $constant=>$value) {
-					$this->reflectedConstants[ $constant ] = true;
+				foreach ($reflectedExtension->getConstants() as $constant => $value) {
+					$this->reflectedConstants[$constant] = true;
 				}
-			}
-			catch(\ReflectionException $e) {
+			} catch (\ReflectionException $e) {
 			}
 		}
 	}
@@ -86,10 +85,10 @@ class DefinedConstantCheck extends BaseCheck {
 
 	function isLanguageConst($name) {
 		$consts = ["null","true","false"];
-		foreach($consts as $const) {
-			if(strcasecmp($const,$name)==0) return true;
+		foreach ($consts as $const) {
+			if (strcasecmp($const, $name) == 0) return true;
 		}
-		return in_array($name,static::$PHP_CONSTANTS);
+		return in_array($name, static::$PHP_CONSTANTS);
 	}
 
 	function isMagicConstant($name) {

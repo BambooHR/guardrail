@@ -13,8 +13,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 
-class ParamTypesCheck extends BaseCheck
-{
+class ParamTypesCheck extends BaseCheck {
 	function getCheckNodeTypes() {
 		return [
 			\PhpParser\Node\Stmt\ClassMethod::class,
@@ -25,7 +24,7 @@ class ParamTypesCheck extends BaseCheck
 
 	function isAllowed($name, ClassLike $inside=null) {
 		$nameLower = strtolower($name);
-		if($nameLower=="self" && $inside instanceof Class_) {
+		if ($nameLower == "self" && $inside instanceof Class_) {
 			return true;
 		}
 		if ($nameLower != "" && !Util::isLegalNonObject($name)) {
@@ -48,24 +47,24 @@ class ParamTypesCheck extends BaseCheck
 	 * @return mixed
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if(!property_exists($node,'name')) {
-			$displayName="closure function";
+		if (!property_exists($node, 'name')) {
+			$displayName = "closure function";
 		} else {
-			$displayName=$node->name;
+			$displayName = $node->name;
 		}
 
 		foreach ($node->params as $index => $param) {
-			if($param->type) {
+			if ($param->type) {
 				$name = strval($param->type);
-				if(!$this->isAllowed( $name, $inside )) {
+				if (!$this->isAllowed( $name, $inside )) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in parameter $index of $displayName");
 				}
 			}
 		}
 
-		if($node->returnType) {
+		if ($node->returnType) {
 			$returnType = strval($node->returnType);
-			if(!$this->isAllowed($returnType, $inside)) {
+			if (!$this->isAllowed($returnType, $inside)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 			}
 		}

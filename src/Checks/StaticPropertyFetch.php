@@ -17,8 +17,7 @@ use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 
 
-class StaticPropertyFetch extends BaseCheck
-{
+class StaticPropertyFetch extends BaseCheck {
 	private $typeInferer;
 
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
@@ -27,7 +26,7 @@ class StaticPropertyFetch extends BaseCheck
 	}
 
 	function getCheckNodeTypes() {
-		return [ StaticPropertyFetch::class ];
+		return [ self::class ];
 	}
 
 	/**
@@ -42,7 +41,7 @@ class StaticPropertyFetch extends BaseCheck
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		$class = $node->class;
-		if($class instanceof Name && is_string($node->name)) {
+		if ($class instanceof Name && is_string($node->name)) {
 			$property = Util::findAbstractedProperty($class, $node->name, $this->symbolTable);
 			if (!$property) {
 				$method = Util::findAbstractedMethod($class, $node->name, $this->symbolTable);

@@ -25,8 +25,8 @@ abstract class BaseCheck extends ErrorConstants {
 	private $doc;
 
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
-		$this->symbolTable=$symbolTable;
-		$this->doc=$doc;
+		$this->symbolTable = $symbolTable;
+		$this->doc = $doc;
 	}
 
 	function emitError($file, \PhpParser\Node $node, $class, $message="") {

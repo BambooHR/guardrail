@@ -29,7 +29,7 @@ class Class_ implements ClassInterface {
 
 	function getMethodNames() {
 		$ret = [];
-		foreach($this->class->getMethods() as $method) {
+		foreach ($this->class->getMethods() as $method) {
 			$ret[] = $method->name;
 		}
 		return $ret;
@@ -45,7 +45,7 @@ class Class_ implements ClassInterface {
 
 	function getInterfaceNames() {
 		$ret = [];
-		if($this->class instanceof Interface_) {
+		if ($this->class instanceof Interface_) {
 			foreach ($this->class->extends as $extend) {
 				$ret[] = strval($extend);
 			}
@@ -59,13 +59,13 @@ class Class_ implements ClassInterface {
 
 	function getMethod($name) {
 		$method = $this->class->getMethod($name);
-		return $method ?  new ClassMethod($method) : null;
+		return $method ? new ClassMethod($method) : null;
 	}
 
 	function hasConstant($name) {
 		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
-		foreach($constants as $constList) {
-			foreach($constList->consts as $const) {
+		foreach ($constants as $constList) {
+			foreach ($constList->consts as $const) {
 				if (strcasecmp($const->name, $name) == 0) {
 					return true;
 				}
@@ -76,9 +76,9 @@ class Class_ implements ClassInterface {
 
 	function getPropertyNames() {
 		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
-		foreach($properties as $prop) {
+		foreach ($properties as $prop) {
 			/** @var \PhpParser\Node\Stmt\Property $prop */
-			foreach($prop->props as $propertyProperty) {
+			foreach ($prop->props as $propertyProperty) {
 				/** @var PropertyProperty $propertyProperty */
 				$ret[] = $propertyProperty->name;
 			}
@@ -88,19 +88,19 @@ class Class_ implements ClassInterface {
 
 	function getProperty($name) {
 		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
-		foreach($properties as $prop) {
+		foreach ($properties as $prop) {
 			/** @var \PhpParser\Node\Stmt\Property $prop */
-			foreach($prop->props as $propertyProperty) {
+			foreach ($prop->props as $propertyProperty) {
 				/** @var PropertyProperty $propertyProperty */
-				if($propertyProperty->name==$name) {
-					if($prop->isPrivate()) {
-						$access="private";
-					} else if($prop->isProtected()) {
-						$access="protected";
+				if ($propertyProperty->name == $name) {
+					if ($prop->isPrivate()) {
+						$access = "private";
+					} else if ($prop->isProtected()) {
+						$access = "protected";
 					} else {
-						$access="public";
+						$access = "public";
 					}
-					return new Property($propertyProperty->name, "", $access , $prop->isStatic());
+					return new Property($propertyProperty->name, "", $access, $prop->isStatic());
 				}
 			}
 		}
