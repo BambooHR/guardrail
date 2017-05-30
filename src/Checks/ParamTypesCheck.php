@@ -1,28 +1,44 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Checks;
-
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Function_;
 
+/**
+ * Class ParamTypesCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class ParamTypesCheck extends BaseCheck {
-	function getCheckNodeTypes() {
-		return [
-			\PhpParser\Node\Stmt\ClassMethod::class,
-			\PhpParser\Node\Stmt\Function_::class,
-			\PhpParser\Node\Expr\Closure::class
-		];
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [ ClassMethod::class, Function_::class, Closure::class];
 	}
 
-	function isAllowed($name, ClassLike $inside=null) {
+	/**
+	 * isAllowed
+	 *
+	 * @param string         $name   The name
+	 * @param ClassLike|null $inside Instance of ClassLike | null
+	 *
+	 * @return bool
+	 */
+	protected function isAllowed($name, ClassLike $inside=null) {
 		$nameLower = strtolower($name);
 		if ($nameLower == "self" && $inside instanceof Class_) {
 			return true;
@@ -44,7 +60,7 @@ class ParamTypesCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if (!property_exists($node, 'name')) {

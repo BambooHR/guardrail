@@ -1,26 +1,77 @@
-<?php
+<?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Abstractions;
-
-use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
-
+/**
+ * Interface FunctionLikeInterface
+ *
+ * @package BambooHR\Guardrail\Abstractions
+ */
 interface FunctionLikeInterface {
-	/** @return FunctionLikeParameter[] */
-	function getParameters();
-	function getMinimumRequiredParameters();
-	function getReturnType();
-	function getDocBlockReturnType();
-	function isInternal();
-	function isDeprecated();
 
-	function getName();
+	/**
+	 * getParameters
+	 *
+	 * @return FunctionLikeParameter[]
+	 */
+	public function getParameters();
 
+	/**
+	 * getMinimumRequiredParameters
+	 *
+	 * @return mixed
+	 */
+	public function getMinimumRequiredParameters();
 
-	function getStartingLine();
-	function isVariadic();
+	/**
+	 * getReturnType
+	 *
+	 * @return string
+	 */
+	public function getReturnType();
+
+	/**
+	 * getDocBlockReturnType
+	 *
+	 * @return string|null
+	 */
+	public function getDocBlockReturnType();
+
+	/**
+	 * isInternal
+	 *
+	 * @return bool
+	 */
+	public function isInternal();
+
+	/**
+	 * isDeprecated
+	 *
+	 * @return bool
+	 */
+	public function isDeprecated();
+
+	/**
+	 * getName
+	 *
+	 * @return string
+	 */
+	public function getName();
+
+	/**
+	 * getStartingLine
+	 *
+	 * @return int
+	 */
+	public function getStartingLine();
+
+	/**
+	 * isVariadic
+	 *
+	 * @return bool
+	 */
+	public function isVariadic();
 }

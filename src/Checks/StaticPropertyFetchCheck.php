@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -16,16 +14,35 @@ use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 
+/**
+ * Class StaticPropertyFetchCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
+class StaticPropertyFetchCheck extends BaseCheck {
 
-class StaticPropertyFetch extends BaseCheck {
+	/**
+	 * @var TypeInferrer
+	 */
 	private $typeInferer;
 
+	/**
+	 * StaticPropertyFetchCheck constructor.
+	 *
+	 * @param SymbolTable     $symbolTable Instance of SymbolTable
+	 * @param OutputInterface $doc         Instance of OutputInterface
+	 */
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->typeInferer = new TypeInferrer($symbolTable);
 	}
 
-	function getCheckNodeTypes() {
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
 		return [ self::class ];
 	}
 
@@ -37,7 +54,7 @@ class StaticPropertyFetch extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		$class = $node->class;

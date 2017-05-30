@@ -1,48 +1,85 @@
-<?php
+<?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Abstractions;
-
 use BambooHR\Guardrail\Util;
-
+Use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
+/**
+ * Class ClassMethod
+ *
+ * @package BambooHR\Guardrail\Abstractions
+ */
 class ClassMethod implements MethodInterface {
+
+	/**
+	 * @var ParserClassMethod
+	 */
 	private $method;
 
-	function __construct(\PhpParser\Node\Stmt\ClassMethod $method) {
+	/**
+	 * ClassMethod constructor.
+	 *
+	 * @param ParserClassMethod $method Instance of ClassMethod
+	 */
+	public function __construct(ParserClassMethod $method) {
 		$this->method = $method;
 	}
-	function getReturnType() {
+
+	/**
+	 * getReturnType
+	 *
+	 * @return string
+	 */
+	public function getReturnType() {
 		return strval($this->method->returnType);
 	}
 
-	function isDeprecated() {
+	/**
+	 * isDeprecated
+	 *
+	 * @return bool
+	 */
+	public function isDeprecated() {
 		$docBlock = $this->method->getDocComment();
 		if (strpos($docBlock, "@deprecated") !== false) {
 			return true;
 		}
 	}
 
-	function getDocBlockReturnType() {
+	/**
+	 * getDocBlockReturnType
+	 *
+	 * @return mixed|null
+	 */
+	public function getDocBlockReturnType() {
 		return $this->method->getAttribute('namespacedReturn');
 	}
 
-	function getMinimumRequiredParameters() {
+	/**
+	 * getMinimumRequiredParameters
+	 *
+	 * @return int
+	 */
+	public function getMinimumRequiredParameters() {
 		$minimumArgs = 0;
 		foreach ($this->method->params as $param) {
-			if ($param->default) break;
+			if ($param->default) {
+				break;
+			}
 			$minimumArgs++;
 		}
 		return $minimumArgs;
 	}
 
 	/**
+	 * getParameters
+	 *
 	 * @return FunctionLikeParameter[]
 	 */
-	function getParameters() {
+	public function getParameters() {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
@@ -51,31 +88,66 @@ class ClassMethod implements MethodInterface {
 		return $ret;
 	}
 
-	function getAccessLevel() {
+	/**
+	 * getAccessLevel
+	 *
+	 * @return string
+	 */
+	public function getAccessLevel() {
 		return Util::getMethodAccessLevel($this->method);
 	}
 
-	function isInternal() {
+	/**
+	 * isInternal
+	 *
+	 * @return bool
+	 */
+	public function isInternal() {
 		return false;
 	}
 
-	function isAbstract() {
+	/**
+	 * isAbstract
+	 *
+	 * @return bool
+	 */
+	public function isAbstract() {
 		return $this->method->isAbstract();
 	}
 
-	function isStatic() {
+	/**
+	 * isStatic
+	 *
+	 * @return bool
+	 */
+	public function isStatic() {
 		return $this->method->isStatic();
 	}
 
-	function getName() {
+	/**
+	 * getName
+	 *
+	 * @return string
+	 */
+	public function getName() {
 		return $this->method->name;
 	}
 
-	function getStartingLine() {
+	/**
+	 * getStartingLine
+	 *
+	 * @return int
+	 */
+	public function getStartingLine() {
 		return $this->method->getLine();
 	}
 
-	function isVariadic() {
+	/**
+	 * isVariadic
+	 *
+	 * @return bool
+	 */
+	public function isVariadic() {
 		foreach ($this->method->getParams() as $param) {
 			if ($param->variadic) {
 				return true;

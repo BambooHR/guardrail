@@ -24,20 +24,51 @@ abstract class BaseCheck extends ErrorConstants {
 	/** @var \BambooHR\Guardrail\Output\OutputInterface  */
 	private $doc;
 
-	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+	/**
+	 * BaseCheck constructor.
+	 *
+	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
+	 * @param OutputInterface $doc         Instance of the OutputInterface
+	 */
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		$this->symbolTable = $symbolTable;
 		$this->doc = $doc;
 	}
 
-	function emitError($file, \PhpParser\Node $node, $class, $message="") {
+	/**
+	 * emitError
+	 *
+	 * @param string $file    The file
+	 * @param Node   $node    Instance of the Node
+	 * @param string $class   The name of the class
+	 * @param string $message The message
+	 *
+	 * @return mixed
+	 */
+	public function emitError($file, \PhpParser\Node $node, $class, $message="") {
 		return $this->emitErrorOnLine($file, $node->getLine(), $class, $message);
 	}
 
-	function emitErrorOnLine($file, $lineNumber, $class, $message="") {
+	/**
+	 * emitErrorOnLine
+	 *
+	 * @param string $file       The file name
+	 * @param int    $lineNumber The line number
+	 * @param string $class      The class
+	 * @param string $message    The message
+	 *
+	 * @return mixed
+	 */
+	public function emitErrorOnLine($file, $lineNumber, $class, $message="") {
 		return $this->doc->emitError(get_class($this), $file, $lineNumber, $class, $message);
 	}
 
-	function incTests() {
+	/**
+	 * incTests
+	 *
+	 * @return void
+	 */
+	public function incTests() {
 		$this->doc->incTests();
 	}
 

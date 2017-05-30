@@ -1,22 +1,32 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Checks;
-
+use BambooHR\Guardrail\Output\OutputInterface;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Name;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use N98\JUnitXml;
 
+/**
+ * Class DefinedConstantCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class DefinedConstantCheck extends BaseCheck {
+
+	/**
+	 * @var array
+	 */
 	var $reflectedConstants = [];
-	static private $PHP_CONSTANTS = [
+
+	/**
+	 * @var array
+	 */
+	static private $phpConstance = [
 		"PHP_VERSION",
 		"PHP_MAJOR_VERSION",
 		"PHP_MINOR_VERSION",
@@ -65,7 +75,13 @@ class DefinedConstantCheck extends BaseCheck {
 		"__COMPILER_HALT_OFFSET__"
 	];
 
-	function __construct(SymbolTable $symbolTable, \BambooHR\Guardrail\Output\OutputInterface $output) {
+	/**
+	 * DefinedConstantCheck constructor.
+	 *
+	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
+	 * @param OutputInterface $output      Instance of the OutputInterface
+	 */
+	public function __construct(SymbolTable $symbolTable, OutputInterface $output) {
 		parent::__construct($symbolTable, $output);
 
 		foreach (get_loaded_extensions() as $extension) {
@@ -74,28 +90,56 @@ class DefinedConstantCheck extends BaseCheck {
 				foreach ($reflectedExtension->getConstants() as $constant => $value) {
 					$this->reflectedConstants[$constant] = true;
 				}
-			} catch (\ReflectionException $e) {
+			} catch (\ReflectionException $exception) {
 			}
 		}
 	}
 
-	function getCheckNodeTypes() {
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
 		return [Node\Expr\ConstFetch::class];
 	}
 
-	function isLanguageConst($name) {
+	/**
+	 * isLanguageConst
+	 *
+	 * @param string $name The name
+	 *
+	 * @return bool
+	 */
+	public function isLanguageConst($name) {
 		$consts = ["null","true","false"];
 		foreach ($consts as $const) {
-			if (strcasecmp($const, $name) == 0) return true;
+			if (strcasecmp($const, $name) == 0) {
+				return true;
+			}
 		}
-		return in_array($name, static::$PHP_CONSTANTS);
+		return in_array($name, static::$phpConstance);
 	}
 
-	function isMagicConstant($name) {
+	/**
+	 * isMagicConstant
+	 *
+	 * @param string $name The name
+	 *
+	 * @return bool
+	 */
+	public function isMagicConstant($name) {
 		return in_array($name, ['__LINE__','__FILE__','__DIR__','__FUNCTION__', '__CLASS__','__TRAIT__','__METHOD__','__NAMESPACE__']);
 	}
 
-	function isExtensionConstant($name) {
+	/**
+	 * isExtensionConstant
+	 *
+	 * @param string $name The name
+	 *
+	 * @return bool
+	 */
+	public function isExtensionConstant($name) {
 		return isset( $this->reflectedConstants[strval($name)] );
 	}
 
@@ -107,7 +151,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		$name = $node->name;

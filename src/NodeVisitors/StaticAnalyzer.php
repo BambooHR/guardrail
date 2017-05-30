@@ -53,7 +53,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new \BambooHR\Guardrail\Checks\UndefinedVariableCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\DefinedConstantCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\BacktickOperatorCheck($this->index, $output),
-			new \BambooHR\Guardrail\Checks\PropertyFetch($this->index, $output),
+			new \BambooHR\Guardrail\Checks\PropertyFetchCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\InterfaceCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\ParamTypesCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\StaticCallCheck($this->index, $output),
@@ -68,7 +68,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new \BambooHR\Guardrail\Checks\ConstructorCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\GotoCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\ReturnCheck($this->index, $output),
-			new \BambooHR\Guardrail\Checks\StaticPropertyFetch($this->index, $output),
+			new \BambooHR\Guardrail\Checks\StaticPropertyFetchCheck($this->index, $output),
 			new \BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck($this->index, $output),
 		];
 
