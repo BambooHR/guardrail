@@ -1,19 +1,29 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Checks;
-
 use PhpParser\Node;
+use PhpParser\Node\Expr\ShellExec;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 
-class BacktickOperatorCheck extends BaseCheck {
-	function getCheckNodeTypes() {
-		return [\PhpParser\Node\Expr\ShellExec::class];
+/**
+ * Class BackTickOperatorCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
+class BackTickOperatorCheck extends BaseCheck {
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return string[]
+	 */
+	public function getCheckNodeTypes() {
+		return [ShellExec::class];
 	}
 
 	/**
@@ -24,10 +34,12 @@ class BacktickOperatorCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		$this->incTests();
-		$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_BACKTICK, "Unsafe operator (backtick)");
+		if ($node instanceof ShellExec) {
+			$this->emitError($fileName,$node,ErrorConstants::TYPE_SECURITY_BACKTICK, "Unsafe operator (back tick)");
+		}
 	}
 }

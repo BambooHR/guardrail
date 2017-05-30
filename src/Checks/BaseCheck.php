@@ -42,6 +42,8 @@ abstract class BaseCheck extends ErrorConstants {
 	}
 
 	/**
+	 * getCheckNodeTypes
+	 *
 	 * @return string[]
 	 */
 	abstract function getCheckNodeTypes();
@@ -54,7 +56,7 @@ abstract class BaseCheck extends ErrorConstants {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	abstract public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null);
 }
