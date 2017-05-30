@@ -25,7 +25,7 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail
  */
 class TypeInferrer {
-	
+
 	/** @var SymbolTable */
 	private $index;
 

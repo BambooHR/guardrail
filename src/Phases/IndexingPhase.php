@@ -78,8 +78,8 @@ class IndexingPhase {
 						$traverser1->traverse($statements);
 						$traverser2->traverse($statements);
 					}
-				} catch (Error $e) {
-					$output->emitError(__CLASS__, $file, 0, ' Parse Error: ' . $e->getMessage() . "\n" );
+				} catch (Error $exception) {
+					$output->emitError(__CLASS__, $file, 0, ' Parse Error: ' . $exception->getMessage() . "\n" );
 				}
 			}
 		}
@@ -97,7 +97,7 @@ class IndexingPhase {
 	public function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
 		$output->outputVerbose("\n\nImporting traits\n");
 		$count = 0;
-		foreach ($symbolTable->getClassesThatUseATrait() as $className) {
+		foreach ($symbolTable->getClassesThatUseAnyTrait() as $className) {
 			$class = $symbolTable->getClass($className);
 			$symbolTable->updateClass( $class );
 			$output->output(".", " - " . (++$count) . ": " . $className);
