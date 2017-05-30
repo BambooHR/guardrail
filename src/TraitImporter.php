@@ -27,7 +27,7 @@ class TraitImporter {
 	/**
 	 * TraitImporter constructor.
 	 *
-	 * @param SymbolTable $index
+	 * @param SymbolTable $index Instance of SymbolTable
 	 */
 	public function __construct( SymbolTable $index) {
 		$this->index = $index;
@@ -107,6 +107,8 @@ class TraitImporter {
 	 * @param array    $methods    The array of methods
 	 * @param array    $properties The array of properties
 	 *
+	 * @return void
+	 *
 	 * @throws UnknownTraitException
 	 */
 	private function indexTrait(TraitUse $use, array &$methods, array &$properties) {
@@ -138,6 +140,8 @@ class TraitImporter {
 	 *
 	 * @param TraitUse  $use   Instance of TraitUse
 	 * @param ClassLike $class Instance of ClassLike
+	 *
+	 * @return array
 	 *
 	 * @throws UnknownTraitException
 	 */

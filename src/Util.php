@@ -159,9 +159,9 @@ class Util {
 	/**
 	 * findAbstractedProperty
 	 *
-	 * @param string             $className
-	 * @param string            $name
-	 * @param SymbolTable $symbolTable
+	 * @param string      $className   The class name
+	 * @param string      $name        The name
+	 * @param SymbolTable $symbolTable Instance of SymbolTable
 	 *
 	 * @return null|\BambooHR\Guardrail\Abstractions\Property
 	 */
@@ -181,6 +181,15 @@ class Util {
 		return null;
 	}
 
+	/**
+	 * findAbstractedSignature
+	 *
+	 * @param string      $className   The class name
+	 * @param string      $name        The name
+	 * @param SymbolTable $symbolTable Instance of SymbolTable
+	 *
+	 * @return Abstractions\ClassMethod|null
+	 */
 	static public function findAbstractedSignature($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
@@ -203,6 +212,14 @@ class Util {
 		return null;
 	}
 
+	/**
+	 * callIsCompatible
+	 *
+	 * @param ClassMethod $method Instance of ClassMethod
+	 * @param MethodCall  $call   Instance of MethodCall
+	 *
+	 * @return void
+	 */
 	static public function callIsCompatible(ClassMethod $method,MethodCall $call) {
 
 	}

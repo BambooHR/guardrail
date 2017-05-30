@@ -1,54 +1,97 @@
-<?php
+<?php namespace BambooHR\Guardrail\SymbolTable;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\SymbolTable;
-
+use BambooHR\Guardrail\Abstractions\Class_ as AbstractClass;
+use BambooHR\Guardrail\Abstractions\Function_ as AbstractFunction;
+use BambooHR\Guardrail\Abstractions\ReflectedClass;
+use BambooHR\Guardrail\Abstractions\ReflectedFunction;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
+use Exception;
+use PDO;
+use PDOException;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
-use PhpParser\PrettyPrinter\Standard;
+use PhpParser\Node\Stmt\TraitUse;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Class SqliteSymbolTable
  */
 class SqliteSymbolTable extends SymbolTable {
+
+	/**
+	 * @var PDO
+	 */
 	private $con;
 
-
-	function __construct($fileName, $basePath) {
+	/**
+	 * SqliteSymbolTable constructor.
+	 *
+	 * @param string $fileName The file name
+	 * @param string $basePath The base path
+	 */
+	public function __construct($fileName, $basePath) {
 		parent::__construct($basePath);
-		$this->con = new \PDO("sqlite:$fileName");
+		$this->con = new PDO("sqlite:$fileName");
 		$this->init();
 	}
 
-	function init() {
+	/**
+	 * init
+	 *
+	 * @return void
+	 */
+	public function init() {
 		$this->con->exec('
 			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data blob not null, primary key(name,type)  );
 		');
 	}
 
+	/**
+	 * addType
+	 *
+	 * @param string $name     The name
+	 * @param string $file     The file
+	 * @param string $type     The type
+	 * @param int    $hasTrait Has a trait
+	 * @param string $data     The data
+	 *
+	 * @return void
+	 * @throws Exception
+	 */
 	private function addType($name, $file, $type, $hasTrait=0, $data="") {
 		$sql = "INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
 		try {
 			$this->con->prepare($sql)->execute([strtolower($name), $file, $type, $hasTrait, $data]);
-		} catch (\PDOException $e) {
-			throw new \Exception("Class $name has already been declared");
+		} catch (PDOException $exception) {
+			throw new Exception("Class $name has already been declared");
 		}
 	}
 
-	function getType($name, $type) {
+	/**
+	 * getType
+	 *
+	 * @param string $name The name
+	 * @param string $type The type
+	 *
+	 * @return string
+	 */
+	public function getType($name, $type) {
 		$sql = "SELECT file FROM symbol_table WHERE name=? and type=?";
 		$statement = $this->con->prepare($sql);
 		$statement->execute([strtolower($name), $type]);
 
-		$result = $statement->fetch(\Pdo::FETCH_NUM);
+		$result = $statement->fetch(Pdo::FETCH_NUM);
 		if ($result) {
 			return $this->adjustBasePath($result[0]);
 		 } else {
@@ -56,13 +99,27 @@ class SqliteSymbolTable extends SymbolTable {
 		}
 	}
 
-
-	function getClassOrInterfaceData($name) {
+	/**
+	 * getClassOrInterfaceData
+	 *
+	 * @param string $name The name
+	 *
+	 * @return mixed|string
+	 */
+	public function getClassOrInterfaceData($name) {
 		return $this->getData($name);
 
 	}
 
-	function getData($name, $type=self::TYPE_CLASS) {
+	/**
+	 * getData
+	 *
+	 * @param string $name The name
+	 * @param int    $type The type
+	 *
+	 * @return mixed|string
+	 */
+	public function getData($name, $type=self::TYPE_CLASS) {
 		$sql = "SELECT data FROM symbol_table WHERE name=?";
 		$params = [strtolower($name)];
 		if ($type == self::TYPE_FUNCTION) {
@@ -76,7 +133,7 @@ class SqliteSymbolTable extends SymbolTable {
 		$statement = $this->con->prepare($sql);
 		$statement->execute($params);
 
-		$result = $statement->fetch(\Pdo::FETCH_NUM);
+		$result = $statement->fetch(Pdo::FETCH_NUM);
 		if ($result) {
 			return self::unserializeObject($result[0]);
 		} else {
@@ -84,23 +141,35 @@ class SqliteSymbolTable extends SymbolTable {
 		}
 	}
 
-	function getInterface($name) {
+	/**
+	 * getInterface
+	 *
+	 * @param string $name The name
+	 *
+	 * @return \BambooHR\Guardrail\NodeVisitors\Interface_|\BambooHR\Guardrail\NodeVisitors\Trait_|null|Class_|string
+	 */
+	public function getInterface($name) {
 		return $this->getClassOrInterface($name);
 	}
 
-
-
-	function getAbstractedFunction($name) {
+	/**
+	 * getAbstractedFunction
+	 *
+	 * @param string $name The name
+	 *
+	 * @return AbstractFunction|ReflectedFunction|mixed|null|string
+	 */
+	public function getAbstractedFunction($name) {
 		$ob = $this->cache->get("AFunction:" . $name);
 		if (!$ob) {
 			$ob = $this->getData($name, self::TYPE_FUNCTION);
 			if ($ob) {
-				$ob = new \BambooHR\Guardrail\Abstractions\Function_($ob);
+				$ob = new AbstractFunction($ob);
 			} else {
 				try {
 					$refl = new \ReflectionFunction($name);
-					$ob = new \BambooHR\Guardrail\Abstractions\ReflectedFunction($refl);
-				} catch (\ReflectionException $e) {
+					$ob = new ReflectedFunction($refl);
+				} catch (ReflectionException $exception) {
 					$ob = null;
 				}
 			}
@@ -111,18 +180,30 @@ class SqliteSymbolTable extends SymbolTable {
 		return $ob;
 	}
 
-	function getClassesThatUseATrait() {
+	/**
+	 * getClassesThatUseAnyTrait
+	 *
+	 * @return array
+	 */
+	public function getClassesThatUseAnyTrait() {
 		$ret = [];
 		$sql = 'SELECT name FROM symbol_table WHERE type=? and has_trait=1';
 		$statement = $this->con->prepare($sql);
 		$statement->execute([self::TYPE_CLASS]);
-		while ($row = $statement->fetch(\Pdo::FETCH_NUM)) {
+		while ($row = $statement->fetch(Pdo::FETCH_NUM)) {
 			$ret[] = $row[0];
 		}
 		return $ret;
 	}
 
-	function updateClass(Node\Stmt\ClassLike $class) {
+	/**
+	 * updateClass
+	 *
+	 * @param ClassLike $class Instance of ClassLike
+	 *
+	 * @return void
+	 */
+	public function updateClass(ClassLike $class) {
 		$name = strtolower($class->namespacedName);
 		$clone = $this->stripMethodContents($class);
 		$serializedString = self::serializeObject($clone);
@@ -132,17 +213,31 @@ class SqliteSymbolTable extends SymbolTable {
 		$statement->execute( [ $serializedString, $name, $type] );
 	}
 
-	function removeFileFromIndex($name) {
+	/**
+	 * removeFileFromIndex
+	 *
+	 * @param string $name The name
+	 *
+	 * @return void
+	 */
+	public function removeFileFromIndex($name) {
 		$sql = "DELETE FROM symbol_table WHERE file=?";
 		$statement = $this->con->prepare($sql);
 		$statement->execute($name);
 	}
 
-	function stripMethodContents(Node\Stmt\ClassLike $class) {
+	/**
+	 * stripMethodContents
+	 *
+	 * @param ClassLike $class Instance of ClassLike
+	 *
+	 * @return mixed
+	 */
+	public function stripMethodContents(ClassLike $class) {
 		// Make a deep copy and then remove implementation code (to save space).
 		$clone = unserialize(serialize($class));
 		foreach ($clone->stmts as $index => &$stmt) {
-			if ($stmt instanceof Node\Stmt\ClassMethod) {
+			if ($stmt instanceof ClassMethod) {
 				$stmt->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic($stmt->stmts) );
 				$stmt->stmts = [];
 			}
@@ -151,9 +246,13 @@ class SqliteSymbolTable extends SymbolTable {
 	}
 
 	/**
+	 * serializeObject
+	 *
 	 * PHP's serialize() is very fast, but it produces a bloated serialization string.  We deflate it to make it 10x smaller
 	 * Then we base64_encode to make it a little bit safer to deal with in the db layer.
-	 * @param $string
+	 *
+	 * @param string $string The string
+	 *
 	 * @return string
 	 */
 	private static function serializeObject($string) {
@@ -162,8 +261,12 @@ class SqliteSymbolTable extends SymbolTable {
 		//return serialize( $string );
 	}
 
+
 	/**
-	 * @param $string
+	 * unserializeObject
+	 *
+	 * @param string $string The string
+	 *
 	 * @return mixed
 	 */
 	private static function unserializeObject($string) {
@@ -172,10 +275,19 @@ class SqliteSymbolTable extends SymbolTable {
 		//return unserialize( $string );
 	}
 
-	function addClass($name, Class_ $class, $file) {
+	/**
+	 * addClass
+	 *
+	 * @param string $name  The name
+	 * @param Class_ $class Instance of Class
+	 * @param string $file  The file
+	 *
+	 * @return void
+	 */
+	public function addClass($name, Class_ $class, $file) {
 		$usesTrait = 0;
 		foreach ($class->stmts as $stmt) {
-			if ($stmt instanceof Node\Stmt\TraitUse) {
+			if ($stmt instanceof TraitUse) {
 				$usesTrait = 1;
 			}
 		}
@@ -184,21 +296,24 @@ class SqliteSymbolTable extends SymbolTable {
 	}
 
 	/**
-	 * @param $name
-	 * @return \BambooHR\Guardrail\Abstractions\Class_
+	 * getAbstractedClass
+	 *
+	 * @param string $name The name
+	 *
+	 * @return AbstractClass
 	 */
-	function getAbstractedClass($name) {
+	public function getAbstractedClass($name) {
 		$cacheName = strtolower($name);
 		$ob = $this->cache->get("AClass:" . $cacheName);
 		if (!$ob) {
 			$tmp = $this->getClassOrInterfaceData($name);
 			if ($tmp) {
-				$ob = new \BambooHR\Guardrail\Abstractions\Class_($tmp);
+				$ob = new AbstractClass($tmp);
 			} else if (strpos($name, "\\") === false) {
 				try {
-					$refl = new \ReflectionClass($name);
-					$ob = new \BambooHR\Guardrail\Abstractions\ReflectedClass($refl);
-				} catch (\ReflectionException $e) {
+					$refl = new ReflectionClass($name);
+					$ob = new ReflectedClass($refl);
+				} catch (ReflectionException $exception) {
 					$ob = null;
 				}
 			}
@@ -209,42 +324,113 @@ class SqliteSymbolTable extends SymbolTable {
 		return $ob;
 	}
 
-	function addInterface($name, Interface_ $interface, $file) {
+	/**
+	 * addInterface
+	 *
+	 * @param string     $name      The name
+	 * @param Interface_ $interface Instance of Interface_
+	 * @param string     $file      The file
+	 *
+	 * @return void
+	 */
+	public function addInterface($name, Interface_ $interface, $file) {
 		$this->addType($name, $file, self::TYPE_INTERFACE, 0, self::serializeObject($interface));
 	}
 
-	function addFunction($name, Function_ $function, $file) {
+	/**
+	 * addFunction
+	 *
+	 * @param string    $name     The name
+	 * @param Function_ $function Instance of Function_
+	 * @param string    $file     The file
+	 *
+	 * @return void
+	 */
+	public function addFunction($name, Function_ $function, $file) {
 		$clone = clone $function;
 		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic( $function->stmts ));
 		$clone->stmts = [];
 		$this->addType($name, $file, self::TYPE_FUNCTION, 0, self::serializeObject($clone) );
 	}
 
-	function addTrait($name, Trait_ $trait, $file) {
+	/**
+	 * addTrait
+	 *
+	 * @param string $name  The name
+	 * @param Trait_ $trait Instance of Trait_
+	 * @param string $file  The file
+	 *
+	 * @return void
+	 */
+	public function addTrait($name, Trait_ $trait, $file) {
 		$this->addType($name, $file, self::TYPE_TRAIT);
 	}
 
-	function addDefine($name, Node $define, $file) {
+	/**
+	 * addDefine
+	 *
+	 * @param string $name   The name
+	 * @param Node   $define Instance of Node
+	 * @param string $file   The file
+	 *
+	 * @return void
+	 */
+	public function addDefine($name, Node $define, $file) {
 		$this->addType($name, $file, self::TYPE_DEFINE);
 	}
 
-	function getDefineFile($name) {
+	/**
+	 * getDefineFile
+	 *
+	 * @param string $name The name
+	 *
+	 * @return string
+	 */
+	public function getDefineFile($name) {
 		return $this->getType($name, self::TYPE_DEFINE);
 	}
 
-	function getTraitFile($name) {
+	/**
+	 * getTraitFile
+	 *
+	 * @param string $name The name
+	 *
+	 * @return string
+	 */
+	public function getTraitFile($name) {
 		return $this->getType($name, self::TYPE_TRAIT);
 	}
 
-	function getClassFile($className) {
+	/**
+	 * getClassFile
+	 *
+	 * @param string $className The class name
+	 *
+	 * @return string
+	 */
+	public function getClassFile($className) {
 		return $this->getType($className, self::TYPE_CLASS);
 	}
 
-	function getInterfaceFile($interfaceName) {
+	/**
+	 * getInterfaceFile
+	 *
+	 * @param string $interfaceName The interface name
+	 *
+	 * @return string
+	 */
+	public function getInterfaceFile($interfaceName) {
 		return $this->getType($interfaceName, self::TYPE_INTERFACE);
 	}
 
-	function getFunctionFile($functionName) {
+	/**
+	 * getFunctionFile
+	 *
+	 * @param string $functionName The name of the function
+	 *
+	 * @return string
+	 */
+	public function getFunctionFile($functionName) {
 		return $this->getType($functionName, self::TYPE_FUNCTION);
 	}
 }
