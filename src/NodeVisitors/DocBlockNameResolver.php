@@ -118,20 +118,7 @@ class DocBlockNameResolver extends NameResolver {
 			$str = $comment->getText();
 			if (count($prop->props) >= 1) {
 				try {
-					$docBlock = $this->factory->create($str, $this->getDocBlockContext());
-
-					/** @var Var_[] $types */
-					$types = $docBlock->getTagsByName("var");
-					if (count($types) > 0) {
-						$type = strval($types[0]->getType());
-						if (!empty($type)) {
-
-							if ($type[0] == '\\') {
-								$type = substr($type, 1);
-							}
-							$prop->props[0]->setAttribute("namespacedType", strval($type));
-						}
-					}
+					$this->getDocBlockAttributes($prop, $str);
 				} catch (\InvalidArgumentException $exception) {
 					// Skip it.
 				}
@@ -151,26 +138,62 @@ class DocBlockNameResolver extends NameResolver {
 		if ($comment) {
 			$str = $comment->getText();
 			try {
-				$docBlock = $this->factory->create($str, $this->getDocBlockContext());
-				$return = $docBlock->getTagsByName("return");
-				if (count($return)) {
-					$returnType = $return[0]->getType();
-					$types = explode("|", $returnType);
-					if (count($types) > 1) {
-						$node->setAttribute("namespacedReturn", \BambooHR\Guardrail\Scope::MIXED_TYPE);
-					} else {
-						foreach ($types as $type) {
-							if ($type[0] == '\\') {
-								$type = substr($type, 1);
-							}
-							$node->setAttribute("namespacedReturn", strval($type));
-							return;
-						}
-					}
-				}
+				$this->processDockBlockReturn($node, $str);
 			} catch (\InvalidArgumentException $exception) {
 				// Skip it.
 			}
 		}
 	}
+
+	/**
+	 * getDocBlockAttributes
+	 *
+	 * @param Property $prop Instance of Property
+	 * @param string   $str  The comment
+	 *
+	 * @return void
+	 */
+	private function getDocBlockAttributes(Property $prop, $str) {
+		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
+		/** @var Var_[] $types */
+		$types = $docBlock->getTagsByName("var");
+		if (count($types) > 0) {
+			$type = strval($types[0]->getType());
+			if (! empty($type)) {
+				if ($type[0] == '\\') {
+					$type = substr($type, 1);
+				}
+				$prop->props[0]->setAttribute("namespacedType", strval($type));
+			}
+		}
+}
+
+	/**
+	 * processDockBlockReturn
+	 *
+	 * @param Function_|ClassMethod $node Instance of Function_ ClassMethod
+	 * @param string                $str  The docBlock text
+	 *
+	 * @return void
+	 */
+	private function processDockBlockReturn($node, $str) {
+		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
+		$return = $docBlock->getTagsByName("return");
+		if (count($return)) {
+			$returnType = $return[0]->getType();
+			$types = explode("|", $returnType);
+			if (count($types) > 1) {
+				$node->setAttribute("namespacedReturn", \BambooHR\Guardrail\Scope::MIXED_TYPE);
+			} else {
+				foreach ($types as $type) {
+					if ($type[0] == '\\') {
+						$type = substr($type, 1);
+					}
+					$node->setAttribute("namespacedReturn", strval($type));
+
+					return;
+				}
+			}
+		}
+}
 }
