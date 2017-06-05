@@ -1,38 +1,72 @@
-<?php
+<?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\NodeVisitors;
-
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 
+/**
+ * Class Grabber
+ *
+ * @package BambooHR\Guardrail\NodeVisitors
+ */
 class Grabber extends NodeVisitorAbstract {
+
 	const FROM_NAME = 1;
 	const FROM_FQN = 2;
 
+	/**
+	 * @var
+	 */
 	private $searchingForName;
+
+	/**
+	 * @var null
+	 */
 	private $foundClass = null;
+
+	/**
+	 * @var string
+	 */
 	private $classType = Class_::class;
+
+	/**
+	 * @var string
+	 */
 	private $fromVar = "fqn";
 
-	function __construct( $searchingForName="", $classType=Class_::class, $fromVar=self::FROM_FQN ) {
+	/**
+	 * Grabber constructor.
+	 *
+	 * @param string $searchingForName The search string
+	 * @param string $classType        The class type
+	 * @param int    $fromVar          The variable for from type
+	 */
+	public function __construct( $searchingForName = "", $classType = Class_::class, $fromVar = self::FROM_FQN ) {
 		if ($searchingForName) {
 			$this->initForSearch($searchingForName, $classType, $fromVar);
 		}
 	}
 
-	function initForSearch( $searchingForName, $classType=Class_::class, $fromVar="fqn") {
+	/**
+	 * initForSearch
+	 *
+	 * @param string $searchingForName The search string
+	 * @param string $classType        The class type
+	 * @param int    $fromVar          The variable for from type
+	 *
+	 * @return void
+	 */
+	public function initForSearch( $searchingForName, $classType = Class_::class, $fromVar = "fqn") {
 		$this->searchingForName = $searchingForName;
 		$this->classType = $classType;
 		$this->foundClass = null;
@@ -40,13 +74,22 @@ class Grabber extends NodeVisitorAbstract {
 	}
 
 	/**
+	 * getFoundClass
+	 *
 	 * @return Class_|null
 	 */
-	function getFoundClass() {
+	public function getFoundClass() {
 		return $this->foundClass;
 	}
 
-	function enterNode(Node $node) {
+	/**
+	 * enterNode
+	 *
+	 * @param Node $node Instance of Node
+	 *
+	 * @return void
+	 */
+	public function enterNode(Node $node) {
 		if (strcasecmp(get_class($node), $this->classType) == 0) {
 
 			$var = ($this->fromVar == self::FROM_FQN ? strval($node->namespacedName) : strval($node->name));
@@ -57,7 +100,15 @@ class Grabber extends NodeVisitorAbstract {
 		}
 	}
 
-	static function filterByType($stmts, $type) {
+	/**
+	 * filterByType
+	 *
+	 * @param array  $stmts List of statements
+	 * @param string $type  The type
+	 *
+	 * @return array
+	 */
+	static public function filterByType($stmts, $type) {
 		$ret = [];
 		foreach ($stmts as $stmt) {
 			if (get_class($stmt) == $type) {
@@ -71,22 +122,33 @@ class Grabber extends NodeVisitorAbstract {
 	 * Note: The entire file must first be run through the NameResolver before searching for classes inside of the
 	 * statements array.
 	 *
-	 * @param     $stmts
-	 * @param     $className
-	 * @param     $classType
-	 * @param int       $fromVar
+	 * @param SymbolTable $table     Instance of SymbolTable
+	 * @param array       $stmts     The list of statements
+	 * @param string      $className The class name
+	 * @param string      $classType The class type
+	 * @param int         $fromVar   The type of from
+	 *
 	 * @return null|Class_|Interface_|Trait_
 	 */
-	static function getClassFromStmts( SymbolTable $table, $stmts, $className, $classType=Class_::class, $fromVar=self::FROM_FQN) {
+	static public function getClassFromStmts( SymbolTable $table, $stmts, $className, $classType=Class_::class, $fromVar=self::FROM_FQN) {
 		$grabber = new Grabber($className, $classType, $fromVar);
 		$traverser = new NodeTraverser;
 		$traverser->addVisitor($grabber);
 		$traverser->traverse( $stmts );
-
 		return $grabber->getFoundClass();
 	}
 
-	static function getClassFromFile( SymbolTable $table, $fileName, $className, $classType=Class_::class ) {
+	/**
+	 * getClassFromFile
+	 *
+	 * @param SymbolTable $table     Instance of the SymbolTable
+	 * @param string      $fileName  The file name
+	 * @param string      $className The class name
+	 * @param string      $classType The class type
+	 *
+	 * @return Interface_|Trait_|null|Class_
+	 */
+	static public function getClassFromFile( SymbolTable $table, $fileName, $className, $classType=Class_::class ) {
 		static $lastFile = "";
 		static $lastContents;
 		if ($lastFile == $fileName) {
@@ -110,8 +172,8 @@ class Grabber extends NodeVisitorAbstract {
 					$traverser = new NodeTraverser;
 					$traverser->addVisitor(new TraitImportingVisitor($table));
 					$stmts = $traverser->traverse($stmts);
-				} catch (UnknownTraitException $e) {
-					echo "Unknown trait! " . $e->getMessage() . "\n";
+				} catch (UnknownTraitException $exception) {
+					echo "Unknown trait! " . $exception->getMessage() . "\n";
 					// Ignore these for now.
 				}
 			}

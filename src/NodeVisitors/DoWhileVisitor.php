@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\NodeVisitors;
 
 use PhpParser\Node;
 use BambooHR\Guardrail\DoWhileStatement;
@@ -19,7 +17,14 @@ use PhpParser\NodeVisitorAbstract;
  */
 class DoWhileVisitor extends NodeVisitorAbstract {
 
-	function leaveNode(Node $node) {
+	/**
+	 * leaveNode
+	 *
+	 * @param Node $node Instance of Node
+	 *
+	 * @return DoWhileStatement|null
+	 */
+	public function leaveNode(Node $node) {
 		// The default do/while visits the condition before the statement list.
 		// This causes undefined variable errors.  We correct it by replacing it with
 		// a subclass that in the order we need.

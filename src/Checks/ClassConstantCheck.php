@@ -1,34 +1,41 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Checks;
-
-use BambooHR\Guardrail\Checks\BaseCheck;
+use BambooHR\Guardrail\Abstractions\ClassInterface;
 use PhpParser\Node;
-use PhpParser\Node\Stmt\ClassConst;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\Trait_;
-use BambooHR\Guardrail\NodeVisitors\Grabber;
 use PhpParser\Node\Name;
 use BambooHR\Guardrail\Scope;
 
+/**
+ * Class ClassConstantCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class ClassConstantCheck extends BaseCheck {
 
-	function getCheckNodeTypes() {
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
 		return [\PhpParser\Node\Expr\ClassConstFetch::class];
 	}
 
 	/**
-	 * @param ClassLike $class
-	 * @param string    $constantName
-	 * @return ClassConst
+	 * findConstant
+	 *
+	 * @param ClassInterface $class        Instance of ClassInterface
+	 * @param string         $constantName The name of the constant
+	 *
+	 * @return bool
 	 */
-	function findConstant(\BambooHR\Guardrail\Abstractions\ClassInterface $class, $constantName) {
+	public function findConstant(ClassInterface $class, $constantName) {
 		if ($class->hasConstant($constantName)) {
 			return true;
 		}
@@ -58,7 +65,7 @@ class ClassConstantCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {

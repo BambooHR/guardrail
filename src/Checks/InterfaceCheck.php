@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Abstractions\ClassInterface;
 use BambooHR\Guardrail\Abstractions\ClassMethod;
@@ -19,10 +17,27 @@ use BambooHR\Guardrail\Util;
 use BambooHR\Guardrail\Abstractions\Class_ as AbstractedClass_;
 
 class InterfaceCheck extends BaseCheck {
-	function getCheckNodeTypes() {
-		return [\PhpParser\Node\Stmt\Class_::class];
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [Class_::class];
 	}
 
+	/**
+	 * checkMethod
+	 *
+	 * @param string          $fileName     The file name
+	 * @param Class_          $class        Instance of Class_
+	 * @param ClassMethod     $method       Instance of ClassMethod
+	 * @param ClassInterface  $parentClass  Instance of ClassInterface
+	 * @param MethodInterface $parentMethod Instance of MethodInterface
+	 *
+	 * @return void
+	 */
 	protected function checkMethod($fileName, Class_ $class, ClassMethod $method, ClassInterface $parentClass, MethodInterface $parentMethod) {
 
 		$visibility = $method->getAccessLevel();
@@ -45,40 +60,50 @@ class InterfaceCheck extends BaseCheck {
 		$count2 = count($parentMethodParams);
 		if ($count1 < $count2) {
 			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $count1 vs $count2 in method " . $className . "->" . $method->getName());
-		} else foreach ($params as $index => $param) {
-			/** @var FunctionLikeParameter $param */
-			// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
-			if ($index < $count2) {
-				$parentParam = $parentMethodParams[$index];
-				$name1 = strval($param->getType());
-				$name2 = strval($parentParam->getType());
-				if (
-					strcasecmp($name1, $name2) !== 0
-				) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
-					break;
-				}
-				if ($param->isReference() != $parentParam->isReference()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method " . $className . "::" . $method->getName() . " add or removes & in \$" . $param->getName());
-					break;
-				}
-				if (!$param->isOptional() && $parentParam->isOptional()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $param->getName() . " to be required.");
-					break;
-				}
-			} else {
-				if (!$param->isOptional()) {
-					$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $method->getName() . " adds parameter \$" . $param->getName() . " that doesn't have a default value");
-					break;
+		} else {
+			foreach ($params as $index => $param) {
+				/** @var FunctionLikeParameter $param */
+				// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
+				if ($index < $count2) {
+					$parentParam = $parentMethodParams[$index];
+					$name1 = strval($param->getType());
+					$name2 = strval($parentParam->getType());
+					if (
+						strcasecmp($name1, $name2) !== 0
+					) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
+						break;
+					}
+					if ($param->isReference() != $parentParam->isReference()) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method " . $className . "::" . $method->getName() . " add or removes & in \$" . $param->getName());
+						break;
+					}
+					if (! $param->isOptional() && $parentParam->isOptional()) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $param->getName() . " to be required.");
+						break;
+					}
+				} else {
+					if (! $param->isOptional()) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $method->getName() . " adds parameter \$" . $param->getName() . " that doesn't have a default value");
+						break;
+					}
 				}
 			}
 		}
 	}
 
-	protected function implementsMethod( $fileName, Class_ $node, $interfaceMethod) {
+	/**
+	 * implementsMethod
+	 *
+	 * @param string $fileName        The file name
+	 * @param Class_ $node            Instance of Class_
+	 * @param string $interfaceMethod The interface
+	 *
+	 * @return ClassMethod|null
+	 */
+	protected function implementsMethod($fileName, Class_ $node, $interfaceMethod) {
 		$current = new AbstractedClass_($node);
 		while (true) {
-
 			// Is it directly in the class
 			$classMethod = $current->getMethod($interfaceMethod);
 			if ($classMethod) {
@@ -101,7 +126,7 @@ class InterfaceCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 

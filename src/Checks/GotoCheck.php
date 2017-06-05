@@ -1,21 +1,29 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-
-namespace BambooHR\Guardrail\Checks;
-
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Goto_;
 
+/**
+ * Class GotoCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class GotoCheck extends BaseCheck {
 
-	function getCheckNodeTypes() {
-		return [ Node\Stmt\Goto_::class ];
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [ Goto_::class ];
 	}
 
 	/**
@@ -26,7 +34,7 @@ class GotoCheck extends BaseCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		$this->emitError($fileName, $node, ErrorConstants::TYPE_GOTO, "Usage of goto command");
