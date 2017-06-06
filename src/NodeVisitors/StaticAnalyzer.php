@@ -46,6 +46,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
 use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\NodeVisitorAbstract;
+use BambooHR\Guardrail\Checks\ErrorConstants;
 
 /**
  * Class StaticAnalyzer
@@ -524,7 +525,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 			if (count($unusedVars) > 0 ) {
 				foreach($unusedVars as $varName=>$lineNumber) {
-					$this->output->emitError(__CLASS__, $this->file, $lineNumber, Checks\ErrorConstants::TYPE_UNUSED_VARIABLE, '$'.$varName." is assigned but never referenced");
+					$this->output->emitError(__CLASS__, $this->file, $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$'.$varName." is assigned but never referenced");
 				}
 			}
 
