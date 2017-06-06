@@ -1,49 +1,90 @@
-<?php
+<?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\NodeVisitors;
-
-
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
+use phpDocumentor\Reflection\DocBlockFactory;
 use phpDocumentor\Reflection\Types\Context;
+use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\UseUse;
 use PhpParser\NodeVisitor\NameResolver;
 use BambooHR\Guardrail\Abstractions\ClassMethod;
 
-class DocBlockNameResolver extends NameResolver
-{
+/**
+ * Class DocBlockNameResolver
+ *
+ * @package BambooHR\Guardrail\NodeVisitors
+ */
+class DocBlockNameResolver extends NameResolver {
+
+	/**
+	 * @var DocBlockFactory
+	 */
 	private $factory;
-	private $classAliases=[];
+
+	/**
+	 * @var array
+	 */
+	private $classAliases = [];
+
+	/**
+	 * @var bool
+	 */
 	private $useDocBlock = true;
 
+	/**
+	 * DocBlockNameResolver constructor.
+	 */
 	function __construct() {
-		$this->factory  = \phpDocumentor\Reflection\DocBlockFactory::createInstance();
+		$this->factory  = DocBlockFactory::createInstance();
 	}
 
-	protected function addAlias(Stmt\UseUse $use, $type, Name $prefix = null) {
+	/**
+	 * addAlias
+	 *
+	 * @param UseUse    $use    Instance of UseUse
+	 * @param string    $type   A constant (TYPE_*) from UseUse
+	 * @param Name|null $prefix Instance of name (or null)
+	 *
+	 * @return void
+	 */
+	protected function addAlias(UseUse $use, $type, Name $prefix = null) {
 		parent::addAlias($use, $type, $prefix);
-		if($type==Stmt\Use_::TYPE_NORMAL) {
+		if ($type == Stmt\Use_::TYPE_NORMAL) {
 			// Add prefix for group uses
 			$name = strval( $prefix ? Name::concat($prefix, $use->name) : $use->name );
-			$this->classAliases[$use->alias]=$name;
+			$this->classAliases[$use->alias] = $name;
 		}
 	}
 
-
+	/**
+	 * resetState
+	 *
+	 * @param Name|null $namespace Instance of Name (or null)
+	 *
+	 * @return void
+	 */
 	protected function resetState(Name $namespace = null) {
 		parent::resetState($namespace);
-		$this->classAliases=[];
+		$this->classAliases = [];
 	}
 
-	function enterNode(\PhpParser\Node $node) {
-		if($this->useDocBlock) {
+	/**
+	 * enterNode
+	 *
+	 * @param Node $node Instance of node
+	 *
+	 * @return void
+	 */
+	public function enterNode(Node $node) {
+		if ($this->useDocBlock) {
 			if ($node instanceof Function_ || $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
 				$this->importReturnValue($node);
 			}
@@ -52,35 +93,46 @@ class DocBlockNameResolver extends NameResolver
 			}
 		}
 		parent::enterNode($node);
-
 	}
 
-	function getDocBlockContext() {
+	/**
+	 * getDocBlockContext
+	 *
+	 * @return Context
+	 */
+	public function getDocBlockContext() {
 		return new Context( strval($this->namespace), $this->classAliases );
 	}
 
-	function importVarType(Property $prop) {
+	/**
+	 * importVarType
+	 *
+	 * @param Property $prop Instance of Property
+	 *
+	 * @return void
+	 */
+	public function importVarType(Property $prop) {
 		$prop->getDocComment();
 		$comment = $prop->getDocComment();
-		if($comment) {
+		if ($comment) {
 			$str = $comment->getText();
-			if(count($prop->props)>=1) {
+			if (count($prop->props) >= 1) {
 				try {
 					$docBlock = $this->factory->create($str, $this->getDocBlockContext());
 
 					/** @var Var_[] $types */
 					$types = $docBlock->getTagsByName("var");
-					if(count($types)>0) {
+					if (count($types) > 0) {
 						$type = strval($types[0]->getType());
-						if(!empty($type)) {
+						if (!empty($type)) {
 
 							if ($type[0] == '\\') {
-								$type=substr($type,1);
+								$type = substr($type, 1);
 							}
 							$prop->props[0]->setAttribute("namespacedType", strval($type));
 						}
 					}
-				} catch (\InvalidArgumentException $e) {
+				} catch (\InvalidArgumentException $exception) {
 					// Skip it.
 				}
 			}
@@ -88,11 +140,15 @@ class DocBlockNameResolver extends NameResolver
 	}
 
 	/**
-	 * @param Function_|ClassMethod $node
+	 * importReturnValue
+	 *
+	 * @param Function_|ClassMethod $node Instance of Function_ ClassMethod
+	 *
+	 * @return void
 	 */
 	function importReturnValue($node) {
 		$comment = $node->getDocComment();
-		if($comment) {
+		if ($comment) {
 			$str = $comment->getText();
 			try {
 				$docBlock = $this->factory->create($str, $this->getDocBlockContext());
@@ -100,19 +156,19 @@ class DocBlockNameResolver extends NameResolver
 				if (count($return)) {
 					$returnType = $return[0]->getType();
 					$types = explode("|", $returnType);
-					if(count($types)>1) {
+					if (count($types) > 1) {
 						$node->setAttribute("namespacedReturn", \BambooHR\Guardrail\Scope::MIXED_TYPE);
 					} else {
 						foreach ($types as $type) {
-							if($type[0]=='\\') {
-								$type=substr($type,1);
+							if ($type[0] == '\\') {
+								$type = substr($type, 1);
 							}
 							$node->setAttribute("namespacedReturn", strval($type));
 							return;
 						}
 					}
 				}
-			} catch(\InvalidArgumentException $e) {
+			} catch (\InvalidArgumentException $exception) {
 				// Skip it.
 			}
 		}

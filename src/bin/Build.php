@@ -7,14 +7,14 @@
 
 // Usage: php -d phar.readonly=false Build.php
 
-if(file_exists("guardrail.phar")) {
+if (file_exists("guardrail.phar")) {
 	unlink("guardrail.phar");
 }
 $phar = new Phar('guardrail.phar');
 
-$baseDir=dirname(dirname(__DIR__));
+$baseDir = dirname(dirname(__DIR__));
 echo "Building relative to $baseDir\n";
-$it = new \RecursiveDirectoryIterator($baseDir,  \FilesystemIterator::SKIP_DOTS);
+$it = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS);
 $it2 = new \RecursiveIteratorIterator($it);
 
 $phar->buildFromIterator($it2, $baseDir);

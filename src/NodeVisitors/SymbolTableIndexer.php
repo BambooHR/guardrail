@@ -1,43 +1,78 @@
-<?php
+<?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\NodeVisitors;
-
+use BambooHR\Guardrail\Output\OutputInterface;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeTraverserInterface;
-use PhpParser\NodeVisitor;
 use BambooHR\Guardrail\Checks\BaseCheck;
 use PhpParser\NodeVisitorAbstract;
 
+/**
+ * Class SymbolTableIndexer
+ *
+ * @package BambooHR\Guardrail\NodeVisitors
+ */
 class SymbolTableIndexer extends NodeVisitorAbstract {
+
+	/**
+	 * @var
+	 */
 	private $index;
+
+	/**
+	 * @var array
+	 */
 	private $classStack = [];
+
+	/**
+	 * @var string
+	 */
 	private $filename = "";
-	/** @var \BambooHR\Guardrail\Output\OutputInterface  */
+
+	/** @var OutputInterface  */
 	private $output;
 
-	function __construct($index, \BambooHR\Guardrail\Output\OutputInterface $output) {
-		$this->index=$index;
-		$this->output=$output;
+	/**
+	 * SymbolTableIndexer constructor.
+	 *
+	 * @param string          $index  The index
+	 * @param OutputInterface $output Instance of OutputInterface
+	 */
+	public function __construct($index, OutputInterface $output) {
+		$this->index = $index;
+		$this->output = $output;
 	}
 
-	function setFilename($filename) {
+	/**
+	 * setFilename
+	 *
+	 * @param string $filename The name of the file
+	 *
+	 * @return void
+	 */
+	public function setFilename($filename) {
 		$this->classStack = [];
-		$this->filename=$filename;
+		$this->filename = $filename;
 	}
 
-	function enterNode(Node $node) {
-		switch(get_class($node)) {
+	/**
+	 * enterNode
+	 *
+	 * @param Node $node Instance of Node
+	 *
+	 * @return int|null
+	 */
+	public function enterNode(Node $node) {
+		switch (get_class($node)) {
 			case Class_::class:
 				$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "anonymous class";
 				if ($name) {
@@ -91,12 +126,18 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		return null;
 	}
 
-	function leaveNode(Node $node) {
-		if( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_) {
+	/**
+	 * leaveNode
+	 *
+	 * @param Node $node Instance of Node
+	 *
+	 * @return null
+	 */
+	public function leaveNode(Node $node) {
+		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_) {
 			array_pop($this->classStack);
 		}
 		return null;
 	}
 }
 
-?>

@@ -49,14 +49,14 @@ class IndexingPhase {
 
 		$count = 0;
 		foreach ($it2 as $file) {
-			if (($file->getExtension() == "php" || $file->getExtension() =="inc") && $file->isFile()) {
+			if (($file->getExtension() == "php" || $file->getExtension() == "inc") && $file->isFile()) {
 				$name = Util::removeInitialPath($baseDir, $file->getPathname());
-				if(strpos($name,"phar://")===0) {
+				if (strpos($name, "phar://") === 0) {
 					$name = str_replace(Phar::running(), "", $name );
-					while($name[0]=='/') {
-						$name=substr($name,1);
+					while ($name[0] == '/') {
+						$name = substr($name, 1);
 					}
-					$name="phar://".$name;
+					$name = "phar://" . $name;
 				}
 				try {
 					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
@@ -68,7 +68,7 @@ class IndexingPhase {
 					// If the $fileName is in our phar then make it a relative path so that files that we index don't
 					// depend on the phar file existing in a particular directory.
 					$fileData = file_get_contents($file->getPathname());
-					if($config->shouldReindex()) {
+					if ($config->shouldReindex()) {
 						$symbolTable->removeFileFromIndex($file->getPathname());
 					}
 
@@ -78,8 +78,8 @@ class IndexingPhase {
 						$traverser1->traverse($statements);
 						$traverser2->traverse($statements);
 					}
-				} catch (Error $e) {
-					$output->emitError(__CLASS__, $file, 0,' Parse Error: ' . $e->getMessage() . "\n" );
+				} catch (Error $exception) {
+					$output->emitError(__CLASS__, $file, 0, ' Parse Error: ' . $exception->getMessage() . "\n" );
 				}
 			}
 		}
@@ -97,10 +97,10 @@ class IndexingPhase {
 	public function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
 		$output->outputVerbose("\n\nImporting traits\n");
 		$count = 0;
-		foreach($symbolTable->getClassesThatUseATrait() as $className) {
+		foreach ($symbolTable->getClassesThatUseAnyTrait() as $className) {
 			$class = $symbolTable->getClass($className);
 			$symbolTable->updateClass( $class );
-			$output->output(".", " - ".(++$count).": ".$className);
+			$output->output(".", " - " . (++$count) . ": " . $className);
 		}
 	}
 

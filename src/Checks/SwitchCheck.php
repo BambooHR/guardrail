@@ -1,11 +1,9 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-
-namespace BambooHR\Guardrail\Checks;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
@@ -17,24 +15,47 @@ use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
 use BambooHR\Guardrail\Scope;
 
+/**
+ * Class SwitchCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
+class SwitchCheck extends BaseCheck {
 
-class SwitchCheck extends BaseCheck
-{
-	function getCheckNodeTypes() {
-		return [ \PhpParser\Node\Stmt\Switch_::class ];
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [ Switch_::class ];
 	}
 
-	static function getLastStatement(array $stmts) {
+	/**
+	 * getLastStatement
+	 *
+	 * @param array $stmts The statements
+	 *
+	 * @return mixed|null
+	 */
+	static protected function getLastStatement(array $stmts) {
 		$lastStatement = null;
-		foreach($stmts as $stmt) {
-			if(!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
+		foreach ($stmts as $stmt) {
+			if (!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
 				$lastStatement = $stmt;
 			}
 		}
 		return $lastStatement;
 	}
 
-	static function endWithBreak(array $stmts) {
+	/**
+	 * endWithBreak
+	 *
+	 * @param array $stmts The statements
+	 *
+	 * @return bool
+	 */
+	static protected function endWithBreak(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
@@ -44,7 +65,7 @@ class SwitchCheck extends BaseCheck
 			(
 				$lastStatement instanceof \PhpParser\Node\Expr\FuncCall &&
 				$lastStatement->name instanceof \PhpParser\Node\Name &&
-				$lastStatement->name=="die"
+				$lastStatement->name == "die"
 			) || (
 				(
 					$lastStatement instanceof \PhpParser\Node\Stmt\Switch_ ||
@@ -54,20 +75,27 @@ class SwitchCheck extends BaseCheck
 			);
 	}
 
-	static function allIfBranchesExit(\PhpParser\Node\Stmt\If_ $lastStatement) {
-		if(!$lastStatement->else && !$lastStatement->elseifs) {
+	/**
+	 * allIfBranchesExit
+	 *
+	 * @param If_ $lastStatement Instance of If_
+	 *
+	 * @return bool
+	 */
+	static protected function allIfBranchesExit(If_ $lastStatement) {
+		if (!$lastStatement->else && !$lastStatement->elseifs) {
 			return false;
 		}
 		$trueCond = self::allBranchesExit($lastStatement->stmts);
-		if(!$trueCond) {
+		if (!$trueCond) {
 			return false;
 		}
-		if($lastStatement->else && !self::allBranchesExit($lastStatement->else->stmts)) {
+		if ($lastStatement->else && !self::allBranchesExit($lastStatement->else->stmts)) {
 			return false;
 		}
-		if($lastStatement->elseifs) {
-			foreach($lastStatement->elseifs as $elseIf) {
-				if(!self::allBranchesExit($elseIf->stmts)) {
+		if ($lastStatement->elseifs) {
+			foreach ($lastStatement->elseifs as $elseIf) {
+				if (!self::allBranchesExit($elseIf->stmts)) {
 					return false;
 				}
 			}
@@ -75,39 +103,48 @@ class SwitchCheck extends BaseCheck
 		return true;
 	}
 
-	static function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
+	/**
+	 * allSwitchCasesExit
+	 *
+	 * @param Switch_ $lastStatement Instance of Switch_
+	 *
+	 * @return bool
+	 */
+	static protected function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
 		$hasDefault = false;
-		foreach($lastStatement->cases as $case) {
-			if(!$case->cond) {
+		foreach ($lastStatement->cases as $case) {
+			if (!$case->cond) {
 				$hasDefault = true;
 			}
 			$stmts = $case->stmts;
 			// Remove the trailing break (if found) and just look for a return the statement prior
-			while( ($last=end($stmts)) instanceof Break_ || $last instanceof Nop) {
-				$stmts=array_slice($stmts, 0, -1);
+			while ( ($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
+				$stmts = array_slice($stmts, 0, -1);
 			}
-			if($stmts && !self::allBranchesExit($stmts)) {
+			if ($stmts && !self::allBranchesExit($stmts)) {
 				return false;
 			}
 		}
 		return $hasDefault;
 	}
 
-
 	/**
-	 * @param \PhpParser\Node\Stmt[] $stmts
-	 * @param $allowBreak
+	 * allBranchesExit
+	 *
+	 * @param array $stmts List of statements
+	 *
+	 * @return bool
 	 */
-	static function allBranchesExit(array $stmts) {
+	static public function allBranchesExit(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
 
-		if(!$lastStatement) {
+		if (!$lastStatement) {
 			return false;
-		} else if($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
+		} else if ($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
 			return true;
-		} else if($lastStatement instanceof If_) {
+		} else if ($lastStatement instanceof If_) {
 			return self::allIfBranchesExit($lastStatement);
-		} else if($lastStatement instanceof Switch_) {
+		} else if ($lastStatement instanceof Switch_) {
 			return self::allSwitchCasesExit($lastStatement);
 		} else {
 			return false;
@@ -122,7 +159,7 @@ class SwitchCheck extends BaseCheck
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 

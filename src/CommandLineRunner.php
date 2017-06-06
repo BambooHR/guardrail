@@ -1,21 +1,27 @@
-<?php
+<?php namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail;
-
 use BambooHR\Guardrail\Phases\IndexingPhase;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
-use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
 
-class CommandLineRunner
-{
+/**
+ * Class CommandLineRunner
+ *
+ * @package BambooHR\Guardrail
+ */
+class CommandLineRunner {
 
-	function usage() {
+	/**
+	 * usage
+	 *
+	 * @return void
+	 */
+	public function usage() {
 		echo "
 Usage: php -d memory_limit=500M Scan.php [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
 
@@ -43,35 +49,41 @@ where: -p #/#                 = Define the number of partitions and the current 
 ";
 	}
 
-	function run(array $argv) {
+	/**
+	 * run
+	 *
+	 * @param array $argv The list of args
+	 *
+	 * @return void
+	 */
+	public function run(array $argv) {
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
 
 		try {
-			$config=new Config($argv);
-		}
-		catch(InvalidConfigException $exception) {
+			$config = new Config($argv);
+		} catch (InvalidConfigException $exception) {
 			$this->usage();
 			exit(1);
 		}
 
 		$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
 
-		if($config->shouldIndex()) {
+		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
-			$indexer=new IndexingPhase();
+			$indexer = new IndexingPhase();
 			$indexer->run($config, $output);
 			$output->outputExtraVerbose("\nDone\n\n");
 			//$output->renderResults();
 			exit(0);
 		}
 
-		if($config->shouldAnalyze()) {
+		if ($config->shouldAnalyze()) {
 			$analyzer = new AnalyzingPhase();
 			$output->outputExtraVerbose("Analyzing\n");
 
-			if(!$config->hasFileList()) {
+			if (!$config->hasFileList()) {
 				$exitCode = $analyzer->run($config, $output);
 			} else {
 				$list = $config->getFileList();

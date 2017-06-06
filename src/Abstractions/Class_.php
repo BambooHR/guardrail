@@ -1,51 +1,94 @@
-<?php
+<?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
-namespace BambooHR\Guardrail\Abstractions;
 
 use PhpParser\Node\Stmt\ClassConst;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Interface_;
 use BambooHR\Guardrail\NodeVisitors\Grabber;
-use BambooHR\Guardrail\Abstractions\ClassInterface;
-use BambooHR\Guardrail\Abstractions\ClassMethod;
 use PhpParser\Node\Stmt\PropertyProperty;
 
+/**
+ * Class Class_
+ *
+ * @package BambooHR\Guardrail\Abstractions
+ */
 class Class_ implements ClassInterface {
+
+	/**
+	 * @var ClassLike
+	 */
 	private $class;
 
-	function __construct(\PhpParser\Node\Stmt\ClassLike $class) {
+	/**
+	 * Class_ constructor.
+	 *
+	 * @param ClassLike $class Instance of ClassLike
+	 */
+	public function __construct(ClassLike $class) {
 		$this->class = $class;
 	}
-	function getName() {
+
+	/**
+	 * getName
+	 *
+	 * @return string
+	 */
+	public function getName() {
 		return strval($this->class->namespacedName);
 	}
 
-	function isDeclaredAbstract() {
+	/**
+	 * isDeclaredAbstract
+	 *
+	 * @return bool
+	 */
+	public function isDeclaredAbstract() {
 		return ($this->class instanceof Class_ ? $this->class->isAbstract() : false);
 	}
 
-	function getMethodNames() {
+	/**
+	 * getMethodNames
+	 *
+	 * @return array
+	 */
+	public function getMethodNames() {
 		$ret = [];
-		foreach($this->class->getMethods() as $method) {
+		foreach ($this->class->getMethods() as $method) {
 			$ret[] = $method->name;
 		}
 		return $ret;
 	}
 
-	function getParentClassName() {
+	/**
+	 * getParentClassName
+	 *
+	 * @return string
+	 */
+	public function getParentClassName() {
 		return $this->class instanceof \PhpParser\Node\Stmt\Class_ ? strval($this->class->extends) : "";
 	}
 
-	function isInterface() {
+	/**
+	 * isInterface
+	 *
+	 * @return bool
+	 */
+	public function isInterface() {
 		return $this->class instanceof \PhpParser\Node\Stmt\Interface_;
 	}
 
-	function getInterfaceNames() {
+	/**
+	 * getInterfaceNames
+	 *
+	 * @return array
+	 */
+	public function getInterfaceNames() {
 		$ret = [];
-		if($this->class instanceof Interface_) {
+		if ($this->class instanceof Interface_) {
 			foreach ($this->class->extends as $extend) {
 				$ret[] = strval($extend);
 			}
@@ -57,15 +100,29 @@ class Class_ implements ClassInterface {
 		return $ret;
 	}
 
-	function getMethod($name) {
+	/**
+	 * getMethod
+	 *
+	 * @param ClassMethod $name Instance of ClassMethod
+	 *
+	 * @return ClassMethod|null
+	 */
+	public function getMethod($name) {
 		$method = $this->class->getMethod($name);
-		return $method ?  new ClassMethod($method) : null;
+		return $method ? new ClassMethod($method) : null;
 	}
 
-	function hasConstant($name) {
+	/**
+	 * hasConstant
+	 *
+	 * @param string $name Property name
+	 *
+	 * @return bool
+	 */
+	public function hasConstant($name) {
 		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
-		foreach($constants as $constList) {
-			foreach($constList->consts as $const) {
+		foreach ($constants as $constList) {
+			foreach ($constList->consts as $const) {
 				if (strcasecmp($const->name, $name) == 0) {
 					return true;
 				}
@@ -74,11 +131,17 @@ class Class_ implements ClassInterface {
 		return false;
 	}
 
-	function getPropertyNames() {
+	/**
+	 * getPropertyNames
+	 *
+	 * @return array
+	 */
+	public function getPropertyNames() {
+		$ret = [];
 		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
-		foreach($properties as $prop) {
+		foreach ($properties as $prop) {
 			/** @var \PhpParser\Node\Stmt\Property $prop */
-			foreach($prop->props as $propertyProperty) {
+			foreach ($prop->props as $propertyProperty) {
 				/** @var PropertyProperty $propertyProperty */
 				$ret[] = $propertyProperty->name;
 			}
@@ -86,21 +149,28 @@ class Class_ implements ClassInterface {
 		return $ret;
 	}
 
-	function getProperty($name) {
+	/**
+	 * getProperty
+	 *
+	 * @param string $name The name of the property
+	 *
+	 * @return Property
+	 */
+	public function getProperty($name) {
 		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
-		foreach($properties as $prop) {
+		foreach ($properties as $prop) {
 			/** @var \PhpParser\Node\Stmt\Property $prop */
-			foreach($prop->props as $propertyProperty) {
+			foreach ($prop->props as $propertyProperty) {
 				/** @var PropertyProperty $propertyProperty */
-				if($propertyProperty->name==$name) {
-					if($prop->isPrivate()) {
-						$access="private";
-					} else if($prop->isProtected()) {
-						$access="protected";
+				if ($propertyProperty->name == $name) {
+					if ($prop->isPrivate()) {
+						$access = "private";
+					} else if ($prop->isProtected()) {
+						$access = "protected";
 					} else {
-						$access="public";
+						$access = "public";
 					}
-					return new Property($propertyProperty->name, "", $access , $prop->isStatic());
+					return new Property($propertyProperty->name, "", $access, $prop->isStatic());
 				}
 			}
 		}

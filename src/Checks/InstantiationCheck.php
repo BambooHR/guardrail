@@ -1,22 +1,31 @@
-<?php
+<?php namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Checks;
-
 use PhpParser\Node;
+use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 
-class InstantiationCheck extends BaseCheck
-{
-	function getCheckNodeTypes() {
-		return [\PhpParser\Node\Expr\New_::class];
+/**
+ * Class InstantiationCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
+class InstantiationCheck extends BaseCheck {
+
+	/**
+	 * getCheckNodeTypes
+	 *
+	 * @return array
+	 */
+	public function getCheckNodeTypes() {
+		return [New_::class];
 	}
 
 	/**
@@ -27,7 +36,7 @@ class InstantiationCheck extends BaseCheck
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node->class instanceof Name) {
@@ -36,37 +45,36 @@ class InstantiationCheck extends BaseCheck
 				$this->incTests();
 				$class = $this->symbolTable->getAbstractedClass($name);
 				if (!$class) {
-					$this->emitError($fileName,$node,ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to instantiate unknown class $name");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to instantiate unknown class $name");
 					return;
 				}
-				if($class->isDeclaredAbstract()) {
-					$this->emitError($fileName, $node,ErrorConstants::TYPE_SIGNATURE_TYPE,"Attempt to instantiate abstract class $name");
+				if ($class->isDeclaredAbstract()) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Attempt to instantiate abstract class $name");
 					return;
 				}
 
-				$method=Util::findAbstractedMethod($name, "__construct", $this->symbolTable);
+				$method = Util::findAbstractedMethod($name, "__construct", $this->symbolTable);
 
-
-				if(!$method) {
-					$minParams=$maxParams=0;
+				if (!$method) {
+					$minParams = $maxParams = 0;
 				} else {
-					if($method->getAccessLevel()=="private" && (!$inside || strcasecmp($inside->namespacedName,$name)!=0)) {
-						$this->emitError($fileName,$node,self::TYPE_SCOPE_ERROR, "Attempt to call private constructor outside of class $name");
+					if ($method->getAccessLevel() == "private" && (!$inside || strcasecmp($inside->namespacedName, $name) != 0)) {
+						$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Attempt to call private constructor outside of class $name");
 						return;
 					}
 					$maxParams = count($method->getParameters());
 					$minParams = $method->getMinimumRequiredParameters();
-					if(strcasecmp("imagick",$name)==0) {
-						$minParams=0;
-						$maxParams=1;
+					if (strcasecmp("imagick", $name) == 0) {
+						$minParams = 0;
+						$maxParams = 1;
 					}
 				}
 
-				$passedArgCount=count($node->args);
-				if($passedArgCount<$minParams) {
-					$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT,"Call to $name::__construct passing $passedArgCount count, required count=$minParams");
+				$passedArgCount = count($node->args);
+				if ($passedArgCount < $minParams) {
+					$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT, "Call to $name::__construct passing $passedArgCount count, required count=$minParams");
 				}
-				if($passedArgCount>$maxParams) {
+				if ($passedArgCount > $maxParams) {
 					//$this->emitError($fileName, $node, "Parameter mismatch","Call to $name::__construct passing too many parameters ($passedArgCount instead of $maxParams)");
 				}
 			}

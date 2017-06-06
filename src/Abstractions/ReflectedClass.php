@@ -1,97 +1,159 @@
-<?php
+<?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\Abstractions;
-
-use BambooHR\Guardrail\Abstractions\ClassInterface;
-use BambooHR\Guardrail\Abstractions\ReflectedClassMethod;
-
+/**
+ * Class ReflectedClass
+ *
+ * @package BambooHR\Guardrail\Abstractions
+ */
 class ReflectedClass implements ClassInterface {
+
 	/**
 	 * @var \ReflectionClass
 	 */
 	private $refl;
 
-	function __construct(\ReflectionClass $refl) {
+	/**
+	 * ReflectedClass constructor.
+	 *
+	 * @param \ReflectionClass $refl Instance of ReflectionClass
+	 */
+	public function __construct(\ReflectionClass $refl) {
 		$this->refl = $refl;
 	}
 
-	function getParentClassName() {
+	/**
+	 * getParentClassName
+	 *
+	 * @return string
+	 */
+	public function getParentClassName() {
 		$parent = $this->refl->getParentClass();
 		return $parent ? $parent->getName() : "";
 	}
 
-	function getInterfaceNames() {
+	/**
+	 * getInterfaceNames
+	 *
+	 * @return array
+	 */
+	public function getInterfaceNames() {
 		return $this->refl->getInterfaceNames();
 	}
 
-	function isInterface() {
+	/**
+	 * isInterface
+	 *
+	 * @return bool
+	 */
+	public function isInterface() {
 		return $this->refl->isInterface();
 	}
 
-	function isDeclaredAbstract() {
+	/**
+	 * isDeclaredAbstract
+	 *
+	 * @return bool
+	 */
+	public function isDeclaredAbstract() {
 		return $this->refl->isAbstract();
 	}
 
-	function getMethodNames() {
+	/**
+	 * getMethodNames
+	 *
+	 * @return array
+	 */
+	public function getMethodNames() {
 		$ret = [];
-		foreach($this->refl->getMethods() as $method) {
+		foreach ($this->refl->getMethods() as $method) {
 			$ret[] = $method->name;
 		}
 		return $ret;
 	}
 
-	function hasConstant($name) {
+	/**
+	 * hasConstant
+	 *
+	 * @param string $name The name
+	 *
+	 * @return bool
+	 */
+	public function hasConstant($name) {
 		$constants = $this->refl->getConstants();
 		return array_key_exists($name, $constants);
 	}
 
-	function getMethod($name) {
+	/**
+	 * getMethod
+	 *
+	 * @param string $name The name of the method to get
+	 *
+	 * @return \BambooHR\Guardrail\Abstractions\ReflectedClassMethod|null
+	 */
+	public function getMethod($name) {
 		try {
 			$method = $this->refl->getMethod($name);
-			if ($method) return new ReflectedClassMethod($method);
-		}
-		catch(\ReflectionException $e) {
+			if ($method) {
+				return new ReflectedClassMethod($method);
+			}
+		} catch (\ReflectionException $exception) {
 			return null;
 		}
 		return null;
 	}
 
-	function getName() {
+	/**
+	 * getName
+	 *
+	 * @return string
+	 */
+	public function getName() {
 		return $this->refl->getName();
 	}
 
-	function getProperty($name) {
+	/**
+	 * getProperty
+	 *
+	 * @param string $name The name of the property
+	 *
+	 * @return Property|null
+	 */
+	public function getProperty($name) {
 		try {
 			$prop = $this->refl->getProperty($name);
-			if($prop) {
+			if ($prop) {
 				$modifiers = $prop->getModifiers();
 
 				if ($modifiers & \ReflectionProperty::IS_PRIVATE) {
-					$access="private";
-				} else if($modifiers & \ReflectionProperty::IS_PROTECTED) {
-					$access="protected";
+					$access = "private";
+				} else if ($modifiers & \ReflectionProperty::IS_PROTECTED) {
+					$access = "protected";
 				} else {
-					$access="public";
+					$access = "public";
 				}
 				return new Property($prop->getName(), $access, "", $modifiers & \ReflectionProperty::IS_STATIC );
 			}
 			return null;
-		}
-		catch(\ReflectionException $e) {
+		} catch (\ReflectionException $exception) {
 			return null;
 		}
 	}
 
-	function getPropertyNames() {
+	/**
+	 * getPropertyNames
+	 *
+	 * @return array
+	 */
+	public function getPropertyNames() {
 		$ret = [];
 		$props = $this->refl->getProperties();
-		foreach($props as $prop) {
-			$ret[]=$prop->getName();
+		foreach ($props as $prop) {
+			$ret[] = $prop->getName();
 		}
 		return $ret;
 	}

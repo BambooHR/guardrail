@@ -1,38 +1,52 @@
-<?php
+<?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-namespace BambooHR\Guardrail\NodeVisitors;
-
 use PhpParser\Node;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\FunctionLike;
+use PhpParser\Node\Name;
 use PhpParser\NodeTraverserInterface;
-use PhpParser\NodeVisitor;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 
-class VariadicCheckVisitor extends NodeVisitorAbstract
-{
+/**
+ * Class VariadicCheckVisitor
+ *
+ * @package BambooHR\Guardrail\NodeVisitors
+ */
+class VariadicCheckVisitor extends NodeVisitorAbstract {
+
+	/**
+	 * @var bool
+	 */
 	private $foundVariatic = false;
 
 	/**
 	 * @return bool
 	 */
-	function getIsVariadic() {
+	public function getIsVariadic() {
 		return $this->foundVariatic;
 	}
 
-
-	function enterNode(Node $node) {
-		if($node instanceof Node\FunctionLike) {
+	/**
+	 * enterNode
+	 *
+	 * @param Node $node Instance of Node
+	 *
+	 * @return int
+	 */
+	public function enterNode(Node $node) {
+		if ($node instanceof FunctionLike) {
 			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
 		}
 
 		if (
-			$node instanceof Node\Expr\FuncCall &&
-			$node->name instanceof Node\Name &&
+			$node instanceof FuncCall &&
+			$node->name instanceof Name &&
 			(
 				strcasecmp(strval($node->name), "func_get_args") == 0 ||
 				strcasecmp(strval($node->name), "func_num_args") == 0 ||
@@ -43,8 +57,15 @@ class VariadicCheckVisitor extends NodeVisitorAbstract
 		}
 	}
 
+	/**
+	 * isVariadic
+	 *
+	 * @param array $stmts The list of statements
+	 *
+	 * @return bool
+	 */
 	static function isVariadic($stmts) {
-		if(!is_array($stmts)) {
+		if (!is_array($stmts)) {
 			return false;
 		}
 		$visitor = new self;
@@ -55,4 +76,3 @@ class VariadicCheckVisitor extends NodeVisitorAbstract
 	}
 }
 
-?>
