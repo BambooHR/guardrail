@@ -6,7 +6,8 @@
  */
 
 use BambooHR\Guardrail\Util;
-Use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
+use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
+
 /**
  * Class ClassMethod
  *

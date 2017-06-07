@@ -31,14 +31,20 @@ class Scope {
 	/** @var FunctionLike */
 	private $inside;
 
-	/**
-	 * Scope constructor.
-	 *
-	 * @param bool         $isStatic Set static
-	 * @param bool         $isGlobal Set global
-	 * @param FunctionLike $inside   Instance of FunctionLike (or null)
-	 */
-	public function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
+	/** @var bool[] */
+	private $written = [];
+
+	/** @var int[]  */
+	private $line = [];
+    
+    /**
+     * Scope constructor.
+     *
+     * @param bool         $isStatic Set static
+     * @param bool         $isGlobal Set global
+     * @param FunctionLike $inside   Instance of FunctionLike (or null)
+     */
+	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
 		$this->isStatic = $isStatic;
 		$this->isGlobal = $isGlobal;
 		$this->inside = $inside;
@@ -83,14 +89,41 @@ class Scope {
 		$this->vars[$name] = $type;
 	}
 
-	/**
-	 * getVarType
-	 *
-	 * @param string $name The name
-	 *
-	 * @return mixed|string
-	 */
-	public function getVarType($name) {
+	function setVarWritten($name, $line) {
+		if(!isset($this->written[$name])) {
+			$this->written[$name] = true;
+			$this->line[$name] = $line;
+		}
+	}
+
+	function setVarUsed($name) {
+		$this->written[$name] = false;
+	}
+
+	function markAllVarsUsed() {
+		foreach(array_keys($this->written) as $name) {
+			$this->written[$name] = false;
+		}
+	}
+
+	function getUnusedVars() {
+		$ret = [];
+		foreach($this->written as $key=>$unused) {
+			if($unused) {
+				$ret[$key]=$this->line[$key];
+			}
+		}
+		return $ret;
+	}
+
+    /**
+     * getVarType
+     *
+     * @param string $name The name
+     *
+     * @return mixed|string
+     */
+	function getVarType($name) {
 		if (isset($this->vars[$name])) {
 			return $this->vars[$name];
 		}
@@ -105,6 +138,8 @@ class Scope {
 	public function getScopeClone() {
 		$ret = new Scope($this->isStatic, $this->isGlobal);
 		$ret->vars = $this->vars;
+		$ret->written = $this->written;
+		$ret->line = $this->line;
 		return $ret;
 	}
 }

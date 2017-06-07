@@ -52,7 +52,7 @@ class AnalyzingPhase {
 		$configArr = $config->getConfigArray();
 		foreach ($it2 as $file) {
 			if ($file->getExtension() == "php" && $file->isFile()) {
-				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getPathname(), $configArr['test-ignore'])) {
+				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getRealPath(), $configArr['test-ignore'])) {
 					continue;
 				}
 				$toProcess[] = $file->getPathname();
@@ -188,7 +188,7 @@ class AnalyzingPhase {
 		$groupSize = intval(count($toProcess) / $config->getProcessCount());
 		for ($processCount = 0; $processCount < $config->getProcessCount(); ++$processCount) {
 			$group = ($processCount == $config->getProcessCount() - 1) ? array_slice($toProcess, $groupSize * $processCount) : array_slice($toProcess, $groupSize * $processCount, $groupSize);
-			file_put_contents("scan.tmp.$i", implode("\n", $group));
+			file_put_contents("scan.tmp.$processCount", implode("\n", $group));
 			$cmd = escapeshellarg($GLOBALS['argv'][0]);
 			$cmdLine = "php -d memory_limit=1G $cmd -a -s ";
 			if ($config->getOutputFile()) {
