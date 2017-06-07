@@ -4,3 +4,4 @@ php:
   - '5.6'
   - '7.0'
 install: composer install
+script: $TRAVIS_BUILD_DIR/vendor/bin/phpunit tests/units
