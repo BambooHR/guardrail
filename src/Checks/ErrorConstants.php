@@ -10,6 +10,7 @@ class ErrorConstants {
 	const TYPE_ACCESS_VIOLATION = 'Standard.Access.Violation';
 	const TYPE_AUTOLOAD_ERROR = 'Standard.Autoload.Unsafe';
 	const TYPE_BREAK_NUMBER = 'Standard.Switch.BreakMultiple';
+	const TYPE_DEBUG = 'Standard.Debug';
 	const TYPE_DEPRECATED_INTERNAL = 'Standard.Deprecated.Internal';
 	const TYPE_DEPRECATED_USER = 'Standard.Deprecated.User';
 	const TYPE_DOC_BLOCK_MISMATCH = 'Standard.DocBlock.Mismatch';
