@@ -2,6 +2,9 @@
 
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Output\XUnitOutput;
+use BambooHR\Guardrail\Phases\AnalyzingPhase;
+use BambooHR\Guardrail\Phases\IndexingPhase;
 use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
 use PhpParser\Node;
 use PhpParser\ParserFactory;
@@ -13,6 +16,69 @@ use PHPUnit\Framework\TestCase;
  * @package BambooHR\Guardrail\Tests
  */
 abstract class TestSuiteSetup extends TestCase {
+
+	public $testFile;
+
+	/**
+	 * runAnalyzerOnFile
+	 *
+	 * @param string $fileName
+	 * @param mixed  $emit
+	 *
+	 * @return int
+	 */
+	public function runAnalyzerOnFile($fileName, $emit) {
+		$config = new TestConfig($fileName, $emit);
+		$output = new XUnitOutput($config);
+
+		$indexer = new IndexingPhase();
+		$indexer->run($config, $output);
+
+		$analyzer = new AnalyzingPhase();
+		foreach ($config->config as $listItem) {
+			$analyzer->phase2($config, $output, $listItem);
+		}
+		return $output->getErrorCount();
+	}
+
+	/**
+	 * loadTestFile
+	 *
+	 * @param string $filename The path to the php file
+	 *
+	 * @return void
+	 */
+	public function loadTestFile($filename) {
+		$this->testFile = file_get_contents($filename);
+	}
+
+	/**
+	 * loadTestFileList
+	 *
+	 * @param string $filename The filename of the test
+	 *
+	 * @return array
+	 */
+	public function loadTestFileList($filename) {
+		$baseDir = dirname($filename);
+		$files = preg_grep('~^' . basename($filename, '.php') . '.*\.inc$~', scandir($baseDir));
+		$returnList = [];
+		foreach ($files as $file) {
+			$returnList[] = dirname($filename) . '/' . $file;
+		}
+		return $returnList;
+	}
+
+	/**
+	 * Clean up after finished test.
+	 *
+	 * @return void
+	 */
+	public function tearDown() {
+		parent::tearDown();
+		unset($this->testFile);
+
+	}
 
 	/**
 	 * parseText

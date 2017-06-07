@@ -1,6 +1,7 @@
 <?php namespace BambooHR\Guardrail\Tests\Checks;
 
 use BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck;
+use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
 
 /**
@@ -17,9 +18,8 @@ class AccessingSuperGlobalsCheckTest extends TestSuiteSetup {
 	 * @rapid-unit Checks:AccessingSuperGlobals:Calling the $GLOBALS array emits an error
 	 */
 	public function testRunAccessingSuperGlobalGlobalExpressions() {
-		$code = '<?php $GLOBALS["check"]; ';
-		$statements = $this->parseText($code);
-		$this->checkClassEmitsErrorOnce(AccessingSuperGlobalsCheck::class, $statements[0]->var);
+		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
+		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
 	}
 
 	/**
@@ -29,9 +29,8 @@ class AccessingSuperGlobalsCheckTest extends TestSuiteSetup {
 	 * @rapid-unit Checks:AccessingSuperGlobals:Calling `global $var` emits an error
 	 */
 	public function testRunAccessingSuperGlobalGlobalVariables() {
-		$code = '<?php global $check; ';
-		$statements = $this->parseText($code);
-		$this->checkClassEmitsErrorOnce(AccessingSuperGlobalsCheck::class, $statements[0]);
+		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.2.inc';
+		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_GLOBAL_STRING_ACCESSED));
 	}
 
 	/**
@@ -41,8 +40,7 @@ class AccessingSuperGlobalsCheckTest extends TestSuiteSetup {
 	 * @rapid-unit Checks:AccessingSuperGlobals:Assigning $GLOBALS emits an error
 	 */
 	public function testRunAccessingSuperGlobalVariableOnly() {
-		$code = '<?php $something = $GLOBALS;';
-		$statements = $this->parseText($code);
-		$this->checkClassEmitsErrorOnce(AccessingSuperGlobalsCheck::class, $statements[0]->expr);
+		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.3.inc';
+		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
 	}
 }

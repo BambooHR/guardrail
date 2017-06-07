@@ -1,0 +1,5 @@
+<?php
+
+$functionToCall = 'someFunction';
+
+$functionToCall();
