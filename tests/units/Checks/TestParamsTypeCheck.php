@@ -14,7 +14,7 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	 * testFunctionInFunctionCallEmitsError
 	 *
 	 * @return void
-	 * @rapid-unit Checks:FunctionCallCheck:Function calling another function emits errors
+	 * @rapid-unit Checks:ParamsTypeCheck:Function calling another function emits errors
 	 */
 	public function testFunctionInFunctionCallEmitsError() {
 		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
