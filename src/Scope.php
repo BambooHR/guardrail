@@ -36,14 +36,14 @@ class Scope {
 
 	/** @var int[]  */
 	private $line = [];
-    
-    /**
-     * Scope constructor.
-     *
-     * @param bool         $isStatic Set static
-     * @param bool         $isGlobal Set global
-     * @param FunctionLike $inside   Instance of FunctionLike (or null)
-     */
+
+		/**
+	 * Scope constructor.
+	 *
+	 * @param bool         $isStatic Set static
+	 * @param bool         $isGlobal Set global
+	 * @param FunctionLike $inside   Instance of FunctionLike (or null)
+	 */
 	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
 		$this->isStatic = $isStatic;
 		$this->isGlobal = $isGlobal;
@@ -89,40 +89,65 @@ class Scope {
 		$this->vars[$name] = $type;
 	}
 
-	function setVarWritten($name, $line) {
-		if(!isset($this->written[$name])) {
+	/**
+	 * setVarWritten
+	 *
+	 * @param string $name The name
+	 * @param int    $line The line number
+	 *
+	 * @return void
+	 */
+	public function setVarWritten($name, $line) {
+		if (!isset($this->written[$name])) {
 			$this->written[$name] = true;
 			$this->line[$name] = $line;
 		}
 	}
 
-	function setVarUsed($name) {
+	/**
+	 * setVarUsed
+	 *
+	 * @param string $name The name of the item
+	 *
+	 * @return void
+	 */
+	public function setVarUsed($name) {
 		$this->written[$name] = false;
 	}
 
-	function markAllVarsUsed() {
-		foreach(array_keys($this->written) as $name) {
+	/**
+	 * markAllVarsUsed
+	 *
+	 * @return void
+	 */
+	public function markAllVarsUsed() {
+		foreach (array_keys($this->written) as $name) {
 			$this->written[$name] = false;
 		}
 	}
 
-	function getUnusedVars() {
+	/**
+	 * getUnusedVars
+	 *
+	 * @return array
+	 */
+	public function getUnusedVars() {
 		$ret = [];
-		foreach($this->written as $key=>$unused) {
-			if($unused) {
-				$ret[$key]=$this->line[$key];
+		foreach ($this->written as $key => $unused) {
+			if ($unused) {
+				$ret[$key] = $this->line[$key];
 			}
 		}
 		return $ret;
 	}
 
-    /**
-     * getVarType
-     *
-     * @param string $name The name
-     *
-     * @return mixed|string
-     */
+	/**
+	 * getVarType
+	 *
+	 * @param string $name The name
+	 *
+	 * @return mixed|string
+	 */
 	function getVarType($name) {
 		if (isset($this->vars[$name])) {
 			return $this->vars[$name];

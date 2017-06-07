@@ -419,35 +419,55 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 	}
 
+	/**
+	 * setAllScopeUsed
+	 *
+	 * @return void
+	 */
 	private function setAllScopeUsed() {
 		$scope = end($this->scopeStack);
 		$scope->markAllVarsUsed();
 	}
 
+	/**
+	 * setScopeUsed
+	 *
+	 * @param string $varName The name of the variable
+	 *
+	 * @return void
+	 */
 	private function setScopeUsed($varName) {
 		$scope = end($this->scopeStack);
 		$scope->setVarUsed($varName);
 	}
 
+	/**
+	 * setScopeWritten
+	 *
+	 * @param string $varName    The name of the variable
+	 * @param int    $lineNumber The line number
+	 *
+	 * @return void
+	 */
 	private function setScopeWritten($varName, $lineNumber) {
 		$scope = end($this->scopeStack);
 		$scope->setVarWritten($varName, $lineNumber);
 	}
 
 
-    /**
-     * handleAssignment
-     *
-     * Assignment can cause a new variable to come into scope.  We infer the type of the expression (if possible) and
-     * add an entry to the variable table for this scope.
-     *
-     * @param Assign|AssignRef $op Variable instances of different things
-     *
-     * @return void
-     */
+	/**
+	 * handleAssignment
+	 *
+	 * Assignment can cause a new variable to come into scope.  We infer the type of the expression (if possible) and
+	 * add an entry to the variable table for this scope.
+	 *
+	 * @param Assign|AssignRef $op Variable instances of different things
+	 *
+	 * @return void
+	 */
 	private function handleAssignment($op) {
-		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name)=="string") {
-			$op->var->setAttribute('assignment',true);
+		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name) == "string") {
+			$op->var->setAttribute('assignment', true);
 			$varName = strval($op->var->name);
 			$this->setScopeExpression($varName, $op->expr);
 		} else if ($op->var instanceof List_) {
@@ -469,7 +489,14 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 	}
 
-	function leaveNode(Node $node) {
+	/**
+	 * leaveNode
+	 *
+	 * @param Node $node Instance of node
+	 *
+	 * @return null
+	 */
+	public function leaveNode(Node $node) {
 		if ($node instanceof Node\Expr\Variable &&
 			is_string($node->name) &&
 			!$node->hasAttribute('assignment')
@@ -503,12 +530,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$unusedVars = $scope->getUnusedVars();
 
 			if (count($unusedVars) > 0 ) {
-				foreach($unusedVars as $varName=>$lineNumber) {
-					$this->output->emitError(__CLASS__, $this->file, $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$'.$varName." is assigned but never referenced");
+				foreach ($unusedVars as $varName => $lineNumber) {
+					$this->output->emitError(__CLASS__, $this->file, $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$' . $varName . " is assigned but never referenced");
 				}
 			}
 
-			if($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+			if ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 				$this->updateFunctionEmit($node, "pop");
 			}
 		}
