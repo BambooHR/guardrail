@@ -48,7 +48,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return void
 	 */
 	public function addFunction($name, Function_ $function, $file) {
-		$this->functions[strtolower($name)] = $file;
+		$this->functions[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 
 	/**
@@ -61,7 +61,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return void
 	 */
 	public function addClass($name, Class_ $class, $file) {
-		$this->classes[strtolower($name)] = $file;
+		$this->classes[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 
 	/**
@@ -74,7 +74,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return void
 	 */
 	public function addInterface($name, Interface_ $interface, $file) {
-		$this->interfaces[strtolower($name)] = $file;
+		$this->interfaces[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 
 	/**
@@ -87,7 +87,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return void
 	 */
 	public function addTrait($name, Trait_ $trait, $file) {
-		$this->traits[strtolower($name)] = $file;
+		$this->traits[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 
 	/**
@@ -100,7 +100,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return void
 	 */
 	public function addDefine($name, Node $define, $file) {
-		$this->defines[strtolower($name)] = $file;
+		$this->defines[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 
 	/**
@@ -133,6 +133,9 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return mixed
 	 */
 	public function getInterfaceFile($name) {
+		if (!isset($this->interfaces[strtolower($name)])) {
+			return null;
+		}
 		return $this->interfaces[strtolower($name)];
 	}
 
@@ -144,6 +147,9 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return mixed
 	 */
 	public function getClassFile($name) {
+		if (!isset($this->classes[strtolower($name)])) {
+			return null;
+		}
 		return $this->classes[strtolower($name)];
 	}
 
@@ -155,7 +161,10 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return mixed
 	 */
 	public function getFunctionFile($name) {
-		return $this->functions[strtolower($name)];
+		if (isset($this->functions[strtolower($name)])) {
+			return $this->functions[strtolower($name)];
+		}
+		return null;
 	}
 
 	/**
@@ -188,4 +197,35 @@ class InMemorySymbolTable extends SymbolTable {
 		}
 	}
 
+	/**
+	 * getClassesThatUseAnyTrait
+	 *
+	 * @return array
+	 */
+	public function getClassesThatUseAnyTrait() {
+		// grab anything that has a trait
+		$return = [];
+		foreach ($this->classes as $class) {
+			// loop through each class
+		}
+		return $return;
+	}
+
+	/**
+	 * isDefinedClass
+	 *
+	 * More efficient than getAbstractedClass, for the cases where you don't need the class.
+	 *
+	 * @param string $name The name
+	 *
+	 * @return bool
+	 */
+	public function isDefinedClass($name) {
+		$class = $this->getAbstractedClass($name);
+		if ($class) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

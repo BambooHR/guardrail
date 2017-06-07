@@ -20,13 +20,21 @@ class FunctionCallCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [FuncCall::class];
+		return [FuncCall::class, Node\Expr\Eval_::class];
 	}
 
 	/**
 	 * @var array
 	 */
-	static private $dangerous = ["exec" => true,"shell_exec" => true, "proc_open" => true, "passthru" => true, "popen" => true, "system" => true];
+	static private $dangerous = [
+		'exec' => true,
+		'shell_exec' => true,
+		'proc_open' => true,
+		'passthru' => true,
+		'popen' => true,
+		'system' => true,
+		'create_function' => true,
+	];
 
 	/**
 	 * run
@@ -38,21 +46,17 @@ class FunctionCallCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 
-		if ($node->name instanceof Name) {
+		if ($node instanceof Node\Expr\Eval_) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
+		} elseif ($node->name instanceof Name) {
 			$name = $node->name->toString();
 
 			$toLower = strtolower($name);
 			$this->incTests();
 			if (array_key_exists($toLower, self::$dangerous)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function $name()");
-			}
-			if ($toLower == "eval") {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_EVAL, "Call to dangerous function eval()");
-			}
-			if ($toLower == "create_function") {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_EVAL, "Call to dangerous function create_function()");
 			}
 
 			$func = $this->symbolTable->getAbstractedFunction($name);
@@ -61,9 +65,8 @@ class FunctionCallCheck extends BaseCheck {
 				if (count($node->args) < $minimumArgs) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
 				}
-
 				if ($func->isDeprecated()) {
-					$errorType = $func->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : self::TYPE_DEPRECATED_USER;
+					$errorType = $func->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 					$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name" );
 				}
 			} else {

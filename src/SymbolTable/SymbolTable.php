@@ -116,23 +116,7 @@ abstract class SymbolTable {
 	 *
 	 * @return bool
 	 */
-	public function isDefinedClass($name) {
-		$cacheName = strtolower($name);
-		if (
-			$this->cache->get("AClass:" . $cacheName) ||
-			$this->getType($name, self::TYPE_CLASS) ||
-			$this->getType($name, self::TYPE_INTERFACE)
-		) {
-			return true;
-		}
-		try {
-			$unused = new ReflectionClass($name);
-			return true;
-		} catch (ReflectionException $exception) {
-			return false;
-		}
-	}
-
+	abstract public function isDefinedClass($name);
 
 	/**
 	 * getAbstractedClass
@@ -432,4 +416,11 @@ abstract class SymbolTable {
 	 */
 	abstract function addDefine($name, Node $define, $file);
 
+
+	/**
+	 * getClassesThatUseAnyTrait
+	 *
+	 * @return array
+	 */
+	abstract public function getClassesThatUseAnyTrait();
 }

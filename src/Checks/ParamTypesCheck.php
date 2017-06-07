@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
@@ -63,6 +64,11 @@ class ParamTypesCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+
+		if ($node instanceof Node\Stmt\Function_) {
+			$this->checkForNestedFunction($fileName, $node, $inside, $scope);
+		}
+
 		if (!property_exists($node, 'name')) {
 			$displayName = "closure function";
 		} else {
@@ -84,5 +90,24 @@ class ParamTypesCheck extends BaseCheck {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 			}
 		}
+	}
+
+	/**
+	 * checkForNestedFunction
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return void
+	 */
+	public function checkForNestedFunction($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+		$self = $this;
+		ForEachNode::run( $node->stmts, function($statement) use ($self, $fileName, $node) {
+			if ($statement instanceof Node\Stmt\Function_) {
+				$self->emitError($fileName, $node, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION, "Function declaration detected inside another function or method");
+			}
+		});
 	}
 }

@@ -1,0 +1,3 @@
+<?php
+
+$thisGlobalVar = $GLOBALS["check"];

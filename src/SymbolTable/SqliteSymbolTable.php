@@ -296,6 +296,32 @@ class SqliteSymbolTable extends SymbolTable {
 	}
 
 	/**
+	 * isDefinedClass
+	 *
+	 * More efficient than getAbstractedClass, for the cases where you don't need the class.
+	 *
+	 * @param string $name The name
+	 *
+	 * @return bool
+	 */
+	public function isDefinedClass($name) {
+		$cacheName = strtolower($name);
+		if (
+			$this->cache->get("AClass:" . $cacheName) ||
+			$this->getType($name, self::TYPE_CLASS) ||
+			$this->getType($name, self::TYPE_INTERFACE)
+		) {
+			return true;
+		}
+		try {
+			$unused = new ReflectionClass($name);
+			return true;
+		} catch (ReflectionException $exception) {
+			return false;
+		}
+	}
+
+	/**
 	 * getAbstractedClass
 	 *
 	 * @param string $name The name
