@@ -97,7 +97,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new DocBlockTypesCheck($this->index, $output),
 			new UndefinedVariableCheck($this->index, $output),
 			new DefinedConstantCheck($this->index, $output),
-			new BacktickOperatorCheck($this->index, $output),
+			new BackTickOperatorCheck($this->index, $output),
 			new PropertyFetchCheck($this->index, $output),
 			new InterfaceCheck($this->index, $output),
 			new ParamTypesCheck($this->index, $output),
