@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\ClassMethod as AbstractClassMethod;
 use BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck;
 use BambooHR\Guardrail\Checks\BacktickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
@@ -39,6 +40,8 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\NodeTraverserInterface;
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
+use BambooHR\Guardrail\Abstractions\Class_ as AbstractionClass;
+use BambooHR\Guardrail\Abstractions\ReflectedClassMethod;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -180,19 +183,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				if ($type && $type[0] != "!") {
 					$method = $this->index->getAbstractedMethod($type, $node->name);
 					if ($method) {
-						/** @var FunctionLikeParameter[] $params */
-						$params = $method->getParameters();
-						$paramCount = count($params);
-						foreach ($node->args as $index => $arg) {
-							if (
-								(isset($params[$index]) && $params[$index]->isReference()) ||
-								($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
-							) {
-								if ($arg->value instanceof Variable && gettype($arg->value->name) == "string") {
-									$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
-								}
-							}
-						}
+						$this->processMethodCall($node, $method);
 					}
 				}
 			}
@@ -201,19 +192,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			if ($node->class instanceof Node\Name && gettype($node->name) == "string") {
 				$method = $this->index->getAbstractedMethod( strval($node->class), strval($node->name));
 				if ($method) {
-					/** @var FunctionLikeParameter[] $params */
-					$params = $method->getParameters();
-					$paramCount = count($params);
-					foreach ($node->args as $index => $arg) {
-						if (
-							(isset($params[$index]) && $params[$index]->isReference()) ||
-							($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
-						) {
-							if ($arg->value instanceof Variable && gettype($arg->value->name) == "string") {
-								$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
-							}
-						}
-					}
+					$this->processStaticCall($node, $method);
 				}
 			}
 		}
@@ -539,5 +518,53 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			array_pop($this->scopeStack);
 		}
 		return null;
+	}
+
+	/**
+	 * processMethodCall
+	 *
+	 * @param Node                                                                  $node   Instance of Node
+	 * @param AbstractionClass|AbstractClassMethod|ReflectedClassMethod|null|string $method Instance of the Method (optional)
+	 *
+	 * @return void
+	 */
+	private function processMethodCall(Node $node, $method) {
+		/** @var FunctionLikeParameter[] $params */
+		$params = $method->getParameters();
+		$paramCount = count($params);
+		foreach ($node->args as $index => $arg) {
+			if (
+				(isset($params[$index]) && $params[$index]->isReference()) ||
+				($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
+			) {
+				if ($arg->value instanceof Variable && gettype($arg->value->name) == "string") {
+					$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+				}
+			}
+		}
+	}
+
+	/**
+	 * processStaticCall
+	 *
+	 * @param Node                                                                  $node   Instance of Node
+	 * @param AbstractionClass|AbstractClassMethod|ReflectedClassMethod|null|string $method Instance of the Method (optional)
+	 *
+	 * @return void
+	 */
+	private function processStaticCall(Node $node, $method) {
+		/** @var FunctionLikeParameter[] $params */
+		$params = $method->getParameters();
+		$paramCount = count($params);
+		foreach ($node->args as $index => $arg) {
+			if (
+				(isset($params[$index]) && $params[$index]->isReference()) ||
+				($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
+			) {
+				if ($arg->value instanceof Variable && gettype($arg->value->name) == "string") {
+					$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+				}
+			}
+		}
 	}
 }

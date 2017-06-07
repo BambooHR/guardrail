@@ -16,6 +16,11 @@ use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use BambooHR\Guardrail\Abstractions\Class_ as AbstractedClass_;
 
+/**
+ * Class InterfaceCheck
+ *
+ * @package BambooHR\Guardrail\Checks
+ */
 class InterfaceCheck extends BaseCheck {
 
 	/**
@@ -129,49 +134,82 @@ class InterfaceCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-
 		if ($node->implements) {
-			$arr = is_array($node->implements) ? $node->implements : [$node->implements];
-			foreach ($arr as $interface) {
-				$name = $interface->toString();
-				$this->incTests();
-				if ($name) {
-					$interface = $this->symbolTable->getAbstractedClass($name);
-					if (!$interface) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, $node->name . " implements unknown interface " . $name);
-					} else {
-						// Don't force abstract classes to implement all methods.
-						if (!$node->isAbstract()) {
-							foreach ($interface->getMethodNames() as $interfaceMethod) {
-								$classMethod = $this->implementsMethod($fileName, $node, $interfaceMethod);
-								if (!$classMethod) {
-									if (!$node->isAbstract()) {
-										$this->emitError($fileName, $node, ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
-									}
-								} else {
-									$this->checkMethod(
-										$fileName, $node, $classMethod, $interface, $interface->getMethod($interfaceMethod)
-									);
-								}
-							}
-						}
-					}
+			$this->processNodeImplements($fileName, $node);
+		}
+		if ($node->extends) {
+			$this->processNodeExtends($fileName, $node);
+		}
+	}
+
+	/**
+	 * processNodeImplements
+	 *
+	 * @param string $fileName The filename
+	 * @param Node   $node     Instance of Node
+	 *
+	 * @return void
+	 */
+	private function processNodeImplements($fileName, Node $node) {
+		$arr = is_array($node->implements) ? $node->implements : [$node->implements];
+		foreach ($arr as $interface) {
+			$name = $interface->toString();
+			$this->incTests();
+			if ($name) {
+				$interface = $this->symbolTable->getAbstractedClass($name);
+				if (! $interface) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, $node->name . " implements unknown interface " . $name);
+				} else {
+					$this->processNodeImplementsNotAbstract($fileName, $node, $interface);
 				}
 			}
 		}
+	}
 
-		if ($node->extends) {
-			$class = new AbstractedClass_($node);
-			$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
-			if (!$parentClass) {
-				$this->emitError($fileName, $node->extends, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent " . $node->extends);
+	/**
+	 * processNodeExtends
+	 *
+	 * @param string $fileName The file name
+	 * @param Node   $node     Instance of Node
+	 *
+	 * @return void
+	 */
+	private function processNodeExtends($fileName, Node $node) {
+		$class = new AbstractedClass_($node);
+		$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
+		if (! $parentClass) {
+			$this->emitError($fileName, $node->extends, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent " . $node->extends);
+		}
+		foreach ($class->getMethodNames() as $methodName) {
+			if ($methodName != "__construct") {
+				$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
+				if ($method) {
+					$this->checkMethod($fileName, $node, $class->getMethod($methodName), $parentClass, $method);
+				}
 			}
-			foreach ($class->getMethodNames() as $methodName) {
-				if ($methodName != "__construct") {
-					$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
-					if ($method) {
-						$this->checkMethod( $fileName, $node, $class->getMethod($methodName), $parentClass, $method);
+		}
+	}
+
+	/**
+	 * processNodeImplementsNotAbstract
+	 *
+	 * @param string $fileName  The file name
+	 * @param Node   $node      Instance of Node
+	 * @param string $interface The interface
+	 *
+	 * @return void
+	 */
+	private function processNodeImplementsNotAbstract($fileName, Node $node, $interface) {
+		// Don't force abstract classes to implement all methods.
+		if (! $node->isAbstract()) {
+			foreach ($interface->getMethodNames() as $interfaceMethod) {
+				$classMethod = $this->implementsMethod($fileName, $node, $interfaceMethod);
+				if (! $classMethod) {
+					if (! $node->isAbstract()) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
 					}
+				} else {
+					$this->checkMethod($fileName, $node, $classMethod, $interface, $interface->getMethod($interfaceMethod));
 				}
 			}
 		}

@@ -104,9 +104,9 @@ class StaticCallCheck extends BaseCheck {
 				} else {
 					if (!$method->isStatic()) {
 						if (!$scope->isStatic() && $possibleDynamic) {
-							if ($node->name != "__construct" && $node->class != "parent") {
-								// echo "Static call in $fileName " . $node->getLine() . "\n";
-							}
+//							if ($node->name != "__construct" && $node->class != "parent") {
+//								// echo "Static call in $fileName " . $node->getLine() . "\n";
+//							}
 						} else {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to call non-static method: $name::" . $node->name . " statically");
 						}
