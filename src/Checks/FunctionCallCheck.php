@@ -20,7 +20,7 @@ class FunctionCallCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [FuncCall::class, Node\Expr\Eval_::class, Node\Stmt\Function_::class];
+		return [FuncCall::class, Node\Expr\Eval_::class];
 	}
 
 	/**
@@ -48,9 +48,7 @@ class FunctionCallCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 
-		if ($node instanceof Node\Stmt\Function_) {
-			$this->checkForNestedFunction($fileName, $node, $inside, $scope);
-		} elseif ($node instanceof Node\Expr\Eval_) {
+		if ($node instanceof Node\Expr\Eval_) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
 		} elseif ($node->name instanceof Name) {
 			$name = $node->name->toString();
@@ -97,24 +95,6 @@ class FunctionCallCheck extends BaseCheck {
 			return $ob->getMinimumRequiredParameters();
 		} else {
 			return -1;
-		}
-	}
-
-	/**
-	 * checkForNestedFunction
-	 *
-	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
-	 *
-	 * @return void
-	 */
-	public function checkForNestedFunction($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		foreach ($node->stmts as $statement) {
-			if ($statement instanceof Node\Stmt\Function_) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION);
-			}
 		}
 	}
 }

@@ -64,15 +64,4 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.6.inc';
 		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME));
 	}
-
-	/**
-	 * testFunctionInFunctionCallEmitsError
-	 *
-	 * @return void
-	 * @rapid-unit Checks:FunctionCallCheck:Function calling another function emits errors
-	 */
-	public function testFunctionInFunctionCallEmitsError() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.3.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION));
-	}
 }

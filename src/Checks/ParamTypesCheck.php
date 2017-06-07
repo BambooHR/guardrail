@@ -63,6 +63,11 @@ class ParamTypesCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+
+		if ($node instanceof Node\Stmt\Function_) {
+			$this->checkForNestedFunction($fileName, $node, $inside, $scope);
+		}
+
 		if (!property_exists($node, 'name')) {
 			$displayName = "closure function";
 		} else {
@@ -82,6 +87,24 @@ class ParamTypesCheck extends BaseCheck {
 			$returnType = strval($node->returnType);
 			if (!$this->isAllowed($returnType, $inside)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
+			}
+		}
+	}
+
+	/**
+	 * checkForNestedFunction
+	 *
+	 * @param string         $fileName The name of the file we are parsing
+	 * @param Node           $node     Instance of the Node
+	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 *
+	 * @return void
+	 */
+	public function checkForNestedFunction($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+		foreach ($node->stmts as $statement) {
+			if ($statement instanceof Node\Stmt\Function_) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION);
 			}
 		}
 	}
