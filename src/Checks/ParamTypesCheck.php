@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
@@ -102,10 +103,11 @@ class ParamTypesCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function checkForNestedFunction($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		foreach ($node->stmts as $statement) {
+		$self = $this;
+		ForEachNode::run( $node->stmts, function($statement) use ($self, $fileName, $node) {
 			if ($statement instanceof Node\Stmt\Function_) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION);
+				$self->emitError($fileName, $node, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION, "Function declaration detected inside another function or method");
 			}
-		}
+		});
 	}
 }

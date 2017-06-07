@@ -18,7 +18,7 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	 */
 	public function testFunctionInFunctionCallEmitsError() {
 		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION));
+		$this->assertEquals(4, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION));
 	}
 
 }
