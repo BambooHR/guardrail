@@ -7,7 +7,7 @@
 
 use BambooHR\Guardrail\Abstractions\ClassMethod as AbstractClassMethod;
 use BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck;
-use BambooHR\Guardrail\Checks\BacktickOperatorCheck;
+use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
