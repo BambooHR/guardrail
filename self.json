@@ -1,7 +1,7 @@
 {
   "index": ["src","vendor"],
   "test": ["src"],
-  "ignore": ["**/src/bin/**/*"],
+  "ignore": ["**/src/bin/**/*", "**/test/**/*", "**/Tests/**/*", "**/tests/**/*" ],
   "test-ignore": ["**/src/ExtraStubs/**/*" ,"**/tests/**/*", "**/src/bin/**/*"],
   "emit": [ "Standard.*" ]
 
