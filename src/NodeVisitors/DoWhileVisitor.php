@@ -29,7 +29,7 @@ class DoWhileVisitor extends NodeVisitorAbstract {
 		// This causes undefined variable errors.  We correct it by replacing it with
 		// a subclass that in the order we need.
 		if ($node instanceOf Node\Stmt\Do_) {
-			return DoWhileStatement::fromDo_($node);
+			return DoWhileStatement::fromDo($node);
 		}
 		return null;
 	}
