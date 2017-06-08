@@ -77,10 +77,6 @@ class FunctionCallCheck extends BaseCheck {
 					if (count($node->args) < $minimumArgs) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
 					}
-					$minimumArgs = $func->getMinimumRequiredParameters($name);
-					if (count($node->args) < $minimumArgs) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
-					}
 					if ($func->isDeprecated()) {
 						$errorType = $func->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 						$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name");
