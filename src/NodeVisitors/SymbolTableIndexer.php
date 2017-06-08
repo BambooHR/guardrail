@@ -104,11 +104,13 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 				}
 				break;
 			case FuncCall::class:
-				if ($node->name instanceof Node\Name) {
-					$name = strval($node->name);
-					if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1 && $node->args[0]->value instanceof Node\Scalar\String_) {
-						$defineName = $node->args[0]->value->value;
-						$this->index->addDefine($defineName, $node, $this->filename);
+				if ($node instanceof FuncCall) {
+					if ($node->name instanceof Node\Name) {
+						$name = strval($node->name);
+						if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1 && $node->args[0]->value instanceof Node\Scalar\String_) {
+							$defineName = $node->args[0]->value->value;
+							$this->index->addDefine($defineName, $node, $this->filename);
+						}
 					}
 				}
 				break;

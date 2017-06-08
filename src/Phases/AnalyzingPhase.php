@@ -134,12 +134,10 @@ class AnalyzingPhase {
 						}
 					}
 
-					$start = microtime(true);
 					$analyzer->setFile($name);
 					$stmts = $traverser1->traverse($stmts);
 					$stmts = $traverser2->traverse($stmts);
 					$traverser3->traverse($stmts);
-					$end = microtime(true);
 				}
 			} catch (Error $exception) {
 				$output->emitError( __CLASS__, $file, 0, "Parse error", $exception->getMessage() );
@@ -179,6 +177,7 @@ class AnalyzingPhase {
 	 * @param Config          $config    Instance of Config
 	 * @param OutputInterface $output    Instance of OutputInterface
 	 * @param array           $toProcess Parts to process
+	 * @guardrail-ignore Standard.Security.Shell, Standard.Global.Expression
 	 *
 	 * @return int
 	 */
@@ -250,10 +249,9 @@ class AnalyzingPhase {
 		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
 		$toProcess = [];
 		foreach ($indexPaths as $path) {
-			$directory = Util::fullDirectoryPath($baseDirectory, $path);
 			$output->outputVerbose("\n\nDirectory: $path\n");
 			$it = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
-			 $it2 = new RecursiveIteratorIterator($it);
+			$it2 = new RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $output, $it2, $toProcess);
 		}
 		sort($toProcess);

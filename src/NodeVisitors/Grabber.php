@@ -86,7 +86,7 @@ class Grabber extends NodeVisitorAbstract {
 	 * enterNode
 	 *
 	 * @param Node $node Instance of Node
-	 *
+	 * @guardrail-ignore Standard.Unknown.Property
 	 * @return void
 	 */
 	public function enterNode(Node $node) {

@@ -39,6 +39,11 @@ class InMemorySymbolTable extends SymbolTable {
 	private $traits = [];
 
 	/**
+	 * @var array
+	 */
+	private $defines = [];
+
+	/**
 	 * addFunction
 	 *
 	 * @param string    $name     The name
@@ -113,6 +118,11 @@ class InMemorySymbolTable extends SymbolTable {
 	public function getDefineFile($name) {
 		return $this->defines[strtolower($name)];
 	}
+
+	public function updateClass(Node\Stmt\ClassLike $class) {
+		// We don't store the class, so we don't need to update it.
+	}
+
 
 	/**
 	 * getTraitFile

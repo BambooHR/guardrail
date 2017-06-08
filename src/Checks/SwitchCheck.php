@@ -162,20 +162,19 @@ class SwitchCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if (! $node instanceof Switch_) {
-			return;
-		}
-		if (! self::allBranchesExit([$node]) && is_array($node->cases)) {
-			$nextError = null;
-			/* Note: this algorithm (intentionally) doesn't output an error in the
-			   final case clause.  A missing break there has no effect.
-			*/
-			foreach ($node->cases as $index => $case) {
-				if ($nextError) {
-					$nextError = $this->processCases($fileName, $case, $nextError);
-				}
-				if (! self::endWithBreak($case->stmts) && ! self::allBranchesExit($case->stmts)) {
-					$nextError = $case;
+		if ($node instanceof Switch_) {
+			if (!self::allBranchesExit([$node]) && is_array($node->cases)) {
+				$nextError = null;
+				/* Note: this algorithm (intentionally) doesn't output an error in the
+				   final case clause.  A missing break there has no effect.
+				*/
+				foreach ($node->cases as $index => $case) {
+					if ($nextError) {
+						$nextError = $this->processCases($fileName, $case, $nextError);
+					}
+					if (!self::endWithBreak($case->stmts) && !self::allBranchesExit($case->stmts)) {
+						$nextError = $case;
+					}
 				}
 			}
 		}

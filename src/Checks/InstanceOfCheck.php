@@ -38,12 +38,14 @@ class InstanceOfCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if ($node->class instanceof Name) {
-			$name = $node->class->toString();
-			if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {
-				$this->incTests();
-				if (!$this->symbolTable->isDefinedClass($name)) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Instance of references unknown class $name");
+		if ($node instanceof Instanceof_) {
+			if ($node->class instanceof Name) {
+				$name = $node->class->toString();
+				if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {
+					$this->incTests();
+					if (!$this->symbolTable->isDefinedClass($name)) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Instance of references unknown class $name");
+					}
 				}
 			}
 		}

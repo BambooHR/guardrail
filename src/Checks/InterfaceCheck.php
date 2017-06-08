@@ -40,6 +40,7 @@ class InterfaceCheck extends BaseCheck {
 	 * @param ClassMethod     $method       Instance of ClassMethod
 	 * @param ClassInterface  $parentClass  Instance of ClassInterface
 	 * @param MethodInterface $parentMethod Instance of MethodInterface
+	 * @guardrail-ignore Standard.Unknown.Property
 	 *
 	 * @return void
 	 */
@@ -134,11 +135,13 @@ class InterfaceCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if ($node->implements) {
-			$this->processNodeImplements($fileName, $node);
-		}
-		if ($node->extends) {
-			$this->processNodeExtends($fileName, $node);
+		if ($node instanceof Class_) {
+			if ($node->implements) {
+				$this->processNodeImplements($fileName, $node);
+			}
+			if ($node->extends) {
+				$this->processNodeExtends($fileName, $node);
+			}
 		}
 	}
 
@@ -150,7 +153,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	private function processNodeImplements($fileName, Node $node) {
+	private function processNodeImplements($fileName, Class_ $node) {
 		$arr = is_array($node->implements) ? $node->implements : [$node->implements];
 		foreach ($arr as $interface) {
 			$name = $interface->toString();
@@ -174,7 +177,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	private function processNodeExtends($fileName, Node $node) {
+	private function processNodeExtends($fileName, Class_ $node) {
 		$class = new AbstractedClass_($node);
 		$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 		if (! $parentClass) {
@@ -199,7 +202,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	private function processNodeImplementsNotAbstract($fileName, Node $node, $interface) {
+	private function processNodeImplementsNotAbstract($fileName, Class_ $node, $interface) {
 		// Don't force abstract classes to implement all methods.
 		if (! $node->isAbstract()) {
 			foreach ($interface->getMethodNames() as $interfaceMethod) {

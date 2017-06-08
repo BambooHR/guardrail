@@ -36,7 +36,7 @@ class XUnitOutput implements OutputInterface {
 	private $emitErrors;
 
 	/**
-	 * @var array|mixed|\string[]
+	 * @var mixed
 	 */
 	private $emitList = [];
 

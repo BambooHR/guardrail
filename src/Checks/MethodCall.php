@@ -59,41 +59,44 @@ class MethodCall extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 
-		if ($inside instanceof Trait_) {
-			// Traits should be converted into methods in the class, so that we can check them in context.
-			return;
-		}
-		if ($node->name instanceof Expr) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable function name detected");
-			return;
-		}
-		$methodName = strval($node->name);
+		if ($node instanceof Expr\MethodCall) {
 
-		$varName = "{expr}";
-		$className = "";
-		if ($node->var instanceof Variable && $node->var->name == "this" && !$inside) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
-			return;
-		}
-		if ($scope) {
-			$className = $this->inferenceEngine->inferType($inside, $node->var, $scope);
-		}
-		if ($className != "" && $className[0] != "!") {
-			if (!$this->symbolTable->isDefinedClass($className)) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $className in method call to $methodName()");
+			if ($inside instanceof Trait_) {
+				// Traits should be converted into methods in the class, so that we can check them in context.
 				return;
 			}
-			//echo $fileName." ".$node->getLine(). " : Looking up $className->$methodName\n";
-			$method = Util::findAbstractedSignature( $className, $methodName, $this->symbolTable);
-			if ($method) {
-				$this->checkMethod($fileName, $node, $className, $scope, $method);
-			} else {
-				// If there is a magic __call method, then we can't know if it will handle these calls.
-				if (
-					!Util::findAbstractedMethod( $className, "__call", $this->symbolTable) &&
-					!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className)
-				) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className::$methodName");
+			if ($node->name instanceof Expr) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable function name detected");
+				return;
+			}
+			$methodName = strval($node->name);
+
+			$varName = "{expr}";
+			$className = "";
+			if ($node->var instanceof Variable && $node->var->name == "this" && !$inside) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
+				return;
+			}
+			if ($scope) {
+				$className = $this->inferenceEngine->inferType($inside, $node->var, $scope);
+			}
+			if ($className != "" && $className[0] != "!") {
+				if (!$this->symbolTable->isDefinedClass($className)) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $className in method call to $methodName()");
+					return;
+				}
+				//echo $fileName." ".$node->getLine(). " : Looking up $className->$methodName\n";
+				$method = Util::findAbstractedSignature($className, $methodName, $this->symbolTable);
+				if ($method) {
+					$this->checkMethod($fileName, $node, $className, $scope, $method);
+				} else {
+					// If there is a magic __call method, then we can't know if it will handle these calls.
+					if (
+						!Util::findAbstractedMethod($className, "__call", $this->symbolTable) &&
+						!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className)
+					) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className::$methodName");
+					}
 				}
 			}
 		}

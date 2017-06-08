@@ -37,17 +37,19 @@ class CatchCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		$name = $node->type->toString();
-		if ($this->symbolTable->ignoreType($name)) {
-			// exception is in the ignore list... but if the error constant is turned on, we should emit this error
-			if ('exception' == $node->var) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_EXCEPTION_BASE, "Catching the base Exception class may be too broad");
+		if($node instanceof Catch_) {
+			$name = $node->type->toString();
+			if ($this->symbolTable->ignoreType($name)) {
+				// exception is in the ignore list... but if the error constant is turned on, we should emit this error
+				if ('exception' == $node->var) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_EXCEPTION_BASE, "Catching the base Exception class may be too broad");
+				}
+				return;
 			}
-			return;
-		}
 
-		if (!$this->symbolTable->isDefinedClass($name)) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
+			if (!$this->symbolTable->isDefinedClass($name)) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
+			}
 		}
 	}
 }
