@@ -5,7 +5,7 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\Class_ as AbstractionClass;
+use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractionClass;
 use BambooHR\Guardrail\Abstractions\Function_ as AbstractionFunction;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClassMethod;
@@ -339,7 +339,7 @@ abstract class SymbolTable {
 	 * addClass
 	 *
 	 * @param string $name  The name
-	 * @param Class_ $class Instance of Class_
+	 * @param Class_ $class Instance of ClassAbstraction
 	 * @param string $file  The file
 	 *
 	 * @return mixed

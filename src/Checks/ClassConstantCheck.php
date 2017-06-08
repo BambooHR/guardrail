@@ -5,7 +5,7 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\Class_;
+use BambooHR\Guardrail\Abstractions\ClassAbstraction;
 use BambooHR\Guardrail\Abstractions\ClassInterface;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;

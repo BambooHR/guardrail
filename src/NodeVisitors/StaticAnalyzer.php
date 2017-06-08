@@ -40,7 +40,7 @@ use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\NodeTraverserInterface;
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
-use BambooHR\Guardrail\Abstractions\Class_ as AbstractionClass;
+use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractionClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClassMethod;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
