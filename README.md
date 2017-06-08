@@ -1,7 +1,7 @@
 # Guardrail - A PHP Static Analysis tool
 Copyright (c) 2017 Jon Gardiner and BambooHR
 
-[![Build Status](https://travis-ci.org/BambooHR/guardrail.svg?branch=master)](https://travis-ci.org/BambooHR/guardrail)
+[![Build Status](https://travis-ci.org/BambooHR/guardrail.svg?branch=master)](https://travis-ci.org/BambooHR/guardrail) [![Latest Stable Version](https://poser.pugx.org/bamboohr/guardrail/v/stable.png)](https://packagist.org/packages/bamboohr/guardrail)
 
 ## Introduction
 
