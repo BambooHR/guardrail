@@ -15,13 +15,13 @@ use PhpParser\Node\Stmt\Do_;
 class DoWhileStatement extends Do_ {
 
 	/**
-	 * fromDo_
+	 * fromDo
 	 *
 	 * @param Do_ $from Instance of Do_
 	 *
 	 * @return DoWhileStatement
 	 */
-	static public function fromDo_(Do_ $from) {
+	static public function fromDo(Do_ $from) {
 		return new DoWhileStatement($from->cond, $from->stmts, $from->attributes);
 	}
 
