@@ -5,7 +5,7 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\Class_;
+use BambooHR\Guardrail\Abstractions\ClassAbstraction;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
