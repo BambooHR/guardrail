@@ -37,6 +37,16 @@ class FunctionCallCheck extends BaseCheck {
 	];
 
 	/**
+	 * @var array
+	 */
+	static private $debug = [
+		'print_r' => true,
+		'debug_print_backtrace' => true,
+		'debug_backtrace' => true,
+		'debug_zval_dump' => true,
+	];
+
+	/**
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
@@ -59,9 +69,14 @@ class FunctionCallCheck extends BaseCheck {
 				if (array_key_exists($toLower, self::$dangerous)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function $name()");
 				}
+				$this->checkForDebugMethods($fileName, $node, $name);
 
 				$func = $this->symbolTable->getAbstractedFunction($name);
 				if ($func) {
+					$minimumArgs = $func->getMinimumRequiredParameters($name);
+					if (count($node->args) < $minimumArgs) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
+					}
 					$minimumArgs = $func->getMinimumRequiredParameters($name);
 					if (count($node->args) < $minimumArgs) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
@@ -97,6 +112,22 @@ class FunctionCallCheck extends BaseCheck {
 			return $ob->getMinimumRequiredParameters();
 		} else {
 			return -1;
+		}
+	}
+
+	/**
+	 * checkForDebugMethods
+	 *
+	 * @param string $fileName The name of the file
+	 * @param Node   $node     Instance of the Node
+	 * @param string $name     The name of the function
+	 *
+	 * @return void
+	 */
+	protected function checkForDebugMethods($fileName, Node $node, $name) {
+		$toLower = strtolower($name);
+		if (array_key_exists($toLower, self::$debug)) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_DEBUG, "Call to common debug function $name() detected");
 		}
 	}
 }

@@ -12,11 +12,11 @@ use BambooHR\Guardrail\NodeVisitors\Grabber;
 use PhpParser\Node\Stmt\PropertyProperty;
 
 /**
- * Class Class_
+ * Class ClassAbstraction
  *
  * @package BambooHR\Guardrail\Abstractions
  */
-class Class_ implements ClassInterface {
+class ClassAbstraction implements ClassInterface {
 
 	/**
 	 * @var ClassLike
@@ -24,7 +24,7 @@ class Class_ implements ClassInterface {
 	private $class;
 
 	/**
-	 * Class_ constructor.
+	 * ClassAbstraction constructor.
 	 *
 	 * @param ClassLike $class Instance of ClassLike
 	 */
@@ -47,7 +47,7 @@ class Class_ implements ClassInterface {
 	 * @return bool
 	 */
 	public function isDeclaredAbstract() {
-		return ($this->class instanceof Class_ ? $this->class->isAbstract() : false);
+		return ($this->class instanceof ClassAbstraction ? $this->class->isAbstract() : false);
 	}
 
 	/**

@@ -9,11 +9,11 @@ use PhpParser\Node\Stmt\Function_ as AstFunction;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 
 /**
- * Class Function_
+ * Class FunctionAbstraction
  *
  * @package BambooHR\Guardrail\Abstractions
  */
-class Function_ implements FunctionLikeInterface {
+class FunctionAbstraction implements FunctionLikeInterface {
 
 	/**
 	 * @var AstFunction
@@ -21,7 +21,7 @@ class Function_ implements FunctionLikeInterface {
 	private $function;
 
 	/**
-	 * Function_ constructor.
+	 * FunctionAbstraction constructor.
 	 *
 	 * @param AstFunction $method Instance of AstFunction
 	 */
@@ -128,7 +128,7 @@ class Function_ implements FunctionLikeInterface {
 				return true;
 			}
 		}
-		if ($this->function instanceof Function_ || $this->function instanceof \PhpParser\Node\Stmt\ClassMethod) {
+		if ($this->function instanceof FunctionAbstraction || $this->function instanceof \PhpParser\Node\Stmt\ClassMethod) {
 			return VariadicCheckVisitor::isVariadic($this->function->getStmts());
 		}
 		return false;

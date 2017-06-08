@@ -5,7 +5,7 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\Class_;
+use BambooHR\Guardrail\Abstractions\ClassAbstraction;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
@@ -64,7 +64,7 @@ class ConstructorCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Stmt\ClassMethod) {
-			if($inside instanceof Node\Stmt\Class_) {
+			if ($inside instanceof Node\Stmt\Class_) {
 				if (strcasecmp($node->name, "__construct") == 0 &&
 					$inside->extends
 				) {

@@ -138,7 +138,7 @@ class Util {
 	 * @param string      $name        The method name
 	 * @param SymbolTable $symbolTable Instance of SymbolTable
 	 *
-	 * @return null|\BambooHR\Guardrail\Abstractions\Class_|\BambooHR\Guardrail\Abstractions\ClassMethod|\BambooHR\Guardrail\Abstractions\ReflectedClassMethod
+	 * @return null|\BambooHR\Guardrail\Abstractions\ClassAbstraction|\BambooHR\Guardrail\Abstractions\ClassMethod|\BambooHR\Guardrail\Abstractions\ReflectedClassMethod
 	 */
 	static public function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
