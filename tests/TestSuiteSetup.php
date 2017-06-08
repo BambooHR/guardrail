@@ -183,7 +183,8 @@ abstract class TestSuiteSetup extends TestCase {
 		$output = $builder
 			->setMethods(["emitError"])
 			->getMockForAbstractClass();
-		$output->expects($this->exactly((int) $times))->method("emitError")->withConsecutive(...$errorData);
+		$output->expects($this->exactly((int) $times))->method("emitError");
+		call_user_func_array([$output,'withConsecutive'], $errorData);
 		$emptyTable = new InMemorySymbolTable(__DIR__);
 		$check = new $checkClass($emptyTable, $output);
 		$check->run(__FILE__, $node, null, null);

@@ -1,6 +1,8 @@
 # Guardrail - A PHP Static Analysis tool
 Copyright (c) 2017 Jon Gardiner and BambooHR
 
+[![Build Status](https://travis-ci.org/BambooHR/guardrail.svg?branch=master)](https://travis-ci.org/BambooHR/guardrail)
+
 ## Introduction
 
 Guardrail is a static analysis engine for PHP 5 - 7.  Guardrail will index your code base, learn

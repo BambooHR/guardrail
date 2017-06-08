@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\Class_;
 use BambooHR\Guardrail\Abstractions\ClassInterface;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
@@ -64,50 +65,58 @@ class ClassConstantCheck extends BaseCheck {
 	 * @param Node           $node     Instance of the Node
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @guardrail-ignore Standard.Unknown.Property
 	 *
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if ($node->class instanceof Name) {
-			$name = $node->class->toString();
-			$constantName = strval($node->name);
+		if ($node instanceof Node\Expr\ClassConstFetch) {
+			if ($node->class instanceof Name) {
+				$name = $node->class->toString();
+				$constantName = strval($node->name);
 
-			if ($this->symbolTable->ignoreType($name)) {
-				return;
-			}
+				if ($this->symbolTable->ignoreType($name)) {
+					return;
+				}
 
-			switch (strtolower($name)) {
-				case 'self':
-				case 'static':
-					if (!$inside) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using self:: outside of a class");
-						return;
-					}
-					$name = $inside->namespacedName;
-					break;
-				case 'parent':
-					if (!$inside) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: outside of a class");
-						return;
-					}
-					if ($inside->extends) {
-						$name = strval($inside->extends);
-					} else {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: in a class with no parent");
-						return;
-					}
-					break;
-			}
+				switch (strtolower($name)) {
+					case 'self':
+					case 'static':
+						if (!$inside) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using self:: outside of a class");
+							return;
+						}
+						$name = $inside->namespacedName;
+						break;
+					case 'parent':
+						if (!$inside) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: outside of a class");
+							return;
+						}
+						if ($inside instanceof Node\Stmt\Class_) {
+							$name = strval($inside->extends);
+						} else if ($inside instanceof Node\Stmt\Interface_) {
+							$name = strval($inside->extends);
+						} else {
+							$name = "";
+						}
+						if(empty($name)) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: in a class with no parent");
+							return;
+						}
+						break;
+				}
 
-			$this->incTests();
-			$class = $this->symbolTable->getAbstractedClass($name);
-			if (!$class) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
-				return;
-			}
+				$this->incTests();
+				$class = $this->symbolTable->getAbstractedClass($name);
+				if (!$class) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
+					return;
+				}
 
-			if (strcasecmp($constantName, "class") != 0 && !$this->findConstant($class, $constantName)) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT, "Reference to unknown constant $name::$constantName");
+				if (strcasecmp($constantName, "class") != 0 && !$this->findConstant($class, $constantName)) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT, "Reference to unknown constant $name::$constantName");
+				}
 			}
 		}
 	}

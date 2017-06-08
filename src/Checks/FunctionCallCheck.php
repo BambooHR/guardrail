@@ -60,36 +60,42 @@ class FunctionCallCheck extends BaseCheck {
 
 		if ($node instanceof Node\Expr\Eval_) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
-		} elseif ($node->name instanceof Name) {
-			$name = $node->name->toString();
+		} else if ($node instanceof FuncCall) {
+			if ($node->name instanceof Name) {
+				$name = $node->name->toString();
 
-			$toLower = strtolower($name);
-			$this->incTests();
-			if (array_key_exists($toLower, self::$dangerous)) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function $name()");
-			}
-
-			$this->checkForDebugMethods($fileName, $node, $name);
-
-			$func = $this->symbolTable->getAbstractedFunction($name);
-			if ($func) {
-				$minimumArgs = $func->getMinimumRequiredParameters($name);
-				if (count($node->args) < $minimumArgs) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
+				$toLower = strtolower($name);
+				$this->incTests();
+				if (array_key_exists($toLower, self::$dangerous)) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function $name()");
 				}
-				if ($func->isDeprecated()) {
-					$errorType = $func->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
-					$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name" );
+
+				$this->checkForDebugMethods($fileName, $node, $name);
+
+				$func = $this->symbolTable->getAbstractedFunction($name);
+				if ($func) {
+					$minimumArgs = $func->getMinimumRequiredParameters($name);
+					if (count($node->args) < $minimumArgs) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
+					}
+					$minimumArgs = $func->getMinimumRequiredParameters($name);
+					if (count($node->args) < $minimumArgs) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
+					}
+					if ($func->isDeprecated()) {
+						$errorType = $func->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
+						$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name");
+					}
+				} else {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}
 			} else {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
-			}
-		} else {
-			$inferer = new TypeInferrer($this->symbolTable);
-			$type = $inferer->inferType( $inside, $node->name, $scope);
-			// If it isn't known to be "callable" or "closure" then it may just be a string.
-			if (strcasecmp($type, "callable") != 0 && strcasecmp($type, "closure") != 0 ) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable function name detected");
+				$inferer = new TypeInferrer($this->symbolTable);
+				$type = $inferer->inferType($inside, $node->name, $scope);
+				// If it isn't known to be "callable" or "closure" then it may just be a string.
+				if (strcasecmp($type, "callable") != 0 && strcasecmp($type, "closure") != 0) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable function name detected");
+				}
 			}
 		}
 	}

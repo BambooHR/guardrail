@@ -56,48 +56,56 @@ class TypeInferrer {
 			return $this->inferType($inside, $expr->expr, $scope);
 		} else if ($expr instanceof Scalar) {
 			return Scope::SCALAR_TYPE;
-		} else if ($expr instanceof New_ && $expr->class instanceof Name) {
-			$className = strval($expr->class);
-			if (strcasecmp($className, "self") == 0) {
-				$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
-			} else if (strcasecmp($className, "static") == 0) {
-				$className = Scope::MIXED_TYPE;
+		} else if ($expr instanceof New_) {
+			if ($expr->class instanceof Name) {
+				$className = strval($expr->class);
+				if (strcasecmp($className, "self") == 0) {
+					$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
+				} else if (strcasecmp($className, "static") == 0) {
+					$className = Scope::MIXED_TYPE;
+				}
+				return $className;
 			}
-			return $className;
-		} else if ($expr instanceof Node\Expr\Variable && gettype($expr->name) == "string") {
-			$varName = strval($expr->name);
-			if ($varName == "this" && $inside) {
-				return strval($inside->namespacedName);
-			}
-			$scopeType = $scope->getVarType($varName);
-			if ($scopeType != Scope::UNDEFINED) {
-				return $scopeType;
+		} else if ($expr instanceof Node\Expr\Variable) {
+			if (gettype($expr->name) == "string") {
+				$varName = strval($expr->name);
+				if ($varName == "this" && $inside) {
+					return strval($inside->namespacedName);
+				}
+				$scopeType = $scope->getVarType($varName);
+				if ($scopeType != Scope::UNDEFINED) {
+					return $scopeType;
+				}
 			}
 		} else if ($expr instanceof Closure) {
 			return "callable";
-		} else if ($expr instanceof FuncCall && $expr->name instanceof Name) {
-			$func = $this->index->getAbstractedFunction($expr->name);
-			if ($func) {
-				$type = $func->getReturnType();
-				if ($type) {
-					return $type;
-				}
-			}
-		} else if ( $expr instanceof Node\Expr\MethodCall && gettype($expr->name) == "string") {
-			$class = $this->inferType($inside, $expr->var, $scope);
-			if (!empty($class) && $class[0] != "!") {
-				$method = $this->index->getAbstractedMethod($class, strval($expr->name));
-				if ($method) {
-					$type = $method->getReturnType();
+		} else if ($expr instanceof FuncCall) {
+			if ($expr->name instanceof Name) {
+				$func = $this->index->getAbstractedFunction($expr->name);
+				if ($func) {
+					$type = $func->getReturnType();
 					if ($type) {
 						return $type;
 					}
-					/*
-					$type = $method->getDocBlockReturnType();
-					if($type) {
-						return $type;
+				}
+			}
+		} else if ( $expr instanceof Node\Expr\MethodCall ) {
+			if (gettype($expr->name) == "string") {
+				$class = $this->inferType($inside, $expr->var, $scope);
+				if (!empty($class) && $class[0] != "!") {
+					$method = $this->index->getAbstractedMethod($class, strval($expr->name));
+					if ($method) {
+						$type = $method->getReturnType();
+						if ($type) {
+							return $type;
+						}
+						/*
+						$type = $method->getDocBlockReturnType();
+						if($type) {
+							return $type;
+						}
+						*/
 					}
-					*/
 				}
 			}
 		} else if ( $expr instanceof PropertyFetch ) {

@@ -103,7 +103,14 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @return int
 	 */
 	public function getMinimumRequiredParameters() {
-		return $this->refl->getNumberOfRequiredParameters();
+		if (
+			strcasecmp($this->refl->getName(), "running") &&
+			strcasecmp($this->refl->getDeclaringClass()->name,"phar")==0
+		) {
+			return 0;
+		} else {
+			return $this->refl->getNumberOfRequiredParameters();
+		}
 	}
 
 	/**

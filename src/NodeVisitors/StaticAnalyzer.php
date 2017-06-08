@@ -7,7 +7,7 @@
 
 use BambooHR\Guardrail\Abstractions\ClassMethod as AbstractClassMethod;
 use BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck;
-use BambooHR\Guardrail\Checks\BacktickOperatorCheck;
+use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
@@ -97,7 +97,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new DocBlockTypesCheck($this->index, $output),
 			new UndefinedVariableCheck($this->index, $output),
 			new DefinedConstantCheck($this->index, $output),
-			new BacktickOperatorCheck($this->index, $output),
+			new BackTickOperatorCheck($this->index, $output),
 			new PropertyFetchCheck($this->index, $output),
 			new InterfaceCheck($this->index, $output),
 			new ParamTypesCheck($this->index, $output),
@@ -239,7 +239,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($node instanceof If_ || $node instanceof ElseIf_) {
 			if ($node instanceof ElseIf_) {
 				// Pop the previous if's scope
-				array_pop($this->scopeStack);
+				$last = array_pop($this->scopeStack);
+				$next = end($this->scopeStack);
+				$next->copyUsedVars($last);
 			}
 			$this->pushIfScope($node);
 		}
@@ -289,6 +291,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @param Node  $node     Instance of Node
 	 * @param Scope $newScope Instance of Scope
+	 * @guardrail-ignore Standard.Unknown.Property
 	 *
 	 * @return void
 	 */
@@ -357,10 +360,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$oldScope = end($this->scopeStack);
 			foreach ($func->uses as $variable) {
 				$type = $oldScope->getVarType($variable->var);
+				$oldScope->setVarUsed($variable->var);
 				if ($type == Scope::UNDEFINED) {
 					$type = Scope::MIXED_TYPE;
 				}
 				$scope->setVarType($variable->var, $type);
+
 			}
 		}
 
@@ -503,23 +508,37 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		) {
 			$this->setScopeUsed($node->name);
 		}
-		if ($node instanceof Node\Expr\ClosureUse && is_string($node->var)) {
-			$this->setScopeUsed($node->var);
+		if ($node instanceof Node\Expr\ClosureUse) {
+			if (is_string($node->var)) {
+				$this->setScopeUsed($node->var);
+			}
 		}
 
-		if ($node instanceof Node\Expr\FuncCall &&
-			$node->name instanceof Node\Name &&
-			strcasecmp(strval($node->name), "get_defined_vars()") == 0
-		) {
-			$this->setAllScopeUsed();
+		if ($node instanceof Node\Expr\FuncCall) {
+			if (
+				$node->name instanceof Node\Name &&
+				strcasecmp(strval($node->name), "get_defined_vars()") == 0
+			) {
+				$this->setAllScopeUsed();
+			}
 		}
 
-		if (
-			($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) &&
-			$node->var instanceof Node\Expr\Variable &&
-			is_string($node->var->name)
-		) {
-			$this->setScopeWritten($node->var->name, $node->getLine());
+		if ($node instanceof Node\Expr\Assign) {
+			if (
+				$node->var instanceof Node\Expr\Variable &&
+				is_string($node->var->name)
+			) {
+				$this->setScopeWritten($node->var->name, $node->getLine());
+			}
+		}
+
+		if ($node instanceof Node\Expr\AssignRef) {
+			if (
+				$node->var instanceof Node\Expr\Variable &&
+				is_string($node->var->name)
+			) {
+				$this->setScopeWritten($node->var->name, $node->getLine());
+			}
 		}
 
 		if ($node instanceof Class_) {
@@ -540,9 +559,13 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		}
 
-		if ($node instanceof If_ && $node->else == null) {
-			// We only need to pop the scope if there wasn't an else clause.  Otherwise, it has already been popped.
-			array_pop($this->scopeStack);
+		if ($node instanceof If_) {
+			if($node->else == null) {
+				// We only need to pop the scope if there wasn't an else clause.  Otherwise, it has already been popped.
+				$last = array_pop($this->scopeStack);
+				$next = end($this->scopeStack);
+				$next->copyUsedVars($last);
+			}
 		}
 		return null;
 	}
@@ -550,12 +573,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * processMethodCall
 	 *
-	 * @param Node                                                                  $node   Instance of Node
+	 * @param Node\Expr\MethodCall                                                                  $node   Instance of Node
 	 * @param AbstractionClass|AbstractClassMethod|ReflectedClassMethod|null|string $method Instance of the Method (optional)
 	 *
 	 * @return void
 	 */
-	private function processMethodCall(Node $node, $method) {
+	private function processMethodCall(Node\Expr\MethodCall $node, $method) {
 		/** @var FunctionLikeParameter[] $params */
 		$params = $method->getParameters();
 		$paramCount = count($params);
@@ -574,12 +597,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * processStaticCall
 	 *
-	 * @param Node                                                                  $node   Instance of Node
+	 * @param Node\Expr\StaticCall                                                  $node   Instance of Node
 	 * @param AbstractionClass|AbstractClassMethod|ReflectedClassMethod|null|string $method Instance of the Method (optional)
 	 *
 	 * @return void
 	 */
-	private function processStaticCall(Node $node, $method) {
+	private function processStaticCall(Node\Expr\StaticCall $node, $method) {
 		/** @var FunctionLikeParameter[] $params */
 		$params = $method->getParameters();
 		$paramCount = count($params);

@@ -119,6 +119,14 @@ abstract class SymbolTable {
 	abstract public function isDefinedClass($name);
 
 	/**
+	 * An opportunity for the symbol table to update it's definition
+	 * of a class after traits have been imported.
+	 * @param Node\Stmt\ClassLike $class
+	 * @return mixed
+	 */
+	abstract public function updateClass(Node\Stmt\ClassLike $class);
+
+	/**
 	 * getAbstractedClass
 	 *
 	 * @param string $name The name

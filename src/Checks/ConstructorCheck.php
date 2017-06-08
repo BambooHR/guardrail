@@ -38,12 +38,15 @@ class ConstructorCheck extends BaseCheck {
 	static public function containsConstructorCall(array $stmts = null) {
 		$found = false;
 		ForEachNode::run($stmts, function (Node $node) use (&$found) {
-			if ($node instanceof Node\Expr\StaticCall &&
-				strcasecmp($node->name, "__construct") == 0 &&
-				$node->class instanceof Node\Name &&
-				strcasecmp(strval($node->class), "parent") == 0
-			) {
-				$found = true;
+			if ($node instanceof Node\Expr\StaticCall) {
+				if (
+					strcasecmp($node->name, "__construct") == 0 &&
+					$node->class instanceof Node\Name &&
+					strcasecmp(strval($node->class), "parent") == 0
+
+				) {
+					$found = true;
+				}
 			}
 		});
 		return $found;
@@ -60,17 +63,19 @@ class ConstructorCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		/** var \PhpParser\Node\Stmt\ClassMethod $node */
-		if (strcasecmp($node->name, "__construct") == 0 &&
-			$inside instanceof Class_ &&
-			$inside->extends
-		) {
-			$ob = Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable);
-			if ($ob &&
-				!$ob->isAbstract() &&
-				!self::containsConstructorCall($node->stmts)
-			) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_MISSING_CONSTRUCT, "Class " . $inside->name . " overrides __construct, but does not call parent constructor");
+		if ($node instanceof Node\Stmt\ClassMethod) {
+			if($inside instanceof Node\Stmt\Class_) {
+				if (strcasecmp($node->name, "__construct") == 0 &&
+					$inside->extends
+				) {
+					$ob = Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable);
+					if ($ob &&
+						!$ob->isAbstract() &&
+						!self::containsConstructorCall($node->stmts)
+					) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_MISSING_CONSTRUCT, "Class " . $inside->name . " overrides __construct, but does not call parent constructor");
+					}
+				}
 			}
 		}
 	}

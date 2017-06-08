@@ -314,7 +314,7 @@ class SqliteSymbolTable extends SymbolTable {
 			return true;
 		}
 		try {
-			$unused = new ReflectionClass($name);
+			new ReflectionClass($name);
 			return true;
 		} catch (ReflectionException $exception) {
 			return false;
