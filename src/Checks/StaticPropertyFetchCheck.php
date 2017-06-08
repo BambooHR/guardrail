@@ -59,7 +59,7 @@ class StaticPropertyFetchCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof Node\Expr\StaticPropertyFetch) {
 			$class = $node->class;
-			if ($class=="self" || $class=="static") {
+			if ($class == "self" || $class == "static") {
 				if (!$inside) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using $class:: outside of a class");
 					return;

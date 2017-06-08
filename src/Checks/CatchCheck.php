@@ -37,7 +37,7 @@ class CatchCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		if($node instanceof Catch_) {
+		if ($node instanceof Catch_) {
 			$name = $node->type->toString();
 			if ($this->symbolTable->ignoreType($name)) {
 				// exception is in the ignore list... but if the error constant is turned on, we should emit this error
