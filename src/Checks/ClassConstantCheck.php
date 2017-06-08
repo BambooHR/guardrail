@@ -100,7 +100,7 @@ class ClassConstantCheck extends BaseCheck {
 						} else {
 							$name = "";
 						}
-						if(empty($name)) {
+						if (empty($name)) {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: in a class with no parent");
 							return;
 						}

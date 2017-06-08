@@ -15,6 +15,7 @@ use BambooHR\Guardrail\NodeVisitors\Grabber;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Trait_;
@@ -121,10 +122,12 @@ abstract class SymbolTable {
 	/**
 	 * An opportunity for the symbol table to update it's definition
 	 * of a class after traits have been imported.
-	 * @param Node\Stmt\ClassLike $class
+	 *
+	 * @param ClassLike $class Instance of ClassLike
+	 *
 	 * @return mixed
 	 */
-	abstract public function updateClass(Node\Stmt\ClassLike $class);
+	abstract public function updateClass(ClassLike $class);
 
 	/**
 	 * getAbstractedClass

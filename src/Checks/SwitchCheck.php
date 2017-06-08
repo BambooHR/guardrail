@@ -7,6 +7,8 @@
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\If_;
@@ -41,7 +43,7 @@ class SwitchCheck extends BaseCheck {
 	static protected function getLastStatement(array $stmts) {
 		$lastStatement = null;
 		foreach ($stmts as $stmt) {
-			if (!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
+			if (!$stmt instanceof Nop) {
 				$lastStatement = $stmt;
 			}
 		}
@@ -51,7 +53,7 @@ class SwitchCheck extends BaseCheck {
 	/**
 	 * endWithBreak
 	 *
-	 * @param array $stmts The statements
+	 * @param array $stmts The statements from the node
 	 *
 	 * @return bool
 	 */
@@ -59,17 +61,17 @@ class SwitchCheck extends BaseCheck {
 		$lastStatement = self::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
-			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
-			$lastStatement instanceof \PhpParser\Node\Stmt\Return_ ||
-			$lastStatement instanceof \PhpParser\Node\Expr\Exit_ ||
+			$lastStatement instanceof Break_ ||
+			$lastStatement instanceof Return_ ||
+			$lastStatement instanceof Exit_ ||
 			(
-				$lastStatement instanceof \PhpParser\Node\Expr\FuncCall &&
-				$lastStatement->name instanceof \PhpParser\Node\Name &&
+				$lastStatement instanceof FuncCall &&
+				$lastStatement->name instanceof Name &&
 				$lastStatement->name == "die"
 			) || (
 				(
-					$lastStatement instanceof \PhpParser\Node\Stmt\Switch_ ||
-					$lastStatement instanceof \PhpParser\Node\Stmt\If_
+					$lastStatement instanceof Switch_ ||
+					$lastStatement instanceof If_
 				) &&
 				self::allBranchesExit([$lastStatement])
 			);
@@ -110,7 +112,7 @@ class SwitchCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	static protected function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
+	static protected function allSwitchCasesExit(Switch_ $lastStatement) {
 		$hasDefault = false;
 		foreach ($lastStatement->cases as $case) {
 			if (!$case->cond) {
@@ -137,7 +139,6 @@ class SwitchCheck extends BaseCheck {
 	 */
 	static public function allBranchesExit(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
-
 		if (!$lastStatement) {
 			return false;
 		} else if ($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
@@ -172,7 +173,7 @@ class SwitchCheck extends BaseCheck {
 					if ($nextError) {
 						$nextError = $this->processCases($fileName, $case, $nextError);
 					}
-					if (!self::endWithBreak($case->stmts) && !self::allBranchesExit($case->stmts)) {
+					if (false === self::endWithBreak($case->stmts) && false === self::allBranchesExit($case->stmts)) {
 						$nextError = $case;
 					}
 				}

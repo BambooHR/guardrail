@@ -7,6 +7,7 @@
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Trait_;
@@ -116,10 +117,20 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return mixed
 	 */
 	public function getDefineFile($name) {
-		return $this->defines[strtolower($name)];
+		if (isset($this->defines[strtolower($name)])) {
+			return $this->defines[strtolower($name)];
+		}
+		return null;
 	}
 
-	public function updateClass(Node\Stmt\ClassLike $class) {
+	/**
+	 * updateClass
+	 *
+	 * @param ClassLike $class Instance of ClassLike
+	 *
+	 * @return void
+	 */
+	public function updateClass(ClassLike $class) {
 		// We don't store the class, so we don't need to update it.
 	}
 

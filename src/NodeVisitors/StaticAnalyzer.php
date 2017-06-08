@@ -560,7 +560,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 
 		if ($node instanceof If_) {
-			if($node->else == null) {
+			if ($node->else == null) {
 				// We only need to pop the scope if there wasn't an else clause.  Otherwise, it has already been popped.
 				$last = array_pop($this->scopeStack);
 				$next = end($this->scopeStack);
@@ -573,7 +573,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * processMethodCall
 	 *
-	 * @param Node\Expr\MethodCall                                                                  $node   Instance of Node
+	 * @param Node\Expr\MethodCall                                                  $node   Instance of Node
 	 * @param AbstractionClass|AbstractClassMethod|ReflectedClassMethod|null|string $method Instance of the Method (optional)
 	 *
 	 * @return void
