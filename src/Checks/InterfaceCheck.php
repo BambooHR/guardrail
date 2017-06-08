@@ -14,7 +14,7 @@ use PhpParser\Node\Stmt\Class_;
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
-use BambooHR\Guardrail\Abstractions\Class_ as AbstractedClass_;
+use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractedClass_;
 
 /**
  * Class InterfaceCheck
@@ -36,7 +36,7 @@ class InterfaceCheck extends BaseCheck {
 	 * checkMethod
 	 *
 	 * @param string          $fileName     The file name
-	 * @param Class_          $class        Instance of Class_
+	 * @param Class_          $class        Instance of ClassAbstraction
 	 * @param ClassMethod     $method       Instance of ClassMethod
 	 * @param ClassInterface  $parentClass  Instance of ClassInterface
 	 * @param MethodInterface $parentMethod Instance of MethodInterface
@@ -102,7 +102,7 @@ class InterfaceCheck extends BaseCheck {
 	 * implementsMethod
 	 *
 	 * @param string $fileName        The file name
-	 * @param Class_ $node            Instance of Class_
+	 * @param Class_ $node            Instance of ClassAbstraction
 	 * @param string $interfaceMethod The interface
 	 *
 	 * @return ClassMethod|null

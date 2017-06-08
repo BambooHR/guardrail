@@ -5,7 +5,7 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\Class_ as AbstractClass;
+use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractClass;
 use BambooHR\Guardrail\Abstractions\Function_ as AbstractFunction;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
 use BambooHR\Guardrail\Abstractions\ReflectedFunction;
