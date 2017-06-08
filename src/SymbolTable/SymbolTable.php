@@ -6,7 +6,7 @@
  */
 
 use BambooHR\Guardrail\Abstractions\Class_ as AbstractionClass;
-use BambooHR\Guardrail\Abstractions\Function_ as AbstractionFunction;
+use BambooHR\Guardrail\Abstractions\FunctionAbstraction as AbstractionFunction;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClassMethod;
 use BambooHR\Guardrail\Abstractions\ReflectedFunction;

@@ -6,7 +6,7 @@
  */
 
 use BambooHR\Guardrail\Abstractions\Class_ as AbstractClass;
-use BambooHR\Guardrail\Abstractions\Function_ as AbstractFunction;
+use BambooHR\Guardrail\Abstractions\FunctionAbstraction as AbstractFunction;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
 use BambooHR\Guardrail\Abstractions\ReflectedFunction;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
@@ -367,7 +367,7 @@ class SqliteSymbolTable extends SymbolTable {
 	 * addFunction
 	 *
 	 * @param string    $name     The name
-	 * @param Function_ $function Instance of Function_
+	 * @param Function_ $function Instance of FunctionAbstraction
 	 * @param string    $file     The file
 	 *
 	 * @return void

@@ -129,7 +129,7 @@ class DocBlockNameResolver extends NameResolver {
 	/**
 	 * importReturnValue
 	 *
-	 * @param Function_|ClassMethod $node Instance of Function_ ClassMethod
+	 * @param Function_|ClassMethod $node Instance of FunctionAbstraction ClassMethod
 	 *
 	 * @return void
 	 */
@@ -171,7 +171,7 @@ class DocBlockNameResolver extends NameResolver {
 	/**
 	 * processDockBlockReturn
 	 *
-	 * @param Function_|ClassMethod $node Instance of Function_ ClassMethod
+	 * @param Function_|ClassMethod $node Instance of FunctionAbstraction ClassMethod
 	 * @param string                $str  The docBlock text
 	 *
 	 * @return void
