@@ -61,7 +61,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 * addClass
 	 *
 	 * @param string $name  The name
-	 * @param Class_ $class Instance of Class_
+	 * @param Class_ $class Instance of ClassAbstraction
 	 * @param string $file  The file
 	 *
 	 * @return void
