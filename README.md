@@ -1,7 +1,7 @@
 # Guardrail - A PHP Static Analysis tool
 Copyright (c) 2017 Jon Gardiner and BambooHR
 
-[![Build Status](https://travis-ci.org/BambooHR/guardrail.svg?branch=master)](https://travis-ci.org/BambooHR/guardrail) [![Latest Stable Version](https://poser.pugx.org/bamboohr/guardrail/v/stable.png)](https://packagist.org/packages/bamboohr/guardrail) [![License](https://poser.pugx.org/bamboohr/guardrail/license)](https://packagist.org/packages/bamboohr/guardrail) [![Latest Unstable Version](https://poser.pugx.org/bamboohr/guardrail/v/unstable)](https://packagist.org/packages/bamboohr/guardrail) [![Total Downloads](https://poser.pugx.org/bamboohr/guardrail/downloads)](https://packagist.org/packages/bamboohr/guardrail) [![composer.lock](https://poser.pugx.org/bamboohr/guardrail/composerlock)](https://packagist.org/packages/bamboohr/guardrail)  
+[![Build Status](https://travis-ci.org/BambooHR/guardrail.svg?branch=master)](https://travis-ci.org/BambooHR/guardrail) [![Latest Stable Version](https://poser.pugx.org/bamboohr/guardrail/v/stable.png)](https://packagist.org/packages/bamboohr/guardrail) [![Total Downloads](https://poser.pugx.org/bamboohr/guardrail/downloads)](https://packagist.org/packages/bamboohr/guardrail) [![Latest Unstable Version](https://poser.pugx.org/bamboohr/guardrail/v/unstable)](https://packagist.org/packages/bamboohr/guardrail) [![License](https://poser.pugx.org/bamboohr/guardrail/license)](https://packagist.org/packages/bamboohr/guardrail) [![composer.lock](https://poser.pugx.org/bamboohr/guardrail/composerlock)](https://packagist.org/packages/bamboohr/guardrail)  
 
 ## Introduction
 
