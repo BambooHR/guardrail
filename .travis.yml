@@ -6,5 +6,5 @@ php:
 install: composer install -o
 script:
   - $TRAVIS_BUILD_DIR/vendor/bin/phpunit tests/units
-  - php $TRAVIS_BUILD_DIR/bin/guardrail.php -i -s self.json
-  - php $TRAVIS_BUILD_DIR/bin/guardrail.php -a -s self.json
+  - php $TRAVIS_BUILD_DIR/src/bin/guardrail.php -i -s self.json
+  - php $TRAVIS_BUILD_DIR/src/bin/guardrail.php -a -s self.json
