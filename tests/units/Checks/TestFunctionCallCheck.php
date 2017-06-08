@@ -34,6 +34,17 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	}
 
 	/**
+	 * testCheckForDebugBackTraces
+	 *
+	 * @return void
+	 * @rapid-unit
+	 */
+	public function testCheckForDebugBackTraces() {
+		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.3.inc';
+		$this->assertEquals(6, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_DEBUG));
+	}
+
+	/**
 	 * testDeprecatedUserFunctionCall
 	 *
 	 * @return void
