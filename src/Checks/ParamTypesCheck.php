@@ -71,13 +71,13 @@ class ParamTypesCheck extends BaseCheck {
 
 		if ($node instanceof Function_) {
 			$displayName = $node->name;
-		} else if($node instanceof ClassMethod) {
+		} else if ($node instanceof ClassMethod) {
 			$displayName = $node->name;
 		} else {
 			$displayName = "closure function";
 		}
 
-		if($node instanceof Node\FunctionLike) {
+		if ($node instanceof Node\FunctionLike) {
 			foreach ($node->getParams() as $index => $param) {
 				if ($param->type) {
 					$name = strval($param->type);

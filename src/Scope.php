@@ -129,11 +129,13 @@ class Scope {
 	/**
 	 * When returning from certain scopes, we need to copy
 	 * the list of used values.
-	 * @param Scope $scope
+	 * @param Scope $scope Instance of Scope
+	 *
+	 * @return void
 	 */
 	public function copyUsedVars(Scope $scope) {
-		foreach($scope->written as $name=>$writtenLast) {
-			if($writtenLast == false) {
+		foreach ($scope->written as $name => $writtenLast) {
+			if ($writtenLast == false) {
 				$this->setVarUsed($name);
 			}
 		}
