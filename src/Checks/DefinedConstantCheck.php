@@ -7,9 +7,12 @@
 
 use BambooHR\Guardrail\Output\OutputInterface;
 use PhpParser\Node;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use ReflectionException;
+use ReflectionExtension;
 
 /**
  * Class DefinedConstantCheck
@@ -86,11 +89,11 @@ class DefinedConstantCheck extends BaseCheck {
 
 		foreach (get_loaded_extensions() as $extension) {
 			try {
-				$reflectedExtension = new \ReflectionExtension($extension);
+				$reflectedExtension = new ReflectionExtension($extension);
 				foreach ($reflectedExtension->getConstants() as $constant => $value) {
 					$this->reflectedConstants[$constant] = true;
 				}
-			} catch (\ReflectionException $exception) {
+			} catch (ReflectionException $exception) {
 			}
 		}
 	}
@@ -101,7 +104,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [Node\Expr\ConstFetch::class];
+		return [ConstFetch::class];
 	}
 
 	/**
@@ -154,7 +157,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if ($node instanceof Node\Expr\ConstFetch) {
+		if ($node instanceof ConstFetch) {
 			$name = $node->name;
 			if (!$this->symbolTable->isDefined($name) && !$this->isLanguageConst($name) && !$this->isMagicConstant($name) && !$this->isExtensionConstant($name)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT, "That's not a thing.  Can't find define named \"$name\"");

@@ -28,7 +28,6 @@ class TestCatchCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:CatchCheck:Emits error if the catch contains an exception that is considered too broad
 	 */
 	public function testBaseExceptionCatch() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.2.inc';
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
 	}
 }
