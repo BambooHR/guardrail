@@ -18,8 +18,7 @@ class TestBackTickOperatorCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:BackTickOperator:Emits error when back ticks are found
 	 */
 	public function testBackTicksThrowError() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_SECURITY_BACKTICK));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SECURITY_BACKTICK));
 	}
 
 	/**
@@ -29,7 +28,6 @@ class TestBackTickOperatorCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:BackTickOperator:Doesn't care about back ticks in comments
 	 */
 	public function testBackTicksNotThrownInComment() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.2.inc';
-		$this->assertEquals(0, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_SECURITY_BACKTICK));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SECURITY_BACKTICK));
 	}
 }

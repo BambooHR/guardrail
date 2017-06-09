@@ -18,8 +18,7 @@ class AccessingSuperGlobalsCheckTest extends TestSuiteSetup {
 	 * @rapid-unit Checks:AccessingSuperGlobals:Calling the $GLOBALS array emits an error
 	 */
 	public function testRunAccessingSuperGlobalGlobalExpressions() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
 	}
 
 	/**
@@ -29,8 +28,7 @@ class AccessingSuperGlobalsCheckTest extends TestSuiteSetup {
 	 * @rapid-unit Checks:AccessingSuperGlobals:Calling `global $var` emits an error
 	 */
 	public function testRunAccessingSuperGlobalGlobalVariables() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.2.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_GLOBAL_STRING_ACCESSED));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_GLOBAL_STRING_ACCESSED));
 	}
 
 	/**
@@ -40,7 +38,6 @@ class AccessingSuperGlobalsCheckTest extends TestSuiteSetup {
 	 * @rapid-unit Checks:AccessingSuperGlobals:Assigning $GLOBALS emits an error
 	 */
 	public function testRunAccessingSuperGlobalVariableOnly() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.3.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
 	}
 }
