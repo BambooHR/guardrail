@@ -18,8 +18,7 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:FunctionCallCheck:Catches all dangerous method calls and emits errors
 	 */
 	public function testDangerousFunctionsEmitErrors() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
-		$this->assertEquals(8, $this->runAnalyzerOnFile($testFile,ErrorConstants::TYPE_SECURITY_DANGEROUS));
+		$this->assertEquals(8, $this->runAnalyzerOnFile('.1.inc',ErrorConstants::TYPE_SECURITY_DANGEROUS));
 	}
 
 	/**
@@ -29,8 +28,7 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:FunctionCallCheck:Catches a function call without enough arguments
 	 */
 	public function testFunctionCallWithTooManyArgs() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.2.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_SIGNATURE_COUNT));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SIGNATURE_COUNT));
 	}
 
 	/**
@@ -40,8 +38,7 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @rapid-unit
 	 */
 	public function testCheckForDebugBackTraces() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.3.inc';
-		$this->assertEquals(6, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_DEBUG));
+		$this->assertEquals(6, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_DEBUG));
 	}
 
 	/**
@@ -51,8 +48,7 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:FunctionCallCheck:Catches a deprecated user function call and emits error
 	 */
 	public function testDeprecatedUserFunctionCall() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.4.inc';
-		$this->assertEquals(3, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_DEPRECATED_USER));
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_DEPRECATED_USER));
 	}
 
 	/**
@@ -62,8 +58,7 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:FunctionCallCheck:Catches a call to a missing function and emits error
 	 */
 	public function testUnknownFunctionCall() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.5.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_UNKNOWN_FUNCTION));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_UNKNOWN_FUNCTION));
 	}
 
 	/**
@@ -72,7 +67,6 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testVariableFunctionName() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.6.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME));
 	}
 }

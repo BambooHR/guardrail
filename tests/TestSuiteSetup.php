@@ -9,6 +9,7 @@ use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
 use PhpParser\Node;
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 
 /**
  * Class TestSuiteSetup
@@ -28,6 +29,14 @@ abstract class TestSuiteSetup extends TestCase {
 	 * @return int
 	 */
 	public function runAnalyzerOnFile($fileName, $emit) {
+		$testDataDirectory = $this->getCallerTestDataDirectory($this);
+		if (false === strpos($fileName, $testDataDirectory)) {
+			$fileName = $testDataDirectory . $fileName;
+		}
+
+		if (!file_exists($fileName)) {
+			throw new \InvalidArgumentException("That file does not exist. Make sure it follows the NameOfTestClass.#.inc \n pattern and is in the TestData directory of the class file directory.");
+		}
 		$config = new TestConfig($fileName, $emit);
 		$output = new XUnitOutput($config);
 
@@ -39,6 +48,18 @@ abstract class TestSuiteSetup extends TestCase {
 			$analyzer->phase2($config, $output, $listItem);
 		}
 		return $output->getErrorCount();
+	}
+
+	/**
+	 * getCallerTestDataDirectory
+	 *
+	 * @param TestSuiteSetup $callingClass Instance of the TestSuiteSetup (childClass)
+	 *
+	 * @return string
+	 */
+	protected function getCallerTestDataDirectory(TestSuiteSetup $callingClass) {
+		$class_info = new ReflectionClass($callingClass);
+		return dirname($class_info->getFileName()) . '/TestData/' . basename($class_info->getFileName(), '.php');
 	}
 
 	/**
