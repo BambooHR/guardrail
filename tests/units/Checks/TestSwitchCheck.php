@@ -18,8 +18,9 @@ class TestSwitchCheck extends TestSuiteSetup {
 	 * @rapid-unit Check:SwitchCheck:Detects when all branches in a switch contains an safe exit
 	 */
 	public function testAllBranchesExitReturnsTrue() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_MISSING_BREAK));
+
 		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
-		$this->assertEquals(0, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_MISSING_BREAK));
 		$code = file_get_contents($testFile);
 
 		$builder = $this->getMockBuilder(OutputInterface::class);
@@ -39,8 +40,7 @@ class TestSwitchCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:SwitchCheck:Detects when a switch case is missing a break statement
 	 */
 	public function testMissingBreak() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.2.inc';
-		$this->assertEquals(2, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_MISSING_BREAK));
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_MISSING_BREAK));
 	}
 
 	/**
@@ -50,7 +50,6 @@ class TestSwitchCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:SwitchCase:Does not emit an error on a valid switch statement
 	 */
 	public function testGoodSwitch() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.3.inc';
-		$this->assertEquals(0, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_MISSING_BREAK));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_MISSING_BREAK));
 	}
 }
