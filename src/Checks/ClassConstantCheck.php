@@ -5,12 +5,14 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\ClassAbstraction;
 use BambooHR\Guardrail\Abstractions\ClassInterface;
 use PhpParser\Node;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Name;
 use BambooHR\Guardrail\Scope;
+use PhpParser\Node\Stmt\Interface_;
 
 /**
  * Class ClassConstantCheck
@@ -25,7 +27,7 @@ class ClassConstantCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [\PhpParser\Node\Expr\ClassConstFetch::class];
+		return [ClassConstFetch::class];
 	}
 
 	/**
@@ -70,7 +72,7 @@ class ClassConstantCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if ($node instanceof Node\Expr\ClassConstFetch) {
+		if ($node instanceof ClassConstFetch) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();
 				$constantName = strval($node->name);
@@ -93,9 +95,9 @@ class ClassConstantCheck extends BaseCheck {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't access using parent:: outside of a class");
 							return;
 						}
-						if ($inside instanceof Node\Stmt\Class_) {
+						if ($inside instanceof Class_) {
 							$name = strval($inside->extends);
-						} else if ($inside instanceof Node\Stmt\Interface_) {
+						} else if ($inside instanceof Interface_) {
 							$name = strval($inside->extends);
 						} else {
 							$name = "";
