@@ -17,8 +17,7 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConstantCheck:Cannot access parent constant inside a class that has no parent
 	 */
 	public function testCantUseParentWithNoParent() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.1.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_SCOPE_ERROR));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SCOPE_ERROR));
 	}
 
 	/**
@@ -28,8 +27,7 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConstantCheck:Cannot access parent constant outside of class
 	 */
 	public function testAccessParentOutsideOfClass() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.2.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_SCOPE_ERROR));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SCOPE_ERROR));
 	}
 
 	/**
@@ -39,8 +37,7 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConstantCheck:Cannot access constant using self:: outside of class
 	 */
 	public function testAccessSelfOutsideOfClass() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.3.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_SCOPE_ERROR));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SCOPE_ERROR));
 	}
 
 	/**
@@ -50,8 +47,7 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConstantCheck:Cannot access constant using static:: outside of class
 	 */
 	public function testAccessStaticOutsideOfClass() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.4.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_SCOPE_ERROR));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SCOPE_ERROR));
 	}
 
 	/**
@@ -61,8 +57,7 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConstantCheck:Catches trying to access unknown constant inside class
 	 */
 	public function testAccessingUnknownClassConstant() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.5.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
 	}
 
 	/**
@@ -72,7 +67,6 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConstantCheck:Cacthes trying to access constant in unknown class
 	 */
 	public function testAccessingUnknownClass() {
-		$testFile = dirname(__FILE__) . '/TestData/' . basename(__FILE__, '.php') . '.6.inc';
-		$this->assertEquals(1, $this->runAnalyzerOnFile($testFile, ErrorConstants::TYPE_UNKNOWN_CLASS));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
 	}
 }
