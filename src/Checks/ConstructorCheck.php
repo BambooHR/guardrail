@@ -5,12 +5,15 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\ClassAbstraction;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\ClassMethod;
 
 /**
  * Class ConstructorCheck
@@ -25,7 +28,7 @@ class ConstructorCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [\PhpParser\Node\Stmt\ClassMethod::class];
+		return [ClassMethod::class];
 	}
 
 	/**
@@ -38,10 +41,10 @@ class ConstructorCheck extends BaseCheck {
 	static public function containsConstructorCall(array $stmts = null) {
 		$found = false;
 		ForEachNode::run($stmts, function (Node $node) use (&$found) {
-			if ($node instanceof Node\Expr\StaticCall) {
+			if ($node instanceof StaticCall) {
 				if (
 					strcasecmp($node->name, "__construct") == 0 &&
-					$node->class instanceof Node\Name &&
+					$node->class instanceof Name &&
 					strcasecmp(strval($node->class), "parent") == 0
 
 				) {
@@ -63,8 +66,8 @@ class ConstructorCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		if ($node instanceof Node\Stmt\ClassMethod) {
-			if ($inside instanceof Node\Stmt\Class_) {
+		if ($node instanceof ClassMethod) {
+			if ($inside instanceof Class_) {
 				if (strcasecmp($node->name, "__construct") == 0 &&
 					$inside->extends
 				) {
