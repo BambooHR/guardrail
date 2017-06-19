@@ -13,7 +13,11 @@ class ClassConsistencyCheck extends BaseCheck {
 		return [ Node\Stmt\Class_::class ];
 	}
 
-	private function getPropertyIterator($stmts) {
+	/**
+	 * @param Node\Stmt[] $stmts The statements inside of a class
+	 * @return \Generator
+	 */
+	private function getPropertyIterator(array $stmts) {
 		foreach ($stmts as $statement) {
 			if ($statement instanceof Node\Stmt\Property) {
 				foreach ($statement->props as $propProp) {
@@ -23,6 +27,12 @@ class ClassConsistencyCheck extends BaseCheck {
 		}
 	}
 
+	/**
+	 * @param string         $fileName -
+	 * @param Node           $node     -
+	 * @param ClassLike|null $inside   -
+	 * @param Scope|null     $scope    -
+	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Stmt\Class_ ) {
 			$methods =  $node->getMethods();
@@ -37,14 +47,14 @@ class ClassConsistencyCheck extends BaseCheck {
 			foreach ($this->getPropertyIterator($node->stmts) as $prop1) {
 				/** @var Node\Stmt\PropertyProperty $prop2 */
 				foreach ($this->getPropertyIterator($node->stmts) as $prop2) {
-					if($prop1->name == $prop2->name) {
+					if ($prop1->name == $prop2->name) {
 						$this->emitError($fileName, $prop2, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Duplicate property ".$inside->name."->".$prop1->name. "detected");
 					}
 				}
 				if ($inside instanceof Node\Stmt\Class_) {
 					if ($prop1->getttribute("ImportedFromTrait") && $inside->extends) {
 						$prop = Util::findAbstractedProperty($inside->extends, $prop1->name, $this->symbolTable);
-						if($prop) {
+						if ($prop) {
 							$this->emitError($fileName, $prop1, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Trait property conflicts with member variable from a parent class");
 						}
 					}
