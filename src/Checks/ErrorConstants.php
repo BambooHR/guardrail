@@ -18,6 +18,8 @@ class ErrorConstants {
 	const TYPE_DOC_BLOCK_RETURN = 'Standard.DocBlock.Return';
 	const TYPE_DOC_BLOCK_TYPE = 'Standard.DocBlock.Type';
 	const TYPE_DOC_BLOCK_VAR = 'Standard.DocBlock.Variable';
+	const TYPE_DUPLICATE_PROPERTY = "Standard.Duplicate.Property";
+	const TYPE_DUPLICATE_METHOD = "Standard.Duplicate.Method";
 	const TYPE_EXCEPTION_BASE = 'Standard.Exception.Base';
 	const TYPE_FUNCTION_INSIDE_FUNCTION = 'Standard.Function.InsideFunction';
 	const TYPE_GLOBAL_EXPRESSION_ACCESSED = 'Standard.Global.Expression';
