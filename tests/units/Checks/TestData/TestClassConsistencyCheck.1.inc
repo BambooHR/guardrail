@@ -2,7 +2,7 @@
 
 
 
-class TestClassConsistencyCheck
+class TestClassConsistencyCheck1
 {
 	private $var;
 	private $var;

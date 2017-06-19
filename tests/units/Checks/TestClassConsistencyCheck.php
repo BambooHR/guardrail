@@ -1,9 +1,7 @@
 <?php namespace BambooHR\Guardrail\Tests\Checks;
 
-use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
-use const IDNA_ERROR_CONTEXTJ;
 
 /**
  * Class TestCatchCheck
@@ -19,7 +17,7 @@ class TestClassConsistencyCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConsistencyCheck:Emits error when duplicate methods are found in the same class.
 	 */
 	public function testDuplicateMethods() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_DUPLICATE_METHOD));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_DUPLICATE_PROPERTY));
 	}
 
 	/**
@@ -29,7 +27,7 @@ class TestClassConsistencyCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassConsistencyCheck:Emits error when duplicate properties are found in the same class.
 	 */
 	public function testDuplicateProperties() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_DUPLICATE_PROPERTY));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_DUPLICATE_METHOD));
 	}
 
 	/**

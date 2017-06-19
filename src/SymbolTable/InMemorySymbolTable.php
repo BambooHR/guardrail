@@ -22,6 +22,11 @@ class InMemorySymbolTable extends SymbolTable {
 	/**
 	 * @var array
 	 */
+	private $classesUsingTraits = [];
+
+	/**
+	 * @var array
+	 */
 	private $classes = [];
 
 	/**
@@ -67,7 +72,13 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return void
 	 */
 	public function addClass($name, Class_ $class, $file) {
-		$this->classes[strtolower($name)] = $this->basePath . '/' . $file;
+		$this->classes[strtolower($class->namespacedName)] = $this->basePath . '/' . $file;
+		foreach ($class->stmts as $stmt) {
+			if ($stmt instanceof Node\Stmt\TraitUse) {
+				$this->classesUsingTraits[strval($class->namespacedName)] = true;
+				break;
+			}
+		}
 	}
 
 	/**
@@ -121,7 +132,7 @@ class InMemorySymbolTable extends SymbolTable {
 	}
 
 	/**
-	 * updateClass
+	 * updateCeClass
 	 *
 	 * @param ClassLike $class Instance of ClassLike
 	 *
@@ -221,12 +232,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return array
 	 */
 	public function getClassesThatUseAnyTrait() {
-		// grab anything that has a trait
-		$return = [];
-		foreach ($this->classes as $class) {
-			// loop through each class
-		}
-		return $return;
+		return array_keys($this->classesUsingTraits);
 	}
 
 	/**

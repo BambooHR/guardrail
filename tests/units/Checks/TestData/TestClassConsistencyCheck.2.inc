@@ -2,7 +2,7 @@
 
 
 
-class TestClassConsistencyCheck
+class TestClassConsistencyCheck2
 {
 	function foo() {
 
@@ -10,6 +10,5 @@ class TestClassConsistencyCheck
 	function foo() {
 
 	}
-
 }
 

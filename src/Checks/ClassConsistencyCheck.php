@@ -3,6 +3,8 @@
 namespace BambooHR\Guardrail\Checks;
 
 
+use BambooHR\Guardrail\Abstractions\ClassAbstraction;
+use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
@@ -18,16 +20,18 @@ class ClassConsistencyCheck extends BaseCheck {
 
 	/**
 	 * @param Node\Stmt[] $stmts The statements inside of a class
-	 * @return \Generator
+	 * @return Node\Stmt\PropertyProperty[]
 	 */
-	private function getPropertyIterator(array $stmts) {
+	private function getProperties(array $stmts) {
+		$ret = [];
 		foreach ($stmts as $statement) {
 			if ($statement instanceof Node\Stmt\Property) {
 				foreach ($statement->props as $propProp) {
-					yield $propProp;
+					$ret [] = $propProp;
 				}
 			}
 		}
+		return $ret;
 	}
 
 	/**
@@ -38,27 +42,29 @@ class ClassConsistencyCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+
 		if ($node instanceof Node\Stmt\Class_ ) {
 			$methods = $node->getMethods();
-			foreach ($methods as $method) {
-				foreach ($methods as $method2) {
-					if (strcasecmp($method2->name, $method->name) == 0 && $method !== $method2) {
+			foreach($methods as $index1=>$method) {
+				foreach($methods as $index2=>$method2) {
+					if ($index1 < $index2 && strcasecmp($method2->name, $method->name) == 0) {
 						$this->emitError($fileName, $method2, ErrorConstants::TYPE_DUPLICATE_METHOD, "Duplicate method " . $method->name . "() detected");
 					}
 				}
 			}
 
-			foreach ($this->getPropertyIterator($node->stmts) as $prop1) {
-				/** @var Node\Stmt\PropertyProperty $prop2 */
-				foreach ($this->getPropertyIterator($node->stmts) as $prop2) {
-					if ($prop1->name == $prop2->name) {
+			$list = $this->getProperties($node->stmts);
+			foreach ($list as $index1=>$prop1) {
+				foreach($list as $index2=>$prop2) {
+					if ($prop1->name == $prop2->name && $index1 < $index2) {
 						$this->emitError($fileName, $prop2, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Duplicate property " . $inside->name . "->" . $prop1->name . "detected");
 					}
 				}
 				if ($inside instanceof Node\Stmt\Class_) {
-					if ($prop1->getttribute("ImportedFromTrait") && $inside->extends) {
-						$prop = Util::findAbstractedProperty($inside->extends, $prop1->name, $this->symbolTable);
-						if ($prop) {
+					if ($inside->extends) {
+						$wasFromTrait = $prop1->hasAttribute('ImportedFromTrait');
+						$prop2 = Util::findAbstractedProperty($inside->extends, $prop1->name, $this->symbolTable);
+						if ($prop2 &&  $wasFromTrait != $prop2->wasImportedFromTrait()) {
 							$this->emitError($fileName, $prop1, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Trait property conflicts with member variable from a parent class");
 						}
 					}

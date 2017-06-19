@@ -122,8 +122,10 @@ class TraitImporter {
 				if ($stmt instanceof Node\Stmt\Property) {
 					foreach ($stmt->props as $prop) {
 						// Make a deep copy of the node
-						$properties[$prop->name] = unserialize( serialize( $prop ) );
-						$properties[$prop->name]->setAttribute("ImportedFromTrait", strval($traitName));
+						$propList = new Node\Stmt\Property($stmt->type, [unserialize( serialize( $prop ) )]);
+						$propList->props[0]->setAttribute("ImportedFromTrait", strval($traitName));
+						$propList->setLine( $use->getLine() );
+						$properties[$prop->name] = $propList;
 					}
 				} else if ($stmt instanceof Node\Stmt\ClassMethod) {
 					// Make a deep copy of the node

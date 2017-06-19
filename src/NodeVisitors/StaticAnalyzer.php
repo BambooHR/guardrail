@@ -10,6 +10,7 @@ use BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck;
 use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
+use BambooHR\Guardrail\Checks\ClassConsistencyCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
 use BambooHR\Guardrail\Checks\ConstructorCheck;
 use BambooHR\Guardrail\Checks\DefinedConstantCheck;
@@ -115,6 +116,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new ReturnCheck($this->index, $output),
 			new StaticPropertyFetchCheck($this->index, $output),
 			new AccessingSuperGlobalsCheck($this->index, $output),
+			new ClassConsistencyCheck($this->index, $output)
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );

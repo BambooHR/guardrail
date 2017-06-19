@@ -9,7 +9,7 @@ class ParentClass {
 }
 
 
-class TestClassConsistencyCheck extends ParentClass {
+class TestClassConsistencyCheck3 extends ParentClass {
 	use VarImport;
 }
 

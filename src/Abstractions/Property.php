@@ -33,18 +33,25 @@ class Property {
 	private $static;
 
 	/**
+	 * @var string
+	 */
+	private $fromTrait;
+
+	/**
 	 * Property constructor.
 	 *
-	 * @param string $name     The name of the property
-	 * @param string $type     The type of the property
-	 * @param string $access   The access
-	 * @param bool   $isStatic Is it static
+	 * @param string $name      The name of the property
+	 * @param string $type      The type of the property
+	 * @param string $access    The access
+	 * @param bool   $isStatic  Is it static
+	 * @param string $fromTrait The name of the trait that this property was imported from.
 	 */
-	public function __construct($name,$type, $access, $isStatic) {
+	public function __construct($name,$type, $access, $isStatic, $fromTrait="") {
 		$this->name = $name;
 		$this->access = $access;
 		$this->type = $type;
 		$this->static = $isStatic;
+		$this->fromTrait = $fromTrait;
 	}
 
 	/**
@@ -81,5 +88,14 @@ class Property {
 	 */
 	public function isStatic() {
 		return $this->static;
+	}
+
+	/**
+	 * wasImportedFromTrait
+	 * @return bool
+	 */
+	public function wasImportedFromTrait() {
+		return !empty($this->fromTrait);
+
 	}
 }
