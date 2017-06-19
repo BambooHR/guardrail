@@ -35,6 +35,7 @@ class ClassConsistencyCheck extends BaseCheck {
 	 * @param Node           $node     -
 	 * @param ClassLike|null $inside   -
 	 * @param Scope|null     $scope    -
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Stmt\Class_ ) {
