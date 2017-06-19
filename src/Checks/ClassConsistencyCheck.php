@@ -2,9 +2,6 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-
-use BambooHR\Guardrail\Abstractions\ClassAbstraction;
-use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
@@ -45,8 +42,8 @@ class ClassConsistencyCheck extends BaseCheck {
 
 		if ($node instanceof Node\Stmt\Class_ ) {
 			$methods = $node->getMethods();
-			foreach($methods as $index1=>$method) {
-				foreach($methods as $index2=>$method2) {
+			foreach ($methods as $index1 => $method) {
+				foreach ($methods as $index2 => $method2) {
 					if ($index1 < $index2 && strcasecmp($method2->name, $method->name) == 0) {
 						$this->emitError($fileName, $method2, ErrorConstants::TYPE_DUPLICATE_METHOD, "Duplicate method " . $method->name . "() detected");
 					}
@@ -54,8 +51,8 @@ class ClassConsistencyCheck extends BaseCheck {
 			}
 
 			$list = $this->getProperties($node->stmts);
-			foreach ($list as $index1=>$prop1) {
-				foreach($list as $index2=>$prop2) {
+			foreach ($list as $index1 => $prop1) {
+				foreach($list as $index2 => $prop2) {
 					if ($prop1->name == $prop2->name && $index1 < $index2) {
 						$this->emitError($fileName, $prop2, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Duplicate property " . $inside->name . "->" . $prop1->name . "detected");
 					}
