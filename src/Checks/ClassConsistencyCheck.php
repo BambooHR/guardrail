@@ -9,6 +9,9 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
 class ClassConsistencyCheck extends BaseCheck {
+	/**
+	 * @return array
+	 */
 	function getCheckNodeTypes() {
 		return [ Node\Stmt\Class_::class ];
 	}
@@ -35,11 +38,11 @@ class ClassConsistencyCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Stmt\Class_ ) {
-			$methods =  $node->getMethods();
+			$methods = $node->getMethods();
 			foreach ($methods as $method) {
 				foreach ($methods as $method2) {
-					if (strcasecmp($method2->name, $method->name)==0 && $method != $method2) {
-						$this->emitError($fileName, $method2, ErrorConstants::TYPE_DUPLICATE_METHOD,  "Duplicate method ".$method->name."() detected");
+					if (strcasecmp($method2->name, $method->name) == 0 && $method !== $method2) {
+						$this->emitError($fileName, $method2, ErrorConstants::TYPE_DUPLICATE_METHOD, "Duplicate method " . $method->name . "() detected");
 					}
 				}
 			}
@@ -48,7 +51,7 @@ class ClassConsistencyCheck extends BaseCheck {
 				/** @var Node\Stmt\PropertyProperty $prop2 */
 				foreach ($this->getPropertyIterator($node->stmts) as $prop2) {
 					if ($prop1->name == $prop2->name) {
-						$this->emitError($fileName, $prop2, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Duplicate property ".$inside->name."->".$prop1->name. "detected");
+						$this->emitError($fileName, $prop2, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Duplicate property " . $inside->name . "->" . $prop1->name . "detected");
 					}
 				}
 				if ($inside instanceof Node\Stmt\Class_) {
