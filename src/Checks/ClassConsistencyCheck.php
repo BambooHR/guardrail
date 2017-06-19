@@ -24,7 +24,7 @@ class ClassConsistencyCheck extends BaseCheck {
 		foreach ($stmts as $statement) {
 			if ($statement instanceof Node\Stmt\Property) {
 				foreach ($statement->props as $propProp) {
-					$ret [] = $propProp;
+					$ret[] = $propProp;
 				}
 			}
 		}
@@ -52,7 +52,7 @@ class ClassConsistencyCheck extends BaseCheck {
 
 			$list = $this->getProperties($node->stmts);
 			foreach ($list as $index1 => $prop1) {
-				foreach($list as $index2 => $prop2) {
+				foreach ($list as $index2 => $prop2) {
 					if ($prop1->name == $prop2->name && $index1 < $index2) {
 						$this->emitError($fileName, $prop2, ErrorConstants::TYPE_DUPLICATE_PROPERTY, "Duplicate property " . $inside->name . "->" . $prop1->name . "detected");
 					}
