@@ -46,6 +46,7 @@ class TraitImporter {
 			if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
 				// Alias adaptation renames the alias
 				if (!array_key_exists($adaptation->method, $methods)) {
+					echo "Unable to resolve method name : ".$adaptation->method." in ".$adaptation->trait."\n";
 					continue;
 				}
 
@@ -55,20 +56,38 @@ class TraitImporter {
 					$method = $methods[$adaptation->method][$adaptation->trait];
 				}
 
-				$method->name = $adaptation->newName;
-				if (property_exists($method, 'type')) {
-					$method->type = $method->type & ~( Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
-					$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
+				if(!$method) {
+					echo "Unable to find method ".$adaptation->method." in ".$adaptation->trait."\n";
+					continue;
+				}
 
+				if (null != $adaptation->newName) {
+					$method->name = $adaptation->newName;
 					// Unset it from the old name.
 					unset($methods[$adaptation->method][$adaptation->trait]);
+
 					// Add it with the new name.
 					$methods[$adaptation->newName][$adaptation->trait] = $method;
 				}
+				if (property_exists($method, 'type')) {
+					if(null != $adaptation->newModifier) {
+						$method->type = $method->type & ~(Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
+					}
+					$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
+				}
 			} else if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
+				if(!isset($methods[$adaptation->method][$adaptation->trait])) {
+					echo "Unable to find ".$adaptation->trait."::".$adaptation->method."\n";
+				}
+				$method=$methods[$adaptation->method][$adaptation->trait];
+				$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
 				foreach ($adaptation->insteadof as $name) {
-					unset($methods[$adaptation->method][$name]);
+					if(!$methods[$adaptation->method][$name]) {
+						echo "Unable to complete instead of $name::".$adaptation->method.".  It doesn't exist.\n";
+					} else {
+						unset($methods[$adaptation->method][$name]);
+					}
 				}
 			}
 		}
@@ -125,11 +144,15 @@ class TraitImporter {
 						$propList = new Node\Stmt\Property($stmt->type, [unserialize( serialize( $prop ) )]);
 						$propList->props[0]->setAttribute("ImportedFromTrait", strval($traitName));
 						$propList->setLine( $use->getLine() );
-						$properties[$prop->name] = $propList;
+						$properties[] = $propList;
 					}
 				} else if ($stmt instanceof Node\Stmt\ClassMethod) {
 					// Make a deep copy of the node
-					$methods[$stmt->name][$traitName] = unserialize( serialize( $stmt ) );
+					if(isset($methods[$stmt->name][$traitName])) {
+						// Same method name declared twice in a single trait.
+					} else {
+						$methods[$stmt->name][$traitName] = unserialize(serialize($stmt));
+					}
 				}
 			}
 		}
@@ -155,7 +178,7 @@ class TraitImporter {
 		$this->indexTrait($use, $methods, $properties);
 		$this->resolveAdaptations($use->adaptations, $methods );
 
-		return array_merge( array_values($properties), $this->importMethods($class, $methods));
+		return array_merge( $properties, $this->importMethods($class, $methods));
 	}
 
 	/**
