@@ -43,6 +43,7 @@ class ErrorConstants {
 	const TYPE_UNKNOWN_METHOD = 'Standard.Unknown.Class.Method';
 	const TYPE_UNKNOWN_PROPERTY = 'Standard.Unknown.Property';
 	const TYPE_UNKNOWN_VARIABLE = 'Standard.Unknown.Variable';
+	const TYPE_UNREACHABLE_CODE = 'Standard.Unreachable';
 	const TYPE_UNUSED_VARIABLE = 'Standard.Unused.Variable';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';

@@ -5,6 +5,7 @@ use BambooHR\Guardrail\Checks\SwitchCheck;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
+use BambooHR\Guardrail\Util;
 
 /**
  * Class TestSwitchCheck
@@ -30,7 +31,7 @@ class TestSwitchCheck extends TestSuiteSetup {
 		$emptyTable = new InMemorySymbolTable(__DIR__);
 		$stmts = $this->parseText($code);
 		$check = new SwitchCheck($emptyTable, $output);
-		$this->assertTrue($check->allBranchesExit( $stmts ) );
+		$this->assertTrue(Util::allBranchesExit( $stmts ) );
 	}
 
 	/**
