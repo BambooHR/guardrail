@@ -36,6 +36,9 @@ class UnreachableCodeCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Function_ || $node instanceof ClassMethod) {
 			$statements = $node->getStmts();
+			if (!is_array($statements)) {
+				$statements = [$statements];
+			}
 			$statement = $this->checkForUnreachableNode($statements);
 			if (null !== $statement) {
 				$this->emitError($fileName, $statement, ErrorConstants::TYPE_UNREACHABLE_CODE, "Unreachable code was found.");
