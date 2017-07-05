@@ -336,16 +336,16 @@ class Util {
 		if (!$lastStatement->else && !$lastStatement->elseifs) {
 			return false;
 		}
-		$trueCond = self::allBranchesExit($lastStatement->stmts);
+		$trueCond = Util::allBranchesExit($lastStatement->stmts);
 		if (!$trueCond) {
 			return false;
 		}
-		if ($lastStatement->else && !self::allBranchesExit($lastStatement->else->stmts)) {
+		if ($lastStatement->else && !Util::allBranchesExit($lastStatement->else->stmts)) {
 			return false;
 		}
 		if ($lastStatement->elseifs) {
 			foreach ($lastStatement->elseifs as $elseIf) {
-				if (!self::allBranchesExit($elseIf->stmts)) {
+				if (!Util::allBranchesExit($elseIf->stmts)) {
 					return false;
 				}
 			}
@@ -371,7 +371,7 @@ class Util {
 			while ( ($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
 				$stmts = array_slice($stmts, 0, -1);
 			}
-			if ($stmts && !self::allBranchesExit($stmts)) {
+			if ($stmts && !Util::allBranchesExit($stmts)) {
 				return false;
 			}
 		}

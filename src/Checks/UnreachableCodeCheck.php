@@ -3,6 +3,7 @@
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
@@ -35,14 +36,19 @@ class UnreachableCodeCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Function_ || $node instanceof ClassMethod) {
-			$statements = $node->getStmts();
-			if (!is_array($statements)) {
-				$statements = [$statements];
+			$statements = [];
+			if ($node instanceof FunctionLike) {
+				$statements = $node->getStmts();
+				if (!is_array($statements)) {
+					$statements = [$statements];
+				}
 			}
 			$statement = $this->checkForUnreachableNode($statements);
 			if (null !== $statement) {
-				$this->emitError($fileName, $statement, ErrorConstants::TYPE_UNREACHABLE_CODE, "Unreachable code was found.");
-				return;
+				if ($statement->getLine() > 0) {
+					$this->emitError($fileName, $statement, ErrorConstants::TYPE_UNREACHABLE_CODE, "Unreachable code was found.");
+					return;
+				}
 			}
 		}
 	}
