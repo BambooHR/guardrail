@@ -89,13 +89,16 @@ class Config {
 		if (!$this->configFileName) {
 			throw new InvalidConfigException;
 		}
-		$jsonConfigValid = Util::jsonFileContentIsValid($this->configFileName);
+
+		$this->basePath = dirname(realpath($this->configFileName)) . "/";
+
+		$fullPath = Util::fullDirectoryPath( $this->getBasePath(), $this->configFileName );
+		$jsonConfigValid = Util::jsonFileContentIsValid( $fullPath );
 		if (true !== $jsonConfigValid['success']) {
 			echo $jsonConfigValid['message'] . "\n";
 			throw new InvalidConfigException;
 		}
 
-		$this->basePath = dirname(realpath($this->configFileName)) . "/";
 		$this->config = json_decode(file_get_contents($this->configFileName), true);
 		if (isset($this->config['emit']) && is_array($this->config['emit'])) {
 			$this->emitList = $this->config['emit'];
@@ -133,7 +136,7 @@ class Config {
 		$plugins = [];
 		if (isset($this->config['plugins']) && is_array($this->config['plugins'])) {
 			foreach ($this->config['plugins'] as $fileName) {
-				$fullPath = strpos($fileName, DIRECTORY_SEPARATOR) === 0 ? $fileName : $this->basePath . DIRECTORY_SEPARATOR . $fileName;
+				$fullPath = Util::fullDirectoryPath( $this->basePath, $fileName );
 				$function = require $fullPath;
 				$plugins[] = call_user_func( $function, $index, $output );
 			}

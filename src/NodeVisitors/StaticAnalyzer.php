@@ -181,7 +181,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($node instanceof Node\Expr\MethodCall) {
 			if (gettype($node->name) == "string") {
 
-				$type = $this->typeInferrer->inferType( end($this->classStack)?:null, $node->var, end($this->scopeStack) );
+				$type = $this->typeInferrer->inferType( end($this->classStack) ?: null, $node->var, end($this->scopeStack) );
 				if ($type && $type[0] != "!") {
 					$method = $this->index->getAbstractedMethod($type, $node->name);
 					if ($method) {
@@ -223,7 +223,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE);
 			}
 			if ($node->valueVar instanceof Variable && gettype($node->valueVar->name) == "string") {
-				$type = $this->typeInferrer->inferType(end($this->classStack)?:null, $node->expr, end($this->scopeStack));
+				$type = $this->typeInferrer->inferType(end($this->classStack) ?: null, $node->expr, end($this->scopeStack));
 				if (substr($type, -2) == "[]") {
 					$type = substr($type, 0, -2);
 				} else {

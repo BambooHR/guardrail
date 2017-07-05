@@ -56,7 +56,7 @@ class StaticCallCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkAbstractClassMethod($fileName, StaticCall $node, Scope $scope, $name, $possibleDynamic) {
+	protected function checkAbstractClassMethod($fileName, StaticCall $node, Scope $scope = null, $name, $possibleDynamic) {
 		$method = Util::findAbstractedMethod($name, $node->name, $this->symbolTable);
 		if ($node->name == "__construct" && ! $method) {
 			// Find a PHP 4 style constructor (function name == class name)
@@ -93,7 +93,7 @@ class StaticCallCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	protected function checkDefaultSwitch(ClassLike $inside, $name) {
+	protected function checkDefaultSwitch(ClassLike $inside = null, $name) {
 		$possibleDynamic = false;
 		if ($inside) {
 			$currentClass = strval($inside->namespacedName);
@@ -114,7 +114,7 @@ class StaticCallCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkStaticCall($fileName, StaticCall $node, ClassLike $inside, Scope $scope) {
+	protected function checkStaticCall($fileName, StaticCall $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node->class instanceof Name && gettype($node->name) == "string") {
 			$name = $node->class->toString();
 			if ($this->symbolTable->ignoreType($name)) {

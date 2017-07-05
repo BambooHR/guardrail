@@ -66,6 +66,11 @@ class PropertyFetchCheck extends BaseCheck {
 					return;
 				}
 
+				if ($type == "SimpleXMLElement") {
+					// SimpleXMLElement has arbitrary properties based on the XML that was parsed.
+					return;
+				}
+
 				$property = Util::findAbstractedProperty($type, $node->name, $this->symbolTable);
 
 				if (!$property) {
