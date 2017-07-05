@@ -27,6 +27,7 @@ use BambooHR\Guardrail\Checks\StaticCallCheck;
 use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
 use BambooHR\Guardrail\Checks\SwitchCheck;
 use BambooHR\Guardrail\Checks\UndefinedVariableCheck;
+use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Closure;
@@ -115,6 +116,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new ReturnCheck($this->index, $output),
 			new StaticPropertyFetchCheck($this->index, $output),
 			new AccessingSuperGlobalsCheck($this->index, $output),
+			new UnreachableCodeCheck($this->index, $output),
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );

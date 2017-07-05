@@ -5,13 +5,9 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
-use PhpParser\Node\Expr\Exit_;
-use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\If_;
-use PhpParser\Node\Stmt\Nop;
-use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
 use BambooHR\Guardrail\Scope;
 
@@ -32,23 +28,6 @@ class SwitchCheck extends BaseCheck {
 	}
 
 	/**
-	 * getLastStatement
-	 *
-	 * @param array $stmts The statements
-	 *
-	 * @return mixed|null
-	 */
-	static protected function getLastStatement(array $stmts) {
-		$lastStatement = null;
-		foreach ($stmts as $stmt) {
-			if (!$stmt instanceof \PhpParser\Node\Stmt\Nop) {
-				$lastStatement = $stmt;
-			}
-		}
-		return $lastStatement;
-	}
-
-	/**
 	 * endWithBreak
 	 *
 	 * @param array $stmts The statements
@@ -56,7 +35,7 @@ class SwitchCheck extends BaseCheck {
 	 * @return bool
 	 */
 	static protected function endWithBreak(array $stmts) {
-		$lastStatement = self::getLastStatement($stmts);
+		$lastStatement = Util::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
@@ -71,84 +50,8 @@ class SwitchCheck extends BaseCheck {
 					$lastStatement instanceof \PhpParser\Node\Stmt\Switch_ ||
 					$lastStatement instanceof \PhpParser\Node\Stmt\If_
 				) &&
-				self::allBranchesExit([$lastStatement])
+				Util::allBranchesExit([$lastStatement])
 			);
-	}
-
-	/**
-	 * allIfBranchesExit
-	 *
-	 * @param If_ $lastStatement Instance of If_
-	 *
-	 * @return bool
-	 */
-	static protected function allIfBranchesExit(If_ $lastStatement) {
-		if (!$lastStatement->else && !$lastStatement->elseifs) {
-			return false;
-		}
-		$trueCond = self::allBranchesExit($lastStatement->stmts);
-		if (!$trueCond) {
-			return false;
-		}
-		if ($lastStatement->else && !self::allBranchesExit($lastStatement->else->stmts)) {
-			return false;
-		}
-		if ($lastStatement->elseifs) {
-			foreach ($lastStatement->elseifs as $elseIf) {
-				if (!self::allBranchesExit($elseIf->stmts)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * allSwitchCasesExit
-	 *
-	 * @param Switch_ $lastStatement Instance of Switch_
-	 *
-	 * @return bool
-	 */
-	static protected function allSwitchCasesExit(\PhpParser\Node\Stmt\Switch_ $lastStatement) {
-		$hasDefault = false;
-		foreach ($lastStatement->cases as $case) {
-			if (!$case->cond) {
-				$hasDefault = true;
-			}
-			$stmts = $case->stmts;
-			// Remove the trailing break (if found) and just look for a return the statement prior
-			while ( ($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
-				$stmts = array_slice($stmts, 0, -1);
-			}
-			if ($stmts && !self::allBranchesExit($stmts)) {
-				return false;
-			}
-		}
-		return $hasDefault;
-	}
-
-	/**
-	 * allBranchesExit
-	 *
-	 * @param array $stmts List of statements
-	 *
-	 * @return bool
-	 */
-	static public function allBranchesExit(array $stmts) {
-		$lastStatement = self::getLastStatement($stmts);
-
-		if (!$lastStatement) {
-			return false;
-		} else if ($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
-			return true;
-		} else if ($lastStatement instanceof If_) {
-			return self::allIfBranchesExit($lastStatement);
-		} else if ($lastStatement instanceof Switch_) {
-			return self::allSwitchCasesExit($lastStatement);
-		} else {
-			return false;
-		}
 	}
 
 	/**
@@ -163,7 +66,7 @@ class SwitchCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof Switch_) {
-			if (!self::allBranchesExit([$node]) && is_array($node->cases)) {
+			if (!Util::allBranchesExit([$node]) && is_array($node->cases)) {
 				$nextError = null;
 				/* Note: this algorithm (intentionally) doesn't output an error in the
 				   final case clause.  A missing break there has no effect.
@@ -172,7 +75,7 @@ class SwitchCheck extends BaseCheck {
 					if ($nextError) {
 						$nextError = $this->processCases($fileName, $case, $nextError);
 					}
-					if (!self::endWithBreak($case->stmts) && !self::allBranchesExit($case->stmts)) {
+					if (!self::endWithBreak($case->stmts) && !Util::allBranchesExit($case->stmts)) {
 						$nextError = $case;
 					}
 				}

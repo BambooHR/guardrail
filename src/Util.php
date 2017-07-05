@@ -5,9 +5,15 @@
  * Apache 2.0 License
  */
 
+use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Expr\MethodCall;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\Nop;
+use PhpParser\Node\Stmt\Return_;
+use PhpParser\Node\Stmt\Switch_;
 use Seld\JsonLint\JsonParser;
 use Webmozart\Glob\Glob;
 
@@ -277,6 +283,99 @@ class Util {
 			$status = ['success' => false, 'message' => $results->getMessage()];
 		}
 		return $status;
+	}
+
+	/**
+	 * allBranchesExit
+	 *
+	 * @param array $stmts List of statements
+	 *
+	 * @return bool
+	 */
+	static public function allBranchesExit(array $stmts) {
+		$lastStatement = self::getLastStatement($stmts);
+
+		if (!$lastStatement) {
+			return false;
+		} else if ($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
+			return true;
+		} else if ($lastStatement instanceof If_) {
+			return self::allIfBranchesExit($lastStatement);
+		} else if ($lastStatement instanceof Switch_) {
+			return self::allSwitchCasesExit($lastStatement);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * getLastStatement
+	 *
+	 * @param array $stmts The statements
+	 *
+	 * @return mixed|null
+	 */
+	static public function getLastStatement(array $stmts) {
+		$lastStatement = null;
+		foreach ($stmts as $stmt) {
+			if (!$stmt instanceof Nop) {
+				$lastStatement = $stmt;
+			}
+		}
+		return $lastStatement;
+	}
+
+	/**
+	 * allIfBranchesExit
+	 *
+	 * @param If_ $lastStatement Instance of If_
+	 *
+	 * @return bool
+	 */
+	static protected function allIfBranchesExit(If_ $lastStatement) {
+		if (!$lastStatement->else && !$lastStatement->elseifs) {
+			return false;
+		}
+		$trueCond = self::allBranchesExit($lastStatement->stmts);
+		if (!$trueCond) {
+			return false;
+		}
+		if ($lastStatement->else && !self::allBranchesExit($lastStatement->else->stmts)) {
+			return false;
+		}
+		if ($lastStatement->elseifs) {
+			foreach ($lastStatement->elseifs as $elseIf) {
+				if (!self::allBranchesExit($elseIf->stmts)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * allSwitchCasesExit
+	 *
+	 * @param Switch_ $lastStatement Instance of Switch_
+	 *
+	 * @return bool
+	 */
+	static protected function allSwitchCasesExit(Switch_ $lastStatement) {
+		$hasDefault = false;
+		foreach ($lastStatement->cases as $case) {
+			if (!$case->cond) {
+				$hasDefault = true;
+			}
+			$stmts = $case->stmts;
+			// Remove the trailing break (if found) and just look for a return the statement prior
+			while ( ($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
+				$stmts = array_slice($stmts, 0, -1);
+			}
+			if ($stmts && !self::allBranchesExit($stmts)) {
+				return false;
+			}
+		}
+		return $hasDefault;
 	}
 }
 
