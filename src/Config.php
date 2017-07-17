@@ -241,6 +241,7 @@ class Config {
 						throw new InvalidConfigException();
 					}
 					$this->filter = UnifiedDiffFilter::importFile( $argv[++$argCount] );
+					break;
 				case '-h':
 				case '--help':
 					throw new InvalidConfigException;
