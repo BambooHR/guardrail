@@ -58,9 +58,9 @@ class UnifiedDiffFilter implements FilterInterface {
 	}
 
 	/**
-	 * @param string $fileName
-	 * @param string $errorName
-	 * @param int    $lineNumber
+	 * @param string $fileName   The file being tested
+	 * @param string $errorName  The name of the error
+	 * @param int    $lineNumber The line number that the error was detected on.
 	 * @return bool
 	 */
 	function shouldEmit($fileName, $errorName, $lineNumber) {
