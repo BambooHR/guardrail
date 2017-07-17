@@ -8,6 +8,8 @@
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
+use BambooHR\Guardrail\Filters\FilterInterface;
+use BambooHR\Guardrail\Filters\UnifiedDiffFilter;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 
@@ -71,6 +73,9 @@ class Config {
 
 	/** @var int  */
 	private $outputLevel = 0;
+
+	/** @var FilterInterface */
+	private $filter = null;
 
 	/**
 	 * Config constructor.
@@ -153,6 +158,10 @@ class Config {
 		return $this->outputLevel;
 	}
 
+	public function getFilter() {
+		return $this->filter;
+	}
+
 	/**
 	 * showStandardTests
 	 *
@@ -224,6 +233,11 @@ class Config {
 					}
 					$this->outputFile = $argv[++$argCount];
 					break;
+				case '--diff':
+					if($argCount + 1 >= count($argv)) {
+						throw new InvalidConfigException();
+					}
+					$this->filter = UnifiedDiffFilter::importFile( $argv[++$argCount] );
 				case '-h':
 				case '--help':
 					throw new InvalidConfigException;

@@ -61,6 +61,7 @@ class XUnitOutput implements OutputInterface {
 		$this->config = $config;
 		$this->emitErrors = $config->getOutputLevel() == 1;
 		$this->emitList = $config->getEmitList();
+
 	}
 
 	/**
@@ -124,30 +125,40 @@ class XUnitOutput implements OutputInterface {
 	/**
 	 * shouldEmit
 	 *
-	 * @param string $fileName The file name
-	 * @param string $name     The name
+	 * @param string $fileName   The file name
+	 * @param string $name       The name
+	 * @param int    $lineNumber The line number the error occurred on.
 	 *
 	 * @return bool
 	 */
-	public function shouldEmit($fileName, $name) {
+	public function shouldEmit($fileName, $name, $lineNumber) {
 		if (isset($this->silenced[$name]) && $this->silenced[$name] > 0) {
 			return false;
 		}
 		foreach ($this->emitList as $entry) {
-			 if (
-				is_array($entry) &&
-				isset($entry['glob']) &&
-				isset($entry['emit']) &&
-				self::emitPatternMatches($name, $entry['emit']) &&
-				Glob::match( "/" . $fileName, "/" . $entry['glob'])
+			if (
+				is_array($entry)
 			) {
-				 if (isset($entry['ignore'])) {
-					return !Glob::match("/" . $fileName, "/" . $entry['ignore']);
-				} else {
-					 return true;
+				if(isset($entry['emit']) && !self::emitPatternMatches($name, $entry['emit'])) {
+					return false;
 				}
+			 	if (isset($entry['glob']) && !Glob::match( "/" . $fileName, "/" . $entry['glob'])) {
+			 		return false;
+				}
+				if (isset($entry['ignore']) && Glob::match("/" . $fileName, "/" . $entry['ignore'])) {
+					return false;
+				}
+				if (
+					isset($entry['when']) &&
+					$entry['when']=='new' &&
+			 		$this->config->getFilter() &&
+					!$this->config->getFilter()->shouldEmit($fileName, $name, $lineNumber)
+				) {
+					return false;
+				}
+				return true;
 			} else if (is_string($entry) && self::emitPatternMatches($name, $entry)) {
-				 return true;
+				return true;
 			}
 		}
 		return false;
@@ -192,7 +203,7 @@ class XUnitOutput implements OutputInterface {
 	 */
 	public function emitError($className, $fileName, $lineNumber, $name, $message="") {
 
-		if (!$this->shouldEmit($fileName, $name)) {
+		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
 			return;
 		}
 		$suite = $this->getClass($className);
