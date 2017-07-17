@@ -139,19 +139,19 @@ class XUnitOutput implements OutputInterface {
 			if (
 				is_array($entry)
 			) {
-				if(isset($entry['emit']) && !self::emitPatternMatches($name, $entry['emit'])) {
+				if (isset($entry['emit']) && !self::emitPatternMatches($name, $entry['emit'])) {
 					return false;
 				}
-			 	if (isset($entry['glob']) && !Glob::match( "/" . $fileName, "/" . $entry['glob'])) {
-			 		return false;
+				if (isset($entry['glob']) && !Glob::match( "/" . $fileName, "/" . $entry['glob'])) {
+					return false;
 				}
 				if (isset($entry['ignore']) && Glob::match("/" . $fileName, "/" . $entry['ignore'])) {
 					return false;
 				}
 				if (
 					isset($entry['when']) &&
-					$entry['when']=='new' &&
-			 		$this->config->getFilter() &&
+					$entry['when'] == 'new' &&
+					$this->config->getFilter() &&
 					!$this->config->getFilter()->shouldEmit($fileName, $name, $lineNumber)
 				) {
 					return false;

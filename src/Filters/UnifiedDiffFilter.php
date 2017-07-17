@@ -50,7 +50,7 @@ class UnifiedDiffFilter implements FilterInterface {
 	}
 
 	/**
-	 * @param $fileName
+	 * @param string $fileName -
 	 * @return UnifiedDiffFilter
 	 */
 	static function importFile($fileName) {

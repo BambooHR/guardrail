@@ -158,6 +158,9 @@ class Config {
 		return $this->outputLevel;
 	}
 
+	/**
+	 * @return FilterInterface
+	 */
 	public function getFilter() {
 		return $this->filter;
 	}
@@ -234,7 +237,7 @@ class Config {
 					$this->outputFile = $argv[++$argCount];
 					break;
 				case '--diff':
-					if($argCount + 1 >= count($argv)) {
+					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException();
 					}
 					$this->filter = UnifiedDiffFilter::importFile( $argv[++$argCount] );
