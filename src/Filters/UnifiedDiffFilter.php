@@ -8,6 +8,8 @@
 namespace BambooHR\Guardrail\Filters;
 
 
+use const DIRECTORY_SEPARATOR;
+
 class UnifiedDiffFilter implements FilterInterface {
 	/**
 	 * @var array
@@ -23,17 +25,19 @@ class UnifiedDiffFilter implements FilterInterface {
 	}
 
 	/**
-	 * @param array $lines An array of strings representing the lines of a file.
+	 * @param array $lines       An array of strings representing the lines of a file.
+	 * @param int   $ignoreParts Number of top level directories to ignore
 	 * @return array A nested array of ["file"=>[line numbers], ... ]
 	 */
-	static function parse($lines) {
+	static function parse($lines, $ignoreParts = 1) {
 		$fileName = "";
 		$fileNameArr = [];
 		$filter = [];
 		$lineNumbers = [];
 		foreach ($lines as $line) {
 			if (preg_match('!^\+\+\+ (\S+)!', $line, $fileNameArr)) {
-				$fileName = $fileNameArr[1];
+				$parts = explode(DIRECTORY_SEPARATOR, $fileNameArr[1], $ignoreParts + 1);
+				$fileName = array_pop( $parts );
 			} else if (preg_match("!^@@ -\d+(,\d+)? \+(\d+)(,(\d+))?!", $line, $lineNumbers)) {
 				$start = $lineNumbers[2];
 				if (isset($lineNumbers[4])) {
@@ -50,11 +54,12 @@ class UnifiedDiffFilter implements FilterInterface {
 	}
 
 	/**
-	 * @param string $fileName -
+	 * @param string $fileName    -
+	 * @param int    $ignoreParts Number of top level directories to ignore
 	 * @return UnifiedDiffFilter
 	 */
-	static function importFile($fileName) {
-		return new UnifiedDiffFilter( self::parse( file( $fileName ) ) );
+	static function importFile($fileName, $ignoreParts = 1) {
+		return new UnifiedDiffFilter( self::parse( file( $fileName ), $ignoreParts ) );
 	}
 
 	/**
