@@ -201,7 +201,7 @@ class AnalyzingPhase {
 				$cmdLine .= " -v -v ";
 			}
 			if ($config->getFilterFileName()) {
-				$cmdLine .= " --diff " . escapeshellarg($config->getFilterFileName());
+				$cmdLine .= " --diff " . escapeshellarg($config->getFilterFileName()) . ' ';
 			}
 			$cmdLine .= escapeshellarg($config->getConfigFileName()) . " " . escapeshellarg("scan.tmp.$processCount");
 			$output->outputExtraVerbose($cmdLine . "\n");
@@ -252,8 +252,9 @@ class AnalyzingPhase {
 		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
 		$toProcess = [];
 		foreach ($indexPaths as $path) {
+			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
 			$output->outputVerbose("\n\nDirectory: $path\n");
-			$it = new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS);
+			$it = new RecursiveDirectoryIterator($tmpDirectory, FilesystemIterator::SKIP_DOTS);
 			$it2 = new RecursiveIteratorIterator($it);
 			$this->getPhase2Files($config, $output, $it2, $toProcess);
 		}
