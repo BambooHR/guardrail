@@ -77,6 +77,9 @@ class Config {
 	/** @var FilterInterface */
 	private $filter = null;
 
+	/** @var string */
+	private $filterFileName = "";
+
 	/**
 	 * Config constructor.
 	 *
@@ -166,6 +169,13 @@ class Config {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getFilterFileName() {
+		return $this->filterFileName;
+	}
+
+	/**
 	 * showStandardTests
 	 *
 	 * @return void
@@ -240,8 +250,9 @@ class Config {
 					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException();
 					}
+					$this->filterFileName = $argv[++$argCount];
 					$this->filter = UnifiedDiffFilter::importFile(
-						realpath( $argv[++$argCount] )
+						realpath( $this->filterFileName )
 					);
 					$this->filter->display();
 					break;

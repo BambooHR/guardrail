@@ -200,6 +200,9 @@ class AnalyzingPhase {
 			if ($config->getOutputLevel() == 2) {
 				$cmdLine .= " -v -v ";
 			}
+			if ($config->getFilterFileName()) {
+				$cmdLine .= " --diff " . escapeshellarg($config->getFilterFileName());
+			}
 			$cmdLine .= escapeshellarg($config->getConfigFileName()) . " " . escapeshellarg("scan.tmp.$processCount");
 			$output->outputExtraVerbose($cmdLine . "\n");
 			$file = popen($cmdLine, "r");
