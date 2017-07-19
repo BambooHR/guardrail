@@ -28,6 +28,7 @@ use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
 use BambooHR\Guardrail\Checks\SwitchCheck;
 use BambooHR\Guardrail\Checks\UndefinedVariableCheck;
 use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
+use BambooHR\Guardrail\Config;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Closure;
@@ -85,7 +86,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @param string          $basePath The base path
 	 * @param string          $index    The index
 	 * @param OutputInterface $output   Instance if OutputInterface
-	 * @param string          $config   The config
+	 * @param Config          $config   The config
 	 */
 	function __construct($basePath, $index, OutputInterface $output, $config) {
 		$this->index = $index;

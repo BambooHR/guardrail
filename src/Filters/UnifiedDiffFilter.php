@@ -63,6 +63,15 @@ class UnifiedDiffFilter implements FilterInterface {
 	}
 
 	/**
+	 * @return void
+	 */
+	function display() {
+		foreach ($this->filter as $fileName => $lineNumbers) {
+			echo "Filter: $fileName: " . implode(",", $lineNumbers) . "\n";
+		}
+	}
+
+	/**
 	 * @param string $fileName   The file being tested
 	 * @param string $errorName  The name of the error
 	 * @param int    $lineNumber The line number that the error was detected on.

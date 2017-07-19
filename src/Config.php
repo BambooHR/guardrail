@@ -240,7 +240,10 @@ class Config {
 					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException();
 					}
-					$this->filter = UnifiedDiffFilter::importFile( $argv[++$argCount] );
+					$this->filter = UnifiedDiffFilter::importFile(
+						realpath( $argv[++$argCount] )
+					);
+					$this->filter->display();
 					break;
 				case '-h':
 				case '--help':
