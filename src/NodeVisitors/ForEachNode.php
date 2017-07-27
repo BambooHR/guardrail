@@ -46,7 +46,7 @@ class ForEachNode extends NodeVisitorAbstract {
 	 * run
 	 *
 	 * @param array|null $nodes    Array of nodes
-	 * @param callable   $callback The method to call
+	 * @param callable   $callback Accepts Node, Return NULL to leave unchanged, Node to replace, or NodeTraverserInterrace::DONT_TRAVERSE_CHILDREN
 	 *
 	 * @return void
 	 */

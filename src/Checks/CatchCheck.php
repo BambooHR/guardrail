@@ -5,10 +5,14 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeTraverserInterface;
+use PhpParser\NodeVisitor;
 
 /**
  * Class CatchCheck
@@ -42,7 +46,22 @@ class CatchCheck extends BaseCheck {
 			if ($this->symbolTable->ignoreType($name)) {
 				// exception is in the ignore list... but if the error constant is turned on, we should emit this error
 				if ('exception' == $node->var) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_EXCEPTION_BASE, "Catching the base Exception class may be too broad");
+					/* Detect a throw at any depth in the catch() subtree.  (Ignoring nested try/catch blocks).
+					   We trust that if they throw anything, they made a conscious decision about how the
+					   exception needed to bubble up. */
+					$throws = false;
+					ForEachNode::run( $node->stmts, function(Node $node) use (&$throws) {
+						if ($node instanceof Node\Stmt\Throw_) {
+							$throws = true;
+						} else if ($node instanceof Node\Stmt\TryCatch) {
+							// We don't care about nested try/catches
+							return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
+						}
+						return null;
+					});
+					if (!$throws) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_EXCEPTION_BASE, "Catching the base Exception class without subsequently throwing may be too broad");
+					}
 				}
 				return;
 			}

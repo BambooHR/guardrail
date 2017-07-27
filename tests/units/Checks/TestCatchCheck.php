@@ -30,4 +30,11 @@ class TestCatchCheck extends TestSuiteSetup {
 	public function testBaseExceptionCatch() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
 	}
+
+	/**
+	 * @rapid-unit Checks:CatchCheck:Does not emit error if the catch block explicitly throws an exception.
+	 */
+	public function testRethrowBaseException() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
+	}
 }
