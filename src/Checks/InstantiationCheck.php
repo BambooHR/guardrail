@@ -93,7 +93,7 @@ class InstantiationCheck extends BaseCheck {
 			(strcasecmp($className,"datetime") == 0 || strcasecmp($className,"datetimeimmutable") == 0) &&
 			count($node->args)<2
 		) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIMEZONE, "Instantiating a DateTime or DateTimeImmutable without a timezone uses local time.")
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIME_ZONE, "Instantiating a DateTime or DateTimeImmutable without a timezone uses local time.");
 		}
 	}
 }
