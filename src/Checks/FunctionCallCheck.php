@@ -128,14 +128,19 @@ class FunctionCallCheck extends BaseCheck {
 		}
 	}
 
+	/**
+	 * @param string   $fileName The file being scanned
+	 * @param FuncCall $node     The AST node
+	 * @param string   $name     The name of the function being called
+	 */
 	protected function checkForDateWithoutTimeZone($fileName, FuncCall $node, $name) {
 		// Safe code does not depend on .ini settings.  If you use date(), you are tied to the local time zone.
-		if (strcasecmp(strval($node->name), "date") == 0) {
+		if (strcasecmp($name, "date") == 0) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIME_ZONE, "The date() function always uses the local time zone.");
 		}
 
 		if (
-			(strcasecmp(strval($node->name),"date_create") == 0 || strcasecmp(strval($node->name),"date_create_immutable") == 0) &&
+			(strcasecmp($name, "date_create") == 0 || strcasecmp($name, "date_create_immutable") == 0) &&
 			count($node->args) < 2
 		) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIME_ZONE, "Calling the date_create() function without a timezone uses the local time zone.");
