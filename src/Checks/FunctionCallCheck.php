@@ -132,6 +132,7 @@ class FunctionCallCheck extends BaseCheck {
 	 * @param string   $fileName The file being scanned
 	 * @param FuncCall $node     The AST node
 	 * @param string   $name     The name of the function being called
+	 * @return void
 	 */
 	protected function checkForDateWithoutTimeZone($fileName, FuncCall $node, $name) {
 		// Safe code does not depend on .ini settings.  If you use date(), you are tied to the local time zone.

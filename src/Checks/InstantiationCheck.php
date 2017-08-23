@@ -89,6 +89,7 @@ class InstantiationCheck extends BaseCheck {
 	 * @param string $fileName  The file being scanned
 	 * @param New_   $node      The instantiation AST node
 	 * @param string $className The name of the class being instantiated.
+	 * @return void
 	 */
 	protected function checkDateTimeWithoutTimeZone($fileName, New_ $node, $className) {
 
