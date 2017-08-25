@@ -51,6 +51,8 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 		$this->assertEquals(3, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_DEPRECATED_USER));
 	}
 
+
+
 	/**
 	 * testUnknownFunctionCall
 	 *
@@ -68,5 +70,13 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 */
 	public function testVariableFunctionName() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME));
+	}
+
+	/**
+	 *
+	 * @return void
+	 */
+	public function testTimeZones() {
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_UNSAFE_TIME_ZONE));
 	}
 }
