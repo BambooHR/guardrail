@@ -70,6 +70,7 @@ class FunctionCallCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function $name()");
 				}
 				$this->checkForDebugMethods($fileName, $node, $name);
+				$this->checkForDateWithoutTimeZone($fileName, $node, $name);
 
 				$func = $this->symbolTable->getAbstractedFunction($name);
 				if ($func) {
@@ -124,6 +125,26 @@ class FunctionCallCheck extends BaseCheck {
 		$toLower = strtolower($name);
 		if (array_key_exists($toLower, self::$debug)) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_DEBUG, "Call to common debug function $name() detected");
+		}
+	}
+
+	/**
+	 * @param string   $fileName The file being scanned
+	 * @param FuncCall $node     The AST node
+	 * @param string   $name     The name of the function being called
+	 * @return void
+	 */
+	protected function checkForDateWithoutTimeZone($fileName, FuncCall $node, $name) {
+		// Safe code does not depend on .ini settings.  If you use date(), you are tied to the local time zone.
+		if (strcasecmp($name, "date") == 0) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIME_ZONE, "The date() function always uses the local time zone.");
+		}
+
+		if (
+			(strcasecmp($name, "date_create") == 0 || strcasecmp($name, "date_create_immutable") == 0) &&
+			count($node->args) < 2
+		) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIME_ZONE, "Calling the date_create() function without a timezone uses the local time zone.");
 		}
 	}
 }

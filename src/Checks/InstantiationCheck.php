@@ -54,6 +54,8 @@ class InstantiationCheck extends BaseCheck {
 						return;
 					}
 
+					$this->checkDateTimeWithoutTimeZone($fileName, $node, $name);
+
 					$method = Util::findAbstractedMethod($name, "__construct", $this->symbolTable);
 
 					if (!$method) {
@@ -80,6 +82,22 @@ class InstantiationCheck extends BaseCheck {
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * @param string $fileName  The file being scanned
+	 * @param New_   $node      The instantiation AST node
+	 * @param string $className The name of the class being instantiated.
+	 * @return void
+	 */
+	protected function checkDateTimeWithoutTimeZone($fileName, New_ $node, $className) {
+
+		if (
+			(strcasecmp($className, "datetime") == 0 || strcasecmp($className, "datetimeimmutable") == 0) &&
+			count($node->args) < 2
+		) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIME_ZONE, "Instantiating a DateTime or DateTimeImmutable without a timezone uses local time.");
 		}
 	}
 }
