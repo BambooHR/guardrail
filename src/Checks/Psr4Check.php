@@ -30,20 +30,22 @@ class Psr4Check extends BaseCheck {
 	 */
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
 		$name = "";
+		$fullName = "";
 		if ($node instanceof Node\Stmt\Class_) {
-			$name = $this->getPsr4Path($node->getAttribute("namespacedName"));
-		} else {
-			if ($node instanceof Node\Stmt\Interface_) {
-				$name = $this->getPsr4Path($node->getAttribute("namespacedName"));
-			} else if ($node instanceof Node\Stmt\Trait_) {
-				$name = $this->getPsr4Path($node->getAttribute("namespacedName"));
-			}
+			$fullName = $this->getPsr4Path($node->getAttribute("namespacedName"));
+			$name = $node->name;
+		} else if ($node instanceof Node\Stmt\Interface_) {
+			$fullName = $this->getPsr4Path($node->getAttribute("namespacedName"));
+			$name = $node->name;
+		} else if ($node instanceof Node\Stmt\Trait_) {
+			$fullName = $this->getPsr4Path($node->getAttribute("namespacedName"));
+			$name = $node->name;
 		}
 
 		// All classes with a name, must follow PSR-4 naming.
 		// (Anonymous classes obviously don't need to be in their own file.)
-		if ($name != "" && (strpos($name, "/") === false || substr($fileName, -strlen($name)) != $name)) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_PSR4, "Class " . $node->name . " inside $fileName is not namespaced as a PSR-4 class");
+		if ($fullName != "" && (strpos($fullName, "/") === false || substr($fileName, -strlen($fullName)) != $fullName)) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_PSR4, "Class " . $name . " inside $fileName is not namespaced as a PSR-4 class");
 		}
 	}
 }
