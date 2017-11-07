@@ -12,6 +12,7 @@ use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
 use BambooHR\Guardrail\Checks\ConstructorCheck;
+use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
 use BambooHR\Guardrail\Checks\DefinedConstantCheck;
 use BambooHR\Guardrail\Checks\DocBlockTypesCheck;
 use BambooHR\Guardrail\Checks\FunctionCallCheck;
@@ -22,6 +23,7 @@ use BambooHR\Guardrail\Checks\InterfaceCheck;
 use BambooHR\Guardrail\Checks\MethodCall;
 use BambooHR\Guardrail\Checks\ParamTypesCheck;
 use BambooHR\Guardrail\Checks\PropertyFetchCheck;
+use BambooHR\Guardrail\Checks\Psr4Check;
 use BambooHR\Guardrail\Checks\ReturnCheck;
 use BambooHR\Guardrail\Checks\StaticCallCheck;
 use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
@@ -118,6 +120,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new StaticPropertyFetchCheck($this->index, $output),
 			new AccessingSuperGlobalsCheck($this->index, $output),
 			new UnreachableCodeCheck($this->index, $output),
+			new Psr4Check($this->index,$output),
+			new CyclomaticComplexityCheck($this->index,$output)
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );

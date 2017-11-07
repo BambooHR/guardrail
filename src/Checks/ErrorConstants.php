@@ -7,10 +7,12 @@
  */
 class ErrorConstants {
 
+
 	const TYPE_ACCESS_VIOLATION = 'Standard.Access.Violation';
 	const TYPE_AUTOLOAD_ERROR = 'Standard.Autoload.Unsafe';
 	const TYPE_BREAK_NUMBER = 'Standard.Switch.BreakMultiple';
 	const TYPE_DEBUG = 'Standard.Debug';
+	const TYPE_PSR4 = "Standard.Psr4";
 	const TYPE_DEPRECATED_INTERNAL = 'Standard.Deprecated.Internal';
 	const TYPE_DEPRECATED_USER = 'Standard.Deprecated.User';
 	const TYPE_DOC_BLOCK_MISMATCH = 'Standard.DocBlock.Mismatch';
@@ -25,6 +27,7 @@ class ErrorConstants {
 	const TYPE_GOTO = 'Standard.Goto';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';
 	const TYPE_INCORRECT_STATIC_CALL = 'Standard.Incorrect.Static';
+	const TYPE_METRICS_COMPLEXITY = 'Standard.Metrics.Complexity';
 	const TYPE_MISSING_BREAK = 'Standard.Switch.Break';
 	const TYPE_MISSING_CONSTRUCT = 'Standard.Constructor.MissingCall';
 	const TYPE_PARSE_ERROR = 'Standard.Parse.Error';
