@@ -7,13 +7,12 @@ use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use PhpParser\Node;
 use BambooHR\Guardrail\Scope;
 
-class CyclomaticComplexityCheck extends BaseCheck
-{
+class CyclomaticComplexityCheck extends BaseCheck {
 	/**
 	 * @return string[]
 	 */
 	function getCheckNodeTypes() {
-		return [ ClassMethod::class, Node\Stmt\Function_::class ];
+		return [ClassMethod::class, Node\Stmt\Function_::class];
 	}
 
 	/**
@@ -52,13 +51,13 @@ class CyclomaticComplexityCheck extends BaseCheck
 	 */
 	function checkStatements($fileName, $name, Node $node, array $statements) {
 		$complexity = 1;
-		ForEachNode::run( $statements, function(Node $node) use(&$complexity) {
+		ForEachNode::run($statements, function (Node $node) use (&$complexity) {
 			if (self::isStatementBranch($node) || self::isExpressionBranch($node)) {
 				++$complexity;
 			}
 		});
-		if ($complexity>10) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_METRICS_COMPLEXITY, "Method ".$name." has a complexity of $complexity");
+		if ($complexity > 10) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_METRICS_COMPLEXITY, "Method " . $name . " has a complexity of $complexity");
 		}
 	}
 
