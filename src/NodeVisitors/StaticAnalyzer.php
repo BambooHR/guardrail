@@ -120,8 +120,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new StaticPropertyFetchCheck($this->index, $output),
 			new AccessingSuperGlobalsCheck($this->index, $output),
 			new UnreachableCodeCheck($this->index, $output),
-			new Psr4Check($this->index,$output),
-			new CyclomaticComplexityCheck($this->index,$output)
+			new Psr4Check($this->index, $output),
+			new CyclomaticComplexityCheck($this->index, 	$output)
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );

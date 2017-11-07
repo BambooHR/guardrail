@@ -16,7 +16,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node $node Any type of ATS node
 	 * @return bool
 	 */
 	private static function isExpressionBranch(Node $node) {
@@ -30,7 +30,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node $node Any type of AST node
 	 * @return bool
 	 */
 	private static function isStatementBranch(Node $node) {
@@ -44,9 +44,10 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param       $fileName
-	 * @param Node  $node
-	 * @param array $statements
+	 * @param string $fileName   The file being scanned
+	 * @param string $name       The name of the node being scanned
+	 * @param Node   $node       Node node being scanned
+	 * @param array  $statements An array of statements representing the function body.
 	 * @return void
 	 */
 	function checkStatements($fileName, $name, Node $node, array $statements) {
@@ -63,10 +64,10 @@ class CyclomaticComplexityCheck extends BaseCheck {
 
 
 	/**
-	 * @param string                   $fileName
-	 * @param Node                     $node
-	 * @param Node\Stmt\ClassLike|null $inside
-	 * @param Scope|null               $scope
+	 * @param string                   $fileName The file being scanned
+	 * @param Node                     $node     The node being scanned
+	 * @param Node\Stmt\ClassLike|null $inside   The class we're inside
+	 * @param Scope|null               $scope    Any other relevant scope
 	 * @return void
 	 */
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {

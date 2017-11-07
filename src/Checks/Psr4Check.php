@@ -14,7 +14,7 @@ class Psr4Check extends BaseCheck {
 	}
 
 	/**
-	 * @param Node\Name|null $name
+	 * @param Node\Name|null $name The node to grab the class/trait/interface name from.
 	 * @return string
 	 */
 	private function getPsr4Path(Node\Name $name = null) {
@@ -22,10 +22,10 @@ class Psr4Check extends BaseCheck {
 	}
 
 	/**
-	 * @param string                   $fileName
-	 * @param Node                     $node
-	 * @param Node\Stmt\ClassLike|null $inside
-	 * @param Scope|null               $scope
+	 * @param string                   $fileName Current filename
+	 * @param Node                     $node     Current node
+	 * @param Node\Stmt\ClassLike|null $inside   Current class
+	 * @param Scope|null               $scope    Any relevant scope
 	 * @return void
 	 */
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
