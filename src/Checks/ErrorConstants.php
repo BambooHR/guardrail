@@ -11,6 +11,7 @@ class ErrorConstants {
 	const TYPE_ACCESS_VIOLATION = 'Standard.Access.Violation';
 	const TYPE_AUTOLOAD_ERROR = 'Standard.Autoload.Unsafe';
 	const TYPE_BREAK_NUMBER = 'Standard.Switch.BreakMultiple';
+	const TYPE_CONDITIONAL_ASSIGNMENT = "Standard.ConditionalAssignment";
 	const TYPE_DEBUG = 'Standard.Debug';
 	const TYPE_PSR4 = "Standard.Psr4";
 	const TYPE_DEPRECATED_INTERNAL = 'Standard.Deprecated.Internal';

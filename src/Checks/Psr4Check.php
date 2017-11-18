@@ -31,14 +31,14 @@ class Psr4Check extends BaseCheck {
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
 		$name = "";
 		$fullName = "";
-		if ($node instanceof Node\Stmt\Class_) {
-			$fullName = $this->getPsr4Path($node->getAttribute("namespacedName"));
+		if ($node instanceof Node\Stmt\Class_ && isset($node->namespacedName)) {
+			$fullName = $this->getPsr4Path($node->namespacedName);
 			$name = $node->name;
-		} else if ($node instanceof Node\Stmt\Interface_) {
-			$fullName = $this->getPsr4Path($node->getAttribute("namespacedName"));
+		} else if ($node instanceof Node\Stmt\Interface_ && isset($node->namespacedName)) {
+			$fullName = $this->getPsr4Path($node->namespacedName);
 			$name = $node->name;
-		} else if ($node instanceof Node\Stmt\Trait_) {
-			$fullName = $this->getPsr4Path($node->getAttribute("namespacedName"));
+		} else if ($node instanceof Node\Stmt\Trait_ && isset($node->namespacedName)) {
+			$fullName = $this->getPsr4Path($node->namespacedName);
 			$name = $node->name;
 		}
 

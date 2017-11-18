@@ -11,6 +11,7 @@ use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
+use BambooHR\Guardrail\Checks\ConditionalAssignmentCheck;
 use BambooHR\Guardrail\Checks\ConstructorCheck;
 use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
 use BambooHR\Guardrail\Checks\DefinedConstantCheck;
@@ -121,7 +122,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new AccessingSuperGlobalsCheck($this->index, $output),
 			new UnreachableCodeCheck($this->index, $output),
 			new Psr4Check($this->index, $output),
-			new CyclomaticComplexityCheck($this->index, $output)
+			new CyclomaticComplexityCheck($this->index, $output),
+			new ConditionalAssignmentCheck($this->index, $output)
 		];
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );
