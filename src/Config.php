@@ -88,8 +88,6 @@ class Config {
 	 * @throws InvalidConfigException
 	 */
 	public function __construct($argv) {
-
-
 		$this->parseArgv($argv);
 
 		if (!$this->configFileName) {
