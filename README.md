@@ -70,10 +70,12 @@ Standard.Inheritance.Unimplemented | Class implementing an interface fails to im
 Standard.Global.Expression | Referencing $GLOBALS[ $expr ]
 Standard.Global.String | Referencing a global with either global $var or $GLOBALS['var']
 Standard.Goto | Any instance of a "goto" statement
+Standard.Metrics.Complexity | Any method/function with a cyclomatic complexity of 10 or greater.
 Standard.Param.Count | Failure to pass all the declared parameters to a function.
 Standard.Param.Count.Excess | Passing too many variables to a function (ignores variadic functions)
 Standard.Param.Type | Type mismatch on a parameter to a function
 Standard.Parse.Error | A parse error
+Standard.Psr4 | The namespace of the class must match in the final parts of the path with a ".php" on the end.
 Standard.Return.Type | Type mismatch on a return from a function
 Standard.Scope | Usage of parent:: or self:: when in a context where they are not available.
 Standard.Security.Eval | Code that runs eval() or create_function()
