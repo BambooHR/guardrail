@@ -45,7 +45,7 @@ class ConditionalAssignmentCheck extends BaseCheck {
 				}
 			});
 			if ($assignment) {
-				$this->emitError($fileName, $assignment, ErrorConstants::TYPE_CONDITIONAL_ASSIGNMENT,"Attempt to assign a variable inside an if() condition clause");
+				$this->emitError($fileName, $assignment, ErrorConstants::TYPE_CONDITIONAL_ASSIGNMENT, "Attempt to assign a variable inside an if() condition clause");
 			}
 		}
 	}

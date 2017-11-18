@@ -88,9 +88,7 @@ class Config {
 	 * @throws InvalidConfigException
 	 */
 	public function __construct($argv) {
-		if (count($argv) < 2) {
-			throw new InvalidConfigException;
-		}
+
 
 		$this->parseArgv($argv);
 
@@ -201,7 +199,9 @@ class Config {
 					break;
 
 				case '-l':
+				case '--list':
 					$this->showStandardTests();
+					exit();
 					break;
 				case '-i':
 					$this->forceIndex = true;
@@ -276,6 +276,9 @@ class Config {
 		}
 		if ($this->preferredTable == self::MEMORY_SYMBOL_TABLE) {
 			$this->forceIndex = true;
+		}
+		if (count($argv) < 2) {
+			throw new InvalidConfigException;
 		}
 	}
 

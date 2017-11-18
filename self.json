@@ -3,6 +3,34 @@
   "test": ["src"],
   "ignore": ["**/src/bin/**/*", "**/test/**/*", "**/Tests/**/*", "**/tests/**/*" ],
   "test-ignore": ["**/src/ExtraStubs/**/*" ,"**/tests/**/*", "**/src/bin/**/*"],
-  "emit": [ "Standard.*" ]
-
+  "emit": [
+    "Standard.Access.Violation",
+    "Standard.Autoload.Unsafe",
+    "Standard.ConditionalAssignment",
+    "Standard.Constructor.MissingCall",
+    "Standard.Debug",
+    "Standard.Deprecated.*",
+    "Standard.DocBlock.*",
+    "Standard.Exception.Base",
+    "Standard.Function.InsideFunction",
+    "Standard.Global.*",
+    "Standard.Goto",
+    "Standard.Incorrect.*",
+    "Standard.Inheritance.Unimplemented",
+    "Standard.Metrics.Complexity",
+    "Standard.Param.Count",
+    "Standard.Param.Count.Excess",
+    "Standard.Param.Type",
+    "Standard.Parse.Error",
+    "Standard.Return.Type",
+    "Standard.Scope",
+    "Standard.Security.*",
+    "Standard.Switch.*",
+    "Standard.Unknown.*",
+    "Standard.Unreachable",
+    "Standard.Unsafe.TimeZone",
+    "Standard.Unused.Variable",
+    "Standard.VariableFunctionCall",
+    "Standard.VariableVariable"
+  ]
 }

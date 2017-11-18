@@ -23,11 +23,11 @@ class CommandLineRunner {
 	 */
 	public function usage() {
 		echo "
-Usage: php -d memory_limit=500M Scan.php [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
+Usage: php guardrail.phar [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
 
 where: -p #/#                 = Define the number of partitions and the current partition.
                                 Use for multiple hosts. Example: -p 1/4
-
+                                
        -n #                   = number of child process to run.
                                 Use for multiple processes on a single host.
 
@@ -45,6 +45,8 @@ where: -p #/#                 = Define the number of partitions and the current 
        -v                     = Increase verbosity level.  Can be used once or twice.
 
        -h  or --help          = Ignore all other options and show this page.
+       
+       -l  or --list          = Ignore all other options and list standard test names.
 
 ";
 	}

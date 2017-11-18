@@ -27,19 +27,26 @@ class Psr4Check extends BaseCheck {
 	 * @param Node\Stmt\ClassLike|null $inside   Current class
 	 * @param Scope|null               $scope    Any relevant scope
 	 * @return void
+	 * @guardrail-ignore Standard.Unknown.Property
 	 */
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
 		$name = "";
 		$fullName = "";
-		if ($node instanceof Node\Stmt\Class_ && isset($node->namespacedName)) {
-			$fullName = $this->getPsr4Path($node->namespacedName);
-			$name = $node->name;
-		} else if ($node instanceof Node\Stmt\Interface_ && isset($node->namespacedName)) {
-			$fullName = $this->getPsr4Path($node->namespacedName);
-			$name = $node->name;
-		} else if ($node instanceof Node\Stmt\Trait_ && isset($node->namespacedName)) {
-			$fullName = $this->getPsr4Path($node->namespacedName);
-			$name = $node->name;
+		if ($node instanceof Node\Stmt\Class_) {
+			if (isset($node->namespacedName)) {
+				$fullName = $this->getPsr4Path($node->namespacedName);
+				$name = $node->name;
+			}
+		} else if ($node instanceof Node\Stmt\Interface_) {
+			if (isset($node->namespacedName)) {
+				$fullName = $this->getPsr4Path($node->namespacedName);
+				$name = $node->name;
+			}
+		} else if ($node instanceof Node\Stmt\Trait_) {
+			if (isset($node->namespacedName)) {
+				$fullName = $this->getPsr4Path($node->namespacedName);
+				$name = $node->name;
+			}
 		}
 
 		// All classes with a name, must follow PSR-4 naming.
