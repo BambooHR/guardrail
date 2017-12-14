@@ -75,7 +75,7 @@ class InterfaceCheck extends BaseCheck {
 					$name1 = strval($param->getType());
 					$name2 = strval($parentParam->getType());
 					if (
-						strcasecmp($name1, $name2) !== 0
+						$visibility !== 'private' && $oldVisibility !== 'private' && strcasecmp($name1, $name2) !== 0
 					) {
 						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
 						break;
