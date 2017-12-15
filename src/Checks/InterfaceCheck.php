@@ -53,10 +53,8 @@ class InterfaceCheck extends BaseCheck {
 
 		$className = (isset($class->namespacedName) ? strval($class->namespacedName) : "anonymous class");
 
-		// "public" and "protected" can be redefined," private can not.
-		if (
-			$oldVisibility != $visibility && $oldVisibility == "private"
-		) {
+		// "public" and "protected" cannot be redefined, but private can.
+		if ($oldVisibility !== $visibility && $oldVisibility !== "private") {
 			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_TYPE, "Access level mismatch in " . $method->getName() . "() " . $visibility . " vs " . $oldVisibility);
 		}
 
@@ -74,9 +72,9 @@ class InterfaceCheck extends BaseCheck {
 					$parentParam = $parentMethodParams[$index];
 					$name1 = strval($param->getType());
 					$name2 = strval($parentParam->getType());
-					if (
-						$visibility !== 'private' && $oldVisibility !== 'private' && strcasecmp($name1, $name2) !== 0
-					) {
+					if ($oldVisibility !== 'private' && strcasecmp($name1, $name2) !== 0) {
+						$name1 = empty($name1) ? '(no parameter)' : $name1;
+						$name2 = empty($name2) ? '(no parameter)' : $name2;
 						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
 						break;
 					}

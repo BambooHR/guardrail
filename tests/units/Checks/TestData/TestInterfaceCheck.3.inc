@@ -11,7 +11,7 @@ class PublicParentClass {
 }
 
 class PublicChildClass extends PublicParentClass {
-	public function testMethod(PublicSomeClass $item1, ProtectedSomeClass $item2 = null) {
+	public function testMethod(PublicSomeClass $item1, PublicSomeClass $item2 = null) {
 		return;
 	}
 }
