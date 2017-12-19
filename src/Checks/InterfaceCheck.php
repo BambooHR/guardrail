@@ -22,6 +22,16 @@ use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractedClass_;
  * @package BambooHR\Guardrail\Checks
  */
 class InterfaceCheck extends BaseCheck {
+	/**
+	 * Visibility level map
+	 *
+	 * @var array
+	 */
+	static private $methodVisibilityLevels = [
+		'private' => 0,
+		'protected' => 1,
+		'public' => 2,
+	];
 
 	/**
 	 * getCheckNodeTypes
@@ -53,10 +63,8 @@ class InterfaceCheck extends BaseCheck {
 
 		$className = (isset($class->namespacedName) ? strval($class->namespacedName) : "anonymous class");
 
-		// "public" and "protected" can be redefined," private can not.
-		if (
-			$oldVisibility != $visibility && $oldVisibility == "private"
-		) {
+		// "public" and "protected" cannot be redefined, but private can.
+		if (self::$methodVisibilityLevels[$visibility] < self::$methodVisibilityLevels[$oldVisibility]) {
 			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_TYPE, "Access level mismatch in " . $method->getName() . "() " . $visibility . " vs " . $oldVisibility);
 		}
 
@@ -74,9 +82,9 @@ class InterfaceCheck extends BaseCheck {
 					$parentParam = $parentMethodParams[$index];
 					$name1 = strval($param->getType());
 					$name2 = strval($parentParam->getType());
-					if (
-						strcasecmp($name1, $name2) !== 0
-					) {
+					if ($oldVisibility !== 'private' && strcasecmp($name1, $name2) !== 0) {
+						$name1 = empty($name1) ? '(no parameter)' : $name1;
+						$name2 = empty($name2) ? '(no parameter)' : $name2;
 						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
 						break;
 					}
