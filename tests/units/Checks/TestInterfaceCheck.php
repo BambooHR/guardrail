@@ -60,4 +60,14 @@ class TestInterfaceCheck extends TestSuiteSetup {
 	public function testPrivateChildPublicParentMethodWithDifferentSignaturesInheritance() {
 		$this->assertEquals(2, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
+
+	/**
+	 * Test 3 levels of inheritance where each child gets more visible than the parent. Parent => private, child1 => protected, child2 => public
+	 * and it is valid to do so as long as the signature stays the same.
+	 *
+	 * @return void
+	 */
+	public function testSameSignatureDifferentVisibilityValid() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }

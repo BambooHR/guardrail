@@ -22,6 +22,16 @@ use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractedClass_;
  * @package BambooHR\Guardrail\Checks
  */
 class InterfaceCheck extends BaseCheck {
+	/**
+	 * Visibility level map
+	 *
+	 * @var array
+	 */
+	static private $methodVisibilityLevels = [
+		'private' => 0,
+		'protected' => 1,
+		'public' => 2,
+	];
 
 	/**
 	 * getCheckNodeTypes
@@ -54,7 +64,7 @@ class InterfaceCheck extends BaseCheck {
 		$className = (isset($class->namespacedName) ? strval($class->namespacedName) : "anonymous class");
 
 		// "public" and "protected" cannot be redefined, but private can.
-		if ($oldVisibility !== $visibility && $oldVisibility !== "private") {
+		if (self::$methodVisibilityLevels[$visibility] < self::$methodVisibilityLevels[$oldVisibility]) {
 			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_TYPE, "Access level mismatch in " . $method->getName() . "() " . $visibility . " vs " . $oldVisibility);
 		}
 
