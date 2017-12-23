@@ -189,16 +189,16 @@ class IndexingPhase {
 							list($size, $name) = explode(' ', $details);
 							$bytes += $size;
 							$output->output(".", sprintf("%d - %s", $fileNumber, $list[$fileNumber]));
-							if ($fileNumber % 50 == 0) {
-								$estimate = (count($list) - $fileNumber) * (microtime(true) - $start) / $fileNumber;
-								$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $fileNumber / count($list) * 100, $estimate, $bytes / 1024 / (microtime(true) - $start)));
-							}
 							socket_write($socket, "INDEX " . $list[$fileNumber++] . "\n");
 						} else {
 							socket_write($socket, "DONE\n");
 							$status = 0;
 							unset($connections[$index]);
 							pcntl_wait($status);
+						}
+						if ($fileNumber % 50 == 0) {
+							$estimate = (count($list) - $fileNumber) * (microtime(true) - $start) / $fileNumber;
+							$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $fileNumber / count($list) * 100, $estimate, $bytes / 1024 / (microtime(true) - $start)));
 						}
 					} else {
 						$output->outputVerbose($message . " D:" . $details . "\n");
