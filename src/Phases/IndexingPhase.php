@@ -33,57 +33,70 @@ class IndexingPhase {
 	 * @param \RecursiveIteratorIterator $it2    Instance of RecursiveIteratorIterator
 	 * @param bool                       $stubs  Check the stubs
 	 *
-	 * @return int
+	 * @return array
 	 */
-	public function index(Config $config, OutputInterface $output, \RecursiveIteratorIterator $it2, $stubs = false) {
+	private function getFileList(Config $config, OutputInterface $output, \RecursiveIteratorIterator $it2, $stubs = false) {
 		$baseDir = $config->getBasePath();
+		$configArr = $config->getConfigArray();
+		$toIndex = [];
+		foreach ($it2 as $file) {
+			if (($file->getExtension() == "php" || $file->getExtension() == "inc") && $file->isFile()) {
+				try {
+					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
+						continue;
+					}
+					$toIndex[]=$file->getPathname();
+				} catch (Error $exception) {
+					$output->emitError(__CLASS__, $file, 0, ' Parse Error: ' . $exception->getMessage() . "\n" );
+				}
+			}
+		}
+		return $toIndex;
+	}
+
+	/**
+	 * @param Config          $config   -
+	 * @param OutputInterface $output   -
+	 * @param string          $pathName -
+	 */
+	function indexFile(Config $config, $pathName) {
 		$symbolTable = $config->getSymbolTable();
-		$indexer = new SymbolTableIndexer($symbolTable, $output);
+		$indexer = new SymbolTableIndexer($symbolTable);
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor(new NameResolver());
 		$traverser2 = new NodeTraverser;
 		$traverser2->addVisitor($indexer);
 		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 
-		$configArr = $config->getConfigArray();
-
-		$count = 0;
-		foreach ($it2 as $file) {
-			if (($file->getExtension() == "php" || $file->getExtension() == "inc") && $file->isFile()) {
-				$name = Util::removeInitialPath($baseDir, $file->getPathname());
-				if (strpos($name, "phar://") === 0) {
-					$name = str_replace(Phar::running(), "", $name );
-					while ($name[0] == '/') {
-						$name = substr($name, 1);
-					}
-					$name = "phar://" . $name;
-				}
-				try {
-					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
-						continue;
-					}
-					++$count;
-					$output->output(".", " - $count:" . $name);
-
-					// If the $fileName is in our phar then make it a relative path so that files that we index don't
-					// depend on the phar file existing in a particular directory.
-					$fileData = file_get_contents($file->getPathname());
-					if ($config->shouldReindex()) {
-						$symbolTable->removeFileFromIndex($file->getPathname());
-					}
-
-					$indexer->setFilename($name);
-					$statements = $parser->parse($fileData);
-					if ($statements) {
-						$traverser1->traverse($statements);
-						$traverser2->traverse($statements);
-					}
-				} catch (Error $exception) {
-					$output->emitError(__CLASS__, $file, 0, ' Parse Error: ' . $exception->getMessage() . "\n" );
-				}
+		$baseDir = $config->getBasePath();
+		$name = Util::removeInitialPath($baseDir, $pathName);
+		// If the $fileName is in our phar then make it a relative path so that files that we index don't
+		// depend on the phar file existing in a particular directory.
+		if (strpos($name, "phar://") === 0) {
+			$name = str_replace(Phar::running(), "", $name );
+			while ($name[0] == '/') {
+				$name = substr($name, 1);
 			}
+			$name = "phar://" . $name;
 		}
-		return $count;
+
+		if ($config->shouldReindex()) {
+			$symbolTable->removeFileFromIndex($pathName);
+		}
+
+		$fileData = file_get_contents($pathName);
+
+		$indexer->setFilename($name);
+		try {
+			$statements = $parser->parse($fileData);
+			if ($statements) {
+				$traverser1->traverse($statements);
+				$traverser2->traverse($statements);
+			}
+		} catch(\Exception $e) {
+			echo "ERROR ".$e->getMessage()."\n";
+		}
+		return strlen($fileData);
 	}
 
 	/**
@@ -104,6 +117,103 @@ class IndexingPhase {
 		}
 	}
 
+	function createIndexingChild(Config $config) {
+
+		$pair = [];
+		if (!socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $pair)) {
+			echo "socket_create_pair failed. Reason: " . socket_strerror(socket_last_error())."\n";
+		}
+		$pid = pcntl_fork();
+		if ($pid == -1) {
+			// error
+		} else if ($pid) {
+			socket_close($pair[0]);
+			return $pair[1];
+		} else {
+			$config->getSymbolTable()->connect();
+			// Child process, scan each file until we receive a "DONE".
+			socket_close($pair[1]);
+			while (1) {
+				$receive = socket_read($pair[0], 200, PHP_NORMAL_READ);
+				if ($receive == "DONE") {
+					socket_close($pair[0]);
+					exit(0);
+				} else {
+					list(, $file) = explode(' ', trim($receive));
+					$size = $this->indexFile($config, $file);
+					socket_write($pair[0], "INDEXED $size $file\n");
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param Config          $config The config
+	 * @param OutputInterface $output Output
+	 * @param string[]        $list   The files to add
+	 */
+	function indexList(Config $config, OutputInterface $output, $list) {
+		$config->getSymbolTable()->disconnect();
+
+		$connections = [];
+		reset($list);
+
+		$start=microtime(true);
+		$bytes = 0.0;
+		// Fire up our child processes and give them each a file to index.
+		for ($i = 0; $i < 4; ++$i) {
+			$connection = $this->createIndexingChild($config);
+			$filename = $list[$i];
+			socket_write($connection, "INDEX $filename\n");
+			$connections[] = $connection;
+		}
+
+		// Then just keep reading their responses and feeding them new files.
+		while ($i < count($list)) {
+			$read=$errors=$connections;
+			$none = null;
+			if (socket_select($read, $none, $errors, null)) {
+				foreach ($read as $socket) {
+
+					list($message, $details)=explode(' ', trim(socket_read($socket, 200, PHP_NORMAL_READ)), 2);
+
+					//echo "RECEIVED:$msg\n";
+					if($message=='INDEXED') {
+						if ($i < count($list)) {
+							list($size,$name)=explode(' ', $details);
+							$bytes+=$size;
+							$output->output(".", sprintf("%d - %s", $i, $list[$i]));
+							if ($i % 50 == 0) {
+								$estimate = (count($list) - $i) * (microtime(true) - $start) / $i;
+								$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $i / count($list) * 100, $estimate, $bytes/1024/(microtime(true)-$start)));
+							}
+							socket_write($socket, "INDEX " . $list[$i++] . "\n");
+						} else {
+							echo "Sending done\n";
+							socket_write($socket, "DONE\n");
+						}
+					} else {
+						$output->outputVerbose($message." D:".$details."\n");
+					}
+				}
+				// Remove dead child processes
+				foreach ($errors as $socket) {
+					socket_close($socket);
+					foreach($connections as $index=>$res) {
+						if($res===$socket) {
+							unset($connections[$index]);
+						}
+					}
+				}
+			}
+		}
+		$status=0;
+		for ($i = 0; $i < 4; ++$i) {
+			echo "Waiting for client $i\n";
+			pcntl_wait($status);
+		}
+	}
+
 	/**
 	 * run
 	 *
@@ -121,12 +231,13 @@ class IndexingPhase {
 			exit;
 		}
 		$output->outputVerbose("\nIndex directories are valid: Indexing starting");
+		$toIndex = [];
 		foreach ($indexPaths as $path) {
 			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
 			$output->outputVerbose("\n\nIndexing Directory: " . $tmpDirectory . "\n");
 			$it = new \RecursiveDirectoryIterator($tmpDirectory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
-			$this->index($config, $output, $it2);
+			$toIndex = array_merge( $toIndex, $this->getFileList($config, $output, $it2));
 		}
 
 		// If Guardrail is in vendor and you index vendor (which you should) then it won't need to
@@ -134,8 +245,8 @@ class IndexingPhase {
 		// we index the extra stubs.
 		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
 		$it2 = new \RecursiveIteratorIterator($it);
-		$this->index($config, $output, $it2, true);
-
+		$toIndex = array_merge( $toIndex, $this->getFileList($config, $output, $it2, true));
+		$this->indexList($config, $output, $toIndex);
 		$this->indexTraitClasses($config->getSymbolTable(), $output);
 	}
 }

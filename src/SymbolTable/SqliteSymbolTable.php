@@ -34,6 +34,8 @@ class SqliteSymbolTable extends SymbolTable {
 	 */
 	private $con;
 
+	private $fileName;
+
 	/**
 	 * SqliteSymbolTable constructor.
 	 *
@@ -42,7 +44,17 @@ class SqliteSymbolTable extends SymbolTable {
 	 */
 	public function __construct($fileName, $basePath) {
 		parent::__construct($basePath);
-		$this->con = new PDO("sqlite:$fileName");
+		$this->fileName = $fileName;
+		$this->connect();
+
+	}
+
+	public function disconnect() {
+		$this->con = null;
+	}
+
+	public function connect() {
+		$this->con = new PDO("sqlite:".$this->fileName);
 		$this->init();
 	}
 

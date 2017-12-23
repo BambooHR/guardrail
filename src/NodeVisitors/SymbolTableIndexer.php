@@ -45,11 +45,9 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * SymbolTableIndexer constructor.
 	 *
 	 * @param string          $index  The index
-	 * @param OutputInterface $output Instance of OutputInterface
 	 */
-	public function __construct($index, OutputInterface $output) {
+	public function __construct($index) {
 		$this->index = $index;
-		$this->output = $output;
 	}
 
 	/**
@@ -79,7 +77,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 					$file = $this->index->getClassFile($name);
 					if ($file) {
 						if (!preg_match('/guardrail\/src\/ExtraStubs/', $this->filename)) {
-							$this->output->emitError(__CLASS__, $this->filename, $node->getLine(), BaseCheck::TYPE_PARSE_ERROR, "Class $name already exists in $file.");
+							echo "Class $name already exists in $file.\n";
+							//$this->output->emitError(__CLASS__, $this->filename, $node->getLine(), BaseCheck::TYPE_PARSE_ERROR, "Class $name already exists in $file.");
 						}
 					} else {
 						$this->index->addClass($name, $node, $this->filename);
