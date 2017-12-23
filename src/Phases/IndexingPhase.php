@@ -55,8 +55,8 @@ class IndexingPhase {
 	}
 
 	/**
-	 * @param Config          $config   -
-	 * @param string          $pathName -
+	 * @param Config $config   -
+	 * @param string $pathName -
 	 * @return int The length in bytes of the file that was indexed.
 	 */
 	function indexFile(Config $config, $pathName) {
@@ -125,7 +125,7 @@ class IndexingPhase {
 
 		$pair = [];
 		if (!socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $pair)) {
-			echo "socket_create_pair failed. Reason: " . socket_strerror(socket_last_error())."\n";
+			echo "socket_create_pair failed. Reason: " . socket_strerror(socket_last_error()) . "\n";
 		}
 		$pid = pcntl_fork();
 		if ($pid == -1) {
@@ -163,7 +163,7 @@ class IndexingPhase {
 		$connections = [];
 		reset($list);
 
-		$start=microtime(true);
+		$start = microtime(true);
 		$bytes = 0.0;
 		// Fire up our child processes and give them each a file to index.
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($list); ++$fileNumber) {
@@ -176,10 +176,10 @@ class IndexingPhase {
 
 		// Then just keep reading their responses and feeding them new files.
 		while (count($connections) > 0) {
-			$read = $errors = $connections;
+			$read = $connections;
 			$none = null;
 			if (socket_select($read, $none, $none, null)) {
-				foreach ($read as $index=>$socket) {
+				foreach ($read as $index => $socket) {
 					$msg = trim(socket_read($socket, 200, PHP_NORMAL_READ));
 					list($message, $details) = explode(' ', $msg, 2);
 

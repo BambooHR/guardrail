@@ -60,7 +60,7 @@ class SqliteSymbolTable extends SymbolTable {
 	 * @return void
 	 */
 	public function connect() {
-		$this->con = new PDO("sqlite:".$this->fileName);
+		$this->con = new PDO("sqlite:" . $this->fileName);
 		$this->init();
 	}
 
