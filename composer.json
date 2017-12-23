@@ -18,7 +18,10 @@
         "nikic/php-parser": "^2.0",
         "webmozart/glob":"^4.1.0",
         "n98/junit-xml":"^1.0.0",
-        "seld/jsonlint": "^1.6"
+        "seld/jsonlint": "^1.6",
+        "ext-sqlite3" : "*",
+        "ext-pcntl": "*",
+        "ext-pdo_sqlite": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "<6.0",
