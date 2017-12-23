@@ -44,7 +44,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	/**
 	 * SymbolTableIndexer constructor.
 	 *
-	 * @param string          $index  The index
+	 * @param string $index The index
 	 */
 	public function __construct($index) {
 		$this->index = $index;

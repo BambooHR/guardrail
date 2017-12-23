@@ -45,7 +45,7 @@ class IndexingPhase {
 					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
 						continue;
 					}
-					$toIndex[]=$file->getPathname();
+					$toIndex[] = $file->getPathname();
 				} catch (Error $exception) {
 					$output->emitError(__CLASS__, $file, 0, ' Parse Error: ' . $exception->getMessage() . "\n" );
 				}
@@ -56,8 +56,8 @@ class IndexingPhase {
 
 	/**
 	 * @param Config          $config   -
-	 * @param OutputInterface $output   -
 	 * @param string          $pathName -
+	 * @return int The length in bytes of the file that was indexed.
 	 */
 	function indexFile(Config $config, $pathName) {
 		$symbolTable = $config->getSymbolTable();
@@ -93,8 +93,8 @@ class IndexingPhase {
 				$traverser1->traverse($statements);
 				$traverser2->traverse($statements);
 			}
-		} catch(\Exception $e) {
-			echo "ERROR ".$e->getMessage()."\n";
+		} catch (\Exception $exc) {
+			echo "ERROR " . $exc->getMessage() . "\n";
 		}
 		return strlen($fileData);
 	}
@@ -117,6 +117,10 @@ class IndexingPhase {
 		}
 	}
 
+	/**
+	 * @param Config $config 0
+	 * @return resource The client socket that the server should communicate with.
+	 */
 	function createIndexingChild(Config $config) {
 
 		$pair = [];
@@ -151,6 +155,7 @@ class IndexingPhase {
 	 * @param Config          $config The config
 	 * @param OutputInterface $output Output
 	 * @param string[]        $list   The files to add
+	 * @return void
 	 */
 	function indexList(Config $config, OutputInterface $output, $list) {
 		$config->getSymbolTable()->disconnect();
@@ -161,16 +166,16 @@ class IndexingPhase {
 		$start=microtime(true);
 		$bytes = 0.0;
 		// Fire up our child processes and give them each a file to index.
-		for ($i = 0; $i < $config->getProcessCount(); ++$i) {
+		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($list); ++$fileNumber) {
 			$connection = $this->createIndexingChild($config);
-			$filename = $list[$i];
+			$filename = $list[$fileNumber];
 			socket_write($connection, "INDEX $filename\n");
-			$output->output(".", sprintf("%d - %s", $i, $list[$i]));
+			$output->output(".", sprintf("%d - %s", $fileNumber, $list[$fileNumber]));
 			$connections[] = $connection;
 		}
 
 		// Then just keep reading their responses and feeding them new files.
-		while (count($connections)>0) {
+		while (count($connections) > 0) {
 			$read = $errors = $connections;
 			$none = null;
 			if (socket_select($read, $none, $none, null)) {
@@ -180,17 +185,17 @@ class IndexingPhase {
 
 					//echo "RECEIVED:$msg from index: $index\n";
 					if ($message == 'INDEXED') {
-						if ($i < count($list)) {
+						if ($fileNumber < count($list)) {
 							list($size, $name) = explode(' ', $details);
 							$bytes += $size;
-							$output->output(".", sprintf("%d - %s", $i, $list[$i]));
-							if ($i % 50 == 0) {
-								$estimate = (count($list) - $i) * (microtime(true) - $start) / $i;
-								$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $i / count($list) * 100, $estimate, $bytes / 1024 / (microtime(true) - $start)));
+							$output->output(".", sprintf("%d - %s", $fileNumber, $list[$fileNumber]));
+							if ($fileNumber % 50 == 0) {
+								$estimate = (count($list) - $fileNumber) * (microtime(true) - $start) / $fileNumber;
+								$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $fileNumber / count($list) * 100, $estimate, $bytes / 1024 / (microtime(true) - $start)));
 							}
-							socket_write($socket, "INDEX " . $list[$i++] . "\n");
+							socket_write($socket, "INDEX " . $list[$fileNumber++] . "\n");
 						} else {
-							socket_write($socket,"DONE\n");
+							socket_write($socket, "DONE\n");
 							$status = 0;
 							unset($connections[$index]);
 							pcntl_wait($status);

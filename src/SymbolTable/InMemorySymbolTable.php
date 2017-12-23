@@ -58,6 +58,20 @@ class InMemorySymbolTable extends SymbolTable {
 	}
 
 	/**
+	 * @return void
+	 */
+	public function connect() {
+
+	}
+
+	/**
+	 * @return void
+	 */
+	public function disconnect() {
+
+	}
+
+	/**
 	 * addClass
 	 *
 	 * @param string $name  The name

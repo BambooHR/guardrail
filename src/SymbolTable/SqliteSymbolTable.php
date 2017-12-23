@@ -49,10 +49,16 @@ class SqliteSymbolTable extends SymbolTable {
 
 	}
 
+	/**
+	 * @return void
+	 */
 	public function disconnect() {
 		$this->con = null;
 	}
 
+	/**
+	 * @return void
+	 */
 	public function connect() {
 		$this->con = new PDO("sqlite:".$this->fileName);
 		$this->init();

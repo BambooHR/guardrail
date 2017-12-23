@@ -57,6 +57,20 @@ abstract class SymbolTable {
 	}
 
 	/**
+	 * @return void
+	 */
+	public function connect() {
+
+	}
+
+	/**
+	 * @return void
+	 */
+	public function disconnect() {
+
+	}
+
+	/**
 	 * getClass
 	 *
 	 * @param string $name The name
