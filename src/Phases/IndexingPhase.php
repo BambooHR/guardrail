@@ -7,6 +7,7 @@
 
 namespace BambooHR\Guardrail\Phases;
 
+use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use Phar;
 use PhpParser\Error;
@@ -24,6 +25,12 @@ use BambooHR\Guardrail\Output\OutputInterface;
  * @package BambooHR\Guardrail\Phases
  */
 class IndexingPhase {
+
+	private $processManager;
+
+	function __construct() {
+		$this->processManager = new ProcessManager();
+	}
 
 	/**
 	 * index
@@ -117,38 +124,29 @@ class IndexingPhase {
 		}
 	}
 
+
 	/**
 	 * @param Config $config 0
 	 * @return resource The client socket that the server should communicate with.
 	 */
 	function createIndexingChild(Config $config) {
-
-		$pair = [];
-		if (!socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $pair)) {
-			echo "socket_create_pair failed. Reason: " . socket_strerror(socket_last_error()) . "\n";
-		}
-		$pid = pcntl_fork();
-		if ($pid == -1) {
-			// error
-		} else if ($pid) {
-			socket_close($pair[0]);
-			return $pair[1];
-		} else {
-			$config->getSymbolTable()->connect();
-			// Child process, scan each file until we receive a "DONE".
-			socket_close($pair[1]);
-			while (1) {
-				$receive = trim(socket_read($pair[0], 200, PHP_NORMAL_READ));
-				if ($receive == "DONE") {
-					socket_close($pair[0]);
-					exit(0);
-				} else {
-					list(, $file) = explode(' ', trim($receive));
-					$size = $this->indexFile($config, $file);
-					socket_write($pair[0], "INDEXED $size $file\n");
+		return $this->processManager->createChild(
+			// This closure represents the child process.  The value it returns
+			// will be the exit code of the child process.
+			function($socket) use($config) {
+				$config->getSymbolTable()->connect();
+				while (1) {
+					$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
+					if ($receive == "DONE") {
+						return 0;
+					} else {
+						list(, $file) = explode(' ', trim($receive));
+						$size = $this->indexFile($config, $file);
+						socket_write($socket, "INDEXED $size $file\n");
+					}
 				}
 			}
-		}
+		);
 	}
 
 	/**
@@ -159,53 +157,43 @@ class IndexingPhase {
 	 */
 	function indexList(Config $config, OutputInterface $output, $list) {
 		$config->getSymbolTable()->disconnect();
-
-		$connections = [];
 		reset($list);
 
 		$start = microtime(true);
 		$bytes = 0.0;
 		// Fire up our child processes and give them each a file to index.
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($list); ++$fileNumber) {
-			$connection = $this->createIndexingChild($config);
 			$filename = $list[$fileNumber];
-			socket_write($connection, "INDEX $filename\n");
-			$output->output(".", sprintf("%d - %s", $fileNumber, $list[$fileNumber]));
-			$connections[] = $connection;
+			$child = $this->createIndexingChild($config);
+			socket_write($child, "INDEX $filename\n");
+			$output->output(".", sprintf("%d - %s", $fileNumber, $filename));
 		}
 
-		// Then just keep reading their responses and feeding them new files.
-		while (count($connections) > 0) {
-			$read = $connections;
-			$none = null;
-			if (socket_select($read, $none, $none, null)) {
-				foreach ($read as $index => $socket) {
-					$msg = trim(socket_read($socket, 200, PHP_NORMAL_READ));
-					list($message, $details) = explode(' ', $msg, 2);
+		$this->processManager->loopWhileConnections(
+			function ($socket, $msg) use (&$fileNumber, $list, &$bytes, $output, $start) {
+				list($message, $details) = explode(' ', $msg, 2);
 
-					//echo "RECEIVED:$msg from index: $index\n";
-					if ($message == 'INDEXED') {
-						if ($fileNumber < count($list)) {
-							list($size, $name) = explode(' ', $details);
-							$bytes += $size;
-							$output->output(".", sprintf("%d - %s", $fileNumber, $list[$fileNumber]));
-							socket_write($socket, "INDEX " . $list[$fileNumber++] . "\n");
-						} else {
-							socket_write($socket, "DONE\n");
-							$status = 0;
-							unset($connections[$index]);
-							pcntl_wait($status);
-						}
-						if ($fileNumber % 50 == 0) {
-							$estimate = (count($list) - $fileNumber) * (microtime(true) - $start) / $fileNumber;
-							$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $fileNumber / count($list) * 100, $estimate, $bytes / 1024 / (microtime(true) - $start)));
-						}
+				//echo "RECEIVED:$msg from index: $index\n";
+				if ($message == 'INDEXED') {
+					if ($fileNumber < count($list)) {
+						list($size, $name) = explode(' ', $details);
+						$bytes += $size;
+						$output->output(".", sprintf("%d - %s", $fileNumber, $list[$fileNumber]));
+						socket_write($socket, "INDEX " . $list[$fileNumber++] . "\n");
 					} else {
-						$output->outputVerbose($message . " D:" . $details . "\n");
+						socket_write($socket, "DONE\n");
+						return ProcessManager::CLOSE_CONNECTION;
 					}
+					if ($fileNumber % 50 == 0) {
+						$estimate = (count($list) - $fileNumber) * (microtime(true) - $start) / $fileNumber;
+						$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $fileNumber / count($list) * 100, $estimate, $bytes / 1024 / (microtime(true) - $start)));
+					}
+				} else {
+					$output->outputVerbose($message . " D:" . $details . "\n");
 				}
+				return ProcessManager::READ_CONNECTION;
 			}
-		}
+		);
 	}
 
 	/**
