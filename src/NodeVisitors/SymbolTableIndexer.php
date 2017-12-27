@@ -74,15 +74,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			case Class_::class:
 				$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "anonymous class";
 				if ($name) {
-					$file = $this->index->getClassFile($name);
-					if ($file) {
-						if (!preg_match('/guardrail\/src\/ExtraStubs/', $this->filename)) {
-							echo "Class $name already exists in $file.\n";
-							//$this->output->emitError(__CLASS__, $this->filename, $node->getLine(), BaseCheck::TYPE_PARSE_ERROR, "Class $name already exists in $file.");
-						}
-					} else {
-						$this->index->addClass($name, $node, $this->filename);
-					}
+					$this->index->addClass($name, $node, $this->filename);
 					array_push($this->classStack, $node);
 				}
 				break;

@@ -11,6 +11,7 @@ use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use Phar;
 use PhpParser\Error;
+use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
@@ -33,32 +34,25 @@ class IndexingPhase {
 	}
 
 	/**
-	 * index
+	 * Generator function that yields the next file to scan.
 	 *
 	 * @param Config                     $config Instance of Config
-	 * @param OutputInterface            $output Instance of OutputInterface
 	 * @param \RecursiveIteratorIterator $it2    Instance of RecursiveIteratorIterator
 	 * @param bool                       $stubs  Check the stubs
 	 *
-	 * @return array
+	 * @return \Generator
 	 */
-	private function getFileList(Config $config, OutputInterface $output, \RecursiveIteratorIterator $it2, $stubs = false) {
+	private function getFileList(Config $config, \RecursiveIteratorIterator $it2, $stubs = false) {
 		$baseDir = $config->getBasePath();
 		$configArr = $config->getConfigArray();
-		$toIndex = [];
 		foreach ($it2 as $file) {
 			if (($file->getExtension() == "php" || $file->getExtension() == "inc") && $file->isFile()) {
-				try {
-					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
-						continue;
-					}
-					$toIndex[] = $file->getPathname();
-				} catch (Error $exception) {
-					$output->emitError(__CLASS__, $file, 0, ' Parse Error: ' . $exception->getMessage() . "\n" );
+				if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
+					continue;
 				}
+				yield $file->getPathname();
 			}
 		}
-		return $toIndex;
 	}
 
 	/**
@@ -66,15 +60,7 @@ class IndexingPhase {
 	 * @param string $pathName -
 	 * @return int The length in bytes of the file that was indexed.
 	 */
-	function indexFile(Config $config, $pathName) {
-		$symbolTable = $config->getSymbolTable();
-		$indexer = new SymbolTableIndexer($symbolTable);
-		$traverser1 = new NodeTraverser;
-		$traverser1->addVisitor(new NameResolver());
-		$traverser2 = new NodeTraverser;
-		$traverser2->addVisitor($indexer);
-		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
-
+	function indexFile(Config $config, $parser, $indexer, $traverser1, $traverser2, $pathName) {
 		$baseDir = $config->getBasePath();
 		$name = Util::removeInitialPath($baseDir, $pathName);
 		// If the $fileName is in our phar then make it a relative path so that files that we index don't
@@ -88,17 +74,22 @@ class IndexingPhase {
 		}
 
 		if ($config->shouldReindex()) {
-			$symbolTable->removeFileFromIndex($pathName);
+			$config->getSymbolTable()->removeFileFromIndex($pathName);
 		}
 
 		$fileData = file_get_contents($pathName);
 
 		$indexer->setFilename($name);
+		//$t1=microtime(true);
 		try {
 			$statements = $parser->parse($fileData);
+			//$t2=microtime(true);
 			if ($statements) {
 				$traverser1->traverse($statements);
+				//$t3=microtime(true);
 				$traverser2->traverse($statements);
+				//$t4=microtime(true);
+				//printf("Parse: %.3f, T1: %.3f, T2: %.3f\n", $t2-$t1, $t3-$t2, $t4-$t3);
 			}
 		} catch (\Exception $exc) {
 			echo "ERROR " . $exc->getMessage() . "\n";
@@ -130,18 +121,26 @@ class IndexingPhase {
 	 * @return resource The client socket that the server should communicate with.
 	 */
 	function createIndexingChild(Config $config) {
+		$indexer = new SymbolTableIndexer($config->getSymbolTable());
+		$traverser1 = new NodeTraverser;
+		$traverser1->addVisitor(new NameResolver());
+		$traverser2 = new NodeTraverser;
+		$traverser2->addVisitor($indexer);
+		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+
 		return $this->processManager->createChild(
 			// This closure represents the child process.  The value it returns
 			// will be the exit code of the child process.
-			function($socket) use($config) {
+			function($socket) use($config, $parser, $indexer, $traverser1, $traverser2) {
 				$config->getSymbolTable()->connect();
 				while (1) {
 					$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
 					if ($receive == "DONE") {
+						$config->getSymbolTable()->flushInserts();
 						return 0;
 					} else {
 						list(, $file) = explode(' ', trim($receive));
-						$size = $this->indexFile($config, $file);
+						$size = $this->indexFile($config, $parser, $indexer, $traverser1, $traverser2, $file);
 						socket_write($socket, "INDEXED $size $file\n");
 					}
 				}
@@ -155,38 +154,36 @@ class IndexingPhase {
 	 * @param string[]        $list   The files to add
 	 * @return void
 	 */
-	function indexList(Config $config, OutputInterface $output, $list) {
+	function indexList(Config $config, OutputInterface $output, \Generator $it) {
 		$config->getSymbolTable()->disconnect();
-		reset($list);
 
 		$start = microtime(true);
 		$bytes = 0.0;
 		// Fire up our child processes and give them each a file to index.
-		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($list); ++$fileNumber) {
-			$filename = $list[$fileNumber];
+		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $it->valid(); ++$fileNumber, $it->next()) {
 			$child = $this->createIndexingChild($config);
-			socket_write($child, "INDEX $filename\n");
-			$output->output(".", sprintf("%d - %s", $fileNumber, $filename));
+			socket_write($child, "INDEX ".$it->current()."\n");
+			$output->output(".", sprintf("%d - %s", $fileNumber, $it->current()));
 		}
 
 		$this->processManager->loopWhileConnections(
-			function ($socket, $msg) use (&$fileNumber, $list, &$bytes, $output, $start) {
+			function ($socket, $msg) use (&$it, &$fileNumber, &$bytes, $output, $start) {
 				list($message, $details) = explode(' ', $msg, 2);
 
 				//echo "RECEIVED:$msg from index: $index\n";
 				if ($message == 'INDEXED') {
-					if ($fileNumber < count($list)) {
+					if ($it->valid()) {
 						list($size, $name) = explode(' ', $details);
 						$bytes += $size;
-						$output->output(".", sprintf("%d - %s", $fileNumber, $list[$fileNumber]));
-						socket_write($socket, "INDEX " . $list[$fileNumber++] . "\n");
+						$output->output(".", sprintf("%d - %s", ++$fileNumber, $it->current()));
+						socket_write($socket, "INDEX " . $it->current(). "\n");
+						$it->next();
 					} else {
 						socket_write($socket, "DONE\n");
 						return ProcessManager::CLOSE_CONNECTION;
 					}
 					if ($fileNumber % 50 == 0) {
-						$estimate = (count($list) - $fileNumber) * (microtime(true) - $start) / $fileNumber;
-						$output->output("", sprintf(" %.1f%% complete. %.1f seconds remaining, %.1f KB/second", $fileNumber / count($list) * 100, $estimate, $bytes / 1024 / (microtime(true) - $start)));
+						$output->output("", sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start)));
 					}
 				} else {
 					$output->outputVerbose($message . " D:" . $details . "\n");
@@ -194,6 +191,7 @@ class IndexingPhase {
 				return ProcessManager::READ_CONNECTION;
 			}
 		);
+
 	}
 
 	/**
@@ -212,14 +210,14 @@ class IndexingPhase {
 			$output->output("Invalid or missing paths in your index config section.\n", "Invalid or missing paths in your index config section.\n");
 			exit;
 		}
-		$output->outputVerbose("\nIndex directories are valid: Indexing starting");
-		$toIndex = [];
+		$output->outputVerbose("\nIndex directories are valid: Indexing starting\n");
+
 		foreach ($indexPaths as $path) {
 			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
-			$output->outputVerbose("\n\nIndexing Directory: " . $tmpDirectory . "\n");
+			$output->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
 			$it = new \RecursiveDirectoryIterator($tmpDirectory, \FilesystemIterator::SKIP_DOTS);
 			$it2 = new \RecursiveIteratorIterator($it);
-			$toIndex = array_merge( $toIndex, $this->getFileList($config, $output, $it2));
+			$this->indexList($config, $output, $this->getFileList($config, $it2) );
 		}
 
 		// If Guardrail is in vendor and you index vendor (which you should) then it won't need to
@@ -227,10 +225,12 @@ class IndexingPhase {
 		// we index the extra stubs.
 		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
 		$it2 = new \RecursiveIteratorIterator($it);
-		$toIndex = array_merge( $toIndex, $this->getFileList($config, $output, $it2, true));
-		$this->indexList($config, $output, $toIndex);
+		$this->indexList($config, $output, $this->getFileList($config, $it2, true) );
+
+		$st = $config->getSymbolTable();
+		$st->connect();
+		$st->indexTable();
 		$table = $config->getSymbolTable();
-		$table->connect();
 		$this->indexTraitClasses($table, $output);
 	}
 }
