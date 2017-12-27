@@ -74,7 +74,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
-			$indexer = new IndexingPhase();
+			$indexer = new IndexingPhase($config);
 			$indexer->run($config, $output);
 			$output->outputExtraVerbose("\nDone\n\n");
 			//$output->renderResults();
@@ -82,7 +82,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 		}
 
 		if ($config->shouldAnalyze()) {
-			$analyzer = new AnalyzingPhase();
+			$analyzer = new AnalyzingPhase($output);
 			$output->outputExtraVerbose("Analyzing\n");
 
 			if (!$config->hasFileList()) {

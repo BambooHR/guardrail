@@ -10,8 +10,6 @@ namespace BambooHR\Guardrail\Phases;
 use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use Phar;
-use PhpParser\Error;
-use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
@@ -29,8 +27,19 @@ class IndexingPhase {
 
 	private $processManager;
 
-	function __construct() {
+	private $parser = null;
+	private $traverser1 = null;
+	private $traverser2 = null;
+	private $indexer = null;
+
+	function __construct(Config $config) {
 		$this->processManager = new ProcessManager();
+		$this->traverser1 = new NodeTraverser;
+		$this->traverser1->addVisitor(new NameResolver());
+		$this->traverser2 = new NodeTraverser;
+		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
+		$this->traverser2->addVisitor($this->indexer);
+		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 	}
 
 	/**
@@ -60,7 +69,7 @@ class IndexingPhase {
 	 * @param string $pathName -
 	 * @return int The length in bytes of the file that was indexed.
 	 */
-	function indexFile(Config $config, $parser, $indexer, $traverser1, $traverser2, $pathName) {
+	function indexFile(Config $config, $pathName) {
 		$baseDir = $config->getBasePath();
 		$name = Util::removeInitialPath($baseDir, $pathName);
 		// If the $fileName is in our phar then make it a relative path so that files that we index don't
@@ -79,17 +88,12 @@ class IndexingPhase {
 
 		$fileData = file_get_contents($pathName);
 
-		$indexer->setFilename($name);
-		//$t1=microtime(true);
+		$this->indexer->setFilename($name);
 		try {
-			$statements = $parser->parse($fileData);
-			//$t2=microtime(true);
+			$statements = $this->parser->parse($fileData);
 			if ($statements) {
-				$traverser1->traverse($statements);
-				//$t3=microtime(true);
-				$traverser2->traverse($statements);
-				//$t4=microtime(true);
-				//printf("Parse: %.3f, T1: %.3f, T2: %.3f\n", $t2-$t1, $t3-$t2, $t4-$t3);
+				$this->traverser1->traverse($statements);
+				$this->traverser2->traverse($statements);
 			}
 		} catch (\Exception $exc) {
 			echo "ERROR " . $exc->getMessage() . "\n";
@@ -121,17 +125,12 @@ class IndexingPhase {
 	 * @return resource The client socket that the server should communicate with.
 	 */
 	function createIndexingChild(Config $config) {
-		$indexer = new SymbolTableIndexer($config->getSymbolTable());
-		$traverser1 = new NodeTraverser;
-		$traverser1->addVisitor(new NameResolver());
-		$traverser2 = new NodeTraverser;
-		$traverser2->addVisitor($indexer);
-		$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+
 
 		return $this->processManager->createChild(
 			// This closure represents the child process.  The value it returns
 			// will be the exit code of the child process.
-			function($socket) use($config, $parser, $indexer, $traverser1, $traverser2) {
+			function($socket) use($config) {
 				$config->getSymbolTable()->connect();
 				while (1) {
 					$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
@@ -140,7 +139,7 @@ class IndexingPhase {
 						return 0;
 					} else {
 						list(, $file) = explode(' ', trim($receive));
-						$size = $this->indexFile($config, $parser, $indexer, $traverser1, $traverser2, $file);
+						$size = $this->indexFile($config,$file);
 						socket_write($socket, "INDEXED $size $file\n");
 					}
 				}
