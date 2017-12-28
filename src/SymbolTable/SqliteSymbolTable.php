@@ -27,7 +27,7 @@ use ReflectionException;
 /**
  * Class SqliteSymbolTable
  */
-class SqliteSymbolTable extends SymbolTable {
+class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 	/**
 	 * @var PDO

@@ -8,6 +8,7 @@
 namespace BambooHR\Guardrail\Phases;
 
 use BambooHR\Guardrail\ProcessManager;
+use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use Phar;
 use PhpParser\ParserFactory;
@@ -131,11 +132,16 @@ class IndexingPhase {
 			// This closure represents the child process.  The value it returns
 			// will be the exit code of the child process.
 			function($socket) use($config) {
-				$config->getSymbolTable()->connect();
+				$table = $config->getSymbolTable();
+				if ($table instanceof PersistantSymbolTable) {
+					$table->connect();
+				}
 				while (1) {
 					$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
 					if ($receive == "DONE") {
-						$config->getSymbolTable()->flushInserts();
+						if ($table instanceof PersistantSymbolTable) {
+							$config->getSymbolTable()->flushInserts();
+						}
 						return 0;
 					} else {
 						list(, $file) = explode(' ', trim($receive));
@@ -154,7 +160,10 @@ class IndexingPhase {
 	 * @return void
 	 */
 	function indexList(Config $config, OutputInterface $output, \Generator $it) {
-		$config->getSymbolTable()->disconnect();
+		$table = $config->getSymbolTable();
+		if ($table instanceof PersistantSymbolTable) {
+			$config->getSymbolTable()->disconnect();
+		}
 
 		$start = microtime(true);
 		$bytes = 0.0;
@@ -226,10 +235,11 @@ class IndexingPhase {
 		$it2 = new \RecursiveIteratorIterator($it);
 		$this->indexList($config, $output, $this->getFileList($config, $it2, true) );
 
-		$st = $config->getSymbolTable();
-		$st->connect();
-		$st->indexTable();
 		$table = $config->getSymbolTable();
+		if($table instanceof PersistantSymbolTable) {
+			$table->connect();
+			$table->indexTable();
+		}
 		$this->indexTraitClasses($table, $output);
 	}
 }

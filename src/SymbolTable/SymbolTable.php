@@ -56,19 +56,7 @@ abstract class SymbolTable {
 		$this->basePath = $basePath;
 	}
 
-	/**
-	 * @return void
-	 */
-	public function connect() {
 
-	}
-
-	/**
-	 * @return void
-	 */
-	public function disconnect() {
-
-	}
 
 	/**
 	 * getClass
