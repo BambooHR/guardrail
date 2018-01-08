@@ -31,9 +31,9 @@ class SocketOutput extends XUnitOutput {
 			$arr = [
 				"file" => $file,
 				"line" => $line,
-				"type"=>$type,
-				"message"=>$message,
-				"className"=>$className
+				"type" => $type,
+				"message" => $message,
+				"className" => $className
 			];
 			socket_write($this->socket, "ERROR " . base64_encode(serialize($arr)) . "\n");
 		}
@@ -46,7 +46,7 @@ class SocketOutput extends XUnitOutput {
 	 */
 	function output($verbose, $extraVerbose) {
 		// TODO: Implement output() method.
-		socket_write($this->socket, "OUTPUT ".base64_encode( serialize(["v" => $verbose,"ev" => $extraVerbose]) . "\n"));
+		socket_write($this->socket, "OUTPUT " . base64_encode( serialize(["v" => $verbose,"ev" => $extraVerbose]) . "\n"));
 	}
 
 	/**

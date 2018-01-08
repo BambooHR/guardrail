@@ -183,10 +183,7 @@ class AnalyzingPhase {
 
 		$start = microtime(true);
 
-		for ($fileNumber = 0;
-			 $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess);
-			 ++$fileNumber
-		) {
+		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
 				function($socket) use ($config, &$processingCount) {
 					$config->getSymbolTable()->connect();
