@@ -12,6 +12,7 @@ use BambooHR\Guardrail\NodeVisitors\DoWhileVisitor;
 use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Output\XUnitOutput;
 use BambooHR\Guardrail\ProcessManager;
+use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use FilesystemIterator;
 use PhpParser\Comment;
 use PhpParser\Error;
@@ -186,7 +187,10 @@ class AnalyzingPhase {
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
 				function($socket) use ($config, &$processingCount) {
-					$config->getSymbolTable()->connect();
+					$table = $config->getSymbolTable();
+					if ($table instanceof PersistantSymbolTable) {
+						$table->connect();
+					}
 					$this->initChildThread($socket, $config);
 					while (1) {
 						$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
