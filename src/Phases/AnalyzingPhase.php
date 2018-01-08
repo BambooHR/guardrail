@@ -256,25 +256,6 @@ class AnalyzingPhase {
 	}
 
 	/**
-	 * getMultipartFileName
-	 *
-	 * @param Config $config Instance of Config
-	 * @param string $part   The part to process
-	 *
-	 * @return string
-	 */
-	public function getMultipartFileName(Config $config, $part) {
-		$outputFileName = $config->getOutputFile();
-		$lastPart = strrpos($outputFileName, ".");
-		if ($lastPart > 0) {
-			$outputFileName = substr($outputFileName, 0, $lastPart + 1) . $part . ".xml";
-		} else {
-			$outputFileName = $outputFileName . $part;
-		}
-		return $outputFileName;
-	}
-
-	/**
 	 * run
 	 *
 	 * @param Config          $config Instance of Config
@@ -303,7 +284,9 @@ class AnalyzingPhase {
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.
 		$groupSize = intval(count($toProcess) / $config->getPartitions());
-		$toProcess = ($config->getPartitionNumber() == $config->getPartitions()) ? array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1)) : array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1), $groupSize);
+		$toProcess = ($config->getPartitionNumber() == $config->getPartitions()) ?
+			array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1)) :
+			array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1), $groupSize);
 
 		$output->outputVerbose("\n\nAnalyzing " . count($toProcess) . " files\n");
 
