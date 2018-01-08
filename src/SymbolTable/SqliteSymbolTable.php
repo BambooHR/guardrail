@@ -27,12 +27,17 @@ use ReflectionException;
 /**
  * Class SqliteSymbolTable
  */
-class SqliteSymbolTable extends SymbolTable {
+class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 	/**
 	 * @var PDO
 	 */
 	private $con;
+
+	private $fileName;
+
+	private $statement = null;
+	private $queries = [];
 
 	/**
 	 * SqliteSymbolTable constructor.
@@ -42,7 +47,27 @@ class SqliteSymbolTable extends SymbolTable {
 	 */
 	public function __construct($fileName, $basePath) {
 		parent::__construct($basePath);
-		$this->con = new PDO("sqlite:$fileName");
+		$this->fileName = $fileName;
+		$this->connect();
+
+	}
+
+	/**
+	 * Disconnect, needed if we're going to pcntl_fork()
+	 *
+	 * @return void
+	 */
+	public function disconnect() {
+		$this->con = null;
+	}
+
+	/**
+	 * Reconnect after a pcntl_fork()
+	 *
+	 * @return void
+	 */
+	public function connect() {
+		$this->con = new PDO("sqlite:" . $this->fileName);
 		$this->init();
 	}
 
@@ -53,8 +78,9 @@ class SqliteSymbolTable extends SymbolTable {
 	 */
 	public function init() {
 		$this->con->exec('
-			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data blob not null, primary key(name,type)  );
+			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data blob not null );
 		');
+
 	}
 
 	/**
@@ -70,12 +96,45 @@ class SqliteSymbolTable extends SymbolTable {
 	 * @throws Exception
 	 */
 	private function addType($name, $file, $type, $hasTrait=0, $data="") {
-		$sql = "INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
-		try {
-			$this->con->prepare($sql)->execute([strtolower($name), $file, $type, $hasTrait, $data]);
-		} catch (PDOException $exception) {
-			throw new Exception("Class $name has already been declared");
+		if (!$this->statement) {
+			$sql = "INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
+			$this->statement = $this->con->prepare($sql);
 		}
+		$this->queries[] = [strtolower($name), $file, $type, $hasTrait, $data];
+		if (count($this->queries) >= 100) {
+			$this->flushInserts();
+		}
+	}
+
+	/**
+	 * We save up batches of inserts and then insert them all at once in a transaction.
+	 *
+	 * @return void
+	 */
+	function flushInserts() {
+		$this->con->exec("begin");
+		foreach ($this->queries as $params) {
+			$this->statement->execute($params);
+		}
+		$this->con->exec("commit");
+		$this->queries = [];
+	}
+
+	/**
+	 * Add the index to the symbol table.  This is faster than adding it ahead of time.
+	 *
+	 * @return void
+	 */
+	function indexTable() {
+		$this->con->exec('create index on symbol_table(type,name)');
+		/* @Todo: Check for duplicates
+		$this->con->exec(
+			'SELECT type,name,count(*) c, group_concat(file)
+			FROM symbol_table
+			GROUP BY 1,2
+			HAVING count(*)>1'
+		);
+		*/
 	}
 
 	/**
@@ -94,7 +153,7 @@ class SqliteSymbolTable extends SymbolTable {
 		$result = $statement->fetch(Pdo::FETCH_NUM);
 		if ($result) {
 			return $this->adjustBasePath($result[0]);
-		 } else {
+		} else {
 			return "";
 		}
 	}

@@ -40,10 +40,10 @@ abstract class TestSuiteSetup extends TestCase {
 		$config = new TestConfig($fileName, $emit);
 		$output = new XUnitOutput($config);
 
-		$indexer = new IndexingPhase();
+		$indexer = new IndexingPhase($config);
 		$indexer->run($config, $output);
 
-		$analyzer = new AnalyzingPhase();
+		$analyzer = new AnalyzingPhase($output);
 		foreach ($config->config as $listItem) {
 			$analyzer->phase2($config, $output, $listItem);
 		}

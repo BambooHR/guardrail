@@ -56,6 +56,8 @@ abstract class SymbolTable {
 		$this->basePath = $basePath;
 	}
 
+
+
 	/**
 	 * getClass
 	 *
