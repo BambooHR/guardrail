@@ -44,8 +44,8 @@ class ProcessManager {
 	}
 
 	/**
-	 * @var callable $serverReadCallBack A closure to run for the server process.
-	 * @return void
+	 * @param callable $serverReadCallBack A closure to run for the server process.
+	 * @return
 	 */
 	function loopWhileConnections(callable $serverReadCallBack) {
 		while (count($this->connections) > 0) {
