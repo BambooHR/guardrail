@@ -46,10 +46,18 @@ class AnalyzingPhase {
 	/** @var OutputInterface Child processes will overwrite this in order to send data over the socket. */
 	private $output = null;
 
+	/**
+	 * AnalyzingPhase constructor.
+	 * @param OutputInterface $output Where to send output
+	 */
 	function __construct(OutputInterface $output) {
 		$this->output = $output;
 	}
 
+	/**
+	 * @param resource $socket The pipe to read/write from
+	 * @param Config   $config The application config
+	 */
 	function initChildThread($socket, Config $config) {
 		$this->output = new SocketOutput($config, $socket);
 		$traverser1 = new NodeTraverser;
@@ -58,7 +66,6 @@ class AnalyzingPhase {
 
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
-
 
 		$this->analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $this->output, $config);
 		$traverser3 = new NodeTraverser;
@@ -72,7 +79,6 @@ class AnalyzingPhase {
 	 * getPhase2Files
 	 *
 	 * @param Config                    $config    Instance of Config
-	 * @param OutputInterface           $output    Instance of OutputInterface
 	 * @param RecursiveIteratorIterator $it2       Instance of RecursiveIteratorIterator
 	 * @param string                    $toProcess The content to process
 	 *
@@ -124,9 +130,9 @@ class AnalyzingPhase {
 	}
 
 	/**
-	 * @param string $file
-	 * @param int    $processingCount
-	 * @param Config $config
+	 * @param string $file            The file to scan
+	 * @param int    $processingCount The number of files scanned
+	 * @param Config $config          The application config
 	 * @return int
 	 */
 	function analyzeFile($file, $processingCount, Config $config) {
@@ -147,7 +153,7 @@ class AnalyzingPhase {
 				}
 
 				$this->analyzer->setFile($name);
-				foreach($this->traversers as $traverser) {
+				foreach ($this->traversers as $traverser) {
 					$traverser->traverse($stmts);
 
 				}
@@ -176,7 +182,10 @@ class AnalyzingPhase {
 
 		$start = microtime(true);
 
-		for($fileNumber=0;$fileNumber<$config->getProcessCount() && $fileNumber<count($toProcess);++$fileNumber) {
+		for ($fileNumber=0;
+			 $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess);
+			 ++$fileNumber
+		) {
 			$socket = $pm->createChild(
 				function($socket) use ($config, &$processingCount) {
 					$config->getSymbolTable()->connect();
@@ -186,21 +195,21 @@ class AnalyzingPhase {
 						if ($receive == "DONE") {
 							return 0;
 						} else {
-							list($command, $file)=explode(' ',$receive,2 );
+							list($command, $file) = explode(' ',$receive,2 );
 							$size = $this->analyzeFile($file, $processingCount, $config);
 							socket_write($socket, "ANALYZED $size $file\n");
 						}
 					}
 
 			});
-			socket_write($socket, "ANALYZE ".$toProcess[$fileNumber]."\n");
+			socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 		}
 
 		// Server process reports the errors and serves up new files to the list.
 		$pm->loopWhileConnections(
 			function ($socket, $msg) use (&$it, &$fileNumber, &$bytes, $output, $toProcess, $start) {
 				list($message, $details) = explode(' ', $msg, 2);
-				switch($message) {
+				switch ($message) {
 					case 'VERBOSE':
 						$this->output->outputVerbose(base64_decode($details));
 						break;
@@ -209,7 +218,7 @@ class AnalyzingPhase {
 						break;
 					case 'OUTPUT':
 						$vars=unserialize(base64_decode($details));
-						$this->output->output($vars['v'],$vars['ev']);
+						$this->output->output($vars['v'], $vars['ev']);
 						break;
 					case 'ERROR' :
 						$vars=unserialize(base64_decode($details));
@@ -225,8 +234,8 @@ class AnalyzingPhase {
 						if ($fileNumber<count($toProcess)) {
 							list($size, $name) = explode(' ', $details, 2);
 							$bytes += $size;
-							$output->output(".", sprintf("%d - %s", $fileNumber+1, $toProcess[$fileNumber]));
-							socket_write($socket, "INDEX " . $toProcess[$fileNumber]. "\n");
+							$output->output(".", sprintf("%d - %s", $fileNumber + 1, $toProcess[$fileNumber]));
+							socket_write($socket, "INDEX " . $toProcess[$fileNumber] . "\n");
 							$fileNumber++;
 						} else {
 							socket_write($socket, "DONE\n");

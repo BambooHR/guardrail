@@ -20,7 +20,7 @@ class ProcessManager {
 	private $connections = [];
 
 	/**
-	 * @param string $initialCommand
+	 * @param callable $childProcess a closure to run inside the child process.
 	 * @return resource
 	 */
 	function createChild(callable $childProcess) {
@@ -44,12 +44,9 @@ class ProcessManager {
 	}
 
 	/**
-	 * @param Config          $config The config
-	 * @param OutputInterface $output Output
-	 * @param string[]        $list   The files to add
+	 * @var callable $serverReadCallBack A closure to run for the server process.
 	 * @return void
 	 */
-
 	function loopWhileConnections(callable $serverReadCallBack) {
 		while (count($this->connections) > 0) {
 			$read = $this->connections;

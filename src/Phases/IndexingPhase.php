@@ -33,6 +33,10 @@ class IndexingPhase {
 	private $traverser2 = null;
 	private $indexer = null;
 
+	/**
+	 * IndexingPhase constructor.
+	 * @param Config $config -
+	 */
 	function __construct(Config $config) {
 		$this->processManager = new ProcessManager();
 		$this->traverser1 = new NodeTraverser;
@@ -122,12 +126,10 @@ class IndexingPhase {
 
 
 	/**
-	 * @param Config $config 0
+	 * @param Config $config -
 	 * @return resource The client socket that the server should communicate with.
 	 */
 	function createIndexingChild(Config $config) {
-
-
 		return $this->processManager->createChild(
 			// This closure represents the child process.  The value it returns
 			// will be the exit code of the child process.
@@ -145,7 +147,7 @@ class IndexingPhase {
 						return 0;
 					} else {
 						list(, $file) = explode(' ', trim($receive));
-						$size = $this->indexFile($config,$file);
+						$size = $this->indexFile($config, $file);
 						socket_write($socket, "INDEXED $size $file\n");
 					}
 				}
@@ -156,10 +158,10 @@ class IndexingPhase {
 	/**
 	 * @param Config          $config The config
 	 * @param OutputInterface $output Output
-	 * @param string[]        $list   The files to add
+	 * @param \Generator      $itr    A generator function that yields filenames to scan.
 	 * @return void
 	 */
-	function indexList(Config $config, OutputInterface $output, \Generator $it) {
+	function indexList(Config $config, OutputInterface $output, \Generator $itr) {
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
 			$config->getSymbolTable()->disconnect();
@@ -168,24 +170,24 @@ class IndexingPhase {
 		$start = microtime(true);
 		$bytes = 0.0;
 		// Fire up our child processes and give them each a file to index.
-		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $it->valid(); ++$fileNumber, $it->next()) {
+		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $itr->valid(); ++$fileNumber, $itr->next()) {
 			$child = $this->createIndexingChild($config);
-			socket_write($child, "INDEX ".$it->current()."\n");
-			$output->output(".", sprintf("%d - %s", $fileNumber, $it->current()));
+			socket_write($child, "INDEX " . $itr->current() . "\n");
+			$output->output(".", sprintf("%d - %s", $fileNumber, $itr->current()));
 		}
 
 		$this->processManager->loopWhileConnections(
-			function ($socket, $msg) use (&$it, &$fileNumber, &$bytes, $output, $start) {
+			function ($socket, $msg) use (&$itr, &$fileNumber, &$bytes, $output, $start) {
 				list($message, $details) = explode(' ', $msg, 2);
 
 				//echo "RECEIVED:$msg from index: $index\n";
 				if ($message == 'INDEXED') {
-					if ($it->valid()) {
+					if ($itr->valid()) {
 						list($size, $name) = explode(' ', $details);
 						$bytes += $size;
-						$output->output(".", sprintf("%d - %s", ++$fileNumber, $it->current()));
-						socket_write($socket, "INDEX " . $it->current(). "\n");
-						$it->next();
+						$output->output(".", sprintf("%d - %s", ++$fileNumber, $itr->current()));
+						socket_write($socket, "INDEX " . $itr->current(). "\n");
+						$itr->next();
 					} else {
 						socket_write($socket, "DONE\n");
 						return ProcessManager::CLOSE_CONNECTION;
@@ -236,7 +238,7 @@ class IndexingPhase {
 		$this->indexList($config, $output, $this->getFileList($config, $it2, true) );
 
 		$table = $config->getSymbolTable();
-		if($table instanceof PersistantSymbolTable) {
+		if ($table instanceof PersistantSymbolTable) {
 			$table->connect();
 			$table->indexTable();
 		}

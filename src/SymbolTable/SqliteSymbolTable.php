@@ -53,6 +53,8 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 	/**
+	 * Disconnect, needed if we're going to pcntl_fork()
+	 *
 	 * @return void
 	 */
 	public function disconnect() {
@@ -60,6 +62,8 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 	/**
+	 * Reconnect after a pcntl_fork()
+	 *
 	 * @return void
 	 */
 	public function connect() {
@@ -92,7 +96,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @throws Exception
 	 */
 	private function addType($name, $file, $type, $hasTrait=0, $data="") {
-		if(!$this->statement) {
+		if (!$this->statement) {
 			$sql = "INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
 			$this->statement = $this->con->prepare($sql);
 		}
@@ -102,15 +106,25 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		}
 	}
 
+	/**
+	 * We save up batches of inserts and then insert them all at once in a transaction.
+	 *
+	 * @return void
+	 */
 	function flushInserts() {
 		$this->con->exec("begin");
-		foreach($this->queries as $params) {
+		foreach ($this->queries as $params) {
 			$this->statement->execute($params);
 		}
 		$this->con->exec("commit");
 		$this->queries = [];
 	}
 
+	/**
+	 * Add the index to the symbol table.  This is faster than adding it ahead of time.
+	 *
+	 * @return void
+	 */
 	function indexTable() {
 		$this->con->exec('create index on symbol_table(type,name)');
 		print_r($this->con->exec(
@@ -137,7 +151,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$result = $statement->fetch(Pdo::FETCH_NUM);
 		if ($result) {
 			return $this->adjustBasePath($result[0]);
-		 } else {
+		} else {
 			return "";
 		}
 	}
