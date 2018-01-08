@@ -284,9 +284,11 @@ class AnalyzingPhase {
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.
 		$groupSize = intval(count($toProcess) / $config->getPartitions());
-		$toProcess = ($config->getPartitionNumber() == $config->getPartitions()) ?
-			array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1)) :
-			array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1), $groupSize);
+		if ($config->getPartitionNumber() == $config->getPartitions()) {
+			$toProcess = array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1));
+		} else {
+			$toProcess = array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1), $groupSize);
+		}
 
 		$output->outputVerbose("\n\nAnalyzing " . count($toProcess) . " files\n");
 

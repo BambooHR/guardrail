@@ -421,7 +421,7 @@ class Config {
 	 * @return string
 	 */
 	public function getOutputFile() {
-		if($this->partitions>1) {
+		if ($this->partitions > 1) {
 			$lastPart = strrpos($this->outputFile, ".");
 			if ($lastPart > 0) {
 				return substr($this->outputFile, 0, $lastPart + 1) . $this->partitionNumber . ".xml";
