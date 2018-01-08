@@ -24,6 +24,7 @@ class SocketOutput extends XUnitOutput {
 	 * @param int    $line      The line number it occurred on
 	 * @param string $type      The type of error
 	 * @param string $message   A human readable message about the error
+	 * @return void
 	 */
 	function emitError($className, $file, $line, $type, $message = "") {
 		if ($this->shouldEmit($file, $type, $line)) {
@@ -45,7 +46,7 @@ class SocketOutput extends XUnitOutput {
 	 */
 	function output($verbose, $extraVerbose) {
 		// TODO: Implement output() method.
-		socket_write($this->socket, "OUTPUT ".base64_encode( serialize(["v"=>$verbose,"ev"=>$extraVerbose])."\n"));
+		socket_write($this->socket, "OUTPUT ".base64_encode( serialize(["v" => $verbose,"ev" => $extraVerbose]) . "\n"));
 	}
 
 	/**

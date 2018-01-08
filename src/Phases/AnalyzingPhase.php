@@ -57,6 +57,7 @@ class AnalyzingPhase {
 	/**
 	 * @param resource $socket The pipe to read/write from
 	 * @param Config   $config The application config
+	 * @return void
 	 */
 	function initChildThread($socket, Config $config) {
 		$this->output = new SocketOutput($config, $socket);
@@ -182,7 +183,7 @@ class AnalyzingPhase {
 
 		$start = microtime(true);
 
-		for ($fileNumber=0;
+		for ($fileNumber = 0;
 			 $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess);
 			 ++$fileNumber
 		) {
@@ -195,7 +196,7 @@ class AnalyzingPhase {
 						if ($receive == "DONE") {
 							return 0;
 						} else {
-							list($command, $file) = explode(' ',$receive,2 );
+							list($command, $file) = explode(' ', $receive, 2 );
 							$size = $this->analyzeFile($file, $processingCount, $config);
 							socket_write($socket, "ANALYZED $size $file\n");
 						}
@@ -217,11 +218,11 @@ class AnalyzingPhase {
 						$this->output->outputExtraVerbose(base64_decode($details));
 						break;
 					case 'OUTPUT':
-						$vars=unserialize(base64_decode($details));
+						$vars = unserialize(base64_decode($details));
 						$this->output->output($vars['v'], $vars['ev']);
 						break;
 					case 'ERROR' :
-						$vars=unserialize(base64_decode($details));
+						$vars = unserialize(base64_decode($details));
 						$this->output->emitError(
 							$vars['className'],
 							$vars['file'],
@@ -231,7 +232,7 @@ class AnalyzingPhase {
 						);
 						break;
 					case 'ANALYZED':
-						if ($fileNumber<count($toProcess)) {
+						if ($fileNumber < count($toProcess)) {
 							list($size, $name) = explode(' ', $details, 2);
 							$bytes += $size;
 							$output->output(".", sprintf("%d - %s", $fileNumber + 1, $toProcess[$fileNumber]));
@@ -242,7 +243,9 @@ class AnalyzingPhase {
 							return ProcessManager::CLOSE_CONNECTION;
 						}
 						if ($fileNumber % 50 == 0) {
-							$output->output("", sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start)));
+							$output->outputExtraVerbose(
+								sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start))
+							);
 						}
 						break;
 				}

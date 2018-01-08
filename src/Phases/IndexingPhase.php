@@ -186,7 +186,7 @@ class IndexingPhase {
 						list($size, $name) = explode(' ', $details);
 						$bytes += $size;
 						$output->output(".", sprintf("%d - %s", ++$fileNumber, $itr->current()));
-						socket_write($socket, "INDEX " . $itr->current(). "\n");
+						socket_write($socket, "INDEX " . $itr->current() . "\n");
 						$itr->next();
 					} else {
 						socket_write($socket, "DONE\n");
