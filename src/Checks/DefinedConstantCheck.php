@@ -130,7 +130,7 @@ class DefinedConstantCheck extends BaseCheck {
 			strcasecmp($name, 'null') == 0 ||
 			strcasecmp($name, 'true') == 0 ||
 			strcasecmp($name, 'false') == 0 ||
-			array_key_exists($name, DefinedConstantCheck::$phpConstants);
+			array_key_exists($name, self::$phpConstants);
 	}
 
 	/**
@@ -141,7 +141,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 * @return bool
 	 */
 	public function isMagicConstant($name) {
-		return array_key_exists($name, DefinedConstantCheck::$magicConstants);
+		return array_key_exists($name, self::$magicConstants);
 	}
 
 	/**
