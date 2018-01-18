@@ -193,7 +193,8 @@ class AnalyzingPhase {
 					}
 					$this->initChildThread($socket, $config);
 					while (1) {
-						$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
+						$receive = socket_read($socket, 4096, PHP_NORMAL_READ);
+						$receive = trim($receive);
 						if ($receive == "DONE") {
 							return 0;
 						} else {
@@ -208,8 +209,15 @@ class AnalyzingPhase {
 		}
 
 		// Server process reports the errors and serves up new files to the list.
+		$processDied = false;
 		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$it, &$fileNumber, &$bytes, $output, $toProcess, $start) {
+			function ($socket, $msg) use (&$it, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
+				if ($msg === false) {
+					$processDied = true;
+					echo "Error: Unexpected error reading from socket\n";
+					return ProcessManager::CLOSE_CONNECTION;
+				}
+				$msg = trim($msg);
 				list($message, $details) = explode(' ', $msg, 2);
 				switch ($message) {
 					case 'VERBOSE':
@@ -252,7 +260,7 @@ class AnalyzingPhase {
 				}
 				return ProcessManager::READ_CONNECTION;
 		});
-		return ($output->getErrorCount() > 0 ? 1 : 0);
+		return ($processDied || $output->getErrorCount() > 0 ? 1 : 0);
 	}
 
 	/**

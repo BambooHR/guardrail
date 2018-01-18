@@ -53,7 +53,7 @@ class ProcessManager {
 			$none = null;
 			if (socket_select($read, $none, $none, null)) {
 				foreach ($read as $index => $socket) {
-					$msg = trim(socket_read($socket, 4096, PHP_NORMAL_READ));
+					$msg = socket_read($socket, 4096, PHP_NORMAL_READ);
 					if (self::CLOSE_CONNECTION == call_user_func($serverReadCallBack, $socket, $msg)) {
 						socket_close($socket);
 						$status = 0;
