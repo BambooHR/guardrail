@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Checks\DefinedConstantCheck;
 use PhpParser\Node;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Expr;
@@ -48,14 +49,14 @@ class TypeInferrer {
 	 * @param Expr|null      $expr   Instance of Expr
 	 * @param Scope          $scope  Instance of Scope
 	 *
-	 * @return string
+	 * @return array [0]=Type [1]=maybe null
 	 * @todo This looks like a good place for a strategy pattern
 	 */
 	public function inferType(ClassLike $inside = null, Expr $expr=null, Scope $scope) {
 		if ($expr instanceof AssignOp) {
 			return $this->inferType($inside, $expr->expr, $scope);
 		} else if ($expr instanceof Scalar) {
-			return Scope::SCALAR_TYPE;
+			return [Scope::SCALAR_TYPE,Scope::NULL_IMPOSSIBLE];
 		} else if ($expr instanceof New_) {
 			if ($expr->class instanceof Name) {
 				$className = strval($expr->class);
@@ -64,40 +65,40 @@ class TypeInferrer {
 				} else if (strcasecmp($className, "static") == 0) {
 					$className = Scope::MIXED_TYPE;
 				}
-				return $className;
+				return [$className, Scope::NULL_IMPOSSIBLE];
 			}
 		} else if ($expr instanceof Node\Expr\Variable) {
 			if (gettype($expr->name) == "string") {
 				$varName = strval($expr->name);
 				if ($varName == "this" && $inside) {
-					return strval($inside->namespacedName);
+					return [strval($inside->namespacedName),false];
 				}
 				$scopeType = $scope->getVarType($varName);
 				if ($scopeType != Scope::UNDEFINED) {
-					return $scopeType;
+					return [$scopeType,$scope->getVarNullability($varName)];
 				}
 			}
 		} else if ($expr instanceof Closure) {
-			return "callable";
+			return ["callable",false];
 		} else if ($expr instanceof FuncCall) {
 			if ($expr->name instanceof Name) {
 				$func = $this->index->getAbstractedFunction($expr->name);
 				if ($func) {
-					$type = $func->getReturnType();
+					$type = Scope::constFromName($func->getReturnType());
 					if ($type) {
-						return $type;
+						return [$type,Scope::NULL_IMPOSSIBLE];
 					}
 				}
 			}
 		} else if ( $expr instanceof Node\Expr\MethodCall ) {
 			if (gettype($expr->name) == "string") {
-				$class = $this->inferType($inside, $expr->var, $scope);
+				list($class) = $this->inferType($inside, $expr->var, $scope);
 				if (!empty($class) && $class[0] != "!") {
 					$method = $this->index->getAbstractedMethod($class, strval($expr->name));
 					if ($method) {
-						$type = $method->getReturnType();
+						$type = Scope::constFromName($method->getReturnType());
 						if ($type) {
-							return $type;
+							return [$type,Scope::NULL_IMPOSSIBLE];
 						}
 						/*
 						$type = $method->getDocBlockReturnType();
@@ -111,15 +112,39 @@ class TypeInferrer {
 		} else if ( $expr instanceof PropertyFetch ) {
 			return $this->inferPropertyFetch($expr, $inside, $scope);
 		} else if ( $expr instanceof ArrayDimFetch ) {
-			$type = $this->inferType($inside, $expr->var, $scope);
+			list($type) = $this->inferType($inside, $expr->var, $scope);
 			if (substr($type, -2) == "[]") {
-				return substr($type, 0, -2);
+				return [substr($type, 0, -2), Scope::NULL_UNKNOWN];
 			}
 		} else if ($expr instanceof Clone_) {
 			// A cloned node will be the same type as whatever we're cloning.
 			return $this->inferType($inside, $expr->expr, $scope);
+		} else if ($expr instanceof Expr\ConstFetch) {
+			if (strcasecmp($expr->name,"null") == 0) {
+				return [Scope::NULL_TYPE,Scope::NULL_POSSIBLE];
+			} else if (strcasecmp($expr->name,"false")==0 || strcasecmp($expr->name,"true")==0) {
+				return [Scope::BOOL_TYPE,Scope::NULL_IMPOSSIBLE];
+			} else if ($this->index->isDefined($expr->name)) {
+				return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+			}
+		} else if ($expr instanceof Expr\Ternary) {
+			list($type1, $null1) = $this->inferType($inside, $expr->if, $scope);
+			list($type2, $null2) = $this->inferType($inside, $expr->else, $scope);
+			return [
+				$type1 == $type2 ? $type1 : Scope::MIXED_TYPE,
+				$null1==Scope::NULL_POSSIBLE || $null2==Scope::NULL_POSSIBLE ? Scope::NULL_POSSIBLE : Scope::NULL_UNKNOWN
+			];
+		} else if ($expr instanceof Expr\BinaryOp\Spaceship) {
+			return [Scope::INT_TYPE, Scope::NULL_IMPOSSIBLE];
+		} else if ($expr instanceof Expr\BinaryOp\Coalesce) {
+			list($type1) = $this->inferType($inside, $expr->left, $scope);
+			list($type2, $null2) = $this->inferType($inside, $expr->right, $scope);
+			return [
+				$type1 == $type2 ? $type1 : Scope::MIXED_TYPE,
+				$null2
+			];
 		}
-		return Scope::MIXED_TYPE;
+		return [Scope::MIXED_TYPE,Scope::NULL_UNKNOWN];
 	}
 
 	/**
@@ -132,7 +157,7 @@ class TypeInferrer {
 	 * @return string
 	 */
 	public function inferPropertyFetch(PropertyFetch $expr, $inside, $scope) {
-		$class = $this->inferType($inside, $expr->var, $scope);
+		list($class) = $this->inferType($inside, $expr->var, $scope);
 		if (!empty($class) && $class[0] != "!") {
 			if (gettype($expr->name) == 'string') {
 				/*
@@ -152,6 +177,6 @@ class TypeInferrer {
 				*/
 			}
 		}
-		return Scope::MIXED_TYPE;
+		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 	}
 }

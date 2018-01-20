@@ -281,12 +281,16 @@ class AnalyzingPhase {
 		}
 		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
 		$toProcess = [];
-		foreach ($indexPaths as $path) {
-			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
-			$output->outputVerbose("\n\nDirectory: $path\n");
-			$it = new RecursiveDirectoryIterator($tmpDirectory, FilesystemIterator::SKIP_DOTS);
-			$it2 = new RecursiveIteratorIterator($it);
-			$this->getPhase2Files($config, $it2, $toProcess);
+		if($config->hasFileList()) {
+			$toProcess = $config->getFileList();
+		} else {
+			foreach ($indexPaths as $path) {
+				$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
+				$output->outputVerbose("\n\nDirectory: $path\n");
+				$it = new RecursiveDirectoryIterator($tmpDirectory, FilesystemIterator::SKIP_DOTS);
+				$it2 = new RecursiveIteratorIterator($it);
+				$this->getPhase2Files($config, $it2, $toProcess);
+			}
 		}
 
 		// First we split up the files by partition.

@@ -58,24 +58,24 @@ class ReturnCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Return_) {
 			/** @var Return_ $node */
-			$type = $this->typeInferer->inferType($inside, $node->expr, $scope);
+			list($type) = $this->typeInferer->inferType($inside, $node->expr, $scope);
 
 			$insideFunc = $scope->getInsideFunction();
 			if ($inside && $insideFunc && $type) {
-				$expectedType = $insideFunc->getReturnType();
+				$expectedType = Scope::constFromName($insideFunc->getReturnType());
 				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) &&
 					$type != "" &&
 					$expectedType != "" &&
 					!$this->symbolTable->isParentClassOrInterface($expectedType, $type)
 				) {
 					$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
-					$functionName = strval($inside->name) ?: "anonymous function";
+					$functionName = strval($insideFunc->name) ?: "anonymous function";
 					if ($class) {
 						$msg = "Variable returned from method $class::$functionName()";
 					} else {
 						$msg = "Variable returned from function $functionName()";
 					}
-					$msg .= " must be a $expectedType, returning $type";
+					$msg .= " must be a ".Scope::nameToFromConst($expectedType).", returning ".Scope::nameToFromConst($type);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 				}
 			}

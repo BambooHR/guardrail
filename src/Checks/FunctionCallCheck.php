@@ -87,7 +87,7 @@ class FunctionCallCheck extends BaseCheck {
 				}
 			} else {
 				$inferer = new TypeInferrer($this->symbolTable);
-				$type = $inferer->inferType($inside, $node->name, $scope);
+				list($type) = $inferer->inferType($inside, $node->name, $scope);
 				// If it isn't known to be "callable" or "closure" then it may just be a string.
 				if (strcasecmp($type, "callable") != 0 && strcasecmp($type, "closure") != 0) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable function name detected");

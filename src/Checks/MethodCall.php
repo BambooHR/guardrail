@@ -78,7 +78,7 @@ class MethodCall extends BaseCheck {
 				return;
 			}
 			if ($scope) {
-				$className = $this->inferenceEngine->inferType($inside, $node->var, $scope);
+				list($className) = $this->inferenceEngine->inferType($inside, $node->var, $scope);
 			}
 			if ($className != "" && $className[0] != "!") {
 				if (!$this->symbolTable->isDefinedClass($className)) {
@@ -88,7 +88,7 @@ class MethodCall extends BaseCheck {
 				//echo $fileName." ".$node->getLine(). " : Looking up $className->$methodName\n";
 				$method = Util::findAbstractedSignature($className, $methodName, $this->symbolTable);
 				if ($method) {
-					$this->checkMethod($fileName, $node, $className, $scope, $method);
+					$this->checkMethod($fileName, $node, $className, $scope, $method, $inside);
 				} else {
 					// If there is a magic __call method, then we can't know if it will handle these calls.
 					if (
@@ -105,17 +105,18 @@ class MethodCall extends BaseCheck {
 	/**
 	 * checkMethod
 	 *
-	 * @param string          $fileName The name of the file
-	 * @param string          $node     The node
-	 * @param string          $inside   The inside method
-	 * @param Scope           $scope    Instance of Scope
-	 * @param MethodInterface $method   Instance of MethodInterface
+	 * @param string          $fileName  The name of the file
+	 * @param string          $node      The node
+	 * @param string          $className The inside method
+	 * @param Scope           $scope     Instance of Scope
+	 * @param MethodInterface $method    Instance of MethodInterface
+	 * @param ClassLike       $inside    What context we're executing inside (if any)
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, $node, $inside, Scope $scope, MethodInterface $method) {
+	protected function checkMethod($fileName, $node, $className, Scope $scope, MethodInterface $method, ClassLike $inside=null) {
 		if ($method->isStatic()) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $inside::" . $method->getName() . " non-statically");
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 			return;
 		}
 		$params = $method->getParameters();
@@ -132,20 +133,38 @@ class MethodCall extends BaseCheck {
 		}
 
 		foreach ($node->args as $index => $arg) {
-
-			if ($scope && $arg->value instanceof Variable && $index < count($params) ) {
-				$variableName = $arg->value->name;
-				$type = $scope->getVarType($variableName);
+			if ($scope && $arg->value instanceof Expr && $index < count($params) ) {
+				$variableName = $params[$index]->getName();
+				list($type,$maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
 				if ($arg->unpack) {
 					// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
 					if (strcasecmp($type, "array") != 0 && $type != Scope::UNDEFINED && $type != Scope::MIXED_TYPE) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array.  Passing $type from \$$variableName.");
 					}
+					return;// After we unpack an arg, we can't check the remaining parameters.
 				} else if ($params[$index]->getType() != "") {
-					// They called with a simple $foo, see if the $type for Foo matches
+					// Reference mismatch
+					if ($params[$index]->isReference() && !($arg->value instanceof Variable || $arg->value instanceof Expr\ArrayDimFetch || $arg->value instanceof Expr\PropertyFetch)) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $node->name . "() parameter \$$variableName must be a reference type not an expression.");
+					}
+
+					// Type mismatch
 					$expectedType = $params[$index]->getType();
-					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) && $type != "" && !$this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Variable passed to method " . $inside . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
+					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]) &&
+						$type != "" &&
+						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
+						!(strcasecmp($expectedType,"closure")==0 && strcasecmp($type,"callable")==0)
+					) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
+					}
+
+					// Nulls mismatch
+					if (!$params[$index]->isOptional()) {
+						if ($type == Scope::NULL_TYPE) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to method " . $className . "->" . $node->name . "() parameter \$$variableName that does not accept nulls");
+						} else if ($maybeNull == Scope::NULL_POSSIBLE) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to method " . $className . "->" . $node->name . "() parameter \$$variableName that does not accept nulls");
+						}
 					}
 				}
 			}

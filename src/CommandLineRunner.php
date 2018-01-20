@@ -71,6 +71,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 		}
 
 		$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
+		//$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);
 
 		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
@@ -85,12 +86,8 @@ where: -p #/#                 = Define the number of partitions and the current 
 			$analyzer = new AnalyzingPhase($output);
 			$output->outputExtraVerbose("Analyzing\n");
 
-			if (!$config->hasFileList()) {
-				$exitCode = $analyzer->run($config, $output);
-			} else {
-				$list = $config->getFileList();
-				$exitCode = $analyzer->phase2($config, $output, $list);
-			}
+			$exitCode = $analyzer->run($config, $output);
+
 			$output->outputExtraVerbose("\nDone\n\n");
 			$output->renderResults();
 			//print_r($output->getErrorsByFile());

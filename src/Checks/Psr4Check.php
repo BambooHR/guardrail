@@ -52,7 +52,7 @@ class Psr4Check extends BaseCheck {
 		// All classes with a name, must follow PSR-4 naming.
 		// (Anonymous classes obviously don't need to be in their own file.)
 		if ($fullName != "" && (strpos($fullName, "/") === false || substr($fileName, -strlen($fullName)) != $fullName)) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_PSR4, "Class " . $name . " inside $fileName is not namespaced as a PSR-4 class");
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_PSR4, "Class " . $node->namespacedName . " is not namespaced as a PSR-4 class");
 		}
 	}
 }

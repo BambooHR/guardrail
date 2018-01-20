@@ -188,7 +188,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($node instanceof Node\Expr\MethodCall) {
 			if (gettype($node->name) == "string") {
 
-				$type = $this->typeInferrer->inferType( end($this->classStack) ?: null, $node->var, end($this->scopeStack) );
+				list($type) = $this->typeInferrer->inferType( end($this->classStack) ?: null, $node->var, end($this->scopeStack) );
 				if ($type && $type[0] != "!") {
 					$method = $this->index->getAbstractedMethod($type, $node->name);
 					if ($method) {
@@ -230,7 +230,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE);
 			}
 			if ($node->valueVar instanceof Variable && gettype($node->valueVar->name) == "string") {
-				$type = $this->typeInferrer->inferType(end($this->classStack) ?: null, $node->expr, end($this->scopeStack));
+				list($type) = $this->typeInferrer->inferType(end($this->classStack) ?: null, $node->expr, end($this->scopeStack));
 				if (substr($type, -2) == "[]") {
 					$type = substr($type, 0, -2);
 				} else {
@@ -245,19 +245,19 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				}
 			}
 		}
-		if ($node instanceof If_ || $node instanceof ElseIf_) {
-			if ($node instanceof ElseIf_) {
-				// Pop the previous if's scope
-				$last = array_pop($this->scopeStack);
-				$next = end($this->scopeStack);
-				$next->copyUsedVars($last);
-			}
+		if ($node instanceof ElseIf_) {
+			// Pop the previous if's scope
+			$last = array_pop($this->scopeStack);
+			$this->pushIfScope($node, $last);
+		}
+
+		if ($node instanceof If_) {
 			$this->pushIfScope($node);
 		}
 
 		if ($node instanceof Node\Stmt\Else_) {
-			// The previous scope was only valid for the if side.
-			array_pop($this->scopeStack);
+			$last = array_pop($this->scopeStack); // Save the old scope so we can merge it later.
+			$this->pushIfScope($node, $last);
 		}
 
 		if (isset($this->checks[$class])) {
@@ -275,18 +275,15 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	function pushIfScope(Node $node) {
+	function pushIfScope(Node $node, Scope $previous=null) {
 		/** @var Scope $scope */
 		$scope = end($this->scopeStack);
-
+		$newScope = $scope->getScopeClone($previous);
 		if (self::isCastableIf($node)) {
-			$newScope = $scope->getScopeClone();
 			$this->addCastedScope($node, $newScope);
-		} else {
-			// No need to actually instantiate a different scope, since it's identical to the old.
-			$newScope = $scope;
 		}
 		array_push($this->scopeStack, $newScope);
+//		echo "  New scope created, depth=".count($this->scopeStack)."\n";
 	}
 
 	/**
@@ -356,13 +353,18 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($func instanceof ClassMethod) {
 			$isStatic = $func->isStatic();
 		}
+//		echo "Function: ".$func->name." depth=".(count($this->scopeStack)+1)."\n";
 		$scope = new Scope( $isStatic, false, $func );
 		foreach ($func->getParams() as $param) {
+			//echo "  Param ".$param->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
 			if ($param->variadic) {
 				// TODO: Track the type of a variadic array
 				$scope->setVarType(strval($param->name), 'array');
 			} else {
-				$scope->setVarType(strval($param->name), strval($param->type));
+				$scope->setVarType(strval($param->name), Scope::constFromName(strval($param->type)));
+				if($param->type!=null && $param->default == null) {
+					$scope->setVarNull(strval($param->name), Scope::NULL_IMPOSSIBLE);
+				}
 			}
 		}
 		if ($func instanceof Closure) {
@@ -408,9 +410,14 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	private function setScopeExpression($varName, $expr) {
 		$scope = end($this->scopeStack);
 		$class = end($this->classStack) ?: null;
-		$newType = $this->typeInferrer->inferType($class, $expr, $scope);
+		list($newType, $nullable) = $this->typeInferrer->inferType($class, $expr, $scope);
 		$this->setScopeType($varName, $newType);
+		if($nullable == Scope::NULL_POSSIBLE) {
+			$scope->setVarNull($varName);
+		}
 	}
+
+
 
 	/**
 	 * setScopeType
@@ -426,9 +433,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($oldType != $newType) {
 			if ($oldType == Scope::UNDEFINED) {
 				$scope->setVarType($varName, $newType);
+			} else if($newType==Scope::NULL_TYPE) {
+				$scope->setVarNull($varName);
 			} else {
 				// The variable has been used with 2 different types.  Update it in the scope as a mixed type.
-				$scope->setVarType($varName, Scope::MIXED_TYPE);
+				$scope->setVarType($varName, Scope::MIXED_TYPE );
 			}
 		}
 	}
@@ -475,7 +484,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * Assignment can cause a new variable to come into scope.  We infer the type of the expression (if possible) and
 	 * add an entry to the variable table for this scope.
 	 *
-	 * @param Assign|AssignRef $op Variable instances of different things
+	 * @param Node\Expr\Assign|Node\Expr\AssignRef $op Variable instances of different things
 	 *
 	 * @return void
 	 */
@@ -498,7 +507,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 			if ($var instanceof Variable && gettype($var->name) == "string") {
 				$varName = strval($var->name);
+//				echo "  Set $varName\n";
 				$this->setScopeType($varName, "array");
+
 			}
 		}
 	}
@@ -555,6 +566,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 		if ($node instanceof Node\FunctionLike) {
 			$scope = array_pop($this->scopeStack);
+//			echo "Exit function ".$node->name." scope depth=".count($this->scopeStack)."\n";
 			$unusedVars = $scope->getUnusedVars();
 
 			if (count($unusedVars) > 0 ) {
@@ -568,13 +580,21 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		}
 
-		if ($node instanceof If_) {
-			if ($node->else == null) {
-				// We only need to pop the scope if there wasn't an else clause.  Otherwise, it has already been popped.
-				$last = array_pop($this->scopeStack);
-				$next = end($this->scopeStack);
-				$next->copyUsedVars($last);
-			}
+		if ($node instanceof ElseIf_) {
+			$last = end($this->scopeStack);
+			$last->mergePrevious();
+		}
+
+		if ($node instanceof Node\Stmt\Else_) {
+			$last = end($this->scopeStack);
+			$last->mergePrevious();
+		}
+
+		if ($node instanceof If_ ) {
+			$last = array_pop($this->scopeStack);
+			$next = end($this->scopeStack);
+			$next->merge($last);
+//			echo "  Exit if, depth = ".count($this->scopeStack)."\n";
 		}
 		return null;
 	}

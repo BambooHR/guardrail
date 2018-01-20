@@ -33,7 +33,7 @@ class XUnitOutput implements OutputInterface {
 	/**
 	 * @var bool
 	 */
-	private $emitErrors;
+	protected $emitErrors;
 
 	/**
 	 * @var mixed
