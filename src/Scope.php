@@ -51,8 +51,28 @@ class Scope {
 			return static::FLOAT_TYPE;
 		} else if (strcasecmp($str,"string")==0) {
 			return static::STRING_TYPE;
+		} else if (strcasecmp($str,"mixed")==0) {
+			return static::MIXED_TYPE;
 		} else {
 			return $str;
+		}
+	}
+
+	static public function constFromDocBlock($str, $insideClassName="", $staticClassName="") {
+		if (strcasecmp($str,"object")==0) {
+			return static::MIXED_TYPE;
+		} else if(strcasecmp($str,"integer")==0) {
+			return static::INT_TYPE;
+		} else if(strcasecmp($str,"boolean")==0) {
+			return static::SCALAR_TYPE;
+		} else if(strcasecmp($str,"\$this")==0) {
+			return $insideClassName;
+		} else if(strcasecmp($str,"static")==0) {
+			return $staticClassName;
+		} else if(strcasecmp($str,"self")==0) {
+			return $insideClassName;
+		} else {
+			return self::constFromName($str);
 		}
 	}
 

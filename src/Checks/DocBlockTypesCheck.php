@@ -76,10 +76,10 @@ class DocBlockTypesCheck extends BaseCheck {
 		$typeName = str_replace("[]", "", $typeName);
 		foreach (explode('|', $typeName) as $typeName) {
 			$typeName = trim($typeName);
-			if ($typeName && !self::isScalar($typeName) && !$this->symbolTable->isDefinedClass($typeName)) {
+			if ($typeName) {
 				if ($typeName == "type" || strrpos($typeName, "\\type") == strlen($typeName) - 5) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_TYPE, $message);
-				} else {
+				} else if (!self::isScalar($typeName) && !$this->symbolTable->isDefinedClass($typeName)) {
 					$this->emitError($fileName, $node, $class, $message);
 				}
 			}

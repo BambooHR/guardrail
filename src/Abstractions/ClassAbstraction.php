@@ -103,7 +103,7 @@ class ClassAbstraction implements ClassInterface {
 	/**
 	 * getMethod
 	 *
-	 * @param ClassMethod $name Instance of ClassMethod
+	 * @param string $name Instance of ClassMethod
 	 *
 	 * @return ClassMethod|null
 	 */
@@ -170,7 +170,7 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-					return new Property($propertyProperty->name, "", $access, $prop->isStatic());
+					return new Property($propertyProperty->name, $propertyProperty->getAttribute("namespacedType")?:"", $access, $prop->isStatic());
 				}
 			}
 		}

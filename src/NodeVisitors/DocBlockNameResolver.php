@@ -118,7 +118,7 @@ class DocBlockNameResolver extends NameResolver {
 			$str = $comment->getText();
 			if (count($prop->props) >= 1) {
 				try {
-					$this->getDocBlockAttributes($prop, $str);
+					$this->setDocBlockAttributes($prop, $str);
 				} catch (\InvalidArgumentException $exception) {
 					// Skip it.
 				}
@@ -153,7 +153,7 @@ class DocBlockNameResolver extends NameResolver {
 	 *
 	 * @return void
 	 */
-	private function getDocBlockAttributes(Property $prop, $str) {
+	private function setDocBlockAttributes(Property $prop, $str) {
 		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
 		/** @var Var_[] $types */
 		$types = $docBlock->getTagsByName("var");
@@ -163,7 +163,11 @@ class DocBlockNameResolver extends NameResolver {
 				if ($type[0] == '\\') {
 					$type = substr($type, 1);
 				}
-				$prop->props[0]->setAttribute("namespacedType", strval($type));
+
+				// Ignore union types.
+				if(strpos($type,"|")===false) {
+					$prop->props[0]->setAttribute("namespacedType",$type);
+				}
 			}
 		}
 }
@@ -180,20 +184,14 @@ class DocBlockNameResolver extends NameResolver {
 		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
 		$return = $docBlock->getTagsByName("return");
 		if (count($return)) {
-			$returnType = $return[0]->getType();
-			$types = explode("|", $returnType);
-			if (count($types) > 1) {
-				$node->setAttribute("namespacedReturn", \BambooHR\Guardrail\Scope::MIXED_TYPE);
-			} else {
-				foreach ($types as $type) {
-					if ($type[0] == '\\') {
-						$type = substr($type, 1);
-					}
-					$node->setAttribute("namespacedReturn", strval($type));
-
-					return;
+			$returnType = strval($return[0]);
+			list($returnType)=explode(" ",$returnType,2);
+			if ($returnType!="" && strpos($returnType, "|")===false) {
+				if($returnType[0]=="\\") {
+					$returnType = substr($returnType,1);
 				}
+				$node->setAttribute("namespacedReturn", strval($returnType));
 			}
 		}
-}
+	}
 }

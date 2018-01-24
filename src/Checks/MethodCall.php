@@ -47,6 +47,8 @@ class MethodCall extends BaseCheck {
 		return [\PhpParser\Node\Expr\MethodCall::class];
 	}
 
+
+
 	/**
 	 * run
 	 *
@@ -58,9 +60,8 @@ class MethodCall extends BaseCheck {
 	 * @return mixed
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-
+		static $checkable = 0, $uncheckable = 0;
 		if ($node instanceof Expr\MethodCall) {
-
 			if ($inside instanceof Trait_) {
 				// Traits should be converted into methods in the class, so that we can check them in context.
 				return;
@@ -71,7 +72,6 @@ class MethodCall extends BaseCheck {
 			}
 			$methodName = strval($node->name);
 
-			$varName = "{expr}";
 			$className = "";
 			if ($node->var instanceof Variable && $node->var->name == "this" && !$inside) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
@@ -85,10 +85,9 @@ class MethodCall extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $className in method call to $methodName()");
 					return;
 				}
-				//echo $fileName." ".$node->getLine(). " : Looking up $className->$methodName\n";
 				$method = Util::findAbstractedSignature($className, $methodName, $this->symbolTable);
 				if ($method) {
-					$this->checkMethod($fileName, $node, $className, $scope, $method, $inside);
+					$this->checkMethod($fileName, $node, $className, $methodName, $scope, $method, $inside);
 				} else {
 					// If there is a magic __call method, then we can't know if it will handle these calls.
 					if (
@@ -98,6 +97,10 @@ class MethodCall extends BaseCheck {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className::$methodName");
 					}
 				}
+				$checkable ++;
+			} else {
+				$uncheckable++;
+				//echo "Uncheckable method call $fileName ".$node->getLine()." ".$node->name." $checkable:$uncheckable\n";
 			}
 		}
 	}
@@ -106,7 +109,7 @@ class MethodCall extends BaseCheck {
 	 * checkMethod
 	 *
 	 * @param string          $fileName  The name of the file
-	 * @param string          $node      The node
+	 * @param Node            $node      The node
 	 * @param string          $className The inside method
 	 * @param Scope           $scope     Instance of Scope
 	 * @param MethodInterface $method    Instance of MethodInterface
@@ -114,11 +117,18 @@ class MethodCall extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, $node, $className, Scope $scope, MethodInterface $method, ClassLike $inside=null) {
+	protected function checkMethod($fileName, $node, $className, $methodName, Scope $scope, MethodInterface $method, ClassLike $inside=null) {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 			return;
 		}
+
+		if ($method->getAccessLevel() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($className, $inside->namespacedName) != 0)) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt call private method " . $methodName);
+		} else if ($method->getAccessLevel() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($className, $inside->namespacedName))) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call protected method " . $methodName);
+		}
+
 		$params = $method->getParameters();
 		$minimumArgs = $method->getMinimumRequiredParameters();
 		if (count($node->args) < $minimumArgs) {
@@ -145,7 +155,7 @@ class MethodCall extends BaseCheck {
 				} else if ($params[$index]->getType() != "") {
 					// Reference mismatch
 					if ($params[$index]->isReference() && !($arg->value instanceof Variable || $arg->value instanceof Expr\ArrayDimFetch || $arg->value instanceof Expr\PropertyFetch)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $node->name . "() parameter \$$variableName must be a reference type not an expression.");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName must be a reference type not an expression.");
 					}
 
 					// Type mismatch
@@ -155,17 +165,19 @@ class MethodCall extends BaseCheck {
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
 						!(strcasecmp($expectedType,"closure")==0 && strcasecmp($type,"callable")==0)
 					) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $node->name . "() parameter \$$variableName must be a $expectedType, passing $type");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName must be a $expectedType, passing $type");
 					}
 
+					/*
 					// Nulls mismatch
 					if (!$params[$index]->isOptional()) {
 						if ($type == Scope::NULL_TYPE) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to method " . $className . "->" . $node->name . "() parameter \$$variableName that does not accept nulls");
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to method " . $className . "->" . $methodName. "() parameter \$$variableName that does not accept nulls");
 						} else if ($maybeNull == Scope::NULL_POSSIBLE) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to method " . $className . "->" . $node->name . "() parameter \$$variableName that does not accept nulls");
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName that does not accept nulls");
 						}
 					}
+					*/
 				}
 			}
 		}

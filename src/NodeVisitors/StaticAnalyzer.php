@@ -83,6 +83,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/** @var OutputInterface */
 	private $output;
 
+	private $timings = [];
+
+	function getTimings() {
+		return $this->timings;
+	}
+
 	/**
 	 * StaticAnalyzer constructor.
 	 *
@@ -261,8 +267,13 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 
 		if (isset($this->checks[$class])) {
+			$last=microtime(true);
 			foreach ($this->checks[$class] as $check) {
+				$start = $last;
 				$check->run($this->file, $node, end($this->classStack) ?: null, end($this->scopeStack) ?: null);
+				$last = microtime(true);
+				$name=get_class($check);
+				$this->timings[$name] = (isset($this->timings[$name]) ? $this->timings[$name]:0) + ($last-$start);
 			}
 		}
 		return null;

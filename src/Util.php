@@ -147,6 +147,7 @@ class Util {
 	 * @return null|\BambooHR\Guardrail\Abstractions\ClassAbstraction|\BambooHR\Guardrail\Abstractions\ClassMethod|\BambooHR\Guardrail\Abstractions\ReflectedClassMethod
 	 */
 	static public function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
+		$className=strval($className);
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {

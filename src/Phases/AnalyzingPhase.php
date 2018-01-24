@@ -43,6 +43,7 @@ class AnalyzingPhase {
 	private $traversers = [];
 	private $parser = null;
 	private $analyzer;
+	private $timingResults = [];
 
 	/** @var OutputInterface Child processes will overwrite this in order to send data over the socket. */
 	private $output = null;
@@ -75,6 +76,17 @@ class AnalyzingPhase {
 
 		$this->traversers = [$traverser1, $traverser2, $traverser3];
 		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+	}
+
+	function getTimingResults() {
+		$ret = [];
+		foreach($this->timingResults as $timingArr) {
+			foreach($timingArr as $class=>$time) {
+				$ret[$class]=(isset($ret[$class]) ? $ret[$class] : 0) + $time;
+			}
+		}
+		arsort($ret,SORT_NUMERIC);
+		return $ret;
 	}
 
 	/**
@@ -195,7 +207,8 @@ class AnalyzingPhase {
 					while (1) {
 						$receive = socket_read($socket, 4096, PHP_NORMAL_READ);
 						$receive = trim($receive);
-						if ($receive == "DONE") {
+						if ($receive == "TIMINGS") {
+							socket_write($socket,"TIMINGS ".json_encode($this->analyzer->getTimings())."\n");
 							return 0;
 						} else {
 							list($command, $file) = explode(' ', $receive, 2 );
@@ -248,8 +261,7 @@ class AnalyzingPhase {
 							socket_write($socket, "INDEX " . $toProcess[$fileNumber] . "\n");
 							$fileNumber++;
 						} else {
-							socket_write($socket, "DONE\n");
-							return ProcessManager::CLOSE_CONNECTION;
+							socket_write($socket, "TIMINGS\n");
 						}
 						if ($fileNumber % 50 == 0) {
 							$output->outputExtraVerbose(
@@ -257,6 +269,9 @@ class AnalyzingPhase {
 							);
 						}
 						break;
+					case 'TIMINGS':
+						$this->timingResults[]=json_decode($details,true);
+						return ProcessManager::CLOSE_CONNECTION;
 				}
 				return ProcessManager::READ_CONNECTION;
 		});

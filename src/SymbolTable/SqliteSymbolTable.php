@@ -388,6 +388,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return AbstractClass
 	 */
 	public function getAbstractedClass($name) {
+		$name = strval($name);
 		$cacheName = strtolower($name);
 		$ob = $this->cache->get("AClass:" . $cacheName);
 		if (!$ob) {

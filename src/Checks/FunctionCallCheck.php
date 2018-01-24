@@ -65,7 +65,6 @@ class FunctionCallCheck extends BaseCheck {
 				$name = $node->name->toString();
 
 				$toLower = strtolower($name);
-				$this->incTests();
 				if (array_key_exists($toLower, self::$dangerous)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function $name()");
 				}

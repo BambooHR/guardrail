@@ -59,8 +59,6 @@ class InterfaceCheck extends BaseCheck {
 		$visibility = $method->getAccessLevel();
 		$oldVisibility = $parentMethod->getAccessLevel();
 
-		$this->incTests();
-
 		$className = (isset($class->namespacedName) ? strval($class->namespacedName) : "anonymous class");
 
 		// "public" and "protected" cannot be redefined, but private can.
@@ -165,7 +163,6 @@ class InterfaceCheck extends BaseCheck {
 		$arr = is_array($node->implements) ? $node->implements : [$node->implements];
 		foreach ($arr as $interface) {
 			$name = $interface->toString();
-			$this->incTests();
 			if ($name) {
 				$interface = $this->symbolTable->getAbstractedClass($name);
 				if (! $interface) {

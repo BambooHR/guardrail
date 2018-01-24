@@ -23,11 +23,12 @@ class CommandLineRunner {
 	 */
 	public function usage() {
 		echo "
-Usage: php guardrail.phar [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
+Usage: php guardrail.phar [-a] [-i] [-n #] [--format xunit|text] [-o output_file_name] [-p #/#] [--timings] config_file
 
 where: -p #/#                 = Define the number of partitions and the current partition.
                                 Use for multiple hosts. Example: -p 1/4
                                 
+       --format {format}      = Use \"xunit\" format or a more console friendly \"text\" format                          
        -n #                   = number of child process to run.
                                 Use for multiple processes on a single host.
 
@@ -40,7 +41,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 
        -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
 
-       -o output_file_name    = Output results in junit format to the specified filename
+       -o output_file_name    = Output results to the specified filename
 
        -v                     = Increase verbosity level.  Can be used once or twice.
 
@@ -48,6 +49,7 @@ where: -p #/#                 = Define the number of partitions and the current 
        
        -l  or --list          = Ignore all other options and list standard test names.
 
+       --timings              = Output a summary of how long each check ran for.
 ";
 	}
 
@@ -70,8 +72,12 @@ where: -p #/#                 = Define the number of partitions and the current 
 			exit(1);
 		}
 
-		$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
-		//$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);
+		if($config->getOutputFormat()=="text") {
+			$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);
+		} else {
+			$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
+		}
+
 
 		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
@@ -90,7 +96,15 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 			$output->outputExtraVerbose("\nDone\n\n");
 			$output->renderResults();
-			//print_r($output->getErrorsByFile());
+
+			if($config->shouldOutputTimings()) {
+				$timings = $analyzer->getTimingResults();
+				$totalTime=array_sum($timings);
+				foreach($analyzer->getTimingResults() as $class=>$time) {
+					printf("%-60s %4.1fs %3d%%\n", $class, $time, intval($time/$totalTime*100));
+				}
+				printf("Total = %d:%04.1f CPU time", intval($totalTime/60), $totalTime-floor($totalTime/60)*60 );
+			}
 			exit($exitCode);
 		}
 	}

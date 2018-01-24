@@ -137,6 +137,7 @@ abstract class SymbolTable {
 	 * @return AbstractionClass
 	 */
 	public function getAbstractedClass($name) {
+		$name=strval($name);
 		$cacheName = strtolower($name);
 		$ob = $this->cache->get("AClass:" . $cacheName);
 		if (!$ob) {

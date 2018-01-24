@@ -63,7 +63,8 @@ class TypeInferrer {
 				if (strcasecmp($className, "self") == 0) {
 					$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
 				} else if (strcasecmp($className, "static") == 0) {
-					$className = Scope::MIXED_TYPE;
+					// Todo: track static scope to figure out which child class to invoke.
+					$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
 				}
 				return [$className, Scope::NULL_IMPOSSIBLE];
 			}
@@ -94,18 +95,39 @@ class TypeInferrer {
 			if (gettype($expr->name) == "string") {
 				list($class) = $this->inferType($inside, $expr->var, $scope);
 				if (!empty($class) && $class[0] != "!") {
+
+					// IoC
+					if(
+						strcasecmp($class,"Core\\App\\App")==0 &&
+						$expr->name=="make"
+					) {
+						if(
+							count($expr->args)==1 &&
+							$expr->args[0]->value instanceof Expr\ClassConstFetch &&
+							$expr->args[0]->value->class instanceof Name &&
+							is_string($expr->args[0]->value->name) &&
+							$expr->args[0]->value->name == "class"
+						) {
+							return [strval($expr->args[0]->value->class), Scope::NULL_IMPOSSIBLE];
+						}
+					}
+					//echo $class."->".$expr->name."\n";
 					$method = $this->index->getAbstractedMethod($class, strval($expr->name));
+
 					if ($method) {
 						$type = Scope::constFromName($method->getReturnType());
 						if ($type) {
 							return [$type,Scope::NULL_IMPOSSIBLE];
 						}
 						/*
-						$type = $method->getDocBlockReturnType();
+						$type = Scope::constFromDocBlock(
+							$method->getDocBlockReturnType(),
+							$inside ? $inside->name : "",
+							$inside ? $inside->name : ""
+						);
 						if($type) {
-							return $type;
-						}
-						*/
+							return [$type,Scope::NULL_UNKNOWN];
+						}*/
 					}
 				}
 			}
@@ -151,31 +173,43 @@ class TypeInferrer {
 	 * inferPropertyFetch
 	 *
 	 * @param PropertyFetch $expr   Instance of PropertyFetch
-	 * @param string        $inside Method inside the class
+	 * @param ClassLike     $inside Method inside the class
 	 * @param string        $scope  The scope
 	 *
-	 * @return string
+	 * @return array
 	 */
 	public function inferPropertyFetch(PropertyFetch $expr, $inside, $scope) {
+		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 		list($class) = $this->inferType($inside, $expr->var, $scope);
 		if (!empty($class) && $class[0] != "!") {
 			if (gettype($expr->name) == 'string') {
-				/*
-				$classDef = $this->index->getClass($class);
-				if($classDef) {
-					$prop = Util::findProperty($classDef, strval($expr->name), $this->index );
-					if($prop) {
-						$type = $prop->getAttribute("namespacedType") ?: "";
-						if(!empty($type)) {
-							if($type[0]=='\\') {
-								$type=substr($type,1);
+				$propName = $expr->name;
+				if ($propName!="") {
+					$classDef = $this->index->getAbstractedClass($class);
+					if($classDef) {
+						$prop = Util::findAbstractedProperty($class, $propName, $this->index);
+						if ($prop) {
+							$type = $prop->getType();
+							if (!empty($type)) {
+								if ($type[0] == '\\') {
+									$type = substr($type, 1);
+								}
+
+								$type2 = Scope::constFromDocBlock($type, $inside?$inside->name:"", $inside?$inside->name:"");
+								return [$type2, Scope::NULL_UNKNOWN];
 							}
-							return $type;
+						} else {
+						//	echo "Unable to find prop $propName\n";
 						}
+					} else {
+						//echo "Unable to find class $class, to look up $propName\n";
 					}
+				} else {
+					//echo "Unable to infer property type: $propName\n";
 				}
-				*/
 			}
+		} else {
+			//echo "Unable to infer left side of prop fetch ".get_class($expr->var)." ".$expr->getLine()." inside ".($inside?$inside->name:"")."\n";
 		}
 		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 	}

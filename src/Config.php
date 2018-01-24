@@ -46,6 +46,8 @@ class Config {
 	/** @var int Which partition this server is running  */
 	private $partitionNumber = 1;
 
+	private $format = "xunit";
+
 	/** @var string  */
 	private $outputFile = "";
 
@@ -54,6 +56,8 @@ class Config {
 
 	/** @var \BambooHR\Guardrail\SymbolTable\SymbolTable */
 	private $symbolTable = null;
+
+	private $timings = false;
 
 	/** @var string[]|false The list of files to process */
 	private $fileList = false;
@@ -128,6 +132,10 @@ class Config {
 
 	}
 
+	public function shouldOutputTimings() {
+		return $this->timings;
+	}
+
 	/**
 	 * getPlugins
 	 *
@@ -194,6 +202,17 @@ class Config {
 			switch ($argv[$argCount]) {
 				case '-a':
 					$this->forceAnalysis = true;
+					break;
+
+				case '--format':
+					if (++$argCount >= count($argv) || !in_array($argv[$argCount],["xunit","text"])) {
+						throw new InvalidConfigException;
+					}
+					$this->format = $argv[$argCount];
+					break;
+
+				case '--timings':
+					$this->timings = true;
 					break;
 
 				case '-l':
@@ -377,6 +396,13 @@ class Config {
 	 */
 	public function shouldAnalyze() {
 		return $this->forceAnalysis;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOutputFormat() {
+		return $this->format;
 	}
 
 	/**
