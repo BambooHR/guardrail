@@ -190,9 +190,9 @@ class TypeInferrer {
 		if (!empty($class) && $class[0] != "!") {
 			if (gettype($expr->name) == 'string') {
 				$propName = $expr->name;
-				if ($propName!="") {
+				if ($propName != "") {
 					$classDef = $this->index->getAbstractedClass($class);
-					if($classDef) {
+					if ($classDef) {
 						$prop = Util::findAbstractedProperty($class, $propName, $this->index);
 						if ($prop) {
 							$type = $prop->getType();
@@ -201,11 +201,11 @@ class TypeInferrer {
 									$type = substr($type, 1);
 								}
 
-								$type2 = Scope::constFromDocBlock($type, $inside?strval($inside->namespacedName):"", $inside?strval($inside->namespacedName):"");
+								$type2 = Scope::constFromDocBlock($type, $inside ? strval($inside->namespacedName) : "", $inside ? strval($inside->namespacedName) : "");
 								return [$type2, Scope::NULL_UNKNOWN];
 							}
 						} else {
-						//	echo "Unable to find prop $propName\n";
+							//	echo "Unable to find prop $propName\n";
 						}
 					} else {
 						//echo "Unable to find class $class, to look up $propName\n";

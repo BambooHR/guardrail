@@ -218,6 +218,11 @@ class Scope {
 		$this->vars[$name]->modifiedLine = 0;
 	}
 
+	/**
+	 * @param string $name      The name of the variable
+	 * @param int    $canBeNull It's nullability state
+	 * @return void
+	 */
 	public function setVarNull($name, $canBeNull = self::NULL_POSSIBLE) {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
@@ -311,9 +316,9 @@ class Scope {
 	 */
 	public function getScopeClone(Scope $previous = null) {
 		$newVars = [];
-		foreach($this->vars as $var) {
+		foreach ($this->vars as $var) {
 			$newVar = clone $var;
-			$newVars[$var->name]= $newVar;
+			$newVars[$var->name] = $newVar;
 		}
 		$ret = new Scope($this->isStatic, $this->isGlobal, $this->inside, $previous);
 		$ret->vars = $newVars;

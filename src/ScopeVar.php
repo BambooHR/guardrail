@@ -12,7 +12,7 @@ class ScopeVar {
 	public $modifiedLine = 0;
 
 	/**
-	 * @param ScopeVar $other
+	 * @param ScopeVar $other -
 	 * @return void
 	 */
 	function mergeVar(ScopeVar $other) {
