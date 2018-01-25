@@ -148,7 +148,7 @@ class MethodCall extends BaseCheck {
 				list($type,$maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
 				if ($arg->unpack) {
 					// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
-					if (strcasecmp($type, "array") != 0 && $type != Scope::UNDEFINED && $type != Scope::MIXED_TYPE) {
+					if (strcasecmp($type, "array") != 0 && substr($type,-2)!="[]" && $type != Scope::UNDEFINED && $type != Scope::MIXED_TYPE) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array.  Passing $type from \$$variableName.");
 					}
 					return;// After we unpack an arg, we can't check the remaining parameters.
@@ -163,7 +163,8 @@ class MethodCall extends BaseCheck {
 					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]) &&
 						$type != "" &&
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
-						!(strcasecmp($expectedType,"closure")==0 && strcasecmp($type,"callable")==0)
+						!(strcasecmp($expectedType,"closure")==0 && strcasecmp($type,"callable")==0) &&
+						!(strcasecmp($expectedType,'array')==0 && substr($type,-2)=="[]")
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName must be a $expectedType, passing $type");
 					}

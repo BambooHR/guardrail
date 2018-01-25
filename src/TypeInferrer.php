@@ -122,8 +122,8 @@ class TypeInferrer {
 						/*
 						$type = Scope::constFromDocBlock(
 							$method->getDocBlockReturnType(),
-							$inside ? $inside->name : "",
-							$inside ? $inside->name : ""
+							$inside ? strval($inside->namespacedName) : "",
+							$inside ? strval($inside->namespacedName) : ""
 						);
 						if($type) {
 							return [$type,Scope::NULL_UNKNOWN];
@@ -174,7 +174,7 @@ class TypeInferrer {
 	 *
 	 * @param PropertyFetch $expr   Instance of PropertyFetch
 	 * @param ClassLike     $inside Method inside the class
-	 * @param string        $scope  The scope
+	 * @param Scope         $scope  The scope
 	 *
 	 * @return array
 	 */
@@ -195,7 +195,7 @@ class TypeInferrer {
 									$type = substr($type, 1);
 								}
 
-								$type2 = Scope::constFromDocBlock($type, $inside?$inside->name:"", $inside?$inside->name:"");
+								$type2 = Scope::constFromDocBlock($type, $inside?strval($inside->namespacedName):"", $inside?strval($inside->namespacedName):"");
 								return [$type2, Scope::NULL_UNKNOWN];
 							}
 						} else {

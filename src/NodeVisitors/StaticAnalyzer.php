@@ -213,6 +213,21 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 		if ($node instanceof Node\Expr\FuncCall) {
 			if ($node->name instanceof Node\Name) {
+				if (strcasecmp($node->name,"assert")==0 &&
+					count($node->args) == 1
+				) {
+					$var = $node->args[0]->value;
+					if (
+						$var instanceof Instanceof_ &&
+						$var->expr instanceof Variable &&
+						gettype($var->expr->name) == "string" &&
+						$var->class instanceof Node\Name
+					) {
+						end($this->scopeStack)->setVarType($var->expr->name, strval($var->class));
+						end($this->scopeStack)->setVarNull($var->expr->name, Scope::NULL_IMPOSSIBLE);
+					}
+				}
+
 				$function = $this->index->getAbstractedFunction(strval($node->name));
 				if ($function) {
 					$params = $function->getParameters();

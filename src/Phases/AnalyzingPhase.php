@@ -149,12 +149,10 @@ class AnalyzingPhase {
 	 * @param Config $config          The application config
 	 * @return int
 	 */
-	function analyzeFile($file, $processingCount, Config $config) {
+	function analyzeFile($file, Config $config) {
 		try {
 			$name = Util::removeInitialPath($config->getBasePath(), $file);
 
-			$processingCount++;
-			//echo " - $processingCount:" . $file . "\n";
 			$fileData = file_get_contents($file);
 			$stmts = $this->parser->parse($fileData);
 			if ($stmts) {
@@ -198,7 +196,7 @@ class AnalyzingPhase {
 
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
-				function($socket) use ($config, &$processingCount) {
+				function($socket) use ($config) {
 					$table = $config->getSymbolTable();
 					if ($table instanceof PersistantSymbolTable) {
 						$table->connect();
@@ -212,7 +210,7 @@ class AnalyzingPhase {
 							return 0;
 						} else {
 							list($command, $file) = explode(' ', $receive, 2 );
-							$size = $this->analyzeFile($file, $processingCount, $config);
+							$size = $this->analyzeFile($file, $config);
 							socket_write($socket, "ANALYZED $size $file\n");
 						}
 					}
@@ -224,7 +222,7 @@ class AnalyzingPhase {
 		// Server process reports the errors and serves up new files to the list.
 		$processDied = false;
 		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$it, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
+			function ($socket, $msg) use (&$processingCount, &$it, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
 				if ($msg === false) {
 					$processDied = true;
 					echo "Error: Unexpected error reading from socket\n";
@@ -254,10 +252,10 @@ class AnalyzingPhase {
 						);
 						break;
 					case 'ANALYZED':
+						list($size, $name) = explode(' ', $details, 2);
+						$output->output(".", sprintf("%d - %s", ++$processingCount,  $name));
 						if ($fileNumber < count($toProcess)) {
-							list($size, $name) = explode(' ', $details, 2);
 							$bytes += $size;
-							$output->output(".", sprintf("%d - %s", $fileNumber + 1, $toProcess[$fileNumber]));
 							socket_write($socket, "INDEX " . $toProcess[$fileNumber] . "\n");
 							$fileNumber++;
 						} else {
