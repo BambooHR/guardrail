@@ -78,14 +78,17 @@ class AnalyzingPhase {
 		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 	}
 
+	/**
+	 * @return array
+	 */
 	function getTimingResults() {
 		$ret = [];
-		foreach($this->timingResults as $timingArr) {
-			foreach($timingArr as $class=>$time) {
-				$ret[$class]=(isset($ret[$class]) ? $ret[$class] : 0) + $time;
+		foreach ($this->timingResults as $timingArr) {
+			foreach ($timingArr as $class => $time) {
+				$ret[$class] = (isset($ret[$class]) ? $ret[$class] : 0) + $time;
 			}
 		}
-		arsort($ret,SORT_NUMERIC);
+		arsort($ret, SORT_NUMERIC);
 		return $ret;
 	}
 
@@ -94,7 +97,7 @@ class AnalyzingPhase {
 	 *
 	 * @param Config                    $config    Instance of Config
 	 * @param RecursiveIteratorIterator $it2       Instance of RecursiveIteratorIterator
-	 * @param string                    $toProcess The content to process
+	 * @param array                     $toProcess The content to process
 	 *
 	 * @return void
 	 */
@@ -183,7 +186,7 @@ class AnalyzingPhase {
 	 *
 	 * @param Config          $config    Instance of Config
 	 * @param OutputInterface $output    Instance of OutputInterface
-	 * @param string          $toProcess The content to process
+	 * @param array           $toProcess The content to process
 	 *
 	 * @return int
 	 */
@@ -196,7 +199,7 @@ class AnalyzingPhase {
 
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
-				function($socket) use ($config) {
+				function ($socket) use ($config) {
 					$table = $config->getSymbolTable();
 					if ($table instanceof PersistantSymbolTable) {
 						$table->connect();
@@ -206,16 +209,16 @@ class AnalyzingPhase {
 						$receive = socket_read($socket, 4096, PHP_NORMAL_READ);
 						$receive = trim($receive);
 						if ($receive == "TIMINGS") {
-							socket_write($socket,"TIMINGS ".json_encode($this->analyzer->getTimings())."\n");
+							socket_write($socket, "TIMINGS " . json_encode($this->analyzer->getTimings()) . "\n");
 							return 0;
 						} else {
-							list($command, $file) = explode(' ', $receive, 2 );
+							list($command, $file) = explode(' ', $receive, 2);
 							$size = $this->analyzeFile($file, $config);
 							socket_write($socket, "ANALYZED $size $file\n");
 						}
 					}
 
-			});
+				});
 			socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 		}
 
@@ -268,7 +271,7 @@ class AnalyzingPhase {
 						}
 						break;
 					case 'TIMINGS':
-						$this->timingResults[]=json_decode($details,true);
+						$this->timingResults[] = json_decode($details, true);
 						return ProcessManager::CLOSE_CONNECTION;
 				}
 				return ProcessManager::READ_CONNECTION;

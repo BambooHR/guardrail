@@ -45,7 +45,7 @@ class InstantiationCheck extends MethodCall {
 		if ($node instanceof New_) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();
-				if ($inside && strcasecmp($name, "self") == 0 || strcasecmp($name,"static") == 0) {
+				if ($inside && strcasecmp($name, "self") == 0 || strcasecmp($name, "static") == 0) {
 					$name = strval($inside->namespacedName);
 				}
 				if ($name && !$this->symbolTable->ignoreType($name)) {
@@ -66,7 +66,7 @@ class InstantiationCheck extends MethodCall {
 					$passedArgCount = count($node->args);
 					if (!$method) {
 						if ($passedArgCount > 0) {
-							$this->emitError($fileName, $node, "Parameter mismatch","Call to default constructor $name::__construct passing too many parameters");
+							$this->emitError($fileName, $node, "Parameter mismatch", "Call to default constructor $name::__construct passing too many parameters");
 						}
 					} else {
 						if ($method->getAccessLevel() == "private" && (!$inside || strcasecmp($inside->namespacedName, $name) != 0)) {
@@ -75,8 +75,6 @@ class InstantiationCheck extends MethodCall {
 						}
 						$this->checkMethod($fileName, $node, $name, "__construct", $scope, $method, $inside);
 					}
-
-
 				}
 			}
 		}

@@ -165,8 +165,8 @@ class DocBlockNameResolver extends NameResolver {
 				}
 
 				// Ignore union types.
-				if(strpos($type,"|")===false) {
-					$prop->props[0]->setAttribute("namespacedType",$type);
+				if (strpos($type, "|") === false) {
+					$prop->props[0]->setAttribute("namespacedType", $type);
 				}
 			}
 		}
@@ -185,10 +185,10 @@ class DocBlockNameResolver extends NameResolver {
 		$return = $docBlock->getTagsByName("return");
 		if (count($return)) {
 			$returnType = strval($return[0]);
-			list($returnType)=explode(" ",$returnType,2);
-			if ($returnType!="" && strpos($returnType, "|")===false) {
-				if($returnType[0]=="\\") {
-					$returnType = substr($returnType,1);
+			list($returnType) = explode(" ", $returnType, 2);
+			if ($returnType != "" && strpos($returnType, "|") === false) {
+				if ($returnType[0] == "\\") {
+					$returnType = substr($returnType, 1);
 				}
 				$node->setAttribute("namespacedReturn", strval($returnType));
 			}

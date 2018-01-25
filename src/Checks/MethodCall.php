@@ -108,12 +108,13 @@ class MethodCall extends BaseCheck {
 	/**
 	 * checkMethod
 	 *
-	 * @param string          $fileName  The name of the file
-	 * @param Node            $node      The node
-	 * @param string          $className The inside method
-	 * @param Scope           $scope     Instance of Scope
-	 * @param MethodInterface $method    Instance of MethodInterface
-	 * @param ClassLike       $inside    What context we're executing inside (if any)
+	 * @param string          $fileName   The name of the file
+	 * @param Node            $node       The node
+	 * @param string          $className  The inside method
+	 * @param string          $methodName The name of the method being checked
+	 * @param Scope           $scope      Instance of Scope
+	 * @param MethodInterface $method     Instance of MethodInterface
+	 * @param ClassLike       $inside     What context we're executing inside (if any)
 	 *
 	 * @return void
 	 */
@@ -163,8 +164,8 @@ class MethodCall extends BaseCheck {
 					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]) &&
 						$type != "" &&
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
-						!(strcasecmp($expectedType,"closure")==0 && strcasecmp($type,"callable")==0) &&
-						!(strcasecmp($expectedType,'array')==0 && substr($type,-2)=="[]")
+						!(strcasecmp($expectedType, "closure") == 0 && strcasecmp($type, "callable") == 0) &&
+						!(strcasecmp($expectedType, 'array') == 0 && substr($type, -2) == "[]")
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName must be a $expectedType, passing $type");
 					}

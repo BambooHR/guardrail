@@ -85,6 +85,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 	private $timings = [];
 
+	/**
+	 * @return array
+	 */
 	function getTimings() {
 		return $this->timings;
 	}
@@ -287,8 +290,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				$start = $last;
 				$check->run($this->file, $node, end($this->classStack) ?: null, end($this->scopeStack) ?: null);
 				$last = microtime(true);
-				$name=get_class($check);
-				$this->timings[$name] = (isset($this->timings[$name]) ? $this->timings[$name]:0) + ($last-$start);
+				$name = get_class($check);
+				$this->timings[$name] = (isset($this->timings[$name]) ? $this->timings[$name] : 0) + ($last - $start);
 			}
 		}
 		return null;
@@ -297,7 +300,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * pushIfScope
 	 *
-	 * @param Node $node Instance of Node
+	 * @param Node  $node     Instance of Node
+	 * @param Scope $previous The previous scope
 	 *
 	 * @return void
 	 */
@@ -388,7 +392,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				$scope->setVarType(strval($param->name), 'array');
 			} else {
 				$scope->setVarType(strval($param->name), Scope::constFromName(strval($param->type)));
-				if($param->type!=null && $param->default == null) {
+				if ($param->type != null && $param->default == null) {
 					$scope->setVarNull(strval($param->name), Scope::NULL_IMPOSSIBLE);
 				}
 			}
@@ -459,11 +463,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($oldType != $newType) {
 			if ($oldType == Scope::UNDEFINED) {
 				$scope->setVarType($varName, $newType);
-			} else if($newType==Scope::NULL_TYPE) {
+			} elseif ($newType == Scope::NULL_TYPE) {
 				$scope->setVarNull($varName);
 			} else {
 				// The variable has been used with 2 different types.  Update it in the scope as a mixed type.
-				$scope->setVarType($varName, Scope::MIXED_TYPE );
+				$scope->setVarType($varName, Scope::MIXED_TYPE);
 			}
 		}
 	}

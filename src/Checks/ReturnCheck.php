@@ -75,7 +75,7 @@ class ReturnCheck extends BaseCheck {
 					} else {
 						$msg = "Variable returned from function $functionName()";
 					}
-					$msg .= " must be a ".Scope::nameToFromConst($expectedType).", returning ".Scope::nameToFromConst($type);
+					$msg .= " must be a " . Scope::nameToFromConst($expectedType) . ", returning " . Scope::nameToFromConst($type);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 				}
 			}

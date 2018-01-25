@@ -19,25 +19,25 @@ use PhpParser\Node\Stmt\PropertyProperty;
 class DocBlockTypesCheck extends BaseCheck {
 
 	static $types = [
-		"bool"=>1,
-		"float"=>1,
-		"double"=>1,
-		"false"=>1,
-		"true"=>1,
-		"self"=>1,
-		"callable"=>1,
-		"int"=>1,
-		"array"=>1,
-		"callable"=>1,
-		"void"=>1,
-		"string"=>1,
-		"mixed"=>1,
-		"object"=>1,
-		"resource"=>1,
-		"null"=>1,
-		"integer"=>1,
-		"boolean"=>1,
-		Scope::MIXED_TYPE=>1
+		"bool" => 1,
+		"float" => 1,
+		"double" => 1,
+		"false" => 1,
+		"true" => 1,
+		"self" => 1,
+		"callable" => 1,
+		"int" => 1,
+		"array" => 1,
+		"callable" => 1,
+		"void" => 1,
+		"string" => 1,
+		"mixed" => 1,
+		"object" => 1,
+		"resource" => 1,
+		"null" => 1,
+		"integer" => 1,
+		"boolean" => 1,
+		Scope::MIXED_TYPE => 1
 	];
 
 	/**

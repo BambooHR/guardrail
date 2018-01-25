@@ -132,6 +132,9 @@ class Config {
 
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function shouldOutputTimings() {
 		return $this->timings;
 	}
@@ -205,7 +208,7 @@ class Config {
 					break;
 
 				case '--format':
-					if (++$argCount >= count($argv) || !in_array($argv[$argCount],["xunit","text"])) {
+					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["xunit","text"])) {
 						throw new InvalidConfigException;
 					}
 					$this->format = $argv[$argCount];

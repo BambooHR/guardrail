@@ -170,7 +170,7 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-					return new Property($propertyProperty->name, $propertyProperty->getAttribute("namespacedType")?:"", $access, $prop->isStatic());
+					return new Property($propertyProperty->name, $propertyProperty->getAttribute("namespacedType") ?: "", $access, $prop->isStatic());
 				}
 			}
 		}
