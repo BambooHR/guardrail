@@ -31,7 +31,7 @@ class Scope {
 	 * @return string
 	 */
 	static public function nameFromConst($str) {
-		switch($str) {
+		switch ($str) {
 			case static::UNDEFINED:
 				return "undefined";
 			case static::MIXED_TYPE:
@@ -117,12 +117,13 @@ class Scope {
 	private $previous; // In an if/else scenario we want to compare the previous scope to see if both branches set a variable.
 
 
-		/**
+	/**
 	 * Scope constructor.
 	 *
 	 * @param bool         $isStatic Set static
 	 * @param bool         $isGlobal Set global
 	 * @param FunctionLike $inside   Instance of FunctionLike (or null)
+	 * @param Scope        $previous The previous scope (used for control blocks)
 	 */
 	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null, Scope $previous = null) {
 		$this->isStatic = $isStatic;
@@ -174,8 +175,8 @@ class Scope {
 		}
 
 		$var = $this->vars[$name];
-		if ($type == Scope::NULL_TYPE) {
-			$var->canBeNull = Scope::NULL_POSSIBLE;
+		if ($type == self::NULL_TYPE) {
+			$var->canBeNull = self::NULL_POSSIBLE;
 		}
 		$var->type = $type;
 		$var->modified = false;
@@ -217,11 +218,11 @@ class Scope {
 		$this->vars[$name]->modifiedLine = 0;
 	}
 
-	public function setVarNull($name, $canBeNull = Scope::NULL_POSSIBLE) {
+	public function setVarNull($name, $canBeNull = self::NULL_POSSIBLE) {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
-			$var->type = Scope::UNDEFINED;
+			$var->type = self::UNDEFINED;
 			$var->canBeNull = $canBeNull;
 			$this->vars[$name] = $var;
 		} else {
@@ -232,7 +233,7 @@ class Scope {
 	public function dump() {
 		echo "Scope: \n";
 		foreach ($this->vars as $name => $var) {
-			echo "Name $name, Type " . $var->type . " " . ($var->canBeNull == Scope::NULL_POSSIBLE ? "can be null" : "") . "\n";
+			echo "Name $name, Type " . $var->type . " " . ($var->canBeNull == self::NULL_POSSIBLE ? "can be null" : "") . "\n";
 		}
 	}
 
@@ -255,14 +256,14 @@ class Scope {
 	 * @return void
 	 */
 	public function copyUsedVars(Scope $scope) {
-		foreach ($scope->vars as $name=>$var) {
+		foreach ($scope->vars as $name => $var) {
 			if (!isset($this->vars[$name])) {
 				$this->vars[$name] = $var;
 			} else {
-				if($this->getVarType($name)!=$var->type) {
-					$this->vars[$name]->type=Scope::MIXED_TYPE;
+				if ($this->getVarType($name) != $var->type) {
+					$this->vars[$name]->type = self::MIXED_TYPE;
 				}
-				if($var->canBeNull != Scope::NULL_IMPOSSIBLE) {
+				if ($var->canBeNull != self::NULL_IMPOSSIBLE) {
 					$this->vars[$name]->canBeNull = $var->canBeNull;
 				}
 			}
@@ -276,7 +277,7 @@ class Scope {
 	 */
 	public function getUnusedVars() {
 		$ret = [];
-		foreach ($this->vars as $key=>$var) {
+		foreach ($this->vars as $key => $var) {
 			if ($var->used) {
 				$ret[$key] = $var->modifiedLine;
 			}
@@ -305,7 +306,7 @@ class Scope {
 
 	/**
 	 * getScopeClone
-	 *
+	 * @var Scope $previous The previous scope
 	 * @return Scope
 	 */
 	public function getScopeClone(Scope $previous = null) {
@@ -319,17 +320,24 @@ class Scope {
 		return $ret;
 	}
 
+	/**
+	 * @param Scope $other -
+	 * @return void
+	 */
 	public function merge(Scope $other) {
 		// See if any new vars were added to the scope or if existing ones were changed.
-		foreach($other->vars as $name=>$otherVar) {
-			if(!isset($this->vars[$name])) {
-				$this->vars[$name]=$otherVar;
+		foreach ($other->vars as $name => $otherVar) {
+			if (!isset($this->vars[$name])) {
+				$this->vars[$name] = $otherVar;
 			} else {
 				$this->vars[$name]->mergeVar($otherVar);
 			}
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	public function mergePrevious() {
 		$this->merge($this->previous);
 	}

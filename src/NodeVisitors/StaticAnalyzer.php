@@ -442,7 +442,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$class = end($this->classStack) ?: null;
 		list($newType, $nullable) = $this->typeInferrer->inferType($class, $expr, $scope);
 		$this->setScopeType($varName, $newType);
-		if($nullable == Scope::NULL_POSSIBLE) {
+		if ($nullable == Scope::NULL_POSSIBLE) {
 			$scope->setVarNull($varName);
 		}
 	}

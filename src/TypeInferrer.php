@@ -52,57 +52,59 @@ class TypeInferrer {
 	 * @return array [0]=Type [1]=maybe null
 	 * @todo This looks like a good place for a strategy pattern
 	 */
-	public function inferType(ClassLike $inside = null, Expr $expr=null, Scope $scope) {
+	public function inferType(ClassLike $inside = null, Expr $expr = null, Scope $scope) {
 		if ($expr instanceof AssignOp) {
 			return $this->inferType($inside, $expr->expr, $scope);
-		} else if ($expr instanceof Scalar) {
-			return [Scope::SCALAR_TYPE,Scope::NULL_IMPOSSIBLE];
-		} else if ($expr instanceof New_) {
+		} elseif ($expr instanceof Scalar) {
+			return [Scope::SCALAR_TYPE, Scope::NULL_IMPOSSIBLE];
+		} elseif ($expr instanceof New_) {
 			if ($expr->class instanceof Name) {
 				$className = strval($expr->class);
 				if (strcasecmp($className, "self") == 0) {
 					$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
-				} else if (strcasecmp($className, "static") == 0) {
-					// Todo: track static scope to figure out which child class to invoke.
-					$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
+				} else {
+					if (strcasecmp($className, "static") == 0) {
+						// Todo: track static scope to figure out which child class to invoke.
+						$className = $inside ? strval($inside->namespacedName) : Scope::MIXED_TYPE;
+					}
 				}
 				return [$className, Scope::NULL_IMPOSSIBLE];
 			}
-		} else if ($expr instanceof Node\Expr\Variable) {
+		} elseif ($expr instanceof Node\Expr\Variable) {
 			if (gettype($expr->name) == "string") {
 				$varName = strval($expr->name);
 				if ($varName == "this" && $inside) {
-					return [strval($inside->namespacedName),false];
+					return [strval($inside->namespacedName), false];
 				}
 				$scopeType = $scope->getVarType($varName);
 				if ($scopeType != Scope::UNDEFINED) {
-					return [$scopeType,$scope->getVarNullability($varName)];
+					return [$scopeType, $scope->getVarNullability($varName)];
 				}
 			}
-		} else if ($expr instanceof Closure) {
-			return ["callable",false];
-		} else if ($expr instanceof FuncCall) {
+		} elseif ($expr instanceof Closure) {
+			return ["callable", false];
+		} elseif ($expr instanceof FuncCall) {
 			if ($expr->name instanceof Name) {
 				$func = $this->index->getAbstractedFunction($expr->name);
 				if ($func) {
 					$type = Scope::constFromName($func->getReturnType());
 					if ($type) {
-						return [$type,Scope::NULL_IMPOSSIBLE];
+						return [$type, Scope::NULL_IMPOSSIBLE];
 					}
 				}
 			}
-		} else if ( $expr instanceof Node\Expr\MethodCall ) {
+		} elseif ($expr instanceof Node\Expr\MethodCall) {
 			if (gettype($expr->name) == "string") {
 				list($class) = $this->inferType($inside, $expr->var, $scope);
 				if (!empty($class) && $class[0] != "!") {
 
 					// IoC
-					if(
-						strcasecmp($class,"Core\\App\\App")==0 &&
-						$expr->name=="make"
+					if (
+						strcasecmp($class, "Core\\App\\App") == 0 &&
+						$expr->name == "make"
 					) {
-						if(
-							count($expr->args)==1 &&
+						if (
+							count($expr->args) == 1 &&
 							$expr->args[0]->value instanceof Expr\ClassConstFetch &&
 							$expr->args[0]->value->class instanceof Name &&
 							is_string($expr->args[0]->value->name) &&
@@ -117,7 +119,7 @@ class TypeInferrer {
 					if ($method) {
 						$type = Scope::constFromName($method->getReturnType());
 						if ($type) {
-							return [$type,Scope::NULL_IMPOSSIBLE];
+							return [$type, Scope::NULL_IMPOSSIBLE];
 						}
 						/*
 						$type = Scope::constFromDocBlock(
@@ -131,34 +133,38 @@ class TypeInferrer {
 					}
 				}
 			}
-		} else if ( $expr instanceof PropertyFetch ) {
+		} elseif ($expr instanceof PropertyFetch) {
 			return $this->inferPropertyFetch($expr, $inside, $scope);
-		} else if ( $expr instanceof ArrayDimFetch ) {
+		} elseif ($expr instanceof ArrayDimFetch) {
 			list($type) = $this->inferType($inside, $expr->var, $scope);
 			if (substr($type, -2) == "[]") {
 				return [substr($type, 0, -2), Scope::NULL_UNKNOWN];
 			}
-		} else if ($expr instanceof Clone_) {
+		} elseif ($expr instanceof Clone_) {
 			// A cloned node will be the same type as whatever we're cloning.
 			return $this->inferType($inside, $expr->expr, $scope);
-		} else if ($expr instanceof Expr\ConstFetch) {
-			if (strcasecmp($expr->name,"null") == 0) {
-				return [Scope::NULL_TYPE,Scope::NULL_POSSIBLE];
-			} else if (strcasecmp($expr->name,"false")==0 || strcasecmp($expr->name,"true")==0) {
-				return [Scope::BOOL_TYPE,Scope::NULL_IMPOSSIBLE];
-			} else if ($this->index->isDefined($expr->name)) {
-				return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+		} elseif ($expr instanceof Expr\ConstFetch) {
+			if (strcasecmp($expr->name, "null") == 0) {
+				return [Scope::NULL_TYPE, Scope::NULL_POSSIBLE];
+			} else {
+				if (strcasecmp($expr->name, "false") == 0 || strcasecmp($expr->name, "true") == 0) {
+					return [Scope::BOOL_TYPE, Scope::NULL_IMPOSSIBLE];
+				} else {
+					if ($this->index->isDefined($expr->name)) {
+						return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+					}
+				}
 			}
-		} else if ($expr instanceof Expr\Ternary) {
+		} elseif ($expr instanceof Expr\Ternary) {
 			list($type1, $null1) = $this->inferType($inside, $expr->if, $scope);
 			list($type2, $null2) = $this->inferType($inside, $expr->else, $scope);
 			return [
 				$type1 == $type2 ? $type1 : Scope::MIXED_TYPE,
-				$null1==Scope::NULL_POSSIBLE || $null2==Scope::NULL_POSSIBLE ? Scope::NULL_POSSIBLE : Scope::NULL_UNKNOWN
+				$null1 == Scope::NULL_POSSIBLE || $null2 == Scope::NULL_POSSIBLE ? Scope::NULL_POSSIBLE : Scope::NULL_UNKNOWN
 			];
-		} else if ($expr instanceof Expr\BinaryOp\Spaceship) {
+		} elseif ($expr instanceof Expr\BinaryOp\Spaceship) {
 			return [Scope::INT_TYPE, Scope::NULL_IMPOSSIBLE];
-		} else if ($expr instanceof Expr\BinaryOp\Coalesce) {
+		} elseif ($expr instanceof Expr\BinaryOp\Coalesce) {
 			list($type1) = $this->inferType($inside, $expr->left, $scope);
 			list($type2, $null2) = $this->inferType($inside, $expr->right, $scope);
 			return [
@@ -166,7 +172,7 @@ class TypeInferrer {
 				$null2
 			];
 		}
-		return [Scope::MIXED_TYPE,Scope::NULL_UNKNOWN];
+		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 	}
 
 	/**

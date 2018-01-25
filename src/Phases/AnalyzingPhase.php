@@ -147,8 +147,8 @@ class AnalyzingPhase {
 	}
 
 	/**
-	 * @param string $file            The file to scan
-	 * @param Config $config          The application config
+	 * @param string $file   The file to scan
+	 * @param Config $config The application config
 	 * @return int
 	 */
 	function analyzeFile($file, Config $config) {

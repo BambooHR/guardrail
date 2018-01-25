@@ -12,35 +12,35 @@ class ScopeVar {
 	public $modifiedLine = 0;
 
 	/**
-	 * @param ScopeVar $a
+	 * @param ScopeVar $other
 	 * @return void
 	 */
-	function mergeVar(ScopeVar $a) {
-		if ($a->used) {
+	function mergeVar(ScopeVar $other) {
+		if ($other->used) {
 			$this->used = true;
 		}
-		if ($a->type != $this->type) {
-			if ($a->type == Scope::NULL_TYPE && $this->type != "" && $this->type[0] != '!') {
+		if ($other->type != $this->type) {
+			if ($other->type == Scope::NULL_TYPE && $this->type != "" && $this->type[0] != '!') {
 				$this->canBeNull = Scope::NULL_POSSIBLE;
 			} else {
-				if ($this->type != "" && $this->type[0] != '!' && $a->type == Scope::NULL_TYPE) {
+				if ($this->type != "" && $this->type[0] != '!' && $other->type == Scope::NULL_TYPE) {
 					$this->canBeNull = true;
-					$this->type = $a->type;
+					$this->type = $other->type;
 				} else {
 					$this->type = Scope::MIXED_TYPE;
 					$this->canBeNull = Scope::NULL_UNKNOWN;
 				}
 			}
-		} elseif ($a->canBeNull != $this->canBeNull) {
-			if ($a->canBeNull == Scope::NULL_POSSIBLE) {
+		} elseif ($other->canBeNull != $this->canBeNull) {
+			if ($other->canBeNull == Scope::NULL_POSSIBLE) {
 				$this->canBeNull = Scope::NULL_POSSIBLE;
 			} else {
 				$this->canBeNull = Scope::NULL_UNKNOWN;
 			}
 		}
-		if ($a->modified) {
-			$this->modified = $a->modified;
-			$this->modifiedLine = $a->modifiedLine;
+		if ($other->modified) {
+			$this->modified = $other->modified;
+			$this->modifiedLine = $other->modifiedLine;
 		}
 	}
 }
