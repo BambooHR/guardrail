@@ -289,6 +289,8 @@ class AnalyzingPhase {
 			$this->getPhase2Files($config, $it2, $toProcess);
 		}
 
+		sort($toProcess);
+
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.
 		$groupSize = intval(count($toProcess) / $config->getPartitions());
