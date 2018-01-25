@@ -26,7 +26,11 @@ class Scope {
 	const NULL_IMPOSSIBLE = 2;
 	const NULL_UNKNOWN = 3;
 
-	static public function nameToFromConst($str) {
+	/**
+	 * @param string $str A string representing an internal type
+	 * @return string
+	 */
+	static public function nameFromConst($str) {
 		switch($str) {
 			case static::UNDEFINED:
 				return "undefined";
@@ -49,6 +53,10 @@ class Scope {
 		}
 	}
 
+	/**
+	 * @param string $str A string representing a user supplied type.
+	 * @return string
+	 */
 	static public function constFromName($str) {
 		if (strcasecmp($str, "null") == 0) {
 			return static::NULL_TYPE;
@@ -67,6 +75,12 @@ class Scope {
 		}
 	}
 
+	/**
+	 * @param string $str             The docblock type
+	 * @param string $insideClassName The string to use for $this or self::
+	 * @param string $staticClassName The string to use for static::
+	 * @return string
+	 */
 	static public function constFromDocBlock($str, $insideClassName="", $staticClassName="") {
 		if (strcasecmp($str, "object") == 0) {
 			return static::MIXED_TYPE;

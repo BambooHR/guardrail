@@ -58,7 +58,7 @@ class DocBlockTypesCheck extends BaseCheck {
 	 */
 	static public function isScalar($typeName) {
 		$typeName = strtolower($typeName);
-		return $typeName=='' || array_key_exists($typeName, DocBlockTypesCheck::$types);
+		return $typeName == '' || array_key_exists($typeName, self::$types);
 	}
 
 	/**

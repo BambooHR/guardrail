@@ -10,11 +10,11 @@ class ConsoleOutput extends XUnitOutput {
 	private $errors = [];
 
 	/**
-	 * @param string $className
-	 * @param string $fileName
-	 * @param int    $lineNumber
-	 * @param string $name
-	 * @param string $message
+	 * @param string $className  -
+	 * @param string $fileName   -
+	 * @param int    $lineNumber -
+	 * @param string $name       -
+	 * @param string $message    -
 	 * @return void
 	 */
 	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {

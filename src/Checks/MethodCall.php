@@ -149,7 +149,7 @@ class MethodCall extends BaseCheck {
 				list($type,$maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
 				if ($arg->unpack) {
 					// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
-					if (strcasecmp($type, "array") != 0 && substr($type,-2)!="[]" && $type != Scope::UNDEFINED && $type != Scope::MIXED_TYPE) {
+					if (strcasecmp($type, "array") != 0 && substr($type, -2) != "[]" && $type != Scope::UNDEFINED && $type != Scope::MIXED_TYPE) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array.  Passing $type from \$$variableName.");
 					}
 					return;// After we unpack an arg, we can't check the remaining parameters.

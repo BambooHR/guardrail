@@ -216,7 +216,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 		if ($node instanceof Node\Expr\FuncCall) {
 			if ($node->name instanceof Node\Name) {
-				if (strcasecmp($node->name,"assert")==0 &&
+				if (strcasecmp($node->name, "assert") == 0 &&
 					count($node->args) == 1
 				) {
 					$var = $node->args[0]->value;
@@ -285,7 +285,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		}
 
 		if (isset($this->checks[$class])) {
-			$last=microtime(true);
+			$last = microtime(true);
 			foreach ($this->checks[$class] as $check) {
 				$start = $last;
 				$check->run($this->file, $node, end($this->classStack) ?: null, end($this->scopeStack) ?: null);

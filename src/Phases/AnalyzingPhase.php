@@ -148,7 +148,6 @@ class AnalyzingPhase {
 
 	/**
 	 * @param string $file            The file to scan
-	 * @param int    $processingCount The number of files scanned
 	 * @param Config $config          The application config
 	 * @return int
 	 */
@@ -256,7 +255,7 @@ class AnalyzingPhase {
 						break;
 					case 'ANALYZED':
 						list($size, $name) = explode(' ', $details, 2);
-						$output->output(".", sprintf("%d - %s", ++$processingCount,  $name));
+						$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
 						if ($fileNumber < count($toProcess)) {
 							$bytes += $size;
 							socket_write($socket, "INDEX " . $toProcess[$fileNumber] . "\n");
@@ -297,7 +296,7 @@ class AnalyzingPhase {
 		}
 		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
 		$toProcess = [];
-		if($config->hasFileList()) {
+		if ($config->hasFileList()) {
 			$toProcess = $config->getFileList();
 		} else {
 			foreach ($indexPaths as $path) {
