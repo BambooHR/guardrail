@@ -235,6 +235,9 @@ class Scope {
 		}
 	}
 
+	/**
+	 * @return void
+	 */
 	public function dump() {
 		echo "Scope: \n";
 		foreach ($this->vars as $name => $var) {
@@ -311,7 +314,7 @@ class Scope {
 
 	/**
 	 * getScopeClone
-	 * @var Scope $previous The previous scope
+	 * @param Scope $previous The previous scope
 	 * @return Scope
 	 */
 	public function getScopeClone(Scope $previous = null) {
