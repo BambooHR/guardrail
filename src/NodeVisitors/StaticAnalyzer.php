@@ -175,22 +175,23 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($node instanceof Class_ || $node instanceof Trait_) {
 			array_push($this->classStack, $node);
 		}
-		if ($node instanceof FunctionLike) { // Typecast
+		if (($node instanceof ClassMethod && count($this->classStack)>0) || $node instanceof Function_ || $node instanceof Closure) { // Typecast
 			$this->pushFunctionScope($node);
 		}
 		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {
 			$this->handleAssignment($node);
 		}
 		if ($node instanceof Node\Stmt\StaticVar) {
-			$this->setScopeExpression($node->name, $node->default);
+			$this->setScopeExpression($node->name, $node->default, $node->getLine());
 		}
 		if ($node instanceof Node\Stmt\Catch_) {
-			$this->setScopeType(strval($node->var), strval($node->type));
+			$this->setScopeType(strval($node->var), strval($node->type), $node->getLine());
+			$this->setScopeUsed(strval($node->var));
 		}
 		if ($node instanceof Node\Stmt\Global_) {
 			foreach ($node->vars as $var) {
 				if ($var instanceof Variable && gettype($var->name) == "string") {
-					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
+					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
 				}
 			}
 		}
@@ -226,7 +227,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 						gettype($var->expr->name) == "string" &&
 						$var->class instanceof Node\Name
 					) {
-						end($this->scopeStack)->setVarType($var->expr->name, strval($var->class));
+						end($this->scopeStack)->setVarType($var->expr->name, strval($var->class), $var->getLine());
 						end($this->scopeStack)->setVarNull($var->expr->name, Scope::NULL_IMPOSSIBLE);
 					}
 				}
@@ -242,7 +243,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 								($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
 							)
 						) {
-							$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+							$this->setScopeType($arg->value->name, Scope::MIXED_TYPE, $arg->value->getLine());
 						}
 					}
 				}
@@ -251,7 +252,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 		if ($node instanceof Node\Stmt\Foreach_) {
 			if ($node->keyVar instanceof Variable && gettype($node->keyVar->name) == "string") {
-				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE);
+				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE, $node->keyVar->getLine());
 			}
 			if ($node->valueVar instanceof Variable && gettype($node->valueVar->name) == "string") {
 				list($type) = $this->typeInferrer->inferType(end($this->classStack) ?: null, $node->expr, end($this->scopeStack));
@@ -260,11 +261,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				} else {
 					$type = Scope::MIXED_TYPE;
 				}
-				$this->setScopeType(strval($node->valueVar->name), $type);
+				$this->setScopeType(strval($node->valueVar->name), $type, $node->valueVar->getLine());
 			} else if ($node->valueVar instanceof List_) {
 				foreach ($node->valueVar->vars as $var) {
 					if ($var instanceof Variable && gettype($var->name) == "string") {
-						$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
+						$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
 					}
 				}
 			}
@@ -337,7 +338,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$cond = $node->cond;
 
 		if ($cond->expr instanceof Variable && gettype($cond->expr->name) == "string" && $cond->class instanceof Node\Name) {
-			$newScope->setVarType($cond->expr->name, strval($cond->class));
+			$newScope->setVarType($cond->expr->name, strval($cond->class), $cond->expr->getLine());
 		}
 	}
 
@@ -389,12 +390,13 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			//echo "  Param ".$param->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
 			if ($param->variadic) {
 				// TODO: Track the type of a variadic array
-				$scope->setVarType(strval($param->name), 'array');
+				$scope->setVarType(strval($param->name), 'array', $param->getLine());
 			} else {
-				$scope->setVarType(strval($param->name), Scope::constFromName(strval($param->type)));
+				$scope->setVarType(strval($param->name), Scope::constFromName(strval($param->type)), $param->getLine());
 				if ($param->type != null && $param->default == null) {
 					$scope->setVarNull(strval($param->name), Scope::NULL_IMPOSSIBLE);
 				}
+				$scope->setVarUsed(strval($param->name));
 			}
 		}
 		if ($func instanceof Closure) {
@@ -405,8 +407,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				if ($type == Scope::UNDEFINED) {
 					$type = Scope::MIXED_TYPE;
 				}
-				$scope->setVarType($variable->var, $type);
-
+				$scope->setVarType($variable->var, $type, $variable->getLine());
 			}
 		}
 
@@ -432,16 +433,17 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * setScopeExpression
 	 *
-	 * @param string $varName Variable name
-	 * @param string $expr    Expression name
+	 * @param string    $varName Variable name
+	 * @param Node\Expr $expr    Expression name
+	 * @param int       $line    line number
 	 *
 	 * @return void
 	 */
-	private function setScopeExpression($varName, $expr) {
+	private function setScopeExpression($varName, $expr, $line) {
 		$scope = end($this->scopeStack);
 		$class = end($this->classStack) ?: null;
 		list($newType, $nullable) = $this->typeInferrer->inferType($class, $expr, $scope);
-		$this->setScopeType($varName, $newType);
+		$this->setScopeType($varName, $newType, $line);
 		if ($nullable == Scope::NULL_POSSIBLE) {
 			$scope->setVarNull($varName);
 		}
@@ -454,20 +456,21 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @param string $varName Variable name
 	 * @param string $newType The new type
+	 * @param int    $line    The line number
 	 *
 	 * @return void
 	 */
-	private function setScopeType($varName, $newType) {
+	private function setScopeType($varName, $newType, $line) {
 		$scope = end($this->scopeStack);
 		$oldType = $scope->getVarType($varName);
 		if ($oldType != $newType) {
 			if ($oldType == Scope::UNDEFINED) {
-				$scope->setVarType($varName, $newType);
+				$scope->setVarType($varName, $newType, $line);
 			} elseif ($newType == Scope::NULL_TYPE) {
 				$scope->setVarNull($varName);
 			} else {
 				// The variable has been used with 2 different types.  Update it in the scope as a mixed type.
-				$scope->setVarType($varName, Scope::MIXED_TYPE);
+				$scope->setVarType($varName, Scope::MIXED_TYPE, $line);
 			}
 		}
 	}
@@ -522,12 +525,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name) == "string") {
 			$op->var->setAttribute('assignment', true);
 			$varName = strval($op->var->name);
-			$this->setScopeExpression($varName, $op->expr);
+			$this->setScopeExpression($varName, $op->expr, $op->expr->getLine());
 		} else if ($op->var instanceof List_) {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to mixed.
 			foreach ($op->var->vars as $var) {
 				if ($var && $var instanceof Variable && gettype($var->name) == "string") {
-					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE);
+					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
 				}
 			}
 		} else if ($op->var instanceof ArrayDimFetch) {
@@ -538,7 +541,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			if ($var instanceof Variable && gettype($var->name) == "string") {
 				$varName = strval($var->name);
 //				echo "  Set $varName\n";
-				$this->setScopeType($varName, "array");
+				$this->setScopeType($varName, "array", $var->getLine());
 
 			}
 		}
@@ -594,12 +597,13 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		if ($node instanceof Class_) {
 			array_pop($this->classStack);
 		}
-		if ($node instanceof Node\FunctionLike) {
+		if (($node instanceof ClassMethod && count($this->classStack)>0) || $node instanceof Function_ || $node instanceof Closure) {
 			$scope = array_pop($this->scopeStack);
 //			echo "Exit function ".$node->name." scope depth=".count($this->scopeStack)."\n";
+
 			$unusedVars = $scope->getUnusedVars();
 
-			if (count($unusedVars) > 0 ) {
+			if (count($unusedVars) > 0) {
 				foreach ($unusedVars as $varName => $lineNumber) {
 					$this->output->emitError(__CLASS__, $this->file, $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$' . $varName . " is assigned but never referenced");
 				}
@@ -647,7 +651,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
 			) {
 				if ($arg->value instanceof Variable && gettype($arg->value->name) == "string") {
-					$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+					$this->setScopeType($arg->value->name, Scope::MIXED_TYPE, $arg->value->getLine());
 				}
 			}
 		}
@@ -671,7 +675,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
 			) {
 				if ($arg->value instanceof Variable && gettype($arg->value->name) == "string") {
-					$this->setScopeType($arg->value->name, Scope::MIXED_TYPE);
+					$this->setScopeType($arg->value->name, Scope::MIXED_TYPE, $arg->value->getLine());
 				}
 			}
 		}

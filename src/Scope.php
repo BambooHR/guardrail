@@ -21,6 +21,7 @@ class Scope {
 	const BOOL_TYPE = "!5";
 	const INT_TYPE = "!6";
 	const FLOAT_TYPE = "!7";
+	const ARRAY_TYPE = "!8";
 
 	const NULL_POSSIBLE = 1;
 	const NULL_IMPOSSIBLE = 2;
@@ -70,6 +71,8 @@ class Scope {
 			return static::STRING_TYPE;
 		} elseif (strcasecmp($str, "mixed") == 0) {
 			return static::MIXED_TYPE;
+		} elseif (strcasecmp($str, "array") == 0) {
+			return static::ARRAY_TYPE;
 		} else {
 			return $str;
 		}
@@ -164,10 +167,11 @@ class Scope {
 	 *
 	 * @param string $name The name
 	 * @param string $type The type
+	 * @param int    $line Line number
 	 *
 	 * @return void
 	 */
-	public function setVarType($name, $type) {
+	public function setVarType($name, $type, $line) {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
@@ -179,9 +183,7 @@ class Scope {
 			$var->canBeNull = self::NULL_POSSIBLE;
 		}
 		$var->type = $type;
-		$var->modified = false;
-		$var->modifiedLine = 0;
-		$var->used = false;
+		$this->setVarWritten($name,$line);
 	}
 
 	/**
@@ -274,6 +276,9 @@ class Scope {
 				if ($var->canBeNull != self::NULL_IMPOSSIBLE) {
 					$this->vars[$name]->canBeNull = $var->canBeNull;
 				}
+				if ($var->used) {
+					$this->setVarUsed($var->name);
+				}
 			}
 		}
 	}
@@ -286,7 +291,7 @@ class Scope {
 	public function getUnusedVars() {
 		$ret = [];
 		foreach ($this->vars as $key => $var) {
-			if ($var->used) {
+			if (!$var->used) {
 				$ret[$key] = $var->modifiedLine;
 			}
 		}

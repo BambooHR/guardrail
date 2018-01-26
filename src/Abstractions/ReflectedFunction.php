@@ -33,7 +33,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return mixed
 	 */
 	public function isStatic() {
-		return $this->refl->isStatic();
+		return false;
 	}
 
 	/**
@@ -69,7 +69,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return mixed
 	 */
 	public function isAbstract() {
-		return $this->refl->isAbstract();
+		return false;
 	}
 
 	/**
@@ -87,15 +87,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return string
 	 */
 	public function getAccessLevel() {
-		if ($this->refl->isPrivate()) {
-			return "private";
-		}
-		if ($this->refl->isPublic()) {
-			return "public";
-		}
-		if ($this->refl->isProtected()) {
-			return "protected";
-		}
+		return "public";
 	}
 
 	/**

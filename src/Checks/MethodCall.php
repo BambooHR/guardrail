@@ -73,9 +73,11 @@ class MethodCall extends BaseCheck {
 			$methodName = strval($node->name);
 
 			$className = "";
-			if ($node->var instanceof Variable && $node->var->name == "this" && !$inside) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
-				return;
+			if ($node->var instanceof Variable) {
+				if ($node->var->name == "this" && !$inside) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
+					return;
+				}
 			}
 			if ($scope) {
 				list($className) = $this->inferenceEngine->inferType($inside, $node->var, $scope);
@@ -165,7 +167,7 @@ class MethodCall extends BaseCheck {
 						$type != "" &&
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
 						!(strcasecmp($expectedType, "closure") == 0 && strcasecmp($type, "callable") == 0) &&
-						!(strcasecmp($expectedType, 'array') == 0 && substr($type, -2) == "[]")
+						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type==Scope::ARRAY_TYPE))
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName must be a $expectedType, passing $type");
 					}

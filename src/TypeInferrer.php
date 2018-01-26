@@ -185,7 +185,7 @@ class TypeInferrer {
 	 * @return array
 	 */
 	public function inferPropertyFetch(PropertyFetch $expr, $inside, $scope) {
-		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+		//return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 		list($class) = $this->inferType($inside, $expr->var, $scope);
 		if (!empty($class) && $class[0] != "!") {
 			if (gettype($expr->name) == 'string') {

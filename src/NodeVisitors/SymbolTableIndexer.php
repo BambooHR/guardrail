@@ -70,51 +70,39 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return int|null
 	 */
 	public function enterNode(Node $node) {
-		switch (get_class($node)) {
-			case Class_::class:
-				$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "anonymous class";
-				if ($name) {
-					$this->index->addClass($name, $node, $this->filename);
-					array_push($this->classStack, $node);
-				}
-				break;
-			case Interface_::class:
-				$name = $node->namespacedName->toString();
-				$this->index->addInterface($name, $node, $this->filename);
+		if ($node instanceof Class_) {
+			$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "anonymous class";
+			if ($name) {
+				$this->index->addClass($name, $node, $this->filename);
 				array_push($this->classStack, $node);
-				break;
-			case Function_::class:
-				$name = $node->namespacedName->toString();
-				$this->index->addFunction($name, $node, $this->filename);
-				break;
-			case \PhpParser\Node\Const_::class:
-
-				if (count($this->classStack) == 0) {
-					$defineName = strval($node->name);
+			}
+		} elseif ($node instanceof Interface_) {
+			$name = $node->namespacedName->toString();
+			$this->index->addInterface($name, $node, $this->filename);
+			array_push($this->classStack, $node);
+		} elseif ($node instanceof Function_) {
+			$name = $node->namespacedName->toString();
+			$this->index->addFunction($name, $node, $this->filename);
+		} elseif ($node instanceof Node\Const_) {
+			if (count($this->classStack) == 0) {
+				$defineName = strval($node->name);
+				$this->index->addDefine($defineName, $node, $this->filename);
+			}
+		} else if ($node instanceof FuncCall) {
+			if ($node->name instanceof Node\Name) {
+				$name = strval($node->name);
+				if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1 && $node->args[0]->value instanceof Node\Scalar\String_) {
+					$defineName = $node->args[0]->value->value;
 					$this->index->addDefine($defineName, $node, $this->filename);
 				}
-				break;
-			case FuncCall::class:
-				if ($node instanceof FuncCall) {
-					if ($node->name instanceof Node\Name) {
-						$name = strval($node->name);
-						if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1 && $node->args[0]->value instanceof Node\Scalar\String_) {
-							$defineName = $node->args[0]->value->value;
-							$this->index->addDefine($defineName, $node, $this->filename);
-						}
-					}
-				}
-				break;
-			case Trait_::class:
-				$name = $node->namespacedName->toString();
-				$this->index->addTrait($name, $node, $this->filename);
-				array_push($this->classStack, $node);
-				break;
-			default:
-				if ($node instanceof Node\Expr) {
-					// Expressions don't contain anything we would index.
-					return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
-				}
+			}
+		} else if ($node instanceof Trait_) {
+			$name = $node->namespacedName->toString();
+			$this->index->addTrait($name, $node, $this->filename);
+			array_push($this->classStack, $node);
+		} else if ($node instanceof Node\Expr) {
+			// Expressions don't contain anything we would index.
+			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
 		}
 		return null;
 	}

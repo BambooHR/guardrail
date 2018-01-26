@@ -99,17 +99,29 @@ class DocBlockTypesCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ( $node instanceof FunctionLike) {
 			$return = strval( $node->getReturnType() ?: "");
-			$docBlockReturn = $node->getAttribute("namespacedReturn");
+			$docBlockReturn = Scope::constFromDocBlock(
+				$node->getAttribute("namespacedReturn"),
+				$inside ? strval($inside->namespacedName) : "",
+				$inside ? strval($inside->namespacedName) : ""
+			);
 
 			if (!empty($docBlockReturn)) {
 				if ($docBlockReturn != $return && !empty($return)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_MISMATCH, "Function return type ($return) doesn't match DocBlock return type($docBlockReturn");
 				}
-				$this->checkOrEmit($docBlockReturn, $fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_RETURN, "Unknown function return type \"$docBlockReturn\" specified in DocBlock");
+				if ($docBlockReturn[0]!="!") {
+					$this->checkOrEmit($docBlockReturn, $fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_RETURN, "Unknown function return type \"$docBlockReturn\" specified in DocBlock");
+				}
 			}
 		} else if ($node instanceof PropertyProperty) {
 			$docBlockType = $node->getAttribute("namespacedType");
-			if ($docBlockType) {
+			$docBlockType = Scope::constFromDocBlock(
+				$docBlockType,
+				$inside ? strval($inside->namespacedName):"",
+				$inside ? strval($inside->namespacedName):""
+			);
+
+			if ($docBlockType && $docBlockType[0]!="!") {
 				$this->checkOrEmit($docBlockType, $fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_VAR, "Unknown property type \"$docBlockType\" specified in DocBlock");
 			}
 		}
