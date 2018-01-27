@@ -101,8 +101,8 @@ class DocBlockTypesCheck extends BaseCheck {
 			$return = strval( $node->getReturnType() ?: "");
 			$docBlockReturn = Scope::constFromDocBlock(
 				$node->getAttribute("namespacedReturn"),
-				$inside ? strval($inside->namespacedName) : "",
-				$inside ? strval($inside->namespacedName) : ""
+				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : "",
+				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : ""
 			);
 
 			if (!empty($docBlockReturn)) {

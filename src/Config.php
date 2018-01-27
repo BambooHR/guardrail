@@ -84,6 +84,30 @@ class Config {
 	/** @var string */
 	private $filterFileName = "";
 
+	static private $useDocBlockForProperties = false;
+	static private $useDocBlockForReturnValue = false;
+	static private $useDocBlockForParameters = false;
+
+
+	private function loadConfigVars() {
+		if(isset($this->config) && is_array($this->config['options'])) {
+			foreach ($this->config['options'] as $key=>$value) {
+				if($value===true) {
+					switch($key) {
+						case "DocBlockReturns":
+							self::$useDocBlockForReturnValue = true;
+							break;
+						case "DocBlockParams" :
+							self::$useDocBlockForParameters = true;
+							break;
+						case "DocBlockProperties":
+							self::$useDocBlockForProperties = true;
+							break;
+					}
+				}
+			}
+		}
+	}
 	/**
 	 * Config constructor.
 	 *
@@ -108,6 +132,8 @@ class Config {
 		}
 
 		$this->config = json_decode(file_get_contents($this->configFileName), true);
+		$this->loadConfigVars();
+
 		if (isset($this->config['emit']) && is_array($this->config['emit'])) {
 			$this->emitList = $this->config['emit'];
 		}
@@ -130,6 +156,18 @@ class Config {
 			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
 		}
 
+	}
+
+	static function shouldUseDocBlockForProperties() {
+		return self::$useDocBlockForProperties;
+	}
+
+	static function shouldUseDocBlockForParameters() {
+		return self::$useDocBlockForParameters;
+	}
+
+	static function shouldUseBocBlockForReturnValues() {
+		return self::$useDocBlockForReturnValue;
 	}
 
 	/**

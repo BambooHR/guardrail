@@ -121,15 +121,17 @@ class TypeInferrer {
 						if ($type) {
 							return [$type, Scope::NULL_IMPOSSIBLE];
 						}
-						/*
-						$type = Scope::constFromDocBlock(
-							$method->getDocBlockReturnType(),
-							$inside ? strval($inside->namespacedName) : "",
-							$inside ? strval($inside->namespacedName) : ""
-						);
-						if($type) {
-							return [$type,Scope::NULL_UNKNOWN];
-						}*/
+
+						if (Config::shouldUseBocBlockForReturnValues()) {
+							$type = Scope::constFromDocBlock(
+								$method->getDocBlockReturnType(),
+								$inside ? strval($inside->namespacedName) : "",
+								$inside ? strval($inside->namespacedName) : ""
+							);
+							if ($type) {
+								return [$type, Scope::NULL_UNKNOWN];
+							}
+						}
 					}
 				}
 			}
@@ -185,7 +187,9 @@ class TypeInferrer {
 	 * @return array
 	 */
 	public function inferPropertyFetch(PropertyFetch $expr, $inside, $scope) {
-		//return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+		if (!Config::shouldUseDocBlockForProperties()) {
+			return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+		}
 		list($class) = $this->inferType($inside, $expr->var, $scope);
 		if (!empty($class) && $class[0] != "!") {
 			if (gettype($expr->name) == 'string') {

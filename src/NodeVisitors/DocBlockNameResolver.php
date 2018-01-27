@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Scope;
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 use phpDocumentor\Reflection\DocBlockFactory;
 use phpDocumentor\Reflection\Types\Context;
@@ -87,12 +88,44 @@ class DocBlockNameResolver extends NameResolver {
 		if ($this->useDocBlock) {
 			if ($node instanceof Function_ || $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
 				$this->importReturnValue($node);
-			}
-			if ($node instanceof Property) {
+			} if ($node instanceof Property) {
 				$this->importVarType($node);
+			} else {
+				$this->importInlineVarType($node);
 			}
 		}
 		parent::enterNode($node);
+	}
+
+	function importInlineVarType(Node $node ) {
+		$comment = $node->getDocComment();
+		if ($comment) {
+			try {
+				$block = $this->factory->create($comment->getText(), $this->getDocBlockContext());
+				$tags = $block->getTagsByName("var");
+				if ($tags) {
+					$vars = [];
+					foreach ($tags as $tag) {
+						/** @var Var_ $tag */
+						if ($tag->getVariableName()) {
+							$type = strval($tag->getType());
+							if($type && $type[0]=="\\") {
+								$type = substr($type,1);
+							}
+
+							if ($type != "type") {
+								$vars[ $tag->getVariableName() ] = Scope::nameFromConst($type);
+							}
+						}
+					}
+					if (count($vars) > 0) {
+						$node->setAttribute("namespacedInlineVar", $vars);
+					}
+				}
+			} catch (\InvalidArgumentException $exception) {
+				// Skip it.
+			}
+		}
 	}
 
 	/**

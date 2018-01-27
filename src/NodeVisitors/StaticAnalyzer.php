@@ -32,6 +32,9 @@ use BambooHR\Guardrail\Checks\SwitchCheck;
 use BambooHR\Guardrail\Checks\UndefinedVariableCheck;
 use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
 use BambooHR\Guardrail\Config;
+use phpDocumentor\Reflection\DocBlock\Tags\Var_;
+use phpDocumentor\Reflection\DocBlockFactory;
+use phpDocumentor\Reflection\Types\Context;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Closure;
@@ -171,6 +174,14 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$class = get_class($node);
 		if ($node instanceof Trait_) {
 			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
+		}
+		if (!($node instanceof FunctionLike)) {
+			$vars = $node->getAttribute("namespacedInlineVar");
+			if (is_array($vars)) {
+				foreach ($vars as $varName => $varType) {
+					end($this->scopeStack)->setVarType($varName, $varType, $node->getLine());
+				}
+			}
 		}
 		if ($node instanceof Class_ || $node instanceof Trait_) {
 			array_push($this->classStack, $node);
@@ -439,7 +450,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	private function setScopeExpression($varName, $expr, $line) {
+	private function setScopeExpression($varName, $expr, $line ) {
 		$scope = end($this->scopeStack);
 		$class = end($this->classStack) ?: null;
 		list($newType, $nullable) = $this->typeInferrer->inferType($class, $expr, $scope);
@@ -522,10 +533,17 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @return void
 	 */
 	private function handleAssignment($op) {
+
 		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name) == "string") {
+			$overrides = $op->getAttribute('namespacedInlineVar');
 			$op->var->setAttribute('assignment', true);
+
 			$varName = strval($op->var->name);
-			$this->setScopeExpression($varName, $op->expr, $op->expr->getLine());
+
+			// If it's in overrides, then it was already set by a DocBlock @var
+			if (!isset($overrides[$varName])) {
+				$this->setScopeExpression($varName, $op->expr, $op->expr->getLine());
+			}
 		} else if ($op->var instanceof List_) {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to mixed.
 			foreach ($op->var->vars as $var) {
