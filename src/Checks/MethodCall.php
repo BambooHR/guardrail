@@ -158,15 +158,15 @@ class MethodCall extends BaseCheck {
 	}
 
 	/**
-	 * @param           $fileName
-	 * @param           $node
-	 * @param           $className
-	 * @param           $methodName
-	 * @param Scope     $scope
-	 * @param ClassLike $inside
-	 * @param           $arg
-	 * @param           $index
-	 * @param           $params
+	 * @param string    $fileName -
+	 * @param Node      $node     -
+	 * @param string    $name
+	 * @param Scope     $scope    -
+	 * @param ClassLike $inside   -
+	 * @param Node\Arg  $arg      -
+	 * @param  int      $index    -
+	 * @param array     $params   -
+	 * @return void
 	 */
 	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside=null, $arg, $index, $params) {
 		if ($scope && $arg->value instanceof Expr && $index < count($params)) {
@@ -205,7 +205,7 @@ class MethodCall extends BaseCheck {
 					}
 
 					if (strcasecmp($expectedType, "callable") == 0) {
-						$this->callableCheck->run($fileName,$arg->value,$inside,$scope);
+						$this->callableCheck->run($fileName, $arg->value, $inside, $scope);
 					}
 
 					/*

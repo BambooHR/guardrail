@@ -185,9 +185,10 @@ class TypeInferrer {
 	}
 
 	/**
-	 * @param ClassLike $inside
-	 * @param Expr      $expr
-	 * @param Scope     $scope
+	 * @param ClassLike $inside -
+	 * @param Expr      $expr   -
+	 * @param Scope     $scope  -
+	 * @return array
 	 */
 	protected function inferMethodCall(ClassLike $inside, Expr $expr, Scope $scope) {
 		if (gettype($expr->name) == "string") {

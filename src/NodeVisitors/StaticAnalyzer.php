@@ -171,6 +171,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$this->scopeStack = [new Scope(true, true)];
 	}
 
+	/**
+	 * @return array
+	 */
 	private function buildLeaveClosures() {
 		$func = [];
 		$func[Node\Expr\Variable::class] = function (Node\Expr\Variable $node) {
@@ -203,7 +206,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[Node\Expr\AssigRef::class] = function (Node\Expr\AssignRef $node) {
+		$func[Node\Expr\AssignRef::class] = function (Node\Expr\AssignRef $node) {
 			if (
 				$node->var instanceof Node\Expr\Variable &&
 				is_string($node->var->name)
@@ -248,6 +251,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		return $func;
 	}
 
+	/**
+	 * @return array
+	 */
 	private function buildClosures() {
 		$func = [];
 

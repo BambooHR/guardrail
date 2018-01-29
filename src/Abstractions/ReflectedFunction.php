@@ -133,7 +133,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 		foreach ($params as $index => $param) {
 			$type = strval($param->getType());
 			$isPassedByReference = $param->isPassedByReference();
-			switch($index) {
+			switch ($index) {
 				case 0:
 					$name = $this->getName();
 					if (

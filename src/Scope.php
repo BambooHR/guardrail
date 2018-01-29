@@ -183,7 +183,7 @@ class Scope {
 			$var->canBeNull = self::NULL_POSSIBLE;
 		}
 		$var->type = $type;
- 		$this->setVarWritten($name, $line);
+		$this->setVarWritten($name, $line);
 	}
 
 	/**

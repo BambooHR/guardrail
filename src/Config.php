@@ -100,7 +100,7 @@ class Config {
 	 * @return void
 	 */
 	private function loadConfigVars() {
-		if (isset($this->config) && is_array($this->config['options'])) {
+		if (isset($this->config) && array_key_exists('options', $this->config) && is_array($this->config['options'])) {
 			foreach ($this->config['options'] as $key => $value) {
 				if ($value === true) {
 					switch ($key) {

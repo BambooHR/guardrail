@@ -38,7 +38,6 @@ class CallableCheck extends BaseCheck {
 	 * @param SymbolTable     $symbolTable -
 	 * @param OutputInterface $doc         -
 	 */
-
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->inferenceEngine = new TypeInferrer($symbolTable);
@@ -58,11 +57,10 @@ class CallableCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param             $fileName -
-	 * @param Node        $node     -
-	 * @param Scope       $scope    -
-	 * @param ClassLike   $inside   -
-	 * @param Node\Arg    $arg      -
+	 * @param string      $fileName      -
+	 * @param Scope       $scope         -
+	 * @param ClassLike   $inside        -
+	 * @param Expr\Array_ $callableArray -
 	 * @return void
 	 */
 	protected function checkArrayCallable($fileName, Scope $scope, ClassLike $inside, Expr\Array_ $callableArray) {
@@ -103,10 +101,10 @@ class CallableCheck extends BaseCheck {
 
 	/**
 	 *
-	 * @param string         $fileName
-	 * @param Node           $node
-	 * @param ClassLike|null $inside
-	 * @param Scope|null     $scope
+	 * @param string         $fileName -
+	 * @param Node           $node     -
+	 * @param ClassLike|null $inside   -
+	 * @param Scope|null     $scope    -
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
