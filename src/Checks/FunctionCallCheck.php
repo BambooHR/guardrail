@@ -172,15 +172,13 @@ class FunctionCallCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param           $fileName
-	 * @param           $node
-	 * @param           $className
-	 * @param           $methodName
-	 * @param Scope     $scope
-	 * @param ClassLike $inside
-	 * @param           $arg
-	 * @param           $index
-	 * @param           $params
+	 * @param           $fileName   -
+	 * @param           $node       -
+	 * @param Scope     $scope      -
+	 * @param ClassLike $inside     -
+	 * @param           $arg        -
+	 * @param           $index      -
+	 * @param           $params     -
 	 */
 	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, $arg, $index, $params) {
 		if ($scope && $arg->value instanceof Node\Expr && $index < count($params)) {

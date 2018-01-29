@@ -28,7 +28,16 @@ use PhpParser\Node\Stmt\ClassLike;
  *
  */
 class CallableCheck extends BaseCheck {
+	/**
+	 * @var TypeInferrer
+	 */
 	private $inferenceEngine;
+
+	/**
+	 * CallableCheck constructor.
+	 * @param SymbolTable     $symbolTable -
+	 * @param OutputInterface $doc         -
+	 */
 
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
@@ -36,21 +45,25 @@ class CallableCheck extends BaseCheck {
 
 	}
 
-
-
-	// Callables don't have a node type.  This is a special check that we'll embed inside other checks for
-	// when they know they have a callable.
+	/**
+	 *
+	 * Callables don't have a node type.  This is a special check that we'll embed inside other checks for
+	 * when they know they have a callable.
+	 *
+	 * @return array|string[]
+	 */
 	function getCheckNodeTypes() {
 		return [];
 
 	}
 
 	/**
-	 * @param             $fileName
-	 * @param Node        $node
-	 * @param Scope       $scope
-	 * @param ClassLike   $inside
-	 * @param Node\Arg    $arg
+	 * @param             $fileName -
+	 * @param Node        $node     -
+	 * @param Scope       $scope    -
+	 * @param ClassLike   $inside   -
+	 * @param Node\Arg    $arg      -
+	 * @return void
 	 */
 	protected function checkArrayCallable($fileName, Scope $scope, ClassLike $inside, Expr\Array_ $callableArray) {
 		$itemCount = count($callableArray->items);
@@ -94,6 +107,7 @@ class CallableCheck extends BaseCheck {
 	 * @param Node           $node
 	 * @param ClassLike|null $inside
 	 * @param Scope|null     $scope
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Scalar\String_) {
@@ -117,8 +131,8 @@ class CallableCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable string '$funcName' is not a function name");
 				}
 			}
-		} else if($node instanceof Expr\Array_) {
-			$this->checkArrayCallable($fileName, $scope, $inside, $node );
+		} else if ($node instanceof Expr\Array_) {
+			$this->checkArrayCallable($fileName, $scope, $inside, $node);
 		}
 	}
 }

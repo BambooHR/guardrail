@@ -12,6 +12,9 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
 class ClassMethodStringCheck extends BaseCheck {
+	/**
+	 * @return string[]
+	 */
 	function getCheckNodeTypes() {
 		return [Node\Expr\BinaryOp\Concat::class];
 	}
@@ -21,11 +24,11 @@ class ClassMethodStringCheck extends BaseCheck {
 	 * These are commonly used in router method names.  It's not a certainty that the string we find
 	 * is a method name, so we emit a different error that can be disabled if the user desires.
 	 *
-	 *
-	 * @param string         $fileName
-	 * @param Node           $node
-	 * @param ClassLike|null $inside
-	 * @param Scope|null     $scope
+	 * @param string         $fileName -
+	 * @param Node           $node     -
+	 * @param ClassLike|null $inside   -
+	 * @param Scope|null     $scope    -
+	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		assert($node instanceof Node\Expr\BinaryOp\Concat);

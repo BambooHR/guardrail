@@ -84,12 +84,21 @@ class Config {
 	/** @var string */
 	private $filterFileName = "";
 
+	/** @var bool */
 	static private $useDocBlockForProperties = false;
+
+	/** @var bool */
 	static private $useDocBlockForReturnValue = false;
+
+	/** @var bool */
 	static private $useDocBlockForParameters = false;
+
+	/** @var bool */
 	static private $useDocBlockForInlineVars = false;
 
-
+	/**
+	 * @return void
+	 */
 	private function loadConfigVars() {
 		if (isset($this->config) && is_array($this->config['options'])) {
 			foreach ($this->config['options'] as $key => $value) {
