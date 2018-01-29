@@ -26,6 +26,11 @@ class FunctionCallCheck extends BaseCheck {
 	 */
 	private $inferenceEngine;
 
+	/**
+	 * FunctionCallCheck constructor.
+	 * @param SymbolTable     $symbolTable -
+	 * @param OutputInterface $doc         -
+	 */
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
@@ -174,11 +179,11 @@ class FunctionCallCheck extends BaseCheck {
 	/**
 	 * @param string    $fileName -
 	 * @param Node      $node     -
-	 * @param string    $name
+	 * @param string    $name     -
 	 * @param Scope     $scope    -
 	 * @param ClassLike $inside   -
 	 * @param Node\Arg  $arg      -
-	 * @param  int      $index    -
+	 * @param int       $index    -
 	 * @param array     $params   -
 	 * @return void
 	 */
@@ -224,7 +229,6 @@ class FunctionCallCheck extends BaseCheck {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");
 					}
 
-
 					if (strcasecmp($expectedType, "callable") == 0) {
 						$this->callableCheck->run($fileName, $arg->value, $inside, $scope);
 					}
@@ -243,5 +247,4 @@ class FunctionCallCheck extends BaseCheck {
 			}
 		}
 	}
-
 }

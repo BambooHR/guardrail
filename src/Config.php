@@ -171,18 +171,30 @@ class Config {
 
 	}
 
+	/**
+	 * @return bool
+	 */
 	static function shouldUseDocBlockForProperties() {
 		return self::$useDocBlockForProperties;
 	}
 
+	/**
+	 * @return bool
+	 */
 	static function shouldUseDocBlockForParameters() {
 		return self::$useDocBlockForParameters;
 	}
 
+	/**
+	 * @return bool
+	 */
 	static function shouldUseDocBlockForReturnValues() {
 		return self::$useDocBlockForReturnValue;
 	}
 
+	/**
+	 * @return bool
+	 */
 	static function shouldUseDocBlockForInlineVars() {
 		return self::$useDocBlockForInlineVars;
 	}

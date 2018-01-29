@@ -151,7 +151,7 @@ class MethodCall extends BaseCheck {
 			$this->emitError($fileName, $node, $errorType, "Call to deprecated function " . $method->getName());
 		}
 
-		$name = $className."->".$methodName;
+		$name = $className . "->" . $methodName;
 		foreach ($node->args as $index => $arg) {
 			$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $index, $params);
 		}
@@ -160,11 +160,11 @@ class MethodCall extends BaseCheck {
 	/**
 	 * @param string    $fileName -
 	 * @param Node      $node     -
-	 * @param string    $name
+	 * @param string    $name     -
 	 * @param Scope     $scope    -
 	 * @param ClassLike $inside   -
 	 * @param Node\Arg  $arg      -
-	 * @param  int      $index    -
+	 * @param int       $index    -
 	 * @param array     $params   -
 	 * @return void
 	 */
@@ -222,6 +222,4 @@ class MethodCall extends BaseCheck {
 			}
 		}
 	}
-
-
 }

@@ -296,7 +296,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$this->setScopeUsed(strval($node->var));
 		};
 
-		$func [Node\Stmt\Global_::class] = function (Node\Stmt\Global_ $node) {
+		$func[Node\Stmt\Global_::class] = function (Node\Stmt\Global_ $node) {
 			foreach ($node->vars as $var) {
 				if ($var instanceof Variable && gettype($var->name) == "string") {
 					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
@@ -661,9 +661,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	private function handleAssignment($op) {
 
 		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name) == "string") {
-			$overrides = Config::shouldUseDocBlockForInlineVars() ?
-				$op->getAttribute('namespacedInlineVar') :
-				[];
+			$overrides = Config::shouldUseDocBlockForInlineVars() ? $op->getAttribute('namespacedInlineVar') : [];
 
 			$op->var->setAttribute('assignment', true);
 
@@ -710,6 +708,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		return null;
 	}
 
+	/**
+	 * @param Node $node -
+	 * @return void
+	 */
 	private function handleUnusedVars(Node $node) {
 		$scope = array_pop($this->scopeStack);
 

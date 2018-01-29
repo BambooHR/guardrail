@@ -98,6 +98,10 @@ class DocBlockNameResolver extends NameResolver {
 		parent::enterNode($node);
 	}
 
+	/**
+	 * @param Node $node
+	 * @return void
+	 */
 	function importInlineVarType(Node $node) {
 		$comment = $node->getDocComment();
 		if ($comment) {
