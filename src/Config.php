@@ -22,7 +22,7 @@ class Config {
 	const MEMORY_SYMBOL_TABLE = 1;
 	const SQLITE_SYMBOL_TABLE = 2;
 
-	/** @var int Number of analyzer processes to run.  If 1 then we don't run a child process.  */
+	/** @var int Number of analyzer processes to run.  If 1 then we don't run a child process. */
 	private $processes = 1;
 
 	/** @var string Directory containing the config file.  All files are relative to this directory */
@@ -37,18 +37,18 @@ class Config {
 	/** @var array nested array with the settings for what files to import */
 	private $config = [];
 
-	/** @var string  */
+	/** @var string */
 	private $symbolTableFile = "symbol_table.sqlite3";
 
 	/** @var int The number of partitions */
 	private $partitions = 1;
 
-	/** @var int Which partition this server is running  */
+	/** @var int Which partition this server is running */
 	private $partitionNumber = 1;
 
 	private $format = "xunit";
 
-	/** @var string  */
+	/** @var string */
 	private $outputFile = "";
 
 	/** @var int MEMORY_SYMBOL_TABLE | SQLITE_SYMBOL_TABLE */
@@ -63,10 +63,10 @@ class Config {
 	private $fileList = false;
 
 
-	/** @var bool  */
+	/** @var bool */
 	private $forceIndex = false;
 
-	/** @var bool  */
+	/** @var bool */
 	private $forceAnalysis = false;
 
 	/** @var string */
@@ -75,7 +75,7 @@ class Config {
 	/** @var string[] */
 	private $emitList = [];
 
-	/** @var int  */
+	/** @var int */
 	private $outputLevel = 0;
 
 	/** @var FilterInterface */
@@ -91,10 +91,10 @@ class Config {
 
 
 	private function loadConfigVars() {
-		if(isset($this->config) && is_array($this->config['options'])) {
-			foreach ($this->config['options'] as $key=>$value) {
-				if($value===true) {
-					switch($key) {
+		if (isset($this->config) && is_array($this->config['options'])) {
+			foreach ($this->config['options'] as $key => $value) {
+				if ($value === true) {
+					switch ($key) {
 						case "DocBlockReturns":
 							self::$useDocBlockForReturnValue = true;
 							break;
@@ -111,6 +111,7 @@ class Config {
 			}
 		}
 	}
+
 	/**
 	 * Config constructor.
 	 *
@@ -127,8 +128,8 @@ class Config {
 
 		$this->basePath = dirname(realpath($this->configFileName)) . "/";
 
-		$fullPath = Util::fullDirectoryPath( $this->getBasePath(), $this->configFileName );
-		$jsonConfigValid = Util::jsonFileContentIsValid( $fullPath );
+		$fullPath = Util::fullDirectoryPath($this->getBasePath(), $this->configFileName);
+		$jsonConfigValid = Util::jsonFileContentIsValid($fullPath);
 		if (true !== $jsonConfigValid['success']) {
 			echo $jsonConfigValid['message'] . "\n";
 			throw new InvalidConfigException;
@@ -153,10 +154,10 @@ class Config {
 				unlink($this->getSymbolTableFile());
 			}
 
-			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile(), $this->getBasePath() );
+			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
 		} else {
 			$this->forceIndex = true;
-			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
+			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable($this->getBasePath());
 		}
 
 	}
@@ -196,9 +197,9 @@ class Config {
 		$plugins = [];
 		if (isset($this->config['plugins']) && is_array($this->config['plugins'])) {
 			foreach ($this->config['plugins'] as $fileName) {
-				$fullPath = Util::fullDirectoryPath( $this->basePath, $fileName );
+				$fullPath = Util::fullDirectoryPath($this->basePath, $fileName);
 				$function = require $fullPath;
-				$plugins[] = call_user_func( $function, $index, $output );
+				$plugins[] = call_user_func($function, $index, $output);
 			}
 		}
 		return $plugins;
@@ -253,7 +254,7 @@ class Config {
 					break;
 
 				case '--format':
-					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["xunit","text","counts"])) {
+					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["xunit", "text", "counts"])) {
 						throw new InvalidConfigException;
 					}
 					$this->format = $argv[$argCount];
@@ -279,7 +280,7 @@ class Config {
 					break;
 				case '-p':
 					$params = [];
-					if ($argCount + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$argCount + 1], $params) ) {
+					if ($argCount + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$argCount + 1], $params)) {
 						throw new InvalidConfigException;
 					}
 					++$argCount;
@@ -302,7 +303,7 @@ class Config {
 						throw new InvalidConfigException;
 					}
 					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
-					$this->fileList = [ $argv[++$argCount] ];
+					$this->fileList = [$argv[++$argCount]];
 					$this->reindex = true;
 					break;
 				case '-o':
@@ -317,7 +318,7 @@ class Config {
 					}
 					$this->filterFileName = $argv[++$argCount];
 					$this->filter = UnifiedDiffFilter::importFile(
-						realpath( $this->filterFileName )
+						realpath($this->filterFileName)
 					);
 					$this->filter->display();
 					break;

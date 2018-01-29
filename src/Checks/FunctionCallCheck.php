@@ -182,7 +182,7 @@ class FunctionCallCheck extends BaseCheck {
 	 * @param           $index
 	 * @param           $params
 	 */
-	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside=null, $arg, $index, $params) {
+	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, $arg, $index, $params) {
 		if ($scope && $arg->value instanceof Node\Expr && $index < count($params)) {
 			$variableName = $params[$index]->getName();
 			list($type, $maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
@@ -218,7 +218,7 @@ class FunctionCallCheck extends BaseCheck {
 					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]) &&
 						$type != "" &&
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
-						!(strcasecmp($expectedType, "closure") == 0 && strcasecmp($type, "callable") == 0) &&
+						!(strcasecmp($expectedType, "callable") == 0 && strcasecmp($type, "closure") == 0) &&
 						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");
@@ -226,7 +226,7 @@ class FunctionCallCheck extends BaseCheck {
 
 
 					if (strcasecmp($expectedType, "callable") == 0) {
-						$this->callableCheck->run($fileName,$arg->value,$inside,$scope);
+						$this->callableCheck->run($fileName, $arg->value, $inside, $scope);
 					}
 
 					/*

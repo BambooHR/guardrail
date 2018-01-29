@@ -1,6 +1,7 @@
 <?php
 
 namespace BambooHR\Guardrail\Checks;
+
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -43,6 +44,7 @@ class CallableCheck extends BaseCheck {
 		return [];
 
 	}
+
 	/**
 	 * @param             $fileName
 	 * @param Node        $node
@@ -68,7 +70,7 @@ class CallableCheck extends BaseCheck {
 		} else {
 			list($classType) = $this->inferenceEngine->inferType($inside, $object, $scope);
 		}
-		if($classType && $classType[0]=="\\") {
+		if ($classType && $classType[0] == "\\") {
 			$classType = substr($classType, 1);
 		}
 		if ($classType && $classType[0] != "!") {
@@ -79,7 +81,7 @@ class CallableCheck extends BaseCheck {
 				if ($method instanceof Node\Scalar\String_) {
 					$methodObj = Util::findAbstractedMethod($classType, $method->value, $this->symbolTable);
 					if (!$methodObj) {
-						$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array method is '[$classType,".$method->value."]' is not defined");
+						$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array method is '[$classType," . $method->value . "]' is not defined");
 					}
 				}
 			}
@@ -88,19 +90,18 @@ class CallableCheck extends BaseCheck {
 
 	/**
 	 *
-
 	 * @param string         $fileName
 	 * @param Node           $node
 	 * @param ClassLike|null $inside
 	 * @param Scope|null     $scope
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		if($node instanceof Node\Scalar\String_) {
+		if ($node instanceof Node\Scalar\String_) {
 			$funcName = $node->value;
-			if ($funcName && $funcName[0]=="\\") {
-				$funcName = substr($funcName,1);
+			if ($funcName && $funcName[0] == "\\") {
+				$funcName = substr($funcName, 1);
 			}
-			if (strpos($funcName,"::")!==false) {
+			if (strpos($funcName, "::") !== false) {
 				list($classType, $method) = explode('::', $funcName, 2);
 				if (!$this->symbolTable->isDefinedClass($classType)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable string class '$classType' is not defined");

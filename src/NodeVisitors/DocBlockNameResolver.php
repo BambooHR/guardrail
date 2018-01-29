@@ -44,7 +44,7 @@ class DocBlockNameResolver extends NameResolver {
 	 * DocBlockNameResolver constructor.
 	 */
 	function __construct() {
-		$this->factory  = DocBlockFactory::createInstance();
+		$this->factory = DocBlockFactory::createInstance();
 	}
 
 	/**
@@ -60,7 +60,7 @@ class DocBlockNameResolver extends NameResolver {
 		parent::addAlias($use, $type, $prefix);
 		if ($type == Stmt\Use_::TYPE_NORMAL) {
 			// Add prefix for group uses
-			$name = strval( $prefix ? Name::concat($prefix, $use->name) : $use->name );
+			$name = strval($prefix ? Name::concat($prefix, $use->name) : $use->name);
 			$this->classAliases[$use->alias] = $name;
 		}
 	}
@@ -88,7 +88,8 @@ class DocBlockNameResolver extends NameResolver {
 		if ($this->useDocBlock) {
 			if ($node instanceof Function_ || $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
 				$this->importReturnValue($node);
-			} if ($node instanceof Property) {
+			}
+			if ($node instanceof Property) {
 				$this->importVarType($node);
 			} else {
 				$this->importInlineVarType($node);
@@ -97,7 +98,7 @@ class DocBlockNameResolver extends NameResolver {
 		parent::enterNode($node);
 	}
 
-	function importInlineVarType(Node $node ) {
+	function importInlineVarType(Node $node) {
 		$comment = $node->getDocComment();
 		if ($comment) {
 			try {
@@ -109,12 +110,12 @@ class DocBlockNameResolver extends NameResolver {
 						/** @var Var_ $tag */
 						if ($tag->getVariableName()) {
 							$type = strval($tag->getType());
-							if($type && $type[0]=="\\") {
-								$type = substr($type,1);
+							if ($type && $type[0] == "\\") {
+								$type = substr($type, 1);
 							}
 
 							if ($type != "type") {
-								$vars[ $tag->getVariableName() ] = Scope::nameFromConst($type);
+								$vars[$tag->getVariableName()] = Scope::nameFromConst($type);
 							}
 						}
 					}
@@ -134,7 +135,7 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return Context
 	 */
 	public function getDocBlockContext() {
-		return new Context( strval($this->namespace), $this->classAliases );
+		return new Context(strval($this->namespace), $this->classAliases);
 	}
 
 	/**
@@ -192,7 +193,7 @@ class DocBlockNameResolver extends NameResolver {
 		$types = $docBlock->getTagsByName("var");
 		if (count($types) > 0) {
 			$type = strval($types[0]->getType());
-			if (! empty($type)) {
+			if (!empty($type)) {
 				if ($type[0] == '\\') {
 					$type = substr($type, 1);
 				}
@@ -203,7 +204,7 @@ class DocBlockNameResolver extends NameResolver {
 				}
 			}
 		}
-}
+	}
 
 	/**
 	 * processDockBlockReturn

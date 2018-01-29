@@ -82,7 +82,7 @@ class TypeInferrer {
 				}
 			}
 		} elseif ($expr instanceof Closure) {
-			return ["callable", false];
+			return ["Closure", false];
 		} elseif ($expr instanceof FuncCall) {
 			if ($expr->name instanceof Name) {
 				$func = $this->index->getAbstractedFunction($expr->name);
@@ -94,47 +94,7 @@ class TypeInferrer {
 				}
 			}
 		} elseif ($expr instanceof Node\Expr\MethodCall) {
-			if (gettype($expr->name) == "string") {
-				list($class) = $this->inferType($inside, $expr->var, $scope);
-				if (!empty($class) && $class[0] != "!") {
-
-					// IoC
-					if (
-						strcasecmp($class, "Core\\App\\App") == 0 &&
-						$expr->name == "make"
-					) {
-						if (
-							count($expr->args) == 1 &&
-							$expr->args[0]->value instanceof Expr\ClassConstFetch &&
-							$expr->args[0]->value->class instanceof Name &&
-							is_string($expr->args[0]->value->name) &&
-							$expr->args[0]->value->name == "class"
-						) {
-							return [strval($expr->args[0]->value->class), Scope::NULL_IMPOSSIBLE];
-						}
-					}
-					//echo $class."->".$expr->name."\n";
-					$method = $this->index->getAbstractedMethod($class, strval($expr->name));
-
-					if ($method) {
-						$type = Scope::constFromName($method->getReturnType());
-						if ($type) {
-							return [$type, Scope::NULL_IMPOSSIBLE];
-						}
-
-						if (Config::shouldUseDocBlockForReturnValues()) {
-							$type = Scope::constFromDocBlock(
-								$method->getDocBlockReturnType(),
-								$inside ? strval($inside->namespacedName) : "",
-								$inside ? strval($inside->namespacedName) : ""
-							);
-							if ($type) {
-								return [$type, Scope::NULL_UNKNOWN];
-							}
-						}
-					}
-				}
-			}
+			return $this->inferMethodCall($inside, $expr, $scope);
 		} elseif ($expr instanceof PropertyFetch) {
 			return $this->inferPropertyFetch($expr, $inside, $scope);
 		} elseif ($expr instanceof ArrayDimFetch) {
@@ -220,6 +180,56 @@ class TypeInferrer {
 			}
 		} else {
 			//echo "Unable to infer left side of prop fetch ".get_class($expr->var)." ".$expr->getLine()." inside ".($inside?$inside->name:"")."\n";
+		}
+		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+	}
+
+	/**
+	 * @param ClassLike $inside
+	 * @param Expr      $expr
+	 * @param Scope     $scope
+	 */
+	protected function inferMethodCall(ClassLike $inside, Expr $expr, Scope $scope) {
+		if (gettype($expr->name) == "string") {
+			list($class) = $this->inferType($inside, $expr->var, $scope);
+			if (!empty($class) && $class[0] != "!") {
+
+				// IoC
+				if (
+					strcasecmp($class, "Core\\App\\App") == 0 &&
+					$expr->name == "make"
+				) {
+					if (
+						count($expr->args) == 1 &&
+						$expr->args[0]->value instanceof Expr\ClassConstFetch &&
+						$expr->args[0]->value->class instanceof Name &&
+						is_string($expr->args[0]->value->name) &&
+						$expr->args[0]->value->name == "class"
+					) {
+						return [strval($expr->args[0]->value->class), Scope::NULL_IMPOSSIBLE];
+					}
+				}
+				//echo $class."->".$expr->name."\n";
+				$method = $this->index->getAbstractedMethod($class, strval($expr->name));
+
+				if ($method) {
+					$type = Scope::constFromName($method->getReturnType());
+					if ($type) {
+						return [$type, Scope::NULL_IMPOSSIBLE];
+					}
+
+					if (Config::shouldUseDocBlockForReturnValues()) {
+						$type = Scope::constFromDocBlock(
+							$method->getDocBlockReturnType(),
+							$inside ? strval($inside->namespacedName) : "",
+							$inside ? strval($inside->namespacedName) : ""
+						);
+						if ($type) {
+							return [$type, Scope::NULL_UNKNOWN];
+						}
+					}
+				}
+			}
 		}
 		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 	}

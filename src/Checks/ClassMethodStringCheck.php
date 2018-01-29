@@ -28,21 +28,21 @@ class ClassMethodStringCheck extends BaseCheck {
 	 * @param Scope|null     $scope
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		assert( $node instanceof Node\Expr\BinaryOp\Concat );
+		assert($node instanceof Node\Expr\BinaryOp\Concat);
 
 		// Look for ClassName::class."@method"
 		$left = $node->left;
 		$right = $node->right;
 		if ($left instanceof ClassConstFetch) {
-			if($right instanceof Node\Scalar\String_) {
-				if($left->name=="class" && $left->class instanceof Name) {
+			if ($right instanceof Node\Scalar\String_) {
+				if ($left->name == "class" && $left->class instanceof Name) {
 					$className = strval($left->class);
 					$methodName = $right->value;
-					if($methodName && $methodName[0]=="@") {
-						$methodName = substr($methodName,1);
+					if ($methodName && $methodName[0] == "@") {
+						$methodName = substr($methodName, 1);
 						$method = Util::findAbstractedMethod($className, $methodName, $this->symbolTable);
 						if (!$method) {
-							$this->emitError( $fileName, $right, ErrorConstants::TYPE_UNKNOWN_METHOD_STRING, "String references a non-existant method ($className@$methodName)");
+							$this->emitError($fileName, $right, ErrorConstants::TYPE_UNKNOWN_METHOD_STRING, "String references a non-existant method ($className@$methodName)");
 						}
 					}
 				}

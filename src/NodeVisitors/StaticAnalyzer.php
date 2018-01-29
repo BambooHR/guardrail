@@ -146,7 +146,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$this->enterHooks = $this->buildClosures();
 		$this->exitHooks = $this->buildLeaveClosures();
 
-		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );
+		$checkers = array_merge($checkers, $config->getPlugins($this->index, $output));
 
 		foreach ($checkers as $checker) {
 			foreach ($checker->getCheckNodeTypes() as $nodeType) {
@@ -173,19 +173,19 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 	private function buildLeaveClosures() {
 		$func = [];
-		$func[Node\Expr\Variable::class] = function(Node\Expr\Variable $node ) {
+		$func[Node\Expr\Variable::class] = function (Node\Expr\Variable $node) {
 			if (is_string($node->name) && !$node->hasAttribute('assignment')) {
 				$this->setScopeUsed($node->name);
 			}
 		};
 
-		$func[Node\Expr\ClosureUse::class] = function(Node\Expr\ClosureUse $node) {
+		$func[Node\Expr\ClosureUse::class] = function (Node\Expr\ClosureUse $node) {
 			if (is_string($node->var)) {
 				$this->setScopeUsed($node->var);
 			}
 		};
 
-		$func[Node\Expr\FuncCall::class] = function(Node\Expr\FuncCall $node) {
+		$func[Node\Expr\FuncCall::class] = function (Node\Expr\FuncCall $node) {
 			if (
 				$node->name instanceof Node\Name &&
 				strcasecmp(strval($node->name), "get_defined_vars()") == 0
@@ -194,7 +194,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[Node\Expr\Assign::class] = function(Node\Expr\Assign $node) {
+		$func[Node\Expr\Assign::class] = function (Node\Expr\Assign $node) {
 			if (
 				$node->var instanceof Node\Expr\Variable &&
 				is_string($node->var->name)
@@ -203,7 +203,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[Node\Expr\AssigRef::class] =  function(Node\Expr\AssignRef $node) {
+		$func[Node\Expr\AssigRef::class] = function (Node\Expr\AssignRef $node) {
 			if (
 				$node->var instanceof Node\Expr\Variable &&
 				is_string($node->var->name)
@@ -212,35 +212,35 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[Node\Stmt\Class_::class] = function(Node\Stmt\Class_ $node) {
+		$func[Node\Stmt\Class_::class] = function (Node\Stmt\Class_ $node) {
 			array_pop($this->classStack);
 		};
 
-		$func[ClassMethod::class] = function(ClassMethod $node ) {
-			if (count($this->classStack)>0) {
+		$func[ClassMethod::class] = function (ClassMethod $node) {
+			if (count($this->classStack) > 0) {
 				$this->handleUnusedVars($node);
 			}
 		};
 
-		$func[Function_::class] = function(Function_ $node) {
+		$func[Function_::class] = function (Function_ $node) {
 			$this->handleUnusedVars($node);
 		};
 
-		$func[Closure::class] = function(Closure $node) {
+		$func[Closure::class] = function (Closure $node) {
 			$this->handleUnusedVars($node);
 		};
 
-		$func[ElseIf_::class] = function(ElseIf_ $node) {
+		$func[ElseIf_::class] = function (ElseIf_ $node) {
 			$last = end($this->scopeStack);
 			$last->mergePrevious();
 		};
 
-		$func[Node\Stmt\Else_::class] = function(Node\Stmt\Else_ $node) {
+		$func[Node\Stmt\Else_::class] = function (Node\Stmt\Else_ $node) {
 			$last = end($this->scopeStack);
 			$last->mergePrevious();
 		};
 
-		$func[If_::class] = function(If_ $node) {
+		$func[If_::class] = function (If_ $node) {
 			$last = array_pop($this->scopeStack);
 			$next = end($this->scopeStack);
 			$next->merge($last);
@@ -251,46 +251,46 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	private function buildClosures() {
 		$func = [];
 
-		$func[ Class_::class] = function(Class_ $node) {
+		$func[Class_::class] = function (Class_ $node) {
 			array_push($this->classStack, $node);
 		};
 
-		$func[ Trait_::class] = function(Trait_ $node) {
+		$func[Trait_::class] = function (Trait_ $node) {
 			array_push($this->classStack, $node);
 		};
 
-		$func[ ClassMethod::class] = function(ClassMethod $node) {
-			if(count($this->classStack)>0) {
+		$func[ClassMethod::class] = function (ClassMethod $node) {
+			if (count($this->classStack) > 0) {
 				$this->pushFunctionScope($node);
 			}
 		};
 
-		$func[Function_::class] = function(Function_ $node) {
+		$func[Function_::class] = function (Function_ $node) {
 			$this->pushFunctionScope($node);
 		};
 
-		$func[Closure::class] = function(Closure $node) {
+		$func[Closure::class] = function (Closure $node) {
 			$this->pushFunctionScope($node);
 		};
 
-		$func[ Node\Expr\AssignRef::class ] = function(Node\Expr\AssignRef $node) {
+		$func[Node\Expr\AssignRef::class] = function (Node\Expr\AssignRef $node) {
 			$this->handleAssignment($node);
 		};
 
-		$func[ Node\Expr\Assign::class ] = function(Node\Expr\Assign $node) {
+		$func[Node\Expr\Assign::class] = function (Node\Expr\Assign $node) {
 			$this->handleAssignment($node);
 		};
 
-		$func[ Node\Stmt\StaticVar::class] = function(Node\Stmt\StaticVar $node ) {
+		$func[Node\Stmt\StaticVar::class] = function (Node\Stmt\StaticVar $node) {
 			$this->setScopeExpression($node->name, $node->default, $node->getLine());
 		};
 
-		$func[ Node\Stmt\Catch_::class ] = function(Node\Stmt\Catch_ $node) {
+		$func[Node\Stmt\Catch_::class] = function (Node\Stmt\Catch_ $node) {
 			$this->setScopeType(strval($node->var), strval($node->type), $node->getLine());
 			$this->setScopeUsed(strval($node->var));
 		};
 
-		$func [ Node\Stmt\Global_::class ] = function(Node\Stmt\Global_ $node) {
+		$func [Node\Stmt\Global_::class] = function (Node\Stmt\Global_ $node) {
 			foreach ($node->vars as $var) {
 				if ($var instanceof Variable && gettype($var->name) == "string") {
 					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
@@ -298,9 +298,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[ Node\Expr\MethodCall::class ] = function(Node\Expr\MethodCall $node) {
+		$func[Node\Expr\MethodCall::class] = function (Node\Expr\MethodCall $node) {
 			if (gettype($node->name) == "string") {
-				list($type) = $this->typeInferrer->inferType( end($this->classStack) ?: null, $node->var, end($this->scopeStack) );
+				list($type) = $this->typeInferrer->inferType(end($this->classStack) ?: null, $node->var, end($this->scopeStack));
 				if ($type && $type[0] != "!") {
 					$method = $this->index->getAbstractedMethod($type, $node->name);
 					if ($method) {
@@ -310,7 +310,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[ Node\Expr\StaticCall::class ] = function(Node\Expr\StaticCall $node) {
+		$func[Node\Expr\StaticCall::class] = function (Node\Expr\StaticCall $node) {
 			if ($node->class instanceof Node\Name && gettype($node->name) == "string") {
 				$method = $this->index->getAbstractedMethod(strval($node->class), strval($node->name));
 				if ($method) {
@@ -319,7 +319,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[ Node\Expr\FuncCall::class ] = function(Node\Expr\FuncCall $node) {
+		$func[Node\Expr\FuncCall::class] = function (Node\Expr\FuncCall $node) {
 			if ($node->name instanceof Node\Name) {
 				if (strcasecmp($node->name, "assert") == 0 &&
 					count($node->args) == 1
@@ -354,7 +354,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[Node\Stmt\Foreach_::class] = function(Node\Stmt\Foreach_ $node) {
+		$func[Node\Stmt\Foreach_::class] = function (Node\Stmt\Foreach_ $node) {
 			if ($node->keyVar instanceof Variable && gettype($node->keyVar->name) == "string") {
 				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE, $node->keyVar->getLine());
 			}
@@ -375,16 +375,16 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		};
 
-		$func[ElseIf_::class] = function(ElseIf_ $node) {
+		$func[ElseIf_::class] = function (ElseIf_ $node) {
 			$last = array_pop($this->scopeStack);
 			$this->pushIfScope($node, $last);
 		};
 
-		$func[If_::class] = function(If_ $node) {
+		$func[If_::class] = function (If_ $node) {
 			$this->pushIfScope($node);
 		};
 
-		$func[Node\Stmt\Else_::class] = function(Node\Stmt\Else_ $node) {
+		$func[Node\Stmt\Else_::class] = function (Node\Stmt\Else_ $node) {
 			$last = array_pop($this->scopeStack); // Save the old scope so we can merge it later.
 			$this->pushIfScope($node, $last);
 		};
@@ -438,7 +438,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	function pushIfScope(Node $node, Scope $previous=null) {
+	function pushIfScope(Node $node, Scope $previous = null) {
 		/** @var Scope $scope */
 		$scope = end($this->scopeStack);
 		$newScope = $scope->getScopeClone($previous);
@@ -517,7 +517,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$isStatic = $func->isStatic();
 		}
 //		echo "Function: ".$func->name." depth=".(count($this->scopeStack)+1)."\n";
-		$scope = new Scope( $isStatic, false, $func );
+		$scope = new Scope($isStatic, false, $func);
 		foreach ($func->getParams() as $param) {
 			//echo "  Param ".$param->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
 			if ($param->variadic) {
@@ -571,7 +571,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	private function setScopeExpression($varName, $expr, $line ) {
+	private function setScopeExpression($varName, $expr, $line) {
 		$scope = end($this->scopeStack);
 		$class = end($this->classStack) ?: null;
 		list($newType, $nullable) = $this->typeInferrer->inferType($class, $expr, $scope);
@@ -580,7 +580,6 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$scope->setVarNull($varName);
 		}
 	}
-
 
 
 	/**
