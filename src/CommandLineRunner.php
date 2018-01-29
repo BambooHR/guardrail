@@ -74,6 +74,8 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		if ($config->getOutputFormat() == "text") {
 			$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);
+		} else if ($config->getOutputFormat() == "counts") {
+			$output = new \BambooHR\Guardrail\Output\CountsOutput($config);
 		} else {
 			$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
 		}
