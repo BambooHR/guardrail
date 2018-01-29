@@ -28,6 +28,11 @@ class MethodCall extends BaseCheck {
 	private $inferenceEngine;
 
 	/**
+	 * @var CallableCheck
+	 */
+	private $callableCheck;
+
+	/**
 	 * MethodCall constructor.
 	 *
 	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
@@ -36,6 +41,7 @@ class MethodCall extends BaseCheck {
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->inferenceEngine = new TypeInferrer($symbolTable);
+		$this->callableCheck = new CallableCheck($symbolTable, $doc);
 	}
 
 	/**
@@ -145,27 +151,46 @@ class MethodCall extends BaseCheck {
 			$this->emitError($fileName, $node, $errorType, "Call to deprecated function " . $method->getName());
 		}
 
+		$name = $className."->".$methodName;
 		foreach ($node->args as $index => $arg) {
-			if ($scope && $arg->value instanceof Expr && $index < count($params) ) {
-				$variableName = $params[$index]->getName();
-				list($type,$maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
-				if ($arg->unpack) {
-					// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
-					if (
-						substr($type, -2) != "[]" &&
-						$type != "array" &&
-						$type != Scope::ARRAY_TYPE &&
-						$type != Scope::UNDEFINED &&
-						$type != Scope::MIXED_TYPE &&
-						!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $type)
-					) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array or traversable object.  Passing ".Scope::nameFromConst($type)." from \$$variableName.");
-					}
-					return;// After we unpack an arg, we can't check the remaining parameters.
-				} else if ($params[$index]->getType() != "") {
+			$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $index, $params);
+		}
+	}
+
+	/**
+	 * @param           $fileName
+	 * @param           $node
+	 * @param           $className
+	 * @param           $methodName
+	 * @param Scope     $scope
+	 * @param ClassLike $inside
+	 * @param           $arg
+	 * @param           $index
+	 * @param           $params
+	 */
+	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside=null, $arg, $index, $params) {
+		if ($scope && $arg->value instanceof Expr && $index < count($params)) {
+			$variableName = $params[$index]->getName();
+			list($type, $maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
+			if ($arg->unpack) {
+				// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
+				$isSplatable = (
+					substr($type, -2) == "[]" ||
+					$type == "array" ||
+					$type == Scope::ARRAY_TYPE ||
+					$type == Scope::UNDEFINED ||
+					$type == Scope::MIXED_TYPE ||
+					$this->symbolTable->isParentClassOrInterface(\Traversable::class, $type)
+				);
+				if (!$isSplatable) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array or traversable object.  Passing " . Scope::nameFromConst($type) . " from \$$variableName.");
+				}
+				return;// After we unpack an arg, we can't check the remaining parameters.
+			} else {
+				if ($params[$index]->getType() != "") {
 					// Reference mismatch
 					if ($params[$index]->isReference() && !($arg->value instanceof Variable || $arg->value instanceof Expr\ArrayDimFetch || $arg->value instanceof Expr\PropertyFetch)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName must be a reference type not an expression.");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name() parameter \$$variableName must be a reference type not an expression.");
 					}
 
 					// Type mismatch
@@ -174,9 +199,13 @@ class MethodCall extends BaseCheck {
 						$type != "" &&
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
 						!(strcasecmp($expectedType, "closure") == 0 && strcasecmp($type, "callable") == 0) &&
-						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type==Scope::ARRAY_TYPE))
+						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))
 					) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName must be a $expectedType, passing $type");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");
+					}
+
+					if (strcasecmp($expectedType, "callable") == 0) {
+						$this->callableCheck->run($fileName,$arg->value,$inside,$scope);
 					}
 
 					/*
@@ -193,4 +222,6 @@ class MethodCall extends BaseCheck {
 			}
 		}
 	}
+
+
 }

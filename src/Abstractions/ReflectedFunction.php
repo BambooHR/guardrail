@@ -131,10 +131,29 @@ class ReflectedFunction implements FunctionLikeInterface {
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
 		foreach ($params as $index => $param) {
-			$type = $param->getClass() ? $param->getClass()->name : '';
+			$type = strval($param->getType());
 			$isPassedByReference = $param->isPassedByReference();
-			if ($this->getName() == "preg_match" && $index == 2) {
-				$isPassedByReference = true;
+			switch($index) {
+				case 0:
+					$name = $this->getName();
+					if (
+						$name == "call_user_func" || $name == "call_user_func_array" ||
+						$name == "forward_static_call" || $name == "forward_static_call_array"
+					) {
+						$type = "callable";
+					}
+					break;
+				case 1:
+					$name = $this->getName();
+					if ($name == "usort" || $name == "uksort" || $name == "uasort") {
+						$type = "callable";
+					}
+					break;
+				case 2:
+					if ($this->getName() == "preg_match") {
+						$isPassedByReference = true;
+					}
+					break;
 			}
 			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $isPassedByReference);
 		}

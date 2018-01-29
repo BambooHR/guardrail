@@ -11,6 +11,7 @@ use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
+use BambooHR\Guardrail\Checks\ClassMethodStringCheck;
 use BambooHR\Guardrail\Checks\ConditionalAssignmentCheck;
 use BambooHR\Guardrail\Checks\ConstructorCheck;
 use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
@@ -88,6 +89,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 	private $timings = [];
 
+	private $enterHooks = [];
+	private $exitHooks = [];
+
 	/**
 	 * @return array
 	 */
@@ -135,8 +139,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new UnreachableCodeCheck($this->index, $output),
 			new Psr4Check($this->index, $output),
 			new CyclomaticComplexityCheck($this->index, $output),
-			new ConditionalAssignmentCheck($this->index, $output)
+			new ConditionalAssignmentCheck($this->index, $output),
+			new ClassMethodStringCheck($this->index, $output)
 		];
+
+		$this->enterHooks = $this->buildClosures();
+		$this->exitHooks = $this->buildLeaveClosures();
 
 		$checkers = array_merge( $checkers, $config->getPlugins($this->index, $output) );
 
@@ -163,52 +171,135 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$this->scopeStack = [new Scope(true, true)];
 	}
 
-	/**
-	 * enterNode
-	 *
-	 * @param Node $node Instance of the node
-	 *
-	 * @return null
-	 */
-	public function enterNode(Node $node) {
-		$class = get_class($node);
-		if ($node instanceof Trait_) {
-			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
-		}
-		if (!($node instanceof FunctionLike)) {
-			$vars = $node->getAttribute("namespacedInlineVar");
-			if (is_array($vars)) {
-				foreach ($vars as $varName => $varType) {
-					end($this->scopeStack)->setVarType($varName, $varType, $node->getLine());
-				}
+	private function buildLeaveClosures() {
+		$func = [];
+		$func[Node\Expr\Variable::class] = function(Node\Expr\Variable $node ) {
+			if (is_string($node->name) && !$node->hasAttribute('assignment')) {
+				$this->setScopeUsed($node->name);
 			}
-		}
-		if ($node instanceof Class_ || $node instanceof Trait_) {
+		};
+
+		$func[Node\Expr\ClosureUse::class] = function(Node\Expr\ClosureUse $node) {
+			if (is_string($node->var)) {
+				$this->setScopeUsed($node->var);
+			}
+		};
+
+		$func[Node\Expr\FuncCall::class] = function(Node\Expr\FuncCall $node) {
+			if (
+				$node->name instanceof Node\Name &&
+				strcasecmp(strval($node->name), "get_defined_vars()") == 0
+			) {
+				$this->setAllScopeUsed();
+			}
+		};
+
+		$func[Node\Expr\Assign::class] = function(Node\Expr\Assign $node) {
+			if (
+				$node->var instanceof Node\Expr\Variable &&
+				is_string($node->var->name)
+			) {
+				$this->setScopeWritten($node->var->name, $node->getLine());
+			}
+		};
+
+		$func[Node\Expr\AssigRef::class] =  function(Node\Expr\AssignRef $node) {
+			if (
+				$node->var instanceof Node\Expr\Variable &&
+				is_string($node->var->name)
+			) {
+				$this->setScopeWritten($node->var->name, $node->getLine());
+			}
+		};
+
+		$func[Node\Stmt\Class_::class] = function(Node\Stmt\Class_ $node) {
+			array_pop($this->classStack);
+		};
+
+		$func[ClassMethod::class] = function(ClassMethod $node ) {
+			if (count($this->classStack)>0) {
+				$this->handleUnusedVars($node);
+			}
+		};
+
+		$func[Function_::class] = function(Function_ $node) {
+			$this->handleUnusedVars($node);
+		};
+
+		$func[Closure::class] = function(Closure $node) {
+			$this->handleUnusedVars($node);
+		};
+
+		$func[ElseIf_::class] = function(ElseIf_ $node) {
+			$last = end($this->scopeStack);
+			$last->mergePrevious();
+		};
+
+		$func[Node\Stmt\Else_::class] = function(Node\Stmt\Else_ $node) {
+			$last = end($this->scopeStack);
+			$last->mergePrevious();
+		};
+
+		$func[If_::class] = function(If_ $node) {
+			$last = array_pop($this->scopeStack);
+			$next = end($this->scopeStack);
+			$next->merge($last);
+		};
+		return $func;
+	}
+
+	private function buildClosures() {
+		$func = [];
+
+		$func[ Class_::class] = function(Class_ $node) {
 			array_push($this->classStack, $node);
-		}
-		if (($node instanceof ClassMethod && count($this->classStack)>0) || $node instanceof Function_ || $node instanceof Closure) { // Typecast
+		};
+
+		$func[ Trait_::class] = function(Trait_ $node) {
+			array_push($this->classStack, $node);
+		};
+
+		$func[ ClassMethod::class] = function(ClassMethod $node) {
+			if(count($this->classStack)>0) {
+				$this->pushFunctionScope($node);
+			}
+		};
+
+		$func[Function_::class] = function(Function_ $node) {
 			$this->pushFunctionScope($node);
-		}
-		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {
+		};
+
+		$func[Closure::class] = function(Closure $node) {
+			$this->pushFunctionScope($node);
+		};
+
+		$func[ Node\Expr\AssignRef::class ] = function(Node\Expr\AssignRef $node) {
 			$this->handleAssignment($node);
-		}
-		if ($node instanceof Node\Stmt\StaticVar) {
+		};
+
+		$func[ Node\Expr\Assign::class ] = function(Node\Expr\Assign $node) {
+			$this->handleAssignment($node);
+		};
+
+		$func[ Node\Stmt\StaticVar::class] = function(Node\Stmt\StaticVar $node ) {
 			$this->setScopeExpression($node->name, $node->default, $node->getLine());
-		}
-		if ($node instanceof Node\Stmt\Catch_) {
+		};
+
+		$func[ Node\Stmt\Catch_::class ] = function(Node\Stmt\Catch_ $node) {
 			$this->setScopeType(strval($node->var), strval($node->type), $node->getLine());
 			$this->setScopeUsed(strval($node->var));
-		}
-		if ($node instanceof Node\Stmt\Global_) {
+		};
+
+		$func [ Node\Stmt\Global_::class ] = function(Node\Stmt\Global_ $node) {
 			foreach ($node->vars as $var) {
 				if ($var instanceof Variable && gettype($var->name) == "string") {
 					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
 				}
 			}
-		}
-		if ($node instanceof Node\Expr\MethodCall) {
-			if (gettype($node->name) == "string") {
+		};
 
+		$func[ Node\Expr\MethodCall::class ] = function(Node\Expr\MethodCall $node) {
+			if (gettype($node->name) == "string") {
 				list($type) = $this->typeInferrer->inferType( end($this->classStack) ?: null, $node->var, end($this->scopeStack) );
 				if ($type && $type[0] != "!") {
 					$method = $this->index->getAbstractedMethod($type, $node->name);
@@ -217,16 +308,18 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 					}
 				}
 			}
-		}
-		if ($node instanceof Node\Expr\StaticCall) {
+		};
+
+		$func[ Node\Expr\StaticCall::class ] = function(Node\Expr\StaticCall $node) {
 			if ($node->class instanceof Node\Name && gettype($node->name) == "string") {
-				$method = $this->index->getAbstractedMethod( strval($node->class), strval($node->name));
+				$method = $this->index->getAbstractedMethod(strval($node->class), strval($node->name));
 				if ($method) {
 					$this->processStaticCall($node, $method);
 				}
 			}
-		}
-		if ($node instanceof Node\Expr\FuncCall) {
+		};
+
+		$func[ Node\Expr\FuncCall::class ] = function(Node\Expr\FuncCall $node) {
 			if ($node->name instanceof Node\Name) {
 				if (strcasecmp($node->name, "assert") == 0 &&
 					count($node->args) == 1
@@ -259,9 +352,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 					}
 				}
 			}
-		}
+		};
 
-		if ($node instanceof Node\Stmt\Foreach_) {
+		$func[Node\Stmt\Foreach_::class] = function(Node\Stmt\Foreach_ $node) {
 			if ($node->keyVar instanceof Variable && gettype($node->keyVar->name) == "string") {
 				$this->setScopeType(strval($node->keyVar->name), Scope::MIXED_TYPE, $node->keyVar->getLine());
 			}
@@ -280,20 +373,48 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 					}
 				}
 			}
-		}
-		if ($node instanceof ElseIf_) {
-			// Pop the previous if's scope
+		};
+
+		$func[ElseIf_::class] = function(ElseIf_ $node) {
 			$last = array_pop($this->scopeStack);
 			$this->pushIfScope($node, $last);
-		}
+		};
 
-		if ($node instanceof If_) {
+		$func[If_::class] = function(If_ $node) {
 			$this->pushIfScope($node);
-		}
+		};
 
-		if ($node instanceof Node\Stmt\Else_) {
+		$func[Node\Stmt\Else_::class] = function(Node\Stmt\Else_ $node) {
 			$last = array_pop($this->scopeStack); // Save the old scope so we can merge it later.
 			$this->pushIfScope($node, $last);
+		};
+
+		return $func;
+	}
+
+	/**
+	 * enterNode
+	 *
+	 * @param Node $node Instance of the node
+	 *
+	 * @return null
+	 */
+	public function enterNode(Node $node) {
+		$class = get_class($node);
+		if ($node instanceof Trait_) {
+			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
+		}
+		if (Config::shouldUseDocBlockForInlineVars() && !($node instanceof FunctionLike)) {
+			$vars = $node->getAttribute("namespacedInlineVar");
+			if (is_array($vars)) {
+				foreach ($vars as $varName => $varType) {
+					end($this->scopeStack)->setVarType($varName, $varType, $node->getLine());
+				}
+			}
+		}
+
+		if (isset($this->enterHooks[$class])) {
+			$this->enterHooks[$class]($node);
 		}
 
 		if (isset($this->checks[$class])) {
@@ -535,7 +656,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	private function handleAssignment($op) {
 
 		if ($op->var instanceof Node\Expr\Variable && gettype($op->var->name) == "string") {
-			$overrides = $op->getAttribute('namespacedInlineVar');
+			$overrides = Config::shouldUseDocBlockForInlineVars() ?
+				$op->getAttribute('namespacedInlineVar') :
+				[];
+
 			$op->var->setAttribute('assignment', true);
 
 			$varName = strval($op->var->name);
@@ -573,82 +697,28 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
-		if ($node instanceof Node\Expr\Variable &&
-			is_string($node->name) &&
-			!$node->hasAttribute('assignment')
-		) {
-			$this->setScopeUsed($node->name);
-		}
-		if ($node instanceof Node\Expr\ClosureUse) {
-			if (is_string($node->var)) {
-				$this->setScopeUsed($node->var);
-			}
-		}
+		$class = get_class($node);
 
-		if ($node instanceof Node\Expr\FuncCall) {
-			if (
-				$node->name instanceof Node\Name &&
-				strcasecmp(strval($node->name), "get_defined_vars()") == 0
-			) {
-				$this->setAllScopeUsed();
-			}
-		}
-
-		if ($node instanceof Node\Expr\Assign) {
-			if (
-				$node->var instanceof Node\Expr\Variable &&
-				is_string($node->var->name)
-			) {
-				$this->setScopeWritten($node->var->name, $node->getLine());
-			}
-		}
-
-		if ($node instanceof Node\Expr\AssignRef) {
-			if (
-				$node->var instanceof Node\Expr\Variable &&
-				is_string($node->var->name)
-			) {
-				$this->setScopeWritten($node->var->name, $node->getLine());
-			}
-		}
-
-		if ($node instanceof Class_) {
-			array_pop($this->classStack);
-		}
-		if (($node instanceof ClassMethod && count($this->classStack)>0) || $node instanceof Function_ || $node instanceof Closure) {
-			$scope = array_pop($this->scopeStack);
-//			echo "Exit function ".$node->name." scope depth=".count($this->scopeStack)."\n";
-
-			$unusedVars = $scope->getUnusedVars();
-
-			if (count($unusedVars) > 0) {
-				foreach ($unusedVars as $varName => $lineNumber) {
-					$this->output->emitError(__CLASS__, $this->file, $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$' . $varName . " is assigned but never referenced");
-				}
-			}
-
-			if ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
-				$this->updateFunctionEmit($node, "pop");
-			}
-		}
-
-		if ($node instanceof ElseIf_) {
-			$last = end($this->scopeStack);
-			$last->mergePrevious();
-		}
-
-		if ($node instanceof Node\Stmt\Else_) {
-			$last = end($this->scopeStack);
-			$last->mergePrevious();
-		}
-
-		if ($node instanceof If_ ) {
-			$last = array_pop($this->scopeStack);
-			$next = end($this->scopeStack);
-			$next->merge($last);
-//			echo "  Exit if, depth = ".count($this->scopeStack)."\n";
+		if (isset($this->exitHooks[$class])) {
+			$this->exitHooks[$class]($node);
 		}
 		return null;
+	}
+
+	private function handleUnusedVars(Node $node) {
+		$scope = array_pop($this->scopeStack);
+
+		$unusedVars = $scope->getUnusedVars();
+
+		if (count($unusedVars) > 0) {
+			foreach ($unusedVars as $varName => $lineNumber) {
+				$this->output->emitError(__CLASS__, $this->file, $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$' . $varName . " is assigned but never referenced");
+			}
+		}
+
+		if ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+			$this->updateFunctionEmit($node, "pop");
+		}
 	}
 
 	/**

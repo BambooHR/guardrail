@@ -87,6 +87,7 @@ class Config {
 	static private $useDocBlockForProperties = false;
 	static private $useDocBlockForReturnValue = false;
 	static private $useDocBlockForParameters = false;
+	static private $useDocBlockForInlineVars = false;
 
 
 	private function loadConfigVars() {
@@ -103,6 +104,8 @@ class Config {
 						case "DocBlockProperties":
 							self::$useDocBlockForProperties = true;
 							break;
+						case "DocBlockInlineVars":
+							self::$useDocBlockForInlineVars = true;
 					}
 				}
 			}
@@ -111,7 +114,7 @@ class Config {
 	/**
 	 * Config constructor.
 	 *
-	 * @param string $argv The list of arguments
+	 * @param array $argv The list of arguments
 	 *
 	 * @throws InvalidConfigException
 	 */
@@ -166,8 +169,12 @@ class Config {
 		return self::$useDocBlockForParameters;
 	}
 
-	static function shouldUseBocBlockForReturnValues() {
+	static function shouldUseDocBlockForReturnValues() {
 		return self::$useDocBlockForReturnValue;
+	}
+
+	static function shouldUseDocBlockForInlineVars() {
+		return self::$useDocBlockForInlineVars;
 	}
 
 	/**

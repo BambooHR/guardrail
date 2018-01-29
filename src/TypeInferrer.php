@@ -122,7 +122,7 @@ class TypeInferrer {
 							return [$type, Scope::NULL_IMPOSSIBLE];
 						}
 
-						if (Config::shouldUseBocBlockForReturnValues()) {
+						if (Config::shouldUseDocBlockForReturnValues()) {
 							$type = Scope::constFromDocBlock(
 								$method->getDocBlockReturnType(),
 								$inside ? strval($inside->namespacedName) : "",
