@@ -109,20 +109,7 @@ class DocBlockNameResolver extends NameResolver {
 				$block = $this->factory->create($comment->getText(), $this->getDocBlockContext());
 				$tags = $block->getTagsByName("var");
 				if ($tags) {
-					$vars = [];
-					foreach ($tags as $tag) {
-						/** @var Var_ $tag */
-						if ($tag->getVariableName()) {
-							$type = strval($tag->getType());
-							if ($type && $type[0] == "\\") {
-								$type = substr($type, 1);
-							}
-
-							if ($type != "type") {
-								$vars[$tag->getVariableName()] = Scope::nameFromConst($type);
-							}
-						}
-					}
+					$vars = $this->buildVarsFromTag($tags);
 					if (count($vars) > 0) {
 						$node->setAttribute("namespacedInlineVar", $vars);
 					}
@@ -231,5 +218,27 @@ class DocBlockNameResolver extends NameResolver {
 				$node->setAttribute("namespacedReturn", strval($returnType));
 			}
 		}
+	}
+
+	/**
+	 * @param Tag_[] $tags An array of Tag_ objects
+	 * @return array
+	 */
+	protected function buildVarsFromTag($tags) {
+		$vars = [];
+		foreach ($tags as $tag) {
+			/** @var Var_ $tag */
+			if ($tag->getVariableName()) {
+				$type = strval($tag->getType());
+				if ($type && $type[0] == "\\") {
+					$type = substr($type, 1);
+				}
+
+				if ($type != "type") {
+					$vars[$tag->getVariableName()] = Scope::nameFromConst($type);
+				}
+			}
+		}
+		return $vars;
 	}
 }

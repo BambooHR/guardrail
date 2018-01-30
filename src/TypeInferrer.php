@@ -195,24 +195,11 @@ class TypeInferrer {
 			list($class) = $this->inferType($inside, $expr->var, $scope);
 			if (!empty($class) && $class[0] != "!") {
 
-				// IoC
-				if (
-					strcasecmp($class, "Core\\App\\App") == 0 &&
-					$expr->name == "make"
-				) {
-					if (count($expr->args) == 1) {
-						$arg0 = $expr->args[0]->value;
-						if ($arg0 instanceof Expr\ClassConstFetch) {
-							if (
-								$arg0->class instanceof Name &&
-								is_string($arg0->name) &&
-								$arg0->name == "class"
-							) {
-								return [strval($arg0->class), Scope::NULL_IMPOSSIBLE];
-							}
-						}
-					}
+				$type = $this->tryMakeCheck($expr, $class);
+				if ($type) {
+					return [ $type, Scope::NULL_IMPOSSIBLE];
 				}
+
 				//echo $class."->".$expr->name."\n";
 				$method = $this->index->getAbstractedMethod($class, strval($expr->name));
 
@@ -236,5 +223,32 @@ class TypeInferrer {
 			}
 		}
 		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
+	}
+
+	/**
+	 * @param Expr\MethodCall $expr  The methodcall node from the AST.
+	 * @param string          $class The class type that the call is made against.
+	 * @return string
+	 */
+	protected function tryMakeCheck(Node\Expr\MethodCall $expr, $class) {
+// IoC
+		if (
+			strcasecmp($class, "Core\\App\\App") == 0 &&
+			$expr->name == "make"
+		) {
+			if (count($expr->args) == 1) {
+				$arg0 = $expr->args[0]->value;
+				if ($arg0 instanceof Expr\ClassConstFetch) {
+					if (
+						$arg0->class instanceof Name &&
+						is_string($arg0->name) &&
+						$arg0->name == "class"
+					) {
+						return strval($arg0->class);
+					}
+				}
+			}
+		}
+		return "";
 	}
 }

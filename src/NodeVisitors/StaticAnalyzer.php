@@ -178,6 +178,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$this->scopeStack = [new Scope(true, true)];
 	}
 
+	//@codingStandardsIgnoreStart
+
 	/**
 	 * @return Closure[]
 	 */
@@ -423,6 +425,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 		return $func;
 	}
+
+	// @codingStandardsIgnoreEnd
 
 	/**
 	 * enterNode
