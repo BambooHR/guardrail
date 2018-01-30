@@ -6,7 +6,7 @@ php:
 install:
   - composer install -o
 script:
-  - cd tests;../vendor/bin/phpunit
-  - composer add-standard; composer cs-check
+  - cd tests;../vendor/bin/phpunit;cd ..
+  - composer add-standard; composer cs-check;
   - php $TRAVIS_BUILD_DIR/src/bin/guardrail.php -i -s self.json
   - php $TRAVIS_BUILD_DIR/src/bin/guardrail.php -a -s self.json
