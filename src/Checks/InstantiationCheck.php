@@ -45,8 +45,14 @@ class InstantiationCheck extends MethodCall {
 		if ($node instanceof New_) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();
-				if ($inside && strcasecmp($name, "self") == 0 || strcasecmp($name, "static") == 0) {
-					$name = strval($inside->namespacedName);
+				$staticNew = false;
+				if ($inside)
+					if (strcasecmp($name, "self") == 0) {
+						$name = strval($inside->namespacedName);
+					} else if (strcasecmp($name, "static") == 0) {
+						$name = strval($inside->namespacedName);
+						$staticNew = true;
+					}
 				}
 				if ($name && !$this->symbolTable->ignoreType($name)) {
 					$class = $this->symbolTable->getAbstractedClass($name);
@@ -54,7 +60,7 @@ class InstantiationCheck extends MethodCall {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to instantiate unknown class $name");
 						return;
 					}
-					if ($class->isDeclaredAbstract() || $class->isInterface()) {
+					if (!$staticNew && ($class->isDeclaredAbstract() || $class->isInterface())) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Attempt to instantiate abstract class $name");
 						return;
 					}
