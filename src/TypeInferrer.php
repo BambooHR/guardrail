@@ -159,7 +159,7 @@ class TypeInferrer {
 				if ($propName != "") {
 					$classDef = $this->index->getAbstractedClass($class);
 					if ($classDef) {
-						$prop = Util::findAbstractedProperty($class, $propName, $this->index);
+						list($prop) = Util::findAbstractedProperty($class, $propName, $this->index);
 						if ($prop) {
 							$type = $prop->getType();
 							if (!empty($type)) {

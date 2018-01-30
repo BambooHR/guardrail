@@ -170,22 +170,22 @@ class Util {
 	 * @param string      $name        The name
 	 * @param SymbolTable $symbolTable Instance of SymbolTable
 	 *
-	 * @return null|\BambooHR\Guardrail\Abstractions\Property
+	 * @return array First param is the abstracted method, second param is the class it was declared in.
 	 */
 	static public function findAbstractedProperty($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
-				return null;
+				return [null,""];
 			}
 
 			$method = $class->getProperty($name);
 			if ($method) {
-				return $method;
+				return [$method, $className];
 			}
 			$className = $class->getParentClassName();
 		}
-		return null;
+		return [null,""];
 	}
 
 	/**

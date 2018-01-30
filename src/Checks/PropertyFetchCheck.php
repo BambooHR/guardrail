@@ -71,7 +71,7 @@ class PropertyFetchCheck extends BaseCheck {
 					return;
 				}
 
-				$property = Util::findAbstractedProperty($type, $node->name, $this->symbolTable);
+				list($property,$declaredIn) = Util::findAbstractedProperty($type, $node->name, $this->symbolTable);
 
 				if (!$property) {
 					// Unknown property, but maybe they use magic methods to retrieve.
@@ -88,9 +88,9 @@ class PropertyFetchCheck extends BaseCheck {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
 						}
 					}
-				} else if ($property->getAccess() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($type, $inside->namespacedName) != 0)) {
+				} else if ($property->getAccess() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($declaredIn, $inside->namespacedName) != 0)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property " . $node->name);
-				} else if ($property->getAccess() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($type, $inside->namespacedName))) {
+				} else if ($property->getAccess() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($declaredIn, $inside->namespacedName))) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property " . $node->name);
 				}
 			}

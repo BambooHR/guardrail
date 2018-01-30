@@ -12,7 +12,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 * @return string[]
 	 */
 	function getCheckNodeTypes() {
-		return [ClassMethod::class, Node\Stmt\Function_::class];
+		return [Node\Stmt\ClassMethod::class, Node\Stmt\Function_::class];
 	}
 
 	/**
@@ -71,11 +71,12 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 * @return void
 	 */
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
-		if ($node instanceof Node\Stmt\ClassMethod) {
-			$this->checkStatements($fileName, $node->name, $node, $node->stmts);
-		}
-		if ($node instanceof Node\Stmt\Function_) {
-			$this->checkStatements($fileName, $node->name, $node, $node->stmts);
+		if ($node->stmts) {
+			if ($node instanceof Node\Stmt\ClassMethod) {
+				$this->checkStatements($fileName, $node->name, $node, $node->stmts);
+			} else if ($node instanceof Node\Stmt\Function_) {
+				$this->checkStatements($fileName, $node->name, $node, $node->stmts);
+			}
 		}
 	}
 }

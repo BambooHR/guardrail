@@ -37,16 +37,17 @@ abstract class TestSuiteSetup extends TestCase {
 		if (!file_exists($fileName)) {
 			throw new \InvalidArgumentException("That file does not exist. Make sure it follows the NameOfTestClass.#.inc \n pattern and is in the TestData directory of the class file directory.");
 		}
+
 		$config = new TestConfig($fileName, $emit);
 		$output = new XUnitOutput($config);
 
 		$indexer = new IndexingPhase($config);
-		$indexer->run($config, $output);
+		$indexer->indexFile($config, $fileName);
 
 		$analyzer = new AnalyzingPhase($output);
-		foreach ($config->config as $listItem) {
-			$analyzer->phase2($config, $output, $listItem);
-		}
+		$analyzer->initParser($config, $output);
+		$analyzer->analyzeFile($fileName, $config);
+
 		return $output->getErrorCount();
 	}
 
