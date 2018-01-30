@@ -60,13 +60,16 @@ Name | Description
 --- | ---
 Standard.Access.Violation | Accessing a protected/private variable in a context where you are not allowed to access them.
 Standard.Autoload.Unsafe | Code that executes any statements other than a class declaration.
+Standard.ConditionalAssignment | Assigning a variable in conditional expression of an if() statement.
+Standard.Constructor.MissingCall | Overriding a constructor without calling the parent constructor
+Standard.Debug | Typical debug statements such as var_dump() or print_r()
 Standard.Deprecated.Internal | Call to an internal PHP function that is deprecated
 Standard.Deprecated.User | Call to a user function that has @deprecated in the docblock.
-Standard.Constructor.MissingCall | Overriding a constructor without calling the parent constructor.
 Standard.Exception.Base | Catching the base \Exception class instead of something more specific.
 Standard.Incorrect.Static | Static reference to a dynamic variable/method
 Standard.Incorrect.Dynamic | Dynamic reference to a static variable/method
 Standard.Inheritance.Unimplemented | Class implementing an interface fails to implement on of it's methods.
+Standard.Function.InsideFunction | Declaring a function inside of another function.  (Closures/lambdas are still allowed.)
 Standard.Global.Expression | Referencing $GLOBALS[ $expr ]
 Standard.Global.String | Referencing a global with either global $var or $GLOBALS['var']
 Standard.Goto | Any instance of a "goto" statement
@@ -83,15 +86,18 @@ Standard.Security.Shell | Code that runs a shell (exec, passthru, system, etc)
 Standard.Security.Backtick | The backtick operator
 Standard.Switch.Break | A switch case: statement that falls through (generally these are unintentional)
 Standard.Switch.BreakMultiple | A "continue #;" or "break #;" statement (where # is an integer)
+Standard.Unknown.Callable | A callable that can't be resolved into a class method or function.
 Standard.Unknown.Class | Reference to an undefined class
 Standard.Unknown.Class.Constant | Reference to an undefined constant inside of a class
 Standard.Unknown.Class.Method | Reference to an unknown class method
+Standard.Unknown.Class.MethodString | Occurrences of Foo::class."@bar" where Foo::bar doesn't exist.
 Standard.Unknown.Function | Reference to an unknown function
 Standard.Unknown.Global.Constant | Reference to an undefined global constant (define or const)
 Standard.Unknown.Property | Reference to a property that has not previously been declared
 Standard.Unknown.Variable | Reference to a variable that has not previously been assigned
-Standard.Unused.Variable | A local variable is assigned but never read from.
 Standard.Unsafe.Timezone | Functions, such as date() that use a server setting for timezone instead of explicitly passing the timezone.
+Standard.Unused.Variable | A local variable is assigned but never read from.
+Standard.Unreachable | Code inside a block after a return, break, continue, etc.
 Standard.VariableFunctionCall | Call a method $foo() when $foo is a string.  (Still ok if $foo is a callable)
 Standard.VariableVariable | Referencing a variable with $$var
 
@@ -153,8 +159,16 @@ them to review the results.  (BambooHR uses Rapid to automate this.)
 
 ### Configuration
 
-Guardrail configuration consists of 6 sections:
-  index, ignore, test, test-ignore, emit, and plugins.
+Guardrail configuration consists of 7 sections:
+  options, index, ignore, test, test-ignore, emit, and plugins.
+  
+The *options* section is "optional".  Currently it allows you to 
+enable type inference based on DocBlocks.  Often codebases will have
+a lot of DocBlocks that actually reference types that don't exist 
+or aren't namespaced correctly.  By default DocBlocks will not
+be used in type inference.  If you enable DocBlocks then Guardrail can be
+much more exhaustive in what it checks.  See the options section
+below for the options that can be defined.
   
 The *index* section is a list of subdirectories to index.
  The *ignore* section is a list of file paths to ignore from indexing.  The 
@@ -185,6 +199,12 @@ Sample config file:
 
 ```json
 {
+	"options": {
+		"DocBlockReturns" : true,
+		"DocBlockParams" :  true,
+		"DocBlockInlineVars" : true,
+		"DocBlockProperties": true
+	},
     "index": [
         "app",
         "vendor",
@@ -223,6 +243,11 @@ Sample config file:
         	"glob-igore": "**/System/Shell/**/*"
         },
         
+        {
+        	"emit":"Standard.Unknown.Class.Method",
+        	"when": "new"
+        },
+        
         "BambooHR.Impossible.Inject"
     ], 
     "plugins": [
@@ -242,6 +267,8 @@ in your function's docblock.  (Where [type#] is the name of the check to disable
 
 ### Command line
 
+Note: Command line usage will probably change significantly in the v1.0 release. 
+
 <pre>
 Usage: php -d memory_limit=500M vendor/bin/guardrail.php [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
 
@@ -249,18 +276,27 @@ where: -p #/#                 = Define the number of partitions and the current 
                                 Use for multiple hosts. Example: -p 1/4
 
        -n #                   = number of child process to run.
-                                Use for multiple processes on a single host.
+                                Use for multiple processes on a single host.  A good rule of thumb is 1 process per CPU core.
 
        -a                     = run the "analyze" operation
 
        -i                     = run the "index" operation.
                                 Defaults to yes if using in memory index.
+                                
+       --diff patch_file      = Allows you to limit results to only those errors occuring on
+                                lines in a particular patch set.  Requires unified diff format taken
+                                from the root directory of the project.  Must set emit { "when": "new" }
+                                for each error that you want to emit in this fashion.                                                                     
+                                
+       --format format        = Select choose between "xunit", "text", or "counts"                                 
 
        -s                     = prefer sqlite index
 
        -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
 
        -o output_file_name    = Output results in junit format to the specified filename
+       
+       
 
        -v                     = Increase verbosity level.  Can be used once or twice.
 
@@ -283,6 +319,29 @@ use -v to enable verbose output.
 
 By default, a report is output in Xunit format to standard out.  If you
 would prefer to output to a file use -o to specify an output filename.
+
+### Incremental scanning
+
+If you use the `--diff patch_file` option to Guardrail then you can filter your 
+results based on just the lines identified as changed in the patch set.  This
+is a helpful feature for incrementally improving your codebase.  You can, for example,
+
+The patch file must be in Unified diff format, taken from the root directory of your
+project.  (The same directory that holds your Guardrail config file.)
+
+set:
+<pre> 
+{
+	"emit" : "Standard.VariableVariable",
+	"when" : "new"
+}
+</pre>
+
+to emit a "Standard.VariableVariable" error only when the error occurs in the
+patchset that you are testing.  At BambooHR, we have wired this in to our RapidCI
+setup so that every new commit is tested to a higher standard than we can enforce 
+on the legacy code.  Using this approach you can raise the quality of your
+codebase over time. 
 
 ### Object casting
 
@@ -307,6 +366,22 @@ Languages like Java or C# support casting an object reference from one type
  	$var->fooInterfaceMethod(); // $var assumed to be a "Foo" inside this clause.
  }
  </pre>
+ 
+ 
+ If you have an instance of a variable that is ALWAYS a subtype, then you 
+ can use either of these cast techniques as well:
+ 
+ <pre>
+ assert($var instanceof Foo); // PHP 7 asserts. 
+ </pre>
+ 
+ or 
+ 
+ <pre>
+ /** var Foo $var  Typical doc block cast. */
+ </pre>
+ 
+ 
 
 
 
@@ -314,13 +389,3 @@ Languages like Java or C# support casting an object reference from one type
 
 [Plugin architecture](docs/plugins.md)
  
- 
-
- 
-
-
-
-
-
-
-
