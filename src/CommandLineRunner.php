@@ -29,6 +29,7 @@ where: -p #/#                 = Define the number of partitions and the current 
                                 Use for multiple hosts. Example: -p 1/4
                                 
        --format {format}      = Use \"xunit\" format or a more console friendly \"text\" format                          
+
        -n #                   = number of child process to run.
                                 Use for multiple processes on a single host.
 
@@ -64,6 +65,16 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
+
+		if (!extension_loaded("pcntl")) {
+			echo "Guardrail requires the pcntl extension, which is not loaded.\n";
+			exit(1);
+		}
+
+		if (!extension_loaded("pdo_sqlite") || !extension_loaded("sqlite3")) {
+			echo "Guardrail requires the PDO Sqlite extension, which is not loaded.\n";
+			exit(1);
+		}
 
 		try {
 			$config = new Config($argv);
