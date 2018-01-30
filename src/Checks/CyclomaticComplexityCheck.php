@@ -71,7 +71,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 * @return void
 	 */
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
-		if($node->stmts) {
+		if ($node->stmts) {
 			if ($node instanceof Node\Stmt\ClassMethod) {
 				$this->checkStatements($fileName, $node->name, $node, $node->stmts);
 			} else if ($node instanceof Node\Stmt\Function_) {

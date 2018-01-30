@@ -23,7 +23,6 @@
     "Standard.Goto",
     "Standard.Incorrect.*",
     "Standard.Inheritance.Unimplemented",
-    "Standard.Metrics.Complexity",
     "Standard.Param.Count",
     "Standard.Param.Count.Excess",
     "Standard.Param.Type",
