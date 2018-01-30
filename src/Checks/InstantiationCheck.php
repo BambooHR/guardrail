@@ -17,10 +17,11 @@ use BambooHR\Guardrail\Util;
  *
  * @package BambooHR\Guardrail\Checks
  */
-class InstantiationCheck extends BaseCheck {
+class InstantiationCheck extends MethodCall {
 
 	/**
 	 * getCheckNodeTypes
+	 * @override
 	 *
 	 * @return array
 	 */
@@ -30,6 +31,8 @@ class InstantiationCheck extends BaseCheck {
 
 	/**
 	 * run
+	 *
+	 * @override
 	 *
 	 * @param string         $fileName The name of the file we are parsing
 	 * @param Node           $node     Instance of the Node
@@ -42,14 +45,22 @@ class InstantiationCheck extends BaseCheck {
 		if ($node instanceof New_) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();
-				if (strcasecmp($name, "self") != 0 && strcasecmp($name, "static") != 0 && !$this->symbolTable->ignoreType($name)) {
-					$this->incTests();
+				$staticNew = false;
+				if ($inside) {
+					if (strcasecmp($name, "self") == 0) {
+						$name = strval($inside->namespacedName);
+					} else if (strcasecmp($name, "static") == 0) {
+						$name = strval($inside->namespacedName);
+						$staticNew = true;
+					}
+				}
+				if ($name && !$this->symbolTable->ignoreType($name)) {
 					$class = $this->symbolTable->getAbstractedClass($name);
 					if (!$class) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to instantiate unknown class $name");
 						return;
 					}
-					if ($class->isDeclaredAbstract()) {
+					if (!$staticNew && ($class->isDeclaredAbstract() || $class->isInterface())) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Attempt to instantiate abstract class $name");
 						return;
 					}
@@ -58,27 +69,17 @@ class InstantiationCheck extends BaseCheck {
 
 					$method = Util::findAbstractedMethod($name, "__construct", $this->symbolTable);
 
+					$passedArgCount = count($node->args);
 					if (!$method) {
-						$minParams = $maxParams = 0;
+						if ($passedArgCount > 0) {
+							$this->emitError($fileName, $node, "Parameter mismatch", "Call to default constructor $name::__construct passing too many parameters");
+						}
 					} else {
 						if ($method->getAccessLevel() == "private" && (!$inside || strcasecmp($inside->namespacedName, $name) != 0)) {
 							$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Attempt to call private constructor outside of class $name");
 							return;
 						}
-						$maxParams = count($method->getParameters());
-						$minParams = $method->getMinimumRequiredParameters();
-						if (strcasecmp("imagick", $name) == 0) {
-							$minParams = 0;
-							$maxParams = 1;
-						}
-					}
-
-					$passedArgCount = count($node->args);
-					if ($passedArgCount < $minParams) {
-						$this->emitError($fileName, $node, self::TYPE_SIGNATURE_COUNT, "Call to $name::__construct passing $passedArgCount count, required count=$minParams");
-					}
-					if ($passedArgCount > $maxParams) {
-						//$this->emitError($fileName, $node, "Parameter mismatch","Call to $name::__construct passing too many parameters ($passedArgCount instead of $maxParams)");
+						$this->checkMethod($fileName, $node, $name, "__construct", $scope, $method, $inside);
 					}
 				}
 			}

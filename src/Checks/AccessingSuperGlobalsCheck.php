@@ -52,10 +52,15 @@ class AccessingSuperGlobalsCheck extends BaseCheck {
 	 */
 	protected function checkForGlobal($fileName, Global_ $node) {
 		foreach ($node->vars as $globalName) {
-			if ($globalName instanceof Variable && is_string($globalName->name)) {
-				// global $some, $More, $than, $one;
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_GLOBAL_STRING_ACCESSED, "Found global " . $globalName->name);
-			} else {
+			$emit = true;
+			if ($globalName instanceof Variable) {
+				if (is_string($globalName->name)) {
+					// global $some, $More, $than, $one;
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_GLOBAL_STRING_ACCESSED, "Found global " . $globalName->name);
+					$emit = false;
+				}
+			}
+			if ($emit) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED, "Found global expression");
 			}
 		}

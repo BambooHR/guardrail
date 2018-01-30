@@ -20,7 +20,7 @@ use PhpParser\NodeVisitorAbstract;
  */
 class TraitImportingVisitor extends NodeVisitorAbstract {
 
-	/** @var  TraitImportingVisitor */
+	/** @var TraitImporter */
 	private $importer;
 
 	/**

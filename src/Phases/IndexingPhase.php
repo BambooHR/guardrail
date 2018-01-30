@@ -7,6 +7,7 @@
 
 namespace BambooHR\Guardrail\Phases;
 
+use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -40,7 +41,7 @@ class IndexingPhase {
 	function __construct(Config $config) {
 		$this->processManager = new ProcessManager();
 		$this->traverser1 = new NodeTraverser;
-		$this->traverser1->addVisitor(new NameResolver());
+		$this->traverser1->addVisitor(new DocBlockNameResolver());
 		$this->traverser2 = new NodeTraverser;
 		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
 		$this->traverser2->addVisitor($this->indexer);
@@ -142,7 +143,7 @@ class IndexingPhase {
 					$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
 					if ($receive == "DONE") {
 						if ($table instanceof PersistantSymbolTable) {
-							$config->getSymbolTable()->flushInserts();
+							$table->flushInserts();
 						}
 						return 0;
 					} else {
@@ -164,7 +165,7 @@ class IndexingPhase {
 	function indexList(Config $config, OutputInterface $output, \Generator $itr) {
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
-			$config->getSymbolTable()->disconnect();
+			$table->disconnect();
 		}
 
 		$start = microtime(true);

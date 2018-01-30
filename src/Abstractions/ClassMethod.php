@@ -67,7 +67,7 @@ class ClassMethod implements MethodInterface {
 	public function getMinimumRequiredParameters() {
 		$minimumArgs = 0;
 		foreach ($this->method->params as $param) {
-			if ($param->default) {
+			if ($param->default || $param->variadic) {
 				break;
 			}
 			$minimumArgs++;

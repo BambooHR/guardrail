@@ -153,7 +153,6 @@ class StaticCallCheck extends BaseCheck {
 					$possibleDynamic = $this->checkDefaultSwitch($inside, $name);
 					break;
 			}
-			$this->incTests();
 			if (! $this->symbolTable->isDefinedClass($name)) {
 				if (! $this->symbolTable->ignoreType($name)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Static call to unknown class $name::" . $node->name);

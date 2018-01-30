@@ -22,7 +22,7 @@ class Config {
 	const MEMORY_SYMBOL_TABLE = 1;
 	const SQLITE_SYMBOL_TABLE = 2;
 
-	/** @var int Number of analyzer processes to run.  If 1 then we don't run a child process.  */
+	/** @var int Number of analyzer processes to run.  If 1 then we don't run a child process. */
 	private $processes = 1;
 
 	/** @var string Directory containing the config file.  All files are relative to this directory */
@@ -37,16 +37,18 @@ class Config {
 	/** @var array nested array with the settings for what files to import */
 	private $config = [];
 
-	/** @var string  */
+	/** @var string */
 	private $symbolTableFile = "symbol_table.sqlite3";
 
 	/** @var int The number of partitions */
 	private $partitions = 1;
 
-	/** @var int Which partition this server is running  */
+	/** @var int Which partition this server is running */
 	private $partitionNumber = 1;
 
-	/** @var string  */
+	private $format = "xunit";
+
+	/** @var string */
 	private $outputFile = "";
 
 	/** @var int MEMORY_SYMBOL_TABLE | SQLITE_SYMBOL_TABLE */
@@ -55,14 +57,16 @@ class Config {
 	/** @var \BambooHR\Guardrail\SymbolTable\SymbolTable */
 	private $symbolTable = null;
 
+	private $timings = false;
+
 	/** @var string[]|false The list of files to process */
 	private $fileList = false;
 
 
-	/** @var bool  */
+	/** @var bool */
 	private $forceIndex = false;
 
-	/** @var bool  */
+	/** @var bool */
 	private $forceAnalysis = false;
 
 	/** @var string */
@@ -71,7 +75,7 @@ class Config {
 	/** @var string[] */
 	private $emitList = [];
 
-	/** @var int  */
+	/** @var int */
 	private $outputLevel = 0;
 
 	/** @var FilterInterface */
@@ -80,10 +84,47 @@ class Config {
 	/** @var string */
 	private $filterFileName = "";
 
+	/** @var bool */
+	static private $useDocBlockForProperties = false;
+
+	/** @var bool */
+	static private $useDocBlockForReturnValue = false;
+
+	/** @var bool */
+	static private $useDocBlockForParameters = false;
+
+	/** @var bool */
+	static private $useDocBlockForInlineVars = false;
+
+	/**
+	 * @return void
+	 */
+	private function loadConfigVars() {
+		if (isset($this->config) && array_key_exists('options', $this->config) && is_array($this->config['options'])) {
+			foreach ($this->config['options'] as $key => $value) {
+				if ($value === true) {
+					switch ($key) {
+						case "DocBlockReturns":
+							self::$useDocBlockForReturnValue = true;
+							break;
+						case "DocBlockParams" :
+							self::$useDocBlockForParameters = true;
+							break;
+						case "DocBlockProperties":
+							self::$useDocBlockForProperties = true;
+							break;
+						case "DocBlockInlineVars":
+							self::$useDocBlockForInlineVars = true;
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * Config constructor.
 	 *
-	 * @param string $argv The list of arguments
+	 * @param array $argv The list of arguments
 	 *
 	 * @throws InvalidConfigException
 	 */
@@ -96,14 +137,16 @@ class Config {
 
 		$this->basePath = dirname(realpath($this->configFileName)) . "/";
 
-		$fullPath = Util::fullDirectoryPath( $this->getBasePath(), $this->configFileName );
-		$jsonConfigValid = Util::jsonFileContentIsValid( $fullPath );
+		$fullPath = Util::fullDirectoryPath($this->getBasePath(), $this->configFileName);
+		$jsonConfigValid = Util::jsonFileContentIsValid($fullPath);
 		if (true !== $jsonConfigValid['success']) {
 			echo $jsonConfigValid['message'] . "\n";
 			throw new InvalidConfigException;
 		}
 
 		$this->config = json_decode(file_get_contents($this->configFileName), true);
+		$this->loadConfigVars();
+
 		if (isset($this->config['emit']) && is_array($this->config['emit'])) {
 			$this->emitList = $this->config['emit'];
 		}
@@ -120,12 +163,47 @@ class Config {
 				unlink($this->getSymbolTableFile());
 			}
 
-			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable( $this->getSymbolTableFile(), $this->getBasePath() );
+			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
 		} else {
 			$this->forceIndex = true;
-			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable( $this->getBasePath() );
+			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable($this->getBasePath());
 		}
 
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function shouldUseDocBlockForProperties() {
+		return self::$useDocBlockForProperties;
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function shouldUseDocBlockForParameters() {
+		return self::$useDocBlockForParameters;
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function shouldUseDocBlockForReturnValues() {
+		return self::$useDocBlockForReturnValue;
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function shouldUseDocBlockForInlineVars() {
+		return self::$useDocBlockForInlineVars;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function shouldOutputTimings() {
+		return $this->timings;
 	}
 
 	/**
@@ -140,9 +218,9 @@ class Config {
 		$plugins = [];
 		if (isset($this->config['plugins']) && is_array($this->config['plugins'])) {
 			foreach ($this->config['plugins'] as $fileName) {
-				$fullPath = Util::fullDirectoryPath( $this->basePath, $fileName );
+				$fullPath = Util::fullDirectoryPath($this->basePath, $fileName);
 				$function = require $fullPath;
-				$plugins[] = call_user_func( $function, $index, $output );
+				$plugins[] = call_user_func($function, $index, $output);
 			}
 		}
 		return $plugins;
@@ -196,6 +274,17 @@ class Config {
 					$this->forceAnalysis = true;
 					break;
 
+				case '--format':
+					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["xunit", "text", "counts"])) {
+						throw new InvalidConfigException;
+					}
+					$this->format = $argv[$argCount];
+					break;
+
+				case '--timings':
+					$this->timings = true;
+					break;
+
 				case '-l':
 				case '--list':
 					$this->showStandardTests();
@@ -212,7 +301,7 @@ class Config {
 					break;
 				case '-p':
 					$params = [];
-					if ($argCount + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$argCount + 1], $params) ) {
+					if ($argCount + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$argCount + 1], $params)) {
 						throw new InvalidConfigException;
 					}
 					++$argCount;
@@ -235,7 +324,7 @@ class Config {
 						throw new InvalidConfigException;
 					}
 					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
-					$this->fileList = [ $argv[++$argCount] ];
+					$this->fileList = [$argv[++$argCount]];
 					$this->reindex = true;
 					break;
 				case '-o':
@@ -249,10 +338,11 @@ class Config {
 						throw new InvalidConfigException();
 					}
 					$this->filterFileName = $argv[++$argCount];
-					$this->filter = UnifiedDiffFilter::importFile(
-						realpath( $this->filterFileName )
+					$filter = UnifiedDiffFilter::importFile(
+						realpath($this->filterFileName)
 					);
-					$this->filter->display();
+					$filter->display();
+					$this->filter = $filter;
 					break;
 				case '-h':
 				case '--help':
@@ -377,6 +467,13 @@ class Config {
 	 */
 	public function shouldAnalyze() {
 		return $this->forceAnalysis;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getOutputFormat() {
+		return $this->format;
 	}
 
 	/**

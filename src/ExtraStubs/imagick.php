@@ -391,13 +391,13 @@ class Imagick implements \Iterator, \Traversable {
 	 *
 	 * @param mixed $files
 	 */
-	public function __construct($files) {
+	public function __construct($files=null) {
 	}
 
 	/**
 	 * Adds adaptive blur filter to image
 	 *
-	 * @param float $radius
+	 * @param float $radius`
 	 * @param float $sigma
 	 * @param int   $channel
 	 *

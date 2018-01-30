@@ -18,6 +18,28 @@ use PhpParser\Node\Stmt\PropertyProperty;
  */
 class DocBlockTypesCheck extends BaseCheck {
 
+	static $types = [
+		"bool" => 1,
+		"float" => 1,
+		"double" => 1,
+		"false" => 1,
+		"true" => 1,
+		"self" => 1,
+		"callable" => 1,
+		"int" => 1,
+		"array" => 1,
+		"callable" => 1,
+		"void" => 1,
+		"string" => 1,
+		"mixed" => 1,
+		"object" => 1,
+		"resource" => 1,
+		"null" => 1,
+		"integer" => 1,
+		"boolean" => 1,
+		Scope::MIXED_TYPE => 1
+	];
+
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -35,8 +57,8 @@ class DocBlockTypesCheck extends BaseCheck {
 	 * @return bool
 	 */
 	static public function isScalar($typeName) {
-		$types = ["bool","float","double","false","true","self","callable","int","array","callable","void","string","mixed","object","resource","null","integer","boolean","",Scope::MIXED_TYPE];
-		return in_array(strtolower($typeName), $types);
+		$typeName = strtolower($typeName);
+		return $typeName == '' || array_key_exists($typeName, self::$types);
 	}
 
 	/**
@@ -51,12 +73,13 @@ class DocBlockTypesCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function checkOrEmit($typeName, $fileName, $node, $class, $message) {
+		$typeName = str_replace("[]", "", $typeName);
 		foreach (explode('|', $typeName) as $typeName) {
-			$typeName = str_replace("[]", "", $typeName);
-			if ($typeName && !self::isScalar($typeName) && !$this->symbolTable->isDefinedClass($typeName)) {
+			$typeName = trim($typeName);
+			if ($typeName) {
 				if ($typeName == "type" || strrpos($typeName, "\\type") == strlen($typeName) - 5) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_TYPE, $message);
-				} else {
+				} else if (!self::isScalar($typeName) && !$this->symbolTable->isDefinedClass($typeName)) {
 					$this->emitError($fileName, $node, $class, $message);
 				}
 			}
@@ -74,19 +97,31 @@ class DocBlockTypesCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		if ( $node instanceof FunctionLike) {
-			$return = strval( $node->getReturnType() ?: "");
-			$docBlockReturn = $node->getAttribute("namespacedReturn");
+		if ($node instanceof FunctionLike) {
+			$return = strval($node->getReturnType() ?: "");
+			$docBlockReturn = Scope::constFromDocBlock(
+				$node->getAttribute("namespacedReturn"),
+				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : "",
+				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : ""
+			);
 
 			if (!empty($docBlockReturn)) {
 				if ($docBlockReturn != $return && !empty($return)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_MISMATCH, "Function return type ($return) doesn't match DocBlock return type($docBlockReturn");
 				}
-				$this->checkOrEmit($docBlockReturn, $fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_RETURN, "Unknown function return type \"$docBlockReturn\" specified in DocBlock");
+				if ($docBlockReturn[0] != "!") {
+					$this->checkOrEmit($docBlockReturn, $fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_RETURN, "Unknown function return type \"$docBlockReturn\" specified in DocBlock");
+				}
 			}
 		} else if ($node instanceof PropertyProperty) {
 			$docBlockType = $node->getAttribute("namespacedType");
-			if ($docBlockType) {
+			$docBlockType = Scope::constFromDocBlock(
+				$docBlockType,
+				$inside ? strval($inside->namespacedName) : "",
+				$inside ? strval($inside->namespacedName) : ""
+			);
+
+			if ($docBlockType && $docBlockType[0] != "!") {
 				$this->checkOrEmit($docBlockType, $fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_VAR, "Unknown property type \"$docBlockType\" specified in DocBlock");
 			}
 		}

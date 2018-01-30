@@ -43,6 +43,7 @@ class AnalyzingPhase {
 	private $traversers = [];
 	private $parser = null;
 	private $analyzer;
+	private $timingResults = [];
 
 	/** @var OutputInterface Child processes will overwrite this in order to send data over the socket. */
 	private $output = null;
@@ -78,11 +79,25 @@ class AnalyzingPhase {
 	}
 
 	/**
+	 * @return array
+	 */
+	function getTimingResults() {
+		$ret = [];
+		foreach ($this->timingResults as $timingArr) {
+			foreach ($timingArr as $class => $time) {
+				$ret[$class] = (isset($ret[$class]) ? $ret[$class] : 0) + $time;
+			}
+		}
+		arsort($ret, SORT_NUMERIC);
+		return $ret;
+	}
+
+	/**
 	 * getPhase2Files
 	 *
 	 * @param Config                    $config    Instance of Config
 	 * @param RecursiveIteratorIterator $it2       Instance of RecursiveIteratorIterator
-	 * @param string                    $toProcess The content to process
+	 * @param array                     $toProcess The content to process
 	 *
 	 * @return void
 	 */
@@ -132,17 +147,14 @@ class AnalyzingPhase {
 	}
 
 	/**
-	 * @param string $file            The file to scan
-	 * @param int    $processingCount The number of files scanned
-	 * @param Config $config          The application config
+	 * @param string $file   The file to scan
+	 * @param Config $config The application config
 	 * @return int
 	 */
-	function analyzeFile($file, $processingCount, Config $config) {
+	function analyzeFile($file, Config $config) {
 		try {
 			$name = Util::removeInitialPath($config->getBasePath(), $file);
 
-			$processingCount++;
-			//echo " - $processingCount:" . $file . "\n";
 			$fileData = file_get_contents($file);
 			$stmts = $this->parser->parse($fileData);
 			if ($stmts) {
@@ -173,7 +185,7 @@ class AnalyzingPhase {
 	 *
 	 * @param Config          $config    Instance of Config
 	 * @param OutputInterface $output    Instance of OutputInterface
-	 * @param string          $toProcess The content to process
+	 * @param array           $toProcess The content to process
 	 *
 	 * @return int
 	 */
@@ -186,7 +198,7 @@ class AnalyzingPhase {
 
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
-				function($socket) use ($config, &$processingCount) {
+				function ($socket) use ($config) {
 					$table = $config->getSymbolTable();
 					if ($table instanceof PersistantSymbolTable) {
 						$table->connect();
@@ -195,23 +207,24 @@ class AnalyzingPhase {
 					while (1) {
 						$receive = socket_read($socket, 4096, PHP_NORMAL_READ);
 						$receive = trim($receive);
-						if ($receive == "DONE") {
+						if ($receive == "TIMINGS") {
+							socket_write($socket, "TIMINGS " . json_encode($this->analyzer->getTimings()) . "\n");
 							return 0;
 						} else {
-							list($command, $file) = explode(' ', $receive, 2 );
-							$size = $this->analyzeFile($file, $processingCount, $config);
+							list($command, $file) = explode(' ', $receive, 2);
+							$size = $this->analyzeFile($file, $config);
 							socket_write($socket, "ANALYZED $size $file\n");
 						}
 					}
 
-			});
+				});
 			socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 		}
 
 		// Server process reports the errors and serves up new files to the list.
 		$processDied = false;
 		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$it, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
+			function ($socket, $msg) use (&$processingCount, &$it, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
 				if ($msg === false) {
 					$processDied = true;
 					echo "Error: Unexpected error reading from socket\n";
@@ -241,15 +254,14 @@ class AnalyzingPhase {
 						);
 						break;
 					case 'ANALYZED':
+						list($size, $name) = explode(' ', $details, 2);
+						$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
 						if ($fileNumber < count($toProcess)) {
-							list($size, $name) = explode(' ', $details, 2);
 							$bytes += $size;
-							$output->output(".", sprintf("%d - %s", $fileNumber + 1, $toProcess[$fileNumber]));
 							socket_write($socket, "INDEX " . $toProcess[$fileNumber] . "\n");
 							$fileNumber++;
 						} else {
-							socket_write($socket, "DONE\n");
-							return ProcessManager::CLOSE_CONNECTION;
+							socket_write($socket, "TIMINGS\n");
 						}
 						if ($fileNumber % 50 == 0) {
 							$output->outputExtraVerbose(
@@ -257,6 +269,9 @@ class AnalyzingPhase {
 							);
 						}
 						break;
+					case 'TIMINGS':
+						$this->timingResults[] = json_decode($details, true);
+						return ProcessManager::CLOSE_CONNECTION;
 				}
 				return ProcessManager::READ_CONNECTION;
 		});
@@ -281,12 +296,16 @@ class AnalyzingPhase {
 		}
 		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
 		$toProcess = [];
-		foreach ($indexPaths as $path) {
-			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
-			$output->outputVerbose("\n\nDirectory: $path\n");
-			$it = new RecursiveDirectoryIterator($tmpDirectory, FilesystemIterator::SKIP_DOTS);
-			$it2 = new RecursiveIteratorIterator($it);
-			$this->getPhase2Files($config, $it2, $toProcess);
+		if ($config->hasFileList()) {
+			$toProcess = $config->getFileList();
+		} else {
+			foreach ($indexPaths as $path) {
+				$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
+				$output->outputVerbose("\n\nDirectory: $path\n");
+				$it = new RecursiveDirectoryIterator($tmpDirectory, FilesystemIterator::SKIP_DOTS);
+				$it2 = new RecursiveIteratorIterator($it);
+				$this->getPhase2Files($config, $it2, $toProcess);
+			}
 		}
 
 		sort($toProcess);

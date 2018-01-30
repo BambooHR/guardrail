@@ -58,7 +58,7 @@ class PropertyFetchCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof PropertyFetch) {
-			$type = $this->typeInferer->inferType($inside, $node->var, $scope);
+			list($type) = $this->typeInferer->inferType($inside, $node->var, $scope);
 			if ($type && $type[0] != '!' && !$this->symbolTable->ignoreType($type)) {
 
 				if (!is_string($node->name)) {
@@ -84,7 +84,7 @@ class PropertyFetchCheck extends BaseCheck {
 
 						static $reported = [];
 						if (!isset($reported[$type . '::' . $node->name])) {
-							$reported[$type . '::' . $node->name] = true;
+							//$reported[$type . '::' . $node->name] = true;
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
 						}
 					}

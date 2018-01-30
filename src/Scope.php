@@ -16,9 +16,94 @@ class Scope {
 	const UNDEFINED = "!0";
 	const MIXED_TYPE = "!1";
 	const SCALAR_TYPE = "!2";
+	const NULL_TYPE = "!3";
+	const STRING_TYPE = "!4";
+	const BOOL_TYPE = "!5";
+	const INT_TYPE = "!6";
+	const FLOAT_TYPE = "!7";
+	const ARRAY_TYPE = "!8";
+
+	const NULL_POSSIBLE = 1;
+	const NULL_IMPOSSIBLE = 2;
+	const NULL_UNKNOWN = 3;
 
 	/**
-	 * @var array
+	 * @param string $str A string representing an internal type
+	 * @return string
+	 */
+	static public function nameFromConst($str) {
+		switch ($str) {
+			case static::UNDEFINED:
+				return "undefined";
+			case static::MIXED_TYPE:
+				return "mixed";
+			case static::SCALAR_TYPE:
+				return "scalar";
+			case static::STRING_TYPE:
+				return "string";
+			case static::BOOL_TYPE:
+				return "bool";
+			case static::INT_TYPE:
+				return "int";
+			case static::FLOAT_TYPE:
+				return "float";
+			case static::NULL_TYPE:
+				return "null";
+			default:
+				return $str;
+		}
+	}
+
+	/**
+	 * @param string $str A string representing a user supplied type.
+	 * @return string
+	 */
+	static public function constFromName($str) {
+		if (strcasecmp($str, "null") == 0) {
+			return static::NULL_TYPE;
+		} elseif (strcasecmp($str, "bool") == 0) {
+			return static::BOOL_TYPE;
+		} elseif (strcasecmp($str, "int") == 0) {
+			return static::INT_TYPE;
+		} elseif (strcasecmp($str, "float") == 0) {
+			return static::FLOAT_TYPE;
+		} elseif (strcasecmp($str, "string") == 0) {
+			return static::STRING_TYPE;
+		} elseif (strcasecmp($str, "mixed") == 0) {
+			return static::MIXED_TYPE;
+		} elseif (strcasecmp($str, "array") == 0) {
+			return static::ARRAY_TYPE;
+		} else {
+			return $str;
+		}
+	}
+
+	/**
+	 * @param string $str             The docblock type
+	 * @param string $insideClassName The string to use for $this or self::
+	 * @param string $staticClassName The string to use for static::
+	 * @return string
+	 */
+	static public function constFromDocBlock($str, $insideClassName="", $staticClassName="") {
+		if (strcasecmp($str, "object") == 0) {
+			return static::MIXED_TYPE;
+		} elseif (strcasecmp($str, "integer") == 0) {
+			return static::INT_TYPE;
+		} elseif (strcasecmp($str, "boolean") == 0) {
+			return static::SCALAR_TYPE;
+		} elseif (strcasecmp($str, "\$this") == 0) {
+			return $insideClassName;
+		} elseif (strcasecmp($str, "static") == 0) {
+			return $staticClassName;
+		} elseif (strcasecmp($str, "self") == 0) {
+			return $insideClassName;
+		} else {
+			return self::constFromName($str);
+		}
+	}
+
+	/**
+	 * @var ScopeVar[]
 	 */
 	private $vars = [];
 
@@ -31,23 +116,23 @@ class Scope {
 	/** @var FunctionLike */
 	private $inside;
 
-	/** @var bool[] */
-	private $written = [];
+	/** @var Scope */
+	private $previous; // In an if/else scenario we want to compare the previous scope to see if both branches set a variable.
 
-	/** @var int[]  */
-	private $line = [];
 
-		/**
+	/**
 	 * Scope constructor.
 	 *
 	 * @param bool         $isStatic Set static
 	 * @param bool         $isGlobal Set global
 	 * @param FunctionLike $inside   Instance of FunctionLike (or null)
+	 * @param Scope        $previous The previous scope (used for control blocks)
 	 */
-	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null) {
+	function __construct($isStatic, $isGlobal = false, FunctionLike $inside = null, Scope $previous = null) {
 		$this->isStatic = $isStatic;
 		$this->isGlobal = $isGlobal;
 		$this->inside = $inside;
+		$this->previous = $previous;
 	}
 
 	/**
@@ -82,11 +167,23 @@ class Scope {
 	 *
 	 * @param string $name The name
 	 * @param string $type The type
+	 * @param int    $line Line number
 	 *
 	 * @return void
 	 */
-	public function setVarType($name, $type) {
-		$this->vars[$name] = $type;
+	public function setVarType($name, $type, $line) {
+		if (!isset($this->vars[$name])) {
+			$var = new ScopeVar();
+			$var->name = $name;
+			$this->vars[$name] = $var;
+		}
+
+		$var = $this->vars[$name];
+		if ($type == self::NULL_TYPE) {
+			$var->canBeNull = self::NULL_POSSIBLE;
+		}
+		$var->type = $type;
+		$this->setVarWritten($name, $line);
 	}
 
 	/**
@@ -98,9 +195,9 @@ class Scope {
 	 * @return void
 	 */
 	public function setVarWritten($name, $line) {
-		if (!isset($this->written[$name])) {
-			$this->written[$name] = true;
-			$this->line[$name] = $line;
+		if (isset($this->vars[$name])) {
+			$this->vars[$name]->modified = true;
+			$this->vars[$name]->modifiedLine = $line;
 		}
 	}
 
@@ -112,7 +209,42 @@ class Scope {
 	 * @return void
 	 */
 	public function setVarUsed($name) {
-		$this->written[$name] = false;
+		if (!isset($this->vars[$name])) {
+			$var = new ScopeVar();
+			$var->name = $name;
+			$this->vars[$name] = $var;
+		}
+
+		$this->vars[$name]->used = true;
+		$this->vars[$name]->modified = false;
+		$this->vars[$name]->modifiedLine = 0;
+	}
+
+	/**
+	 * @param string $name      The name of the variable
+	 * @param int    $canBeNull It's nullability state
+	 * @return void
+	 */
+	public function setVarNull($name, $canBeNull = self::NULL_POSSIBLE) {
+		if (!isset($this->vars[$name])) {
+			$var = new ScopeVar();
+			$var->name = $name;
+			$var->type = self::UNDEFINED;
+			$var->canBeNull = $canBeNull;
+			$this->vars[$name] = $var;
+		} else {
+			$this->vars[$name]->canBeNull = $canBeNull;
+		}
+	}
+
+	/**
+	 * @return void
+	 */
+	public function dump() {
+		echo "Scope: \n";
+		foreach ($this->vars as $name => $var) {
+			echo "Name $name, Type " . $var->type . " " . ($var->canBeNull == self::NULL_POSSIBLE ? "can be null" : "") . "\n";
+		}
 	}
 
 	/**
@@ -121,8 +253,8 @@ class Scope {
 	 * @return void
 	 */
 	public function markAllVarsUsed() {
-		foreach (array_keys($this->written) as $name) {
-			$this->written[$name] = false;
+		foreach ($this->vars as $var) {
+			$var->used = true;
 		}
 	}
 
@@ -134,9 +266,19 @@ class Scope {
 	 * @return void
 	 */
 	public function copyUsedVars(Scope $scope) {
-		foreach ($scope->written as $name => $writtenLast) {
-			if ($writtenLast == false) {
-				$this->setVarUsed($name);
+		foreach ($scope->vars as $name => $var) {
+			if (!isset($this->vars[$name])) {
+				$this->vars[$name] = $var;
+			} else {
+				if ($this->getVarType($name) != $var->type) {
+					$this->vars[$name]->type = self::MIXED_TYPE;
+				}
+				if ($var->canBeNull != self::NULL_IMPOSSIBLE) {
+					$this->vars[$name]->canBeNull = $var->canBeNull;
+				}
+				if ($var->used) {
+					$this->setVarUsed($var->name);
+				}
 			}
 		}
 	}
@@ -148,9 +290,9 @@ class Scope {
 	 */
 	public function getUnusedVars() {
 		$ret = [];
-		foreach ($this->written as $key => $unused) {
-			if ($unused) {
-				$ret[$key] = $this->line[$key];
+		foreach ($this->vars as $key => $var) {
+			if (!$var->used) {
+				$ret[$key] = $var->modifiedLine;
 			}
 		}
 		return $ret;
@@ -164,22 +306,52 @@ class Scope {
 	 * @return mixed|string
 	 */
 	function getVarType($name) {
-		if (isset($this->vars[$name])) {
-			return $this->vars[$name];
-		}
-		return isset($this->vars[$name]) ? $this->vars[$name] : self::UNDEFINED;
+		return isset($this->vars[$name]) ? $this->vars[$name]->type : self::UNDEFINED;
+	}
+
+	/**
+	 * @param string $name The name of the var
+	 * @return bool
+	 */
+	function getVarNullability($name) {
+		return (isset($this->vars[$name]) ? $this->vars[$name]->canBeNull : false );
 	}
 
 	/**
 	 * getScopeClone
-	 *
+	 * @param Scope $previous The previous scope
 	 * @return Scope
 	 */
-	public function getScopeClone() {
-		$ret = new Scope($this->isStatic, $this->isGlobal);
-		$ret->vars = $this->vars;
-		$ret->written = $this->written;
-		$ret->line = $this->line;
+	public function getScopeClone(Scope $previous = null) {
+		$newVars = [];
+		foreach ($this->vars as $var) {
+			$newVar = clone $var;
+			$newVars[$var->name] = $newVar;
+		}
+		$ret = new Scope($this->isStatic, $this->isGlobal, $this->inside, $previous);
+		$ret->vars = $newVars;
 		return $ret;
+	}
+
+	/**
+	 * @param Scope $other -
+	 * @return void
+	 */
+	public function merge(Scope $other) {
+		// See if any new vars were added to the scope or if existing ones were changed.
+		foreach ($other->vars as $name => $otherVar) {
+			if (!isset($this->vars[$name])) {
+				$this->vars[$name] = $otherVar;
+			} else {
+				$this->vars[$name]->mergeVar($otherVar);
+			}
+		}
+	}
+
+	/**
+	 * @return void
+	 */
+	public function mergePrevious() {
+		$this->merge($this->previous);
 	}
 }

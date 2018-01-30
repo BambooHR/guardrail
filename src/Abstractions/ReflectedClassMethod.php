@@ -103,9 +103,13 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @return int
 	 */
 	public function getMinimumRequiredParameters() {
+
+		$class = strtolower($this->refl->getDeclaringClass()->getName());
+		$method = strtolower($this->refl->getName());
 		if (
-			strcasecmp($this->refl->getName(), "running") &&
-			strcasecmp($this->refl->getDeclaringClass()->name, "phar") == 0
+			($class == "phar"        && $method == "running") ||
+			($class == "imagick"     && $method == "__construct") ||
+			($class == "domdocument" && $method == "__construct")
 		) {
 			return 0;
 		} else {
@@ -151,6 +155,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * isVariadic
 	 *
 	 * @return bool
+	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 */
 	public function isVariadic() {
 		if (method_exists($this->refl, "isVariadic")) {

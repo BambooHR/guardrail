@@ -58,24 +58,28 @@ class ReturnCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Return_) {
 			/** @var Return_ $node */
-			$type = $this->typeInferer->inferType($inside, $node->expr, $scope);
+			list($type) = $this->typeInferer->inferType($inside, $node->expr, $scope);
 
 			$insideFunc = $scope->getInsideFunction();
 			if ($inside && $insideFunc && $type) {
-				$expectedType = $insideFunc->getReturnType();
+				$expectedType = Scope::constFromName($insideFunc->getReturnType());
 				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) &&
 					$type != "" &&
 					$expectedType != "" &&
 					!$this->symbolTable->isParentClassOrInterface($expectedType, $type)
 				) {
-					$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
-					$functionName = strval($inside->name) ?: "anonymous function";
-					if ($class) {
-						$msg = "Variable returned from method $class::$functionName()";
-					} else {
-						$msg = "Variable returned from function $functionName()";
+
+					if ($insideFunc instanceof Node\Stmt\Function_) {
+						$functionName = strval($insideFunc->name);
+					} else if ($insideFunc instanceof Node\Expr\Closure) {
+						$functionName = "anonymous function";
+					} else if ($insideFunc instanceof Node\Stmt\ClassMethod) {
+						$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
+						$functionName = "$class::" . strval($insideFunc->name);
 					}
-					$msg .= " must be a $expectedType, returning $type";
+					$msg = "Value returned from $functionName()" .
+						" must be a " . Scope::nameFromConst($expectedType) .
+						", returning " . Scope::nameFromConst($type);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 				}
 			}

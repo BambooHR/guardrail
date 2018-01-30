@@ -1,7 +1,13 @@
 {
+  "options": {
+	"DocBlockInlineVars":true,
+	"DocBlockParamTypes":true,
+	"DocBlockReturns":true,
+	"DocBlockProperties":true
+  },
   "index": ["src","vendor"],
   "test": ["src"],
-  "ignore": ["**/src/bin/**/*", "**/test/**/*", "**/Tests/**/*", "**/tests/**/*" ],
+  "ignore": ["**/src/bin/**/*", "**/test/**/*", "**/Tests/**/*", "**/tests/**/*" ,"**/ExtraStubs/**/*"],
   "test-ignore": ["**/src/ExtraStubs/**/*" ,"**/tests/**/*", "**/src/bin/**/*"],
   "emit": [
     "Standard.Access.Violation",
@@ -26,7 +32,11 @@
     "Standard.Scope",
     "Standard.Security.*",
     "Standard.Switch.*",
-    "Standard.Unknown.*",
+    "Standard.Unknown.Function",
+    "Standard.Unknown.Class",
+    "Standard.Unknown.Class.Method",
+    "Standard.Unknown.Class.MethodString",
+    "Standard.Unknown.Variable",
     "Standard.Unreachable",
     "Standard.Unsafe.TimeZone",
     "Standard.Unused.Variable",

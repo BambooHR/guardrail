@@ -33,7 +33,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return mixed
 	 */
 	public function isStatic() {
-		return $this->refl->isStatic();
+		return false;
 	}
 
 	/**
@@ -69,7 +69,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return mixed
 	 */
 	public function isAbstract() {
-		return $this->refl->isAbstract();
+		return false;
 	}
 
 	/**
@@ -87,15 +87,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return string
 	 */
 	public function getAccessLevel() {
-		if ($this->refl->isPrivate()) {
-			return "private";
-		}
-		if ($this->refl->isPublic()) {
-			return "public";
-		}
-		if ($this->refl->isProtected()) {
-			return "protected";
-		}
+		return "public";
 	}
 
 	/**
@@ -139,10 +131,30 @@ class ReflectedFunction implements FunctionLikeInterface {
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
 		foreach ($params as $index => $param) {
-			$type = $param->getClass() ? $param->getClass()->name : '';
+			$class = $param->getClass();
+			$type = ($class ? $class->getName() : "");
 			$isPassedByReference = $param->isPassedByReference();
-			if ($this->getName() == "preg_match" && $index == 2) {
-				$isPassedByReference = true;
+			switch ($index) {
+				case 0:
+					$name = $this->getName();
+					if (
+						$name == "call_user_func" || $name == "call_user_func_array" ||
+						$name == "forward_static_call" || $name == "forward_static_call_array"
+					) {
+						$type = "callable";
+					}
+					break;
+				case 1:
+					$name = $this->getName();
+					if ($name == "usort" || $name == "uksort" || $name == "uasort") {
+						$type = "callable";
+					}
+					break;
+				case 2:
+					if ($this->getName() == "preg_match") {
+						$isPassedByReference = true;
+					}
+					break;
 			}
 			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $isPassedByReference);
 		}
@@ -171,6 +183,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * isVariadic
 	 *
 	 * @return bool
+	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 */
 	public function isVariadic() {
 		if (method_exists($this->refl, "isVariadic")) {
