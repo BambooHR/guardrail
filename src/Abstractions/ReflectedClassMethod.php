@@ -155,7 +155,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * isVariadic
 	 *
 	 * @return bool
-	 * @guardrail-ignore Standard.Unknown.ClassMethod
+	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 */
 	public function isVariadic() {
 		if (method_exists($this->refl, "isVariadic")) {
