@@ -63,6 +63,15 @@ class AnalyzingPhase {
 	 */
 	function initChildThread($socket, Config $config) {
 		$this->output = new SocketOutput($config, $socket);
+		$this->initParser($config, $this->output);
+	}
+
+	/**
+	 * @param Config          $config -
+	 * @param OutputInterface $output -
+	 * @return void
+	 */
+	function initParser(Config $config, OutputInterface $output) {
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor(new DocBlockNameResolver());
 		$traverser1->addVisitor(new DoWhileVisitor());
@@ -70,7 +79,7 @@ class AnalyzingPhase {
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
 
-		$this->analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $this->output, $config);
+		$this->analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $output, $config);
 		$traverser3 = new NodeTraverser;
 		$traverser3->addVisitor($this->analyzer);
 

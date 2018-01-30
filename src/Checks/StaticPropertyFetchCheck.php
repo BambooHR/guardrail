@@ -68,7 +68,7 @@ class StaticPropertyFetchCheck extends BaseCheck {
 			}
 
 			if ($class instanceof Name && is_string($node->name)) {
-				$property = Util::findAbstractedProperty($class, $node->name, $this->symbolTable);
+				list($property,$declaredIn) = Util::findAbstractedProperty($class, $node->name, $this->symbolTable);
 				if (!$property) {
 					$method = Util::findAbstractedMethod($class, $node->name, $this->symbolTable);
 					if ($method) {
@@ -84,9 +84,9 @@ class StaticPropertyFetchCheck extends BaseCheck {
 					if (!$property->isStatic()) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_STATIC_CALL, "Attempt to fetch a dynamic variable statically $class::" . $node->name);
 					}
-					if ($property->getAccess() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($inside->namespacedName, $class) != 0)) {
+					if ($property->getAccess() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($inside->namespacedName, $declaredIn) != 0)) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property " . $node->name);
-					} else if ($property->getAccess() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($class, $inside->namespacedName))) {
+					} else if ($property->getAccess() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($declaredIn, $inside->namespacedName))) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property " . $node->name);
 					}
 				}
