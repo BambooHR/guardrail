@@ -137,6 +137,8 @@ class TypeInferrer {
 		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 	}
 
+	// @codingStandardsIgnoreStart
+
 	/**
 	 * inferPropertyFetch
 	 *
@@ -183,6 +185,8 @@ class TypeInferrer {
 		}
 		return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
 	}
+
+	// @codingStandardsIgnoreStop
 
 	/**
 	 * @param ClassLike $inside -
