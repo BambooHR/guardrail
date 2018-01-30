@@ -37,7 +37,6 @@
     "Standard.Unknown.Class.Method",
     "Standard.Unknown.Class.MethodString",
     "Standard.Unknown.Variable",
-    "Standard.Unknown.Property",
     "Standard.Unreachable",
     "Standard.Unsafe.TimeZone",
     "Standard.Unused.Variable",
