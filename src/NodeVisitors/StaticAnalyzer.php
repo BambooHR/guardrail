@@ -306,7 +306,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$func[Node\Stmt\Global_::class] = function (Node\Stmt\Global_ $node) {
 			foreach ($node->vars as $var) {
 				if ($var instanceof Variable) {
-					if(gettype($var->name) == "string") {
+					if (gettype($var->name) == "string") {
 						$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
 					}
 				}
@@ -341,11 +341,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				) {
 					$var = $node->args[0]->value;
 					if ($var instanceof Instanceof_) {
-						$expr= $var->expr;
+						$expr = $var->expr;
 						if ($expr instanceof Variable) {
 							$class = $var->class;
 							if ($class instanceof Node\Name) {
-								if(gettype($expr->name) == "string") {
+								if (gettype($expr->name) == "string") {
 									end($this->scopeStack)->setVarType($expr->name, strval($class), $var->getLine());
 									end($this->scopeStack)->setVarNull($expr->name, Scope::NULL_IMPOSSIBLE);
 								}

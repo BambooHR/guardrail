@@ -203,7 +203,7 @@ class TypeInferrer {
 					if (count($expr->args) == 1) {
 						$arg0 = $expr->args[0]->value;
 						if ($arg0 instanceof Expr\ClassConstFetch) {
-							if(
+							if (
 								$arg0->class instanceof Name &&
 								is_string($arg0->name) &&
 								$arg0->name == "class"

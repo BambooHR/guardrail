@@ -75,7 +75,7 @@ class ReturnCheck extends BaseCheck {
 						$functionName = "anonymous function";
 					} else if ($insideFunc instanceof Node\Stmt\ClassMethod) {
 						$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
-						$functionName = "$class::".strval($insideFunc->name);
+						$functionName = "$class::" . strval($insideFunc->name);
 					}
 					$msg = "Value returned from $functionName()" .
 						" must be a " . Scope::nameFromConst($expectedType) .

@@ -93,7 +93,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 				$name = strval($node->name);
 				if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1) {
 					$arg0 = $node->args[0]->value;
-					if($arg0 instanceof Node\Scalar\String_) {
+					if ($arg0 instanceof Node\Scalar\String_) {
 						$defineName = $arg0->value;
 						$this->index->addDefine($defineName, $node, $this->filename);
 					}
