@@ -308,6 +308,8 @@ class AnalyzingPhase {
 			}
 		}
 
+		sort($toProcess);
+
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.
 		$groupSize = intval(count($toProcess) / $config->getPartitions());
