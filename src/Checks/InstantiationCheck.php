@@ -46,7 +46,7 @@ class InstantiationCheck extends MethodCall {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();
 				$staticNew = false;
-				if ($inside)
+				if ($inside) {
 					if (strcasecmp($name, "self") == 0) {
 						$name = strval($inside->namespacedName);
 					} else if (strcasecmp($name, "static") == 0) {
