@@ -194,7 +194,7 @@ class TypeInferrer {
 	 * @param Scope     $scope  -
 	 * @return array
 	 */
-	protected function inferMethodCall(ClassLike $inside, Node\Expr\MethodCall $expr, Scope $scope) {
+	protected function inferMethodCall(ClassLike $inside = null, Node\Expr\MethodCall $expr, Scope $scope) {
 		if (gettype($expr->name) == "string") {
 			list($class) = $this->inferType($inside, $expr->var, $scope);
 			if (!empty($class) && $class[0] != "!") {
