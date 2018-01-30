@@ -88,19 +88,22 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 				$defineName = strval($node->name);
 				$this->index->addDefine($defineName, $node, $this->filename);
 			}
-		} else if ($node instanceof FuncCall) {
+		} elseif ($node instanceof FuncCall) {
 			if ($node->name instanceof Node\Name) {
 				$name = strval($node->name);
-				if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1 && $node->args[0]->value instanceof Node\Scalar\String_) {
-					$defineName = $node->args[0]->value->value;
-					$this->index->addDefine($defineName, $node, $this->filename);
+				if (strcasecmp($name, 'define') == 0 && count($node->args) >= 1) {
+					$arg0 = $node->args[0]->value;
+					if($arg0 instanceof Node\Scalar\String_) {
+						$defineName = $arg0->value;
+						$this->index->addDefine($defineName, $node, $this->filename);
+					}
 				}
 			}
-		} else if ($node instanceof Trait_) {
+		} elseif ($node instanceof Trait_) {
 			$name = $node->namespacedName->toString();
 			$this->index->addTrait($name, $node, $this->filename);
 			array_push($this->classStack, $node);
-		} else if ($node instanceof Node\Expr) {
+		} elseif ($node instanceof Node\Expr) {
 			// Expressions don't contain anything we would index.
 			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
 		}

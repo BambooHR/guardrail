@@ -84,7 +84,7 @@ class PropertyFetchCheck extends BaseCheck {
 
 						static $reported = [];
 						if (!isset($reported[$type . '::' . $node->name])) {
-							$reported[$type . '::' . $node->name] = true;
+							//$reported[$type . '::' . $node->name] = true;
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
 						}
 					}

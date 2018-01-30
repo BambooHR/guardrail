@@ -99,7 +99,7 @@ class DocBlockNameResolver extends NameResolver {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node $node -
 	 * @return void
 	 */
 	function importInlineVarType(Node $node) {

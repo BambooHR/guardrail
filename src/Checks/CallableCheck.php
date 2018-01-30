@@ -75,7 +75,7 @@ class CallableCheck extends BaseCheck {
 			// TODO: namespace resolution when resolving a callable string. Users should prefer [Foo::class,"Baz"] syntax.
 			$classType = $object->value;
 		} elseif ($object instanceof Node\Expr\StaticPropertyFetch) {
-			if (is_string($object->name) && is_string($object->value) && $object->value == "class") {
+			if ($object->class instanceof Node\Name && is_string($object->name) && $object->name == "class") {
 				$classType = $object->name;
 			}
 		} else {
@@ -104,7 +104,7 @@ class CallableCheck extends BaseCheck {
 	 * @param string         $fileName -
 	 * @param Node           $node     -
 	 * @param ClassLike|null $inside   -
-	 * @param Scope|null     $scope    -
+	 * @param Scope|null     $scope    -l
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {

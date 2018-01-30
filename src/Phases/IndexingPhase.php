@@ -143,7 +143,7 @@ class IndexingPhase {
 					$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
 					if ($receive == "DONE") {
 						if ($table instanceof PersistantSymbolTable) {
-							$config->getSymbolTable()->flushInserts();
+							$table->flushInserts();
 						}
 						return 0;
 					} else {
@@ -165,7 +165,7 @@ class IndexingPhase {
 	function indexList(Config $config, OutputInterface $output, \Generator $itr) {
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
-			$config->getSymbolTable()->disconnect();
+			$table->disconnect();
 		}
 
 		$start = microtime(true);

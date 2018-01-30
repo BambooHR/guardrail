@@ -68,14 +68,18 @@ class ReturnCheck extends BaseCheck {
 					$expectedType != "" &&
 					!$this->symbolTable->isParentClassOrInterface($expectedType, $type)
 				) {
-					$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
-					$functionName = strval($insideFunc->name) ?: "anonymous function";
-					if ($class) {
-						$msg = "Variable returned from method $class::$functionName()";
-					} else {
-						$msg = "Variable returned from function $functionName()";
+
+					if ($insideFunc instanceof Node\Stmt\Function_) {
+						$functionName = strval($insideFunc->name);
+					} else if ($insideFunc instanceof Node\Expr\Closure) {
+						$functionName = "anonymous function";
+					} else if ($insideFunc instanceof Node\Stmt\ClassMethod) {
+						$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
+						$functionName = "$class::".strval($insideFunc->name);
 					}
-					$msg .= " must be a " . Scope::nameFromConst($expectedType) . ", returning " . Scope::nameFromConst($type);
+					$msg = "Value returned from $functionName()" .
+						" must be a " . Scope::nameFromConst($expectedType) .
+						", returning " . Scope::nameFromConst($type);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 				}
 			}

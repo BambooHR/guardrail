@@ -54,6 +54,7 @@ class XUnitOutput implements OutputInterface {
 	 * XUnitOutput constructor.
 	 *
 	 * @param Config $config Instance of Config
+	 * @guardrail-ignore Standard.Unknown.Property
 	 */
 	public function __construct(Config $config) {
 		$this->doc = new JUnitXml\Document();

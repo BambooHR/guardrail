@@ -190,7 +190,7 @@ class TypeInferrer {
 	 * @param Scope     $scope  -
 	 * @return array
 	 */
-	protected function inferMethodCall(ClassLike $inside, Expr $expr, Scope $scope) {
+	protected function inferMethodCall(ClassLike $inside, Node\Expr\MethodCall $expr, Scope $scope) {
 		if (gettype($expr->name) == "string") {
 			list($class) = $this->inferType($inside, $expr->var, $scope);
 			if (!empty($class) && $class[0] != "!") {
@@ -200,14 +200,17 @@ class TypeInferrer {
 					strcasecmp($class, "Core\\App\\App") == 0 &&
 					$expr->name == "make"
 				) {
-					if (
-						count($expr->args) == 1 &&
-						$expr->args[0]->value instanceof Expr\ClassConstFetch &&
-						$expr->args[0]->value->class instanceof Name &&
-						is_string($expr->args[0]->value->name) &&
-						$expr->args[0]->value->name == "class"
-					) {
-						return [strval($expr->args[0]->value->class), Scope::NULL_IMPOSSIBLE];
+					if (count($expr->args) == 1) {
+						$arg0 = $expr->args[0]->value;
+						if ($arg0 instanceof Expr\ClassConstFetch) {
+							if(
+								$arg0->class instanceof Name &&
+								is_string($arg0->name) &&
+								$arg0->name == "class"
+							) {
+								return [strval($arg0->class), Scope::NULL_IMPOSSIBLE];
+							}
+						}
 					}
 				}
 				//echo $class."->".$expr->name."\n";

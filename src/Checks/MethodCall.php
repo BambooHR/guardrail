@@ -79,8 +79,9 @@ class MethodCall extends BaseCheck {
 			$methodName = strval($node->name);
 
 			$className = "";
-			if ($node->var instanceof Variable) {
-				if ($node->var->name == "this" && !$inside) {
+			$var = $node->var;
+			if ($var instanceof Variable) {
+				if ($var->name == "this" && !$inside) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SCOPE_ERROR, "Can't use \$this outside of a class");
 					return;
 				}

@@ -24,7 +24,10 @@ class CountsOutput extends XUnitOutput {
 		if ($this->emitErrors) {
 			echo "E";
 		}
-		$this->errors[$name] = ($this->errors[$name] ?: 0) + 1;
+		if (!isset($this->errors[$name])) {
+			$this->errors[$name] = 0;
+		}
+		$this->errors[$name]++;
 	}
 
 	/**

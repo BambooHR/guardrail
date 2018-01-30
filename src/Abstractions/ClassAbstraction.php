@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Interface_;
@@ -38,7 +39,8 @@ class ClassAbstraction implements ClassInterface {
 	 * @return string
 	 */
 	public function getName() {
-		return strval($this->class->namespacedName);
+		$class = $this->class;
+		return strval($class->namespacedName);
 	}
 
 	/**
@@ -47,7 +49,12 @@ class ClassAbstraction implements ClassInterface {
 	 * @return bool
 	 */
 	public function isDeclaredAbstract() {
-		return ($this->class instanceof ClassAbstraction ? $this->class->isAbstract() : false);
+		$class = $this->class;
+		if ($class instanceof Class_) {
+			return $class->isAbstract();
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -69,7 +76,12 @@ class ClassAbstraction implements ClassInterface {
 	 * @return string
 	 */
 	public function getParentClassName() {
-		return $this->class instanceof \PhpParser\Node\Stmt\Class_ ? strval($this->class->extends) : "";
+		$class = $this->class;
+		if ($class instanceof \PhpParser\Node\Stmt\Class_) {
+			return strval($class->extends);
+		} else {
+			return "";
+		}
 	}
 
 	/**
@@ -88,12 +100,14 @@ class ClassAbstraction implements ClassInterface {
 	 */
 	public function getInterfaceNames() {
 		$ret = [];
-		if ($this->class instanceof Interface_) {
-			foreach ($this->class->extends as $extend) {
+		$class = $this->class;
+		if ($class instanceof Interface_) {
+			foreach ($class->extends as $extend) {
 				$ret[] = strval($extend);
 			}
 		} else {
-			foreach ($this->class->implements as $implement) {
+			/** @var Class_ $class */
+			foreach ($class->implements as $implement) {
 				$ret[] = strval($implement);
 			}
 		}

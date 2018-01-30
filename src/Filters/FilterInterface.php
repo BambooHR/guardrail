@@ -16,4 +16,6 @@ interface FilterInterface {
 	 * @return bool
 	 */
 	function shouldEmit($fileName, $errorName, $lineNumber);
+
+	function display();
 }

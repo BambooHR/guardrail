@@ -338,10 +338,11 @@ class Config {
 						throw new InvalidConfigException();
 					}
 					$this->filterFileName = $argv[++$argCount];
-					$this->filter = UnifiedDiffFilter::importFile(
+					$filter = UnifiedDiffFilter::importFile(
 						realpath($this->filterFileName)
 					);
-					$this->filter->display();
+					$filter->display();
+					$this->filter = $filter;
 					break;
 				case '-h':
 				case '--help':

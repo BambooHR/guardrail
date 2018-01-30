@@ -107,7 +107,7 @@ class PDO {
 	Creates a PDO instance representing a connection to a database
 
 	 */
-	public function __construct() {
+	public function __construct($dsn, $username="", $passwd="", $options = []) {
 	}
 
 	/**
