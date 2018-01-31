@@ -13,7 +13,7 @@ if (file_exists("guardrail.phar")) {
 try {
 	$phar = new Phar('guardrail.phar');
 	$phar->startBuffering();
-	
+
 	$phar->setDefaultStub('/src/bin/guardrail.php');
 	$baseDir = dirname(dirname(__DIR__));
 	echo "Building relative to $baseDir\n";
@@ -25,9 +25,8 @@ try {
 	$phar->stopBuffering();
 	echo "Done\n";
 	exit(0);
-}
-catch(Exception $e){ 
-	echo "Error building: ".$e->getMessage()."\n";
+} catch (Exception $exception) {
+	echo "Error building: " . $exception->getMessage() . "\n";
 	exit(1);
 }
 
