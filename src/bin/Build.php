@@ -19,7 +19,7 @@ try {
 	echo "Building relative to $baseDir\n";
 	$it = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS);
 	$it2 = new \RecursiveIteratorIterator($it);
-	
+
 	$phar->buildFromIterator($it2, $baseDir);
 
 	$phar->stopBuffering();
