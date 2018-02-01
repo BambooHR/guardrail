@@ -273,6 +273,18 @@ abstract class SymbolTable {
 	}
 
 	/**
+	 * @param string $fileName A potentially absolute path
+	 * @return string
+	 */
+	public function removeBasePath($fileName) {
+		if(strpos($fileName, $this->basePath)===0) {
+			return substr($fileName, strlen($this->basePath));
+		} else {
+			return $fileName;
+		}
+	}
+
+	/**
 	 * getInterface
 	 *
 	 * @param string $name The name

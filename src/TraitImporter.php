@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
@@ -49,21 +50,24 @@ class TraitImporter {
 					continue;
 				}
 
-				if ($adaptation->trait == "") {
+				/** @var Node\Stmt\ClassMethod $method */
+				if (strval($adaptation->trait) == "") {
 					$method = end($methods[$adaptation->method]);
 				} else {
-					$method = $methods[$adaptation->method][$adaptation->trait];
+					$method = $methods[$adaptation->method][strval($adaptation->trait)];
 				}
 
-				$method->name = $adaptation->newName;
-				if (property_exists($method, 'type')) {
-					$method->type = $method->type & ~( Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
-					$method->setAttribute("ImportedFromTrait", strval($adaptation->trait));
+				if ($adaptation->newModifier != null) {
+					$method->type = $method->type & ~(Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
+				}
+
+				if ($adaptation->newName != null) {
+					$method->name = $adaptation->newName;
 
 					// Unset it from the old name.
-					unset($methods[$adaptation->method][$adaptation->trait]);
+					unset($methods[$adaptation->method][strval($adaptation->trait)]);
 					// Add it with the new name.
-					$methods[$adaptation->newName][$adaptation->trait] = $method;
+					$methods[$adaptation->newName][strval($adaptation->trait)] = $method;
 				}
 			} else if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
@@ -115,18 +119,26 @@ class TraitImporter {
 		foreach ($use->traits as $useTrait) {
 			$traitName = strval($useTrait);
 			$trait = $this->index->getTrait($traitName);
+			$line = $use->getLine();
+
 			if (!$trait) {
 				throw new \BambooHR\Guardrail\Exceptions\UnknownTraitException($traitName, $use->getLine());
 			}
+			$fileName = $this->index->getTraitFile($traitName);
+			$apply = function(Node $node) use ($fileName, $line) {
+				$node->setAttribute('importedFromTrait', $fileName);
+				$node->setAttribute('importedOnLine', $line);
+			};
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
-					foreach ($stmt->props as $prop) {
-						// Make a deep copy of the node
-						$properties[$prop->name] = unserialize( serialize( $prop ) );
-					}
+					$props = unserialize( serialize( $stmt ) );
+					ForEachNode::run([$props], $apply);
+					$properties[] = $props;
 				} else if ($stmt instanceof Node\Stmt\ClassMethod) {
 					// Make a deep copy of the node
-					$methods[$stmt->name][$traitName] = unserialize( serialize( $stmt ) );
+					$method = unserialize( serialize( $stmt ) );
+					ForEachNode::run([$method], $apply);
+					$methods[$stmt->name][$traitName] = $method;
 				}
 			}
 		}
@@ -153,23 +165,5 @@ class TraitImporter {
 		$this->resolveAdaptations($use->adaptations, $methods );
 
 		return array_merge( array_values($properties), $this->importMethods($class, $methods));
-	}
-
-	/**
-	 * resolveClassTraits
-	 *
-	 * @param ClassLike $class Instance of ClassLike
-	 *
-	 * @return void
-	 */
-	public function resolveClassTraits(ClassLike $class) {
-		$replacements = [];
-		foreach ($class->stmts as $index => $stmt) {
-			if ($stmt instanceof Node\Stmt\TraitUse) {
-				unset($class->stmts[$index]);
-				$replacements[] = $this->resolveTraits($stmt, $class);
-			}
-		}
-		$class->stmts = array_merge( $class->stmts, $replacements );
 	}
 }

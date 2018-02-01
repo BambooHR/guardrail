@@ -46,7 +46,14 @@ abstract class BaseCheck extends ErrorConstants {
 	 * @return mixed
 	 */
 	public function emitError($file, \PhpParser\Node $node, $class, $message="") {
-		return $this->emitErrorOnLine($file, $node->getLine(), $class, $message);
+		$trait = $node->getAttribute("importedFromTrait");
+		if ($trait) {
+			$trait=str_replace("//","/", $trait);
+			$message .= " in imported code " . $this->symbolTable->removeBasePath($trait). ":".$node->getLine();
+			return $this->emitErrorOnLine($file, $node->getAttribute('importedOnLine'), $class, $message);
+		} else {
+			return $this->emitErrorOnLine($file, $node->getLine(), $class, $message);
+		}
 	}
 
 	/**
