@@ -117,7 +117,7 @@ class AnalyzingPhase {
 				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getRealPath(), $configArr['test-ignore'])) {
 					continue;
 				}
-				$toProcess[] = [$file->getPathname(), $file->getFileSize()];
+				$toProcess[] = [$file->getPathname(), $file->getSize()];
 			}
 		}
 	}
@@ -331,11 +331,15 @@ class AnalyzingPhase {
 			}
 		});
 
+
+		$partialList = [];
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.
-		foreach($toProcess as $index=>$file) {
-			if ($index%$config->getPartitions() == $config->getPartitionNumber()) {
-				list($partialList[]) = $file;
+		$partitions = $config->getPartitions();
+		$partitionNumber = $config->getPartitionNumber() - 1;
+		foreach ($toProcess as $index => $file) {
+			if ($index % $partitions == $partitionNumber) {
+				$partialList[] = $file[0];
 			}
 		}
 
