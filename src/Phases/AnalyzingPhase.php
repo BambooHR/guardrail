@@ -117,7 +117,7 @@ class AnalyzingPhase {
 				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getRealPath(), $configArr['test-ignore'])) {
 					continue;
 				}
-				$toProcess[] = $file->getPathname();
+				$toProcess[] = [$file->getPathname(), $file->getFileSize()];
 			}
 		}
 	}
@@ -306,7 +306,9 @@ class AnalyzingPhase {
 		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
 		$toProcess = [];
 		if ($config->hasFileList()) {
-			$toProcess = $config->getFileList();
+			foreach($config->getFileList() as $fileName) {
+				$toProcess[] = [$fileName, filesize($fileName)];
+			}
 		} else {
 			foreach ($indexPaths as $path) {
 				$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
@@ -317,19 +319,27 @@ class AnalyzingPhase {
 			}
 		}
 
-		sort($toProcess);
+		// Sort all the files first by size and second by name.
+		// Once we have a list that is roughly even, then we can split
+		// it up more or less evenly rather than have a cluster of large files
+		// all in one chunk.
+		usort( $toProcess, function($a,$b) {
+			if (intval($a[1]) == intval($b[1])) {
+				return strcmp($a[0],$b[0]);
+			} else {
+				return intval($a[1])>intval($b[1]) ? 1 : -1;
+			}
+		});
 
 		// First we split up the files by partition.
 		// If we're running multiple child processes, then we'll split the list again.
-		$groupSize = intval(count($toProcess) / $config->getPartitions());
-		if ($config->getPartitionNumber() == $config->getPartitions()) {
-			$toProcess = array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1));
-		} else {
-			$toProcess = array_slice($toProcess, $groupSize * ($config->getPartitionNumber() - 1), $groupSize);
+		foreach($toProcess as $index=>$file) {
+			if ($index%$config->getPartitions() == $config->getPartitionNumber()) {
+				list($partialList[]) = $file;
+			}
 		}
 
-		$output->outputVerbose("\n\nAnalyzing " . count($toProcess) . " files\n");
-
-		return $this->phase2($config, $output, $toProcess);
+		$output->outputVerbose("\n\nAnalyzing " . count($partialList) . " files\n");
+		return $this->phase2($config, $output, $partialList);
 	}
 }
