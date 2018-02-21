@@ -243,7 +243,7 @@ class Scope {
 	public function dump() {
 		echo "Scope: \n";
 		foreach ($this->vars as $name => $var) {
-			echo "Name $name, Type " . $var->type . " " . ($var->canBeNull == self::NULL_POSSIBLE ? "can be null" : "") . " " . ($var->used ? "used" : " not used")."\n";
+			echo "Name $name, Type " . $var->type . " " . ($var->canBeNull == self::NULL_POSSIBLE ? "can be null" : "") . " " . ($var->used ? "used" : " not used") . "\n";
 		}
 	}
 
