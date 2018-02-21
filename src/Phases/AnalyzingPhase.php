@@ -306,7 +306,7 @@ class AnalyzingPhase {
 		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
 		$toProcess = [];
 		if ($config->hasFileList()) {
-			foreach($config->getFileList() as $fileName) {
+			foreach ($config->getFileList() as $fileName) {
 				$toProcess[] = [$fileName, filesize($fileName)];
 			}
 		} else {
@@ -323,14 +323,13 @@ class AnalyzingPhase {
 		// Once we have a list that is roughly even, then we can split
 		// it up more or less evenly rather than have a cluster of large files
 		// all in one chunk.
-		usort( $toProcess, function($a,$b) {
-			if (intval($a[1]) == intval($b[1])) {
-				return strcmp($a[0],$b[0]);
+		usort( $toProcess, function($fileA, $fileB) {
+			if (intval($fileA[1]) == intval($fileB[1])) {
+				return strcmp($fileA[0], $fileB[0]);
 			} else {
-				return intval($a[1])>intval($b[1]) ? 1 : -1;
+				return intval($fileA[1]) > intval($fileB[1]) ? 1 : -1;
 			}
 		});
-
 
 		$partialList = [];
 		// First we split up the files by partition.
