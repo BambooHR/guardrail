@@ -327,7 +327,7 @@ class AnalyzingPhase {
 			if (intval($fileA[1]) == intval($fileB[1])) {
 				return strcmp($fileA[0], $fileB[0]);
 			} else {
-				return intval($fileA[1]) > intval($fileB[1]) ? 1 : -1;
+				return intval($fileA[1]) > intval($fileB[1]) ? -1 : +1;
 			}
 		});
 
@@ -336,13 +336,15 @@ class AnalyzingPhase {
 		// If we're running multiple child processes, then we'll split the list again.
 		$partitions = $config->getPartitions();
 		$partitionNumber = $config->getPartitionNumber() - 1;
+		$size = 0;
 		foreach ($toProcess as $index => $file) {
 			if ($index % $partitions == $partitionNumber) {
 				$partialList[] = $file[0];
+				$size += intval( $file[1] );
 			}
 		}
 
-		$output->outputVerbose("\n\nAnalyzing " . count($partialList) . " files\n");
+		$output->outputVerbose("\n\nAnalyzing " . count($partialList) . " files ($size bytes)\n");
 		return $this->phase2($config, $output, $partialList);
 	}
 }
