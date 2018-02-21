@@ -7,6 +7,7 @@
 
 namespace BambooHR\Guardrail;
 
+ini_set('xdebug.max_nesting_level', 3000);
 
 // Deals with installation inside /vendor or out.
 foreach ([__DIR__ . '/../../../../autoload.php', __DIR__ . '/../../vendor/autoload.php'] as $file) {
