@@ -303,7 +303,7 @@ class AnalyzingPhase {
 			$output->output("Invalid or missing paths in your test config section.\n", "Invalid or missing paths in your test config section.\n");
 			exit;
 		}
-		$output->outputVerbose("\nTest directories are valid: Starting Analysis");
+		$output->outputVerbose("Test directories are valid: Starting Analysis\n");
 		$toProcess = [];
 		if ($config->hasFileList()) {
 			foreach ($config->getFileList() as $fileName) {
@@ -312,18 +312,20 @@ class AnalyzingPhase {
 		} else {
 			foreach ($indexPaths as $path) {
 				$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
-				$output->outputVerbose("\n\nDirectory: $path\n");
+				$output->outputVerbose("Directory: $path\n");
 				$it = new RecursiveDirectoryIterator($tmpDirectory, FilesystemIterator::SKIP_DOTS);
 				$it2 = new RecursiveIteratorIterator($it);
 				$this->getPhase2Files($config, $it2, $toProcess);
 			}
 		}
 
+		$output->outputVerbose("\nAllotting work for " . $config->getPartitions() . " partitions\n");
+
 		// Sort all the files first by size and second by name.
 		// Once we have a list that is roughly even, then we can split
 		// it up more or less evenly rather than have a cluster of large files
 		// all in one chunk.
-		usort( $toProcess, function($fileA, $fileB) {
+		usort($toProcess, function ($fileA, $fileB) {
 			if (intval($fileA[1]) == intval($fileB[1])) {
 				return strcmp($fileA[0], $fileB[0]);
 			} else {
@@ -332,19 +334,32 @@ class AnalyzingPhase {
 		});
 
 		$partialList = [];
-		// First we split up the files by partition.
-		// If we're running multiple child processes, then we'll split the list again.
-		$partitions = $config->getPartitions();
+
+		// Attempt to evenly balance all partitions.
+		// 1. Start with a sorted list, biggest file first
+		// 2. For each file put it in the emptiest partition.
+		// 3. If we are the emptiest partition, then make sure to add it to our file list, otherwise just increment a total.
 		$partitionNumber = $config->getPartitionNumber() - 1;
-		$size = 0;
-		foreach ($toProcess as $index => $file) {
-			if ($index % $partitions == $partitionNumber) {
+		$sizes = array_fill(0, $config->getPartitions(), 0); // Initialize an array of 0 sizes.
+		foreach ($toProcess as $file) {
+			$minIndex = 0;
+			$minSize = $sizes[0];
+			foreach ($sizes as $index => $size) {
+				if ($size < $minSize) {
+					$minIndex = $index;
+					$minSize = $size;
+				}
+			}
+			$sizes[$minIndex] += $file[1];
+			if ($minIndex == $partitionNumber) {
 				$partialList[] = $file[0];
-				$size += intval( $file[1] );
 			}
 		}
 
-		$output->outputVerbose("\n\nAnalyzing " . count($partialList) . " files ($size bytes)\n");
+		$output->outputVerbose("Sizes: " . implode(", ", $sizes) . "\n");
+
+
+		$output->outputVerbose("\nPartition " . ($partitionNumber + 1) . " analyzing " . count($partialList) . " files (" . $sizes[$partitionNumber] . " bytes)\n");
 		return $this->phase2($config, $output, $partialList);
 	}
 }
