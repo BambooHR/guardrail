@@ -358,7 +358,6 @@ class AnalyzingPhase {
 
 		$output->outputVerbose("Sizes: " . implode(", ", $sizes) . "\n");
 
-
 		$output->outputVerbose("\nPartition " . ($partitionNumber + 1) . " analyzing " . count($partialList) . " files (" . $sizes[$partitionNumber] . " bytes)\n");
 		return $this->phase2($config, $output, $partialList);
 	}
