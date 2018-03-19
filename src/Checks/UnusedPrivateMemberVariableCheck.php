@@ -38,16 +38,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 			$memberVariables[] = $node->props[0]->name;
 			$usedVariables = [];
 			if ($inside instanceof Class_) {
-				foreach ($inside->stmts as $statement) {
-					// we will ignore constructors for the purposes of usage
-					if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct') {
-						ForEachNode::run($statement->getStmts(), function ($object) use (&$usedVariables) {
-							if ($object instanceof Node\Expr\PropertyFetch) {
-								$usedVariables[] = $object->name;
-							}
-						});
-					}
-				}
+				$usedVariables = $this->checkInside($inside);
 			}
 			foreach ($memberVariables as $memberVariable) {
 				if (!in_array($memberVariable, $usedVariables)) {
@@ -55,5 +46,27 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 				}
 			}
 		}
+	}
+
+	/**
+	 * checkInside
+	 *
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing)
+	 *
+	 * @return array
+	 */
+	protected function checkInside(ClassLike $inside) {
+		$usedVariables = [];
+		foreach ($inside->stmts as $statement) {
+			// we will ignore constructors for the purposes of usage
+			if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct') {
+				ForEachNode::run($statement->getStmts(), function ($object) use (&$usedVariables) {
+					if ($object instanceof Node\Expr\PropertyFetch) {
+						$usedVariables[] = $object->name;
+					}
+				});
+			}
+		}
+		return $usedVariables;
 	}
 }
