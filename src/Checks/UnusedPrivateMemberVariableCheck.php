@@ -34,7 +34,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		$memberVariables = [];
-		if ($node instanceof Property && $node->isPrivate()) {
+		if ($node instanceof Property && $node->type == Class_::MODIFIER_PRIVATE) {
 			$memberVariables[] = $node->props[0]->name;
 			$usedVariables = [];
 			if ($inside instanceof Class_) {
@@ -60,7 +60,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 		foreach ($inside->stmts as $statement) {
 			// we will ignore constructors for the purposes of usage
 			if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct') {
-				ForEachNode::run($statement->getStmts(), function ($object) use (&$usedVariables) {
+				ForEachNode::run($statement->stmts, function ($object) use (&$usedVariables) {
 					if ($object instanceof Node\Expr\PropertyFetch) {
 						$usedVariables[] = $object->name;
 					}
