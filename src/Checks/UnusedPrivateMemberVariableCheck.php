@@ -33,8 +33,9 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+		$memberVariables = [];
 		if ($node instanceof Property && $node->isPrivate()) {
-			$memberVariable = $node->props[0]->name;
+			$memberVariables[] = $node->props[0]->name;
 			$usedVariables = [];
 			if ($inside instanceof Class_) {
 				foreach ($inside->stmts as $statement) {
@@ -49,8 +50,10 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 					}
 				}
 			}
-			if (!in_array($memberVariable, $usedVariables)) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNUSED_VARIABLE, "Unused private variable detected");
+			foreach ($memberVariables as $memberVariable) {
+				if (!in_array($memberVariable, $usedVariables)) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
+				}
 			}
 		}
 	}

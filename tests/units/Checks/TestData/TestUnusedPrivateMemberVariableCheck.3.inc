@@ -2,14 +2,12 @@
 
 class MyTestClass {
 
-	public $someOtherVariable;
-	protected $anotherUncheckedVariable;
-	private $memberVariable = 'nothing';
-	private $anotherVariable = 'another thing';
+	private $memberVariable = 'my var';
+	private $anotherVariable = 'another var';
 
 	public function __construct() {
-		$this->memberVariable = 'should be ignored';
-		$this->anotherVariable = 'should be ignored';
+		$this->memberVariable = 'hello';
+		$this->anotherVariable = 'welcome';
 	}
 
 	public function testClassFunction1() {

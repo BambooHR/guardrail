@@ -52,6 +52,7 @@ class ErrorConstants {
 	const TYPE_UNREACHABLE_CODE = 'Standard.Unreachable';
 	const TYPE_UNSAFE_TIME_ZONE = "Standard.Unsafe.TimeZone";
 	const TYPE_UNUSED_VARIABLE = 'Standard.Unused.Variable';
+	const TYPE_UNUSED_PROPERTY = 'Standard.Unused.Property';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 

@@ -11,6 +11,7 @@ class MyTestClass {
 	}
 
 	public function testClassFunction1() {
-//		$this->memberVariable = 'some value';
+		$this->memberVariable = 'getting set';
+		$this->anotherVariable = 'used here';
 	}
 }
