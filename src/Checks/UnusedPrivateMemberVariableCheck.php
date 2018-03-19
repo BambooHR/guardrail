@@ -41,12 +41,11 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 				foreach ($inside->stmts as $statement) {
 					// we will ignore constructors for the purposes of usage
 					if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct') {
-						$getVar = function ($object) use (&$usedVariables) {
+						ForEachNode::run($statement->getStmts(), function ($object) use (&$usedVariables) {
 							if ($object instanceof Node\Expr\PropertyFetch) {
 								$usedVariables[] = $object->name;
 							}
-						};
-						ForEachNode::run($statement->getStmts(), $getVar);
+						});
 					}
 				}
 			}
