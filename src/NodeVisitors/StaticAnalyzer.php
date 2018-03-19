@@ -32,6 +32,7 @@ use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
 use BambooHR\Guardrail\Checks\SwitchCheck;
 use BambooHR\Guardrail\Checks\UndefinedVariableCheck;
 use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
+use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Config;
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 use phpDocumentor\Reflection\DocBlockFactory;
@@ -147,7 +148,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new Psr4Check($this->index, $output),
 			new CyclomaticComplexityCheck($this->index, $output),
 			new ConditionalAssignmentCheck($this->index, $output),
-			new ClassMethodStringCheck($this->index, $output)
+			new ClassMethodStringCheck($this->index, $output),
+			new UnusedPrivateMemberVariableCheck($this->index, $output)
 		];
 
 		$this->enterHooks = $this->buildClosures();
