@@ -13,5 +13,7 @@ class MyOtherClass {
 		$object = new $classVar;
 
 		$class = new MyTestClass();
+
+		$partialNonMatching = 'Class';
 	}
 }
