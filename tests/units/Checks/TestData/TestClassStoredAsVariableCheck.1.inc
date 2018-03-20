@@ -2,8 +2,10 @@
 
 class MyTestClass {
 
-	public function __construct() {
+	public $variable;
 
+	public function __construct() {
+		$this->variable = 'MyTestClass';
 	}
 
 	public function checkStoredClass() {
