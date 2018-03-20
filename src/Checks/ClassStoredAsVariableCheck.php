@@ -33,15 +33,12 @@ class ClassStoredAsVariableCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		// if it's a string and a valid PHP class name (including the slashes for namespaced classes)
-		$error = false;
 		if ($node instanceof String_ && preg_match('/^[\a-zA-Z_\x7f-\xff][\a-zA-Z0-9_\x7f-\xff]*$/', $node->value)) {
 			// full match
 			if ($this->symbolTable->isDefinedClass($node->value)) {
 				$error = true;
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_CLASS_STORED_VARIABLE, "Class used in variable. Please use {CLASS_NAME}::class instead.");
-			}
-			// partial match (only if we have not already matched)
-			if ($this->symbolTable->classExistsAnyNamespace($node->value) && false == $error) {
+			} elseif ($this->symbolTable->classExistsAnyNamespace($node->value)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_CLASS_STORED_VARIABLE, "Class used in variable. Please use {CLASS_NAME}::class instead.");
 			}
 		}
