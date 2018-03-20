@@ -246,4 +246,15 @@ class InMemorySymbolTable extends SymbolTable {
 			return false;
 		}
 	}
+
+	/**
+	 * classExistsAnyNamespace
+	 *
+	 * @param string $name The class name
+	 *
+	 * @return bool
+	 */
+	public function classExistsAnyNamespace($name) {
+		return $this->classExistsInNamespace($this->classes, $name);
+	}
 }

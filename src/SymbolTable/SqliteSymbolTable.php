@@ -519,4 +519,20 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function getFunctionFile($functionName) {
 		return $this->getType($functionName, self::TYPE_FUNCTION);
 	}
+
+	/**
+	 * classExistsAnyNamespace
+	 *
+	 * @param string $name The class name
+	 *
+	 * @return bool
+	 */
+	public function classExistsAnyNamespace($name) {
+		$sql = 'SELECT COUNT(*) FROM symbol_table WHERE name LIKE ? AND type in (?,?)';
+		$params = ['%' . strtolower($name), self::TYPE_CLASS, self::TYPE_INTERFACE];
+		$statement = $this->con->prepare($sql);
+		$statement->execute($params);
+		$result = $statement->fetch(Pdo::FETCH_NUM);
+		return $result[0] > 0;
+	}
 }
