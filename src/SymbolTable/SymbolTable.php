@@ -56,8 +56,6 @@ abstract class SymbolTable {
 		$this->basePath = $basePath;
 	}
 
-
-
 	/**
 	 * getClass
 	 *
@@ -352,6 +350,22 @@ abstract class SymbolTable {
 	}
 
 	/**
+	 * classExistsInNamespace
+	 *
+	 * @param array  $classes The array of classes
+	 * @param string $name    The name of the class we are checking
+	 *
+	 * @return bool
+	 */
+	protected function classExistsInNamespace($classes, $name) {
+		foreach ($classes as $class => $file) {
+			if (preg_match('/' . preg_quote(strtolower($name), '/') . '$/', $class)) {
+				return true;
+			}
+		}
+	}
+
+	/**
 	 * addClass
 	 *
 	 * @param string $name  The name
@@ -447,4 +461,13 @@ abstract class SymbolTable {
 	 * @return array
 	 */
 	abstract public function getClassesThatUseAnyTrait();
+
+	/**
+	 * classExistsAnyNamespace
+	 *
+	 * @param string $name The class name
+	 *
+	 * @return bool
+	 */
+	abstract public function classExistsAnyNamespace($name);
 }

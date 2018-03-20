@@ -12,6 +12,7 @@ use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
 use BambooHR\Guardrail\Checks\ClassMethodStringCheck;
+use BambooHR\Guardrail\Checks\ClassStoredAsVariableCheck;
 use BambooHR\Guardrail\Checks\ConditionalAssignmentCheck;
 use BambooHR\Guardrail\Checks\ConstructorCheck;
 use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
@@ -149,7 +150,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new CyclomaticComplexityCheck($this->index, $output),
 			new ConditionalAssignmentCheck($this->index, $output),
 			new ClassMethodStringCheck($this->index, $output),
-			new UnusedPrivateMemberVariableCheck($this->index, $output)
+			new UnusedPrivateMemberVariableCheck($this->index, $output),
+			new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
 		$this->enterHooks = $this->buildClosures();
