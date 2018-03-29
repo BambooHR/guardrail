@@ -346,7 +346,7 @@ abstract class SymbolTable {
 	 */
 	public function ignoreType($name) {
 		$name = strtolower($name);
-		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator');
+		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator' || $name=='object');
 	}
 
 	/**

@@ -35,9 +35,6 @@ use BambooHR\Guardrail\Checks\UndefinedVariableCheck;
 use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
 use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Config;
-use phpDocumentor\Reflection\DocBlock\Tags\Var_;
-use phpDocumentor\Reflection\DocBlockFactory;
-use phpDocumentor\Reflection\Types\Context;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Closure;
@@ -49,7 +46,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\If_;
-use PhpParser\NodeTraverserInterface;
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractionClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClassMethod;
@@ -59,6 +55,7 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
 use BambooHR\Guardrail\TypeInferrer;
+use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 
@@ -112,7 +109,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * StaticAnalyzer constructor.
 	 *
 	 * @param string          $basePath The base path
-	 * @param string          $index    The index
+	 * @param SymbolTable     $index    The index
 	 * @param OutputInterface $output   Instance if OutputInterface
 	 * @param Config          $config   The config
 	 */
@@ -151,7 +148,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new ConditionalAssignmentCheck($this->index, $output),
 			new ClassMethodStringCheck($this->index, $output),
 			new UnusedPrivateMemberVariableCheck($this->index, $output),
-			new ClassStoredAsVariableCheck($this->index, $output)
+			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
 		$this->enterHooks = $this->buildClosures();
@@ -305,7 +302,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		};
 
 		$func[Node\Stmt\Catch_::class] = function (Node\Stmt\Catch_ $node) {
-			$this->setScopeType(strval($node->var), strval($node->type), $node->getLine());
+			$this->setScopeType(strval($node->var), count($node->types)==1 ? strval($node->types[0]) : Scope::MIXED_TYPE, $node->getLine());
 			$this->setScopeUsed(strval($node->var));
 		};
 
@@ -402,10 +399,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				}
 			} else {
 				if ($valueVar instanceof List_) {
-					foreach ($valueVar->vars as $var) {
-						if ($var instanceof Variable) {
-							if (gettype($var->name) == "string") {
-								$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
+					// Deal with traditional list($a,b,$c) style list.
+					foreach ($valueVar->items as $var) {
+						if ($var->key == NULL && $var->value instanceof Variable) {
+							if (gettype($var->value->name) == "string") {
+								$this->setScopeType(strval($var->value->name), Scope::MIXED_TYPE, $var->getLine());
 							}
 						}
 					}
@@ -442,7 +440,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	public function enterNode(Node $node) {
 		$class = get_class($node);
 		if ($node instanceof Trait_) {
-			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
+			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 		if (Config::shouldUseDocBlockForInlineVars() && !($node instanceof FunctionLike)) {
 			$vars = $node->getAttribute("namespacedInlineVar");
@@ -713,9 +711,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		} else if ($op->var instanceof List_) {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to mixed.
-			foreach ($op->var->vars as $var) {
-				if ($var && $var instanceof Variable && gettype($var->name) == "string") {
-					$this->setScopeType(strval($var->name), Scope::MIXED_TYPE, $var->getLine());
+			foreach ($op->var->items as $var) {
+				if($var) {
+					$value = $var->value;
+					if ($var->key == NULL && $value && $value instanceof Variable && gettype($value->name) == "string") {
+						$this->setScopeType(strval($value->name), Scope::MIXED_TYPE, $var->getLine());
+					}
 				}
 			}
 		} else if ($op->var instanceof ArrayDimFetch) {

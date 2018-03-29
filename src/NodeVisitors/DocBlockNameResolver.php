@@ -44,6 +44,7 @@ class DocBlockNameResolver extends NameResolver {
 	 * DocBlockNameResolver constructor.
 	 */
 	function __construct() {
+		parent::__construct();
 		$this->factory = DocBlockFactory::createInstance();
 	}
 

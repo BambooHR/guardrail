@@ -12,6 +12,7 @@ use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\NodeTraverser;
 use PhpParser\NodeTraverserInterface;
 use BambooHR\Guardrail\Checks\BaseCheck;
 use PhpParser\NodeVisitorAbstract;
@@ -105,7 +106,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			array_push($this->classStack, $node);
 		} elseif ($node instanceof Node\Expr) {
 			// Expressions don't contain anything we would index.
-			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
+			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 		return null;
 	}

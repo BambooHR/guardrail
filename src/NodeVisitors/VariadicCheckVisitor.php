@@ -41,7 +41,7 @@ class VariadicCheckVisitor extends NodeVisitorAbstract {
 	 */
 	public function enterNode(Node $node) {
 		if ($node instanceof FunctionLike) {
-			return NodeTraverserInterface::DONT_TRAVERSE_CHILDREN;
+			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 
 		if (
