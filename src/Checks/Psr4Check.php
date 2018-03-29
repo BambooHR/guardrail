@@ -18,7 +18,7 @@ class Psr4Check extends BaseCheck {
 	 * @return string
 	 */
 	private function getPsr4Path(Node\Name $name = null) {
-		return $name ? implode('/',$name->parts) . ".php" : "";
+		return $name ? implode('/', $name->parts) . ".php" : "";
 	}
 
 	/**

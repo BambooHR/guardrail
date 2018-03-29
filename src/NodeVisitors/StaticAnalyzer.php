@@ -712,9 +712,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		} else if ($op->var instanceof List_) {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to mixed.
 			foreach ($op->var->items as $var) {
-				if($var) {
+				if ($var) {
 					$value = $var->value;
-					if ($var->key == NULL && $value && $value instanceof Variable && gettype($value->name) == "string") {
+					if ($var->key == null && $value && $value instanceof Variable && gettype($value->name) == "string") {
 						$this->setScopeType(strval($value->name), Scope::MIXED_TYPE, $var->getLine());
 					}
 				}
