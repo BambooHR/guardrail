@@ -60,7 +60,7 @@ class CatchCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Catch_ $node The catch block to examine for an internal re-throw.
 	 * @return bool
 	 */
 	protected function doesCatchRethrow(Catch_ $node) {
