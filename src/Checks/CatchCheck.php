@@ -48,28 +48,33 @@ class CatchCheck extends BaseCheck {
 						/* Detect a throw at any depth in the catch() subtree.  (Ignoring nested try/catch blocks).
 						   We trust that if they throw anything, they made a conscious decision about how the
 						   exception needed to bubble up. */
-						$throws = false;
-						ForEachNode::run($node->stmts, function (Node $node) use (&$throws) {
-							if ($node instanceof Node\Stmt\Throw_) {
-								$throws = true;
-								return NodeTraverser::STOP_TRAVERSAL;
-							} else if ($node instanceof Node\Stmt\TryCatch) {
-								// We don't care about nested try/catches
-								return NodeTraverser::DONT_TRAVERSE_CHILDREN;
-							}
-							return null;
-						});
-						if (!$throws) {
+						if (!$this->doesCatchRethrow($node)) {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_EXCEPTION_BASE, "Catching the base Exception class without subsequently throwing may be too broad");
 						}
 					}
-					return;
-				}
-
-				if (!$this->symbolTable->isDefinedClass($name)) {
+				} else if (!$this->symbolTable->isDefinedClass($name)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param Node $node
+	 * @return bool
+	 */
+	protected function doesCatchRethrow(Catch_ $node) {
+		$throws = false;
+		ForEachNode::run($node->stmts, function (Node $node) use (&$throws) {
+			if ($node instanceof Node\Stmt\Throw_) {
+				$throws = true;
+				return NodeTraverser::STOP_TRAVERSAL;
+			} else if ($node instanceof Node\Stmt\TryCatch) {
+				// We don't care about nested try/catches
+				return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+			}
+			return null;
+		});
+		return $throws;
 	}
 }
