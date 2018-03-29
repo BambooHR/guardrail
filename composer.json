@@ -1,35 +1,35 @@
 {
-    "name": "bamboohr/guardrail",
-    "description": "BambooHR's home grown PHP Static Analysis tool",
-    "license": "Apache-2.0",
-    "authors": [
-      {
-        "name": "Jon Gardiner"
-      }
-    ],
-    "autoload": {
-        "psr-4": { "BambooHR\\Guardrail\\": "src/" }
-    },
-    "autoload-dev": {
-        "psr-4": { "BambooHR\\Guardrail\\Tests\\": "tests/" }
-    },
-    "bin": [ "src/bin/guardrail.php" ],
-    "require": {
-        "nikic/php-parser": "^2.0",
-        "webmozart/glob":"^4.1.0",
-        "n98/junit-xml":"^1.0.0",
-        "seld/jsonlint": "^1.6",
-        "ext-sqlite3" : "*",
-        "ext-pcntl": "*",
-        "ext-pdo_sqlite": "*"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "<6.0",
-        "bamboohr/phpcs": "^1.0"
-    },
-    "scripts": {
-        "add-standard" : "vendor/bin/phpcs --config-set installed_paths $(pwd)/vendor/bamboohr/phpcs/BambooHR",
-        "cs-check": "vendor/bin/phpcs --ignore=./src/ExtraStubs/* --colors -p --extensions=php --standard=BambooHR ./src",
-        "cs-fix": "vendor/bin/phpcbf --colors --extensions=php --standard=BambooHR ./src"
+  "name": "bamboohr/guardrail",
+  "description": "BambooHR's home grown PHP Static Analysis tool",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Jon Gardiner"
     }
+  ],
+  "autoload": {
+    "psr-4": { "BambooHR\\Guardrail\\": "src/" }
+  },
+  "autoload-dev": {
+    "psr-4": { "BambooHR\\Guardrail\\Tests\\": "tests/" }
+  },
+  "bin": [ "src/bin/guardrail.php" ],
+  "require": {
+    "nikic/php-parser": "^3.1",
+    "webmozart/glob":"^4.1.0",
+    "n98/junit-xml":"^1.0.0",
+    "seld/jsonlint": "^1.7",
+    "ext-sqlite3" : "*",
+    "ext-pcntl": "*",
+    "ext-pdo_sqlite": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "<6.0",
+    "bamboohr/phpcs": "^1.0"
+  },
+  "scripts": {
+    "add-standard" : "vendor/bin/phpcs --config-set installed_paths $(pwd)/vendor/bamboohr/phpcs/BambooHR",
+    "cs-check": "vendor/bin/phpcs --ignore=./src/ExtraStubs/* --colors -p --extensions=php --standard=BambooHR ./src",
+    "cs-fix": "vendor/bin/phpcbf --colors --extensions=php --standard=BambooHR ./src"
+  }
 }
