@@ -134,6 +134,7 @@ class ReflectedClassMethod implements MethodInterface {
 	}
 
 	/**
+	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 * @return bool
 	 */
 	public function hasNullableReturnType() {
