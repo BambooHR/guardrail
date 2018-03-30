@@ -137,7 +137,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @return bool
 	 */
 	public function hasNullableReturnType() {
-		return method_exists($this->refl,"getReturnType") ? $this->refl->getReturnType()->allowsNull() : false;
+		return method_exists($this->refl, "getReturnType") ? $this->refl->getReturnType()->allowsNull() : false;
 	}
 
 	/**
