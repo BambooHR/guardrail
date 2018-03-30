@@ -44,6 +44,7 @@ class FunctionLikeParameter {
 	 * @param string $name      The name
 	 * @param bool   $optional  Is it optional
 	 * @param bool   $reference Is it a reference
+	 * @param bool   $nullable  Is it nullable
 	 */
 	public function __construct($type, $name, $optional, $reference, $nullable) {
 		$this->type = $type;
@@ -89,6 +90,9 @@ class FunctionLikeParameter {
 		return $this->reference;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isNullable() {
 		return $this->nullable;
 	}
