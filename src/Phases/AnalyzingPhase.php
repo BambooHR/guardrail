@@ -184,7 +184,7 @@ class AnalyzingPhase {
 				return strlen($fileData);
 			}
 		} catch (Error $exception) {
-			$msg = preg_replace("/on line [0-9]+$/","", $exception->getMessage());
+			$msg = preg_replace("/on line [0-9]+$/", "", $exception->getMessage());
 			$this->output->emitError( __CLASS__, $file, $exception->getStartLine(), ErrorConstants::TYPE_PARSE_ERROR, $msg );
 		} catch (UnknownTraitException $exception) {
 			$this->output->emitError( __CLASS__, $file, 0, ErrorConstants::TYPE_UNKNOWN_CLASS, $exception->getMessage() );
@@ -312,7 +312,7 @@ class AnalyzingPhase {
 		$toProcess = [];
 		if ($config->hasFileList()) {
 			foreach ($config->getFileList() as $fileName) {
-				$toProcess[] = [$fileName, filesize($baseDirectory."/".$fileName)];
+				$toProcess[] = [$fileName, filesize($baseDirectory . "/" . $fileName)];
 			}
 		} else {
 			foreach ($indexPaths as $path) {
