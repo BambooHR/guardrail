@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Checks\BaseCheck;
+use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\NodeVisitors\DoWhileVisitor;
@@ -183,10 +184,13 @@ class AnalyzingPhase {
 				return strlen($fileData);
 			}
 		} catch (Error $exception) {
-			$this->output->emitError( __CLASS__, $file, 0, "Parse error", $exception->getMessage() );
+			$msg = preg_replace("/on line [0-9]+$/","", $exception->getMessage());
+			$this->output->emitError( __CLASS__, $file, $exception->getStartLine(), ErrorConstants::TYPE_PARSE_ERROR, $msg );
 		} catch (UnknownTraitException $exception) {
-			$this->output->emitError( __CLASS__, $file, 0, "Unknown trait error", $exception->getMessage() );
+			$this->output->emitError( __CLASS__, $file, 0, ErrorConstants::TYPE_UNKNOWN_CLASS, $exception->getMessage() );
 		}
+
+		return 0;
 	}
 
 	/**
@@ -308,7 +312,7 @@ class AnalyzingPhase {
 		$toProcess = [];
 		if ($config->hasFileList()) {
 			foreach ($config->getFileList() as $fileName) {
-				$toProcess[] = [$fileName, filesize($fileName)];
+				$toProcess[] = [$fileName, filesize($baseDirectory."/".$fileName)];
 			}
 		} else {
 			foreach ($indexPaths as $path) {

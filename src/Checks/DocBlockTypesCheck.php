@@ -98,7 +98,8 @@ class DocBlockTypesCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof FunctionLike) {
-			$return = strval($node->getReturnType() ?: "");
+			$returnTypeOb = $node->getReturnType();
+			$return = $returnTypeOb instanceof Node\NullableType ? strval($returnTypeOb->type) : strval($returnTypeOb);
 			$docBlockReturn = Scope::constFromDocBlock(
 				$node->getAttribute("namespacedReturn"),
 				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : "",

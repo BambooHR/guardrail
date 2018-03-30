@@ -562,7 +562,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				// TODO: Track the type of a variadic array
 				$scope->setVarType(strval($param->name), 'array', $param->getLine());
 			} else {
-				$scope->setVarType(strval($param->name), Scope::constFromName(strval($param->type)), $param->getLine());
+				$paramType = $param->type instanceof Node\NullableType ? strval($param->type->type) : strval($param->type);
+				$scope->setVarType(strval($param->name), Scope::constFromName($paramType), $param->getLine());
 				if ($param->type != null && $param->default == null) {
 					$scope->setVarNull(strval($param->name), Scope::NULL_IMPOSSIBLE);
 				}
