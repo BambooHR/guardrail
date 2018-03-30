@@ -33,6 +33,11 @@ class FunctionLikeParameter {
 	private $reference;
 
 	/**
+	 * @var bool
+	 */
+	private $nullable;
+
+	/**
 	 * FunctionLikeParameter constructor.
 	 *
 	 * @param string $type      The type
@@ -40,11 +45,12 @@ class FunctionLikeParameter {
 	 * @param bool   $optional  Is it optional
 	 * @param bool   $reference Is it a reference
 	 */
-	public function __construct($type, $name, $optional, $reference) {
+	public function __construct($type, $name, $optional, $reference, $nullable) {
 		$this->type = $type;
 		$this->name = $name;
 		$this->optional = $optional;
 		$this->reference = $reference;
+		$this->nullable = $nullable;
 	}
 
 	/**
@@ -81,5 +87,9 @@ class FunctionLikeParameter {
 	 */
 	public function isReference() {
 		return $this->reference;
+	}
+
+	public function isNullable() {
+		return $this->nullable;
 	}
 }

@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
 
 /**
@@ -36,6 +37,10 @@ class ClassMethod implements MethodInterface {
 	 */
 	public function getReturnType() {
 		return strval($this->method->returnType);
+	}
+
+	public function hasNullableReturnType() {
+		return $this->method->returnType && $this->method->returnType instanceof NullableType;
 	}
 
 	/**
@@ -84,7 +89,13 @@ class ClassMethod implements MethodInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
-			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default != null, $param->byRef);
+			$ret[] = new FunctionLikeParameter(
+				$param->type instanceof NullableType ? $param->type->type : $param->type,
+				$param->name,
+				$param->default != null,
+				$param->byRef,
+				$param->type instanceof NullableType
+			);
 		}
 		return $ret;
 	}

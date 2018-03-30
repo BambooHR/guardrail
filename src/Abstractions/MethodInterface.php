@@ -32,4 +32,14 @@ interface MethodInterface extends FunctionLikeInterface {
 	 * @return string
 	 */
 	public function getAccessLevel();
+
+	/**
+	 * @return bool
+	 */
+	public function hasNullableReturnType();
+
+	/**
+	 * @return string
+	 */
+	public function getReturnType();
 }

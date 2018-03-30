@@ -128,9 +128,13 @@ class ReflectedClassMethod implements MethodInterface {
 		/** @var \ReflectionParameter $param */
 		foreach ($params as $param) {
 			$type = $param->getClass() ? $param->getClass()->name : '';
-			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $param->isPassedByReference());
+			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $param->isPassedByReference(), method_exists($param, "allowsNull") ? $param->allowsNull() : false);
 		}
 		return $ret;
+	}
+
+	public function hasNullableReturnType() {
+		return method_exists($this->refl,"getReturnType") ? $this->refl->getReturnType()->allowsNull() : false;
 	}
 
 	/**

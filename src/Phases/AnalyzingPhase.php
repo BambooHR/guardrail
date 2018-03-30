@@ -232,6 +232,7 @@ class AnalyzingPhase {
 
 		// Server process reports the errors and serves up new files to the list.
 		$processDied = false;
+		$bytes = 0;
 		$pm->loopWhileConnections(
 			function ($socket, $msg) use (&$processingCount, &$it, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
 				if ($msg === false) {
@@ -266,7 +267,7 @@ class AnalyzingPhase {
 						list($size, $name) = explode(' ', $details, 2);
 						$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
 						if ($fileNumber < count($toProcess)) {
-							$bytes += $size;
+							$bytes += intval($size);
 							socket_write($socket, "INDEX " . $toProcess[$fileNumber] . "\n");
 							$fileNumber++;
 						} else {

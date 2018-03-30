@@ -54,6 +54,14 @@ class ParamTypesCheck extends BaseCheck {
 	}
 
 	/**
+	 * @param Node\NullableType|Node\Name $type The name of the parameter
+	 * @return string
+	 */
+	private function getNullableTypeName($type) {
+		return $type instanceof Node\NullableType ? strval($type->type) : strval($type);
+	}
+
+	/**
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
@@ -79,8 +87,9 @@ class ParamTypesCheck extends BaseCheck {
 
 		if ($node instanceof Node\FunctionLike) {
 			foreach ($node->getParams() as $index => $param) {
+
 				if ($param->type) {
-					$name = strval($param->type);
+					$name = $this->getNullableTypeName($param->type);
 					if (!$this->isAllowed($name, $inside)) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in parameter $index of $displayName");
 					}
@@ -88,7 +97,7 @@ class ParamTypesCheck extends BaseCheck {
 			}
 
 			if ($node->getReturnType()) {
-				$returnType = strval($node->getReturnType());
+				$returnType = $this->getNullableTypeName( $node->getReturnType() );
 				if (!$this->isAllowed($returnType, $inside)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 				}

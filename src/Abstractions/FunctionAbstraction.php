@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Function_ as AstFunction;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 
@@ -37,6 +38,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	public function getReturnType() {
 		return strval($this->function->returnType);
 	}
+
 
 	/**
 	 * isDeprecated
@@ -85,7 +87,13 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->function->params as $param) {
-			$ret[] = new FunctionLikeParameter($param->type, $param->name, $param->default != null, $param->byRef);
+			$ret[] = new FunctionLikeParameter(
+				$param->type instanceof NullableType ? strval($param->type->type) : $param->type,
+				$param->name,
+				$param->default != null,
+				$param->byRef,
+				$param->type instanceof NullableType
+			);
 		}
 		return $ret;
 	}

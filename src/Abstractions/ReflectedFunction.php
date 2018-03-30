@@ -134,6 +134,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 			$class = $param->getClass();
 			$type = ($class ? $class->getName() : "");
 			$isPassedByReference = $param->isPassedByReference();
+			$isNullable = (method_exists($param,"allowsNull") ?  $param->allowsNull() : false);
 			switch ($index) {
 				case 0:
 					$name = $this->getName();
@@ -156,7 +157,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 					}
 					break;
 			}
-			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $isPassedByReference);
+			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $isPassedByReference, $isNullable);
 		}
 		return $ret;
 	}
