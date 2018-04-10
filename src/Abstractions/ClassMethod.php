@@ -36,7 +36,7 @@ class ClassMethod implements MethodInterface {
 	 * @return string
 	 */
 	public function getReturnType() {
-		return strval($this->method->returnType);
+		return $this->method->returnType instanceof NullableType ? strval($this->method->returnType->type) : strval($this->method->returnType);
 	}
 
 	/**
