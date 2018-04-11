@@ -62,11 +62,13 @@ class ReturnCheck extends BaseCheck {
 
 			$insideFunc = $scope->getInsideFunction();
 			if ($inside && $insideFunc && $type) {
-				$expectedType = Scope::constFromName($insideFunc->getReturnType());
-				if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) &&
-					$type != "" &&
+				$type = $insideFunc->getReturnType();
+				$typeString = $type instanceof Node\NullableType  ? strval($type->type) : strval($type);
+				$expectedType = Scope::constFromName($typeString);
+				if (!in_array($typeString, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) &&
+					$typeString != "" &&
 					$expectedType != "" &&
-					!$this->symbolTable->isParentClassOrInterface($expectedType, $type)
+					!$this->symbolTable->isParentClassOrInterface($expectedType, $typeString)
 				) {
 
 					if ($insideFunc instanceof Node\Stmt\Function_) {
@@ -79,7 +81,7 @@ class ReturnCheck extends BaseCheck {
 					}
 					$msg = "Value returned from $functionName()" .
 						" must be a " . Scope::nameFromConst($expectedType) .
-						", returning " . Scope::nameFromConst($type);
+						", returning " . Scope::nameFromConst($typeString);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 				}
 			}
