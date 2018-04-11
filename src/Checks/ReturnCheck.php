@@ -63,7 +63,7 @@ class ReturnCheck extends BaseCheck {
 			$insideFunc = $scope->getInsideFunction();
 			if ($inside && $insideFunc && $type) {
 				$type = $insideFunc->getReturnType();
-				$typeString = $type instanceof Node\NullableType  ? strval($type->type) : strval($type);
+				$typeString = $type instanceof Node\NullableType ? strval($type->type) : strval($type);
 				$expectedType = Scope::constFromName($typeString);
 				if (!in_array($typeString, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) &&
 					$typeString != "" &&

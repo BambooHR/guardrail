@@ -36,9 +36,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 * @return string
 	 */
 	public function getReturnType() {
-		return $this->function->returnType instanceof NullableType
-			? strval($this->function->returnType->type)
-			: strval($this->function->returnType);
+		return $this->function->returnType instanceof NullableType ? strval($this->function->returnType->type) : strval($this->function->returnType);
 	}
 
 
