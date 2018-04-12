@@ -93,7 +93,7 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	protected function isClosureCallableMix($expected, $provided) {
-		return strcasecmp($expected,"callable") == 0 && strcasecmp($provided,"Closure") == 0;
+		return strcasecmp($expected, "callable") == 0 && strcasecmp($provided, "Closure") == 0;
 	}
 
 	/**
