@@ -78,16 +78,22 @@ class ReturnCheck extends BaseCheck {
 					$type[0] != "!" &&
 					$expectedReturnType != "" &&
 					$expectedReturnType[0] != "!" &&
+					strcasecmp($type,$expectedReturnType) != 0 &&
+					!$this->isClosureCallableMix($expectedReturnType, $type) &&
 					!$this->symbolTable->isParentClassOrInterface($expectedReturnType, $type)
 				) {
 					$functionName = $this->getFunctionName($inside, $insideFunc);
 					$msg = "Value returned from $functionName()" .
 						" must be a " . Scope::nameFromConst($expectedReturnType) .
-						", returning " . Scope::nameFromConst($typeString);
+						", returning " . Scope::nameFromConst($type);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 				}
 			}
 		}
+	}
+
+	protected function isClosureCallableMix($expected, $provided) {
+		return strcasecmp($expected,"callable") == 0 && strcasecmp($provided,"Closure") == 0;
 	}
 
 	/**
