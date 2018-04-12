@@ -66,7 +66,7 @@ class ReturnCheck extends BaseCheck {
 				$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
 				$expectedReturnType = Scope::constFromName($typeString);
 
-				if ($type==Scope::NULL_TYPE && $typeString!="" && !($returnType instanceof Node\NullableType)) {
+				if ($type==Scope::NULL_TYPE && $typeString != "" && !($returnType instanceof Node\NullableType)) {
 					$functionName = $this->getFunctionName($inside, $insideFunc);
 					$msg = "Attempt to return NULL from a non-nullable function $functionName() returned from $functionName()";
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
@@ -91,11 +91,11 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param ClassLike $inside
-	 * @param           $insideFunc
+	 * @param ClassLike         $inside     The class we're inside of (if any)
+	 * @param Node\FunctionLike $insideFunc The method we're inside of
 	 * @return string
 	 */
-	protected function getFunctionName(ClassLike $inside, $insideFunc) {
+	protected function getFunctionName(ClassLike $inside, Node\FunctionLike $insideFunc) {
 		$functionName = "";
 		if ($insideFunc instanceof Node\Stmt\Function_) {
 			$functionName = strval($insideFunc->name);
