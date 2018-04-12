@@ -66,7 +66,7 @@ class ReturnCheck extends BaseCheck {
 				$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
 				$expectedReturnType = Scope::constFromName($typeString);
 
-				if ($type==Scope::NULL_TYPE && $typeString != "" && !($returnType instanceof Node\NullableType)) {
+				if ($type == Scope::NULL_TYPE && $typeString != "" && !($returnType instanceof Node\NullableType)) {
 					$functionName = $this->getFunctionName($inside, $insideFunc);
 					$msg = "Attempt to return NULL from a non-nullable function $functionName() returned from $functionName()";
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
