@@ -61,7 +61,7 @@ class ReturnCheck extends BaseCheck {
 			list($type) = $this->typeInferer->inferType($inside, $node->expr, $scope);
 
 			$insideFunc = $scope->getInsideFunction();
-			if ($inside && $insideFunc && $type) {
+			if ($insideFunc && $type) {
 				$returnType = $insideFunc->getReturnType();
 				$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
 				$expectedReturnType = Scope::constFromName($typeString);
@@ -95,7 +95,7 @@ class ReturnCheck extends BaseCheck {
 	 * @param Node\FunctionLike $insideFunc The method we're inside of
 	 * @return string
 	 */
-	protected function getFunctionName(ClassLike $inside, Node\FunctionLike $insideFunc) {
+	protected function getFunctionName(ClassLike $inside = null, Node\FunctionLike $insideFunc) {
 		$functionName = "";
 		if ($insideFunc instanceof Node\Stmt\Function_) {
 			$functionName = strval($insideFunc->name);
