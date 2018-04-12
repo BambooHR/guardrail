@@ -78,7 +78,7 @@ class ReturnCheck extends BaseCheck {
 					$type[0] != "!" &&
 					$expectedReturnType != "" &&
 					$expectedReturnType[0] != "!" &&
-					strcasecmp($type,$expectedReturnType) != 0 &&
+					strcasecmp($type, $expectedReturnType) != 0 &&
 					!$this->isClosureCallableMix($expectedReturnType, $type) &&
 					!$this->symbolTable->isParentClassOrInterface($expectedReturnType, $type)
 				) {
@@ -92,6 +92,11 @@ class ReturnCheck extends BaseCheck {
 		}
 	}
 
+	/**
+	 * @param string $expected The expected class name
+	 * @param string $provided The provided class name
+	 * @return bool
+	 */
 	protected function isClosureCallableMix($expected, $provided) {
 		return strcasecmp($expected, "callable") == 0 && strcasecmp($provided, "Closure") == 0;
 	}
