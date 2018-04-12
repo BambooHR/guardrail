@@ -62,29 +62,49 @@ class ReturnCheck extends BaseCheck {
 
 			$insideFunc = $scope->getInsideFunction();
 			if ($inside && $insideFunc && $type) {
-				$type = $insideFunc->getReturnType();
-				$typeString = $type instanceof Node\NullableType ? strval($type->type) : strval($type);
-				$expectedType = Scope::constFromName($typeString);
-				if (!in_array($typeString, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED]) &&
-					$typeString != "" &&
-					$expectedType != "" &&
-					!$this->symbolTable->isParentClassOrInterface($expectedType, $typeString)
-				) {
+				$returnType = $insideFunc->getReturnType();
+				$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
+				$expectedReturnType = Scope::constFromName($typeString);
 
-					if ($insideFunc instanceof Node\Stmt\Function_) {
-						$functionName = strval($insideFunc->name);
-					} else if ($insideFunc instanceof Node\Expr\Closure) {
-						$functionName = "anonymous function";
-					} else if ($insideFunc instanceof Node\Stmt\ClassMethod) {
-						$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
-						$functionName = "$class::" . strval($insideFunc->name);
-					}
+				if ($type==Scope::NULL_TYPE && $typeString!="" && !($returnType instanceof Node\NullableType)) {
+					$functionName = $this->getFunctionName($inside, $insideFunc);
+					$msg = "Attempt to return NULL from a non-nullable function $functionName() returned from $functionName()";
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
+					return;
+				}
+
+				// For now, we don't worry about checking returns of scalar types.
+				if ($type != "" &&
+					$type[0] != "!" &&
+					$expectedReturnType != "" &&
+					$expectedReturnType[0] != "!" &&
+					!$this->symbolTable->isParentClassOrInterface($expectedReturnType, $type)
+				) {
+					$functionName = $this->getFunctionName($inside, $insideFunc);
 					$msg = "Value returned from $functionName()" .
-						" must be a " . Scope::nameFromConst($expectedType) .
+						" must be a " . Scope::nameFromConst($expectedReturnType) .
 						", returning " . Scope::nameFromConst($typeString);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param ClassLike $inside
+	 * @param           $insideFunc
+	 * @return string
+	 */
+	protected function getFunctionName(ClassLike $inside, $insideFunc) {
+		$functionName = "";
+		if ($insideFunc instanceof Node\Stmt\Function_) {
+			$functionName = strval($insideFunc->name);
+		} else if ($insideFunc instanceof Node\Expr\Closure) {
+			$functionName = "anonymous function";
+		} else if ($insideFunc instanceof Node\Stmt\ClassMethod) {
+			$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
+			$functionName = "$class::" . strval($insideFunc->name);
+		}
+		return $functionName;
 	}
 }
