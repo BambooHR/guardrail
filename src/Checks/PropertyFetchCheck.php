@@ -84,9 +84,10 @@ class PropertyFetchCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param      $fileName
-	 * @param Node $node
-	 * @param      $type
+	 * @param string $fileName -
+	 * @param Node   $node     -
+	 * @param string $type     -
+	 * @return void
 	 */
 	private function handleUndeclaredProperty($fileName, Node $node, $type) {
 		// Unknown property, but maybe they use magic methods to retrieve.
@@ -108,11 +109,13 @@ class PropertyFetchCheck extends BaseCheck {
 	/**
 	 * @param string    $fileName   -
 	 * @param Node      $node       -
+	 * @param string    $type       -
 	 * @param ClassLike $inside     -
 	 * @param Property  $property   -
 	 * @param string    $declaredIn -
+	 * @return void
 	 */
-	private function handleDeclaredProperty($fileName, Node $node, $type, ClassLike $inside, Property $property, $declaredIn) {
+	private function handleDeclaredProperty($fileName, Node $node, $type, ClassLike $inside = null, Property $property, $declaredIn) {
 		$access = $property->getAccess();
 		if ($access == "protected" || $access == "private") {
 			// It's ok to access a protected or private property if there is a __get method.
