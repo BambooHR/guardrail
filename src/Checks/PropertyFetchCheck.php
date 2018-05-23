@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeInferrer;
@@ -74,23 +75,55 @@ class PropertyFetchCheck extends BaseCheck {
 				list($property,$declaredIn) = Util::findAbstractedProperty($type, $node->name, $this->symbolTable);
 
 				if (!$property) {
-					// Unknown property, but maybe they use magic methods to retrieve.
-					$hasGet = Util::findAbstractedMethod($type, "__get", $this->symbolTable);
-					if (!$hasGet) {
-						$method = Util::findAbstractedMethod($type, $node->name, $this->symbolTable);
-						if ($method) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to fetch a property rather than call method " . $node->name);
-						}
+					$this->handleUndeclaredProperty($fileName, $node, $type);
+				} else {
+					$this->handleDeclaredProperty($fileName, $node, $type, $inside, $property, $declaredIn);
+				}
+			}
+		}
+	}
 
-						static $reported = [];
-						if (!isset($reported[$type . '::' . $node->name])) {
-							//$reported[$type . '::' . $node->name] = true;
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
-						}
-					}
-				} else if ($property->getAccess() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($declaredIn, $inside->namespacedName) != 0)) {
+	/**
+	 * @param string $fileName -
+	 * @param Node   $node     -
+	 * @param string $type     -
+	 * @return void
+	 */
+	private function handleUndeclaredProperty($fileName, Node $node, $type) {
+		// Unknown property, but maybe they use magic methods to retrieve.
+		$hasGet = Util::findAbstractedMethod($type, "__get", $this->symbolTable);
+		if (!$hasGet) {
+			$method = Util::findAbstractedMethod($type, $node->name, $this->symbolTable);
+			if ($method) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to fetch a property rather than call method " . $node->name);
+			}
+
+			static $reported = [];
+			if (!isset($reported[$type . '::' . $node->name])) {
+				//$reported[$type . '::' . $node->name] = true;
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
+			}
+		}
+	}
+
+	/**
+	 * @param string    $fileName   -
+	 * @param Node      $node       -
+	 * @param string    $type       -
+	 * @param ClassLike $inside     -
+	 * @param Property  $property   -
+	 * @param string    $declaredIn -
+	 * @return void
+	 */
+	private function handleDeclaredProperty($fileName, Node $node, $type, ClassLike $inside = null, Property $property, $declaredIn) {
+		$access = $property->getAccess();
+		if ($access == "protected" || $access == "private") {
+			// It's ok to access a protected or private property if there is a __get method.
+			$hasGet = Util::findAbstractedMethod($type, "__get", $this->symbolTable);
+			if (!$hasGet) {
+				if ($access == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($declaredIn, $inside->namespacedName) != 0)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property " . $node->name);
-				} else if ($property->getAccess() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($declaredIn, $inside->namespacedName))) {
+				} else if ($access == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($declaredIn, $inside->namespacedName))) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property " . $node->name);
 				}
 			}
