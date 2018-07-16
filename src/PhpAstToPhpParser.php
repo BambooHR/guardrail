@@ -29,6 +29,8 @@ use ast\Node\Decl;
  * If we're ok with these differences, then this approach will build a PhpParser tree much faster than parsing directly
  * with PhpParser.  (2x faster minimum in all the tests I've done.)
  *
+ * This class is coded to PHP 5.5 standards for compatibility with the rest of the parent project.
+ *
  */
 class PhpAstToPhpParser {
 	/** @var bool */
