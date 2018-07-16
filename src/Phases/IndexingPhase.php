@@ -8,12 +8,12 @@
 namespace BambooHR\Guardrail\Phases;
 
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
+use BambooHR\Guardrail\PhpAstParser;
 use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use Phar;
 use PhpParser\ParserFactory;
-use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeTraverser;
 use BambooHR\Guardrail\NodeVisitors\SymbolTableIndexer;
 use BambooHR\Guardrail\Util;
@@ -45,7 +45,11 @@ class IndexingPhase {
 		$this->traverser2 = new NodeTraverser;
 		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
 		$this->traverser2->addVisitor($this->indexer);
-		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		if(PhpAstParser::isSupported()) {
+			$this->parser = new PhpAstParser();
+		} else {
+			$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		}
 	}
 
 	/**
