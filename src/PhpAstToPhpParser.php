@@ -481,7 +481,7 @@ class PhpAstToPhpParser {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr
 	 */
 	private function binaryOp(Node $node) {
@@ -545,7 +545,7 @@ class PhpAstToPhpParser {
 	}
 
 	/**
-	 * @param Node @node -
+	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Break_
 	 */
 	private function breakStmt(Node $node) {
@@ -1005,7 +1005,7 @@ class PhpAstToPhpParser {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Label
 	 */
 	private function label(Node $node) {
@@ -1217,7 +1217,7 @@ class PhpAstToPhpParser {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\PreInc
 	 */
 	private function preInc(Node $node) {
