@@ -27,10 +27,10 @@ class PhpAstParser {
 	}
 
 	/**
-	 * @param $str
+	 * @param string $str The string to parse
 	 * @return \PhpParser\Node\Stmt[]
 	 */
 	function parse($str) {
-		return $this->reverter->convertAstNodeArray(\ast\parse_code($str,50));
+		return $this->reverter->convertAstNodeArray(\ast\parse_code($str, 50));
 	}
 }

@@ -49,7 +49,7 @@ class PhpAstToPhpParser {
 	}
 
 	/**
-	 * @param array|null|Node A statement list or array that should be converted and returned as a PHP array.
+	 * @param array|null|Node $nodes A statement list or array that should be converted and returned as a PHP array.
 	 * @return array
 	 */
 	function convertAstNodeArray($nodes = null) {
@@ -88,7 +88,7 @@ class PhpAstToPhpParser {
 				$ret = $this->argList($node);
 				break;
 			case \ast\AST_ARRAY:
-				$ret = $this->array_($node);
+				$ret = $this->arrayExpr($node);
 				break;
 			case \ast\AST_ARRAY_ELEM:
 				$ret = $this->arrayElem($node);
@@ -106,7 +106,7 @@ class PhpAstToPhpParser {
 				$ret = $this->binaryOp($node);
 				break;
 			case \ast\AST_BREAK:
-				$ret = $this->break_($node);
+				$ret = $this->breakStmt($node);
 				break;
 			case \ast\AST_CALL:
 				$ret = $this->call($node);
@@ -115,13 +115,13 @@ class PhpAstToPhpParser {
 				$ret = $this->cast($node);
 				break;
 			case \ast\AST_CATCH:
-				$ret = $this->catch_($node);
+				$ret = $this->catchStmt($node);
 				break;
 			case \ast\AST_CATCH_LIST:
 				$ret = $this->catchList($node);
 				break;
 			case \ast\AST_CLASS:
-				$ret = $this->class_($node);
+				$ret = $this->classStmt($node);
 				break;
 			case \ast\AST_CLASS_CONST:
 				$ret = $this->classConst($node);
@@ -130,7 +130,7 @@ class PhpAstToPhpParser {
 				$ret = $this->classConstDecl($node);
 				break;
 			case \ast\AST_CLONE:
-				$ret = $this->clone_($node);
+				$ret = $this->cloneStmt($node);
 				break;
 			case \ast\AST_CLOSURE:
 				$ret = $this->closure($node);
@@ -148,7 +148,7 @@ class PhpAstToPhpParser {
 				$ret = $this->conditional($node);
 				break;
 			case \ast\AST_CONST:
-				$ret = $this->const_($node);
+				$ret = $this->constStmt($node);
 				break;
 			case \ast\AST_CONST_DECL:
 				$ret = $this->constDecl($node);
@@ -157,10 +157,10 @@ class PhpAstToPhpParser {
 				$ret = $this->constElem($node);
 				break;
 			case \ast\AST_CONTINUE:
-				$ret = $this->continue_($node);
+				$ret = $this->continueStmt($node);
 				break;
 			case \ast\AST_DECLARE:
-				$ret = $this->declare_($node);
+				$ret = $this->declareStmt($node);
 				break;
 			case \ast\AST_DIM:
 				$ret = $this->dim($node);
@@ -169,34 +169,34 @@ class PhpAstToPhpParser {
 				$ret = $this->doWhile($node);
 				break;
 			case \ast\AST_ECHO:
-				$ret = $this->echo_($node);
+				$ret = $this->echoStmt($node);
 				break;
 			case \ast\AST_EMPTY:
-				$ret = $this->empty_($node);
+				$ret = $this->emptyExpr($node);
 				break;
 			case \ast\AST_ENCAPS_LIST:
 				$ret = $this->encapsList($node);
 				break;
 			case \ast\AST_EXIT:
-				$ret = $this->exit_($node);
+				$ret = $this->exitExpr($node);
 				break;
 			case \ast\AST_EXPR_LIST:
 				$ret = $this->convertAstNodeArray($node->children);
 				break;
 			case \ast\AST_FOR:
-				$ret = $this->for_($node);
+				$ret = $this->forStmt($node);
 				break;
 			case \ast\AST_FOREACH:
-				$ret = $this->foreach_($node);
+				$ret = $this->foreachStmt($node);
 				break;
 			case \ast\AST_FUNC_DECL:
 				$ret = $this->funcDecl($node);
 				break;
 			case \ast\AST_GLOBAL:
-				$ret = $this->global_($node);
+				$ret = $this->globalStmt($node);
 				break;
 			case \ast\AST_GOTO:
-				$ret = $this->goto_($node);
+				$ret = $this->gotoStmt($node);
 				break;
 			case \ast\AST_GROUP_USE:
 				$ret = $this->groupUse($node);
@@ -205,7 +205,7 @@ class PhpAstToPhpParser {
 				$ret = $this->haltCompiler($node);
 				break;
 			case \ast\AST_IF:
-				$ret = $this->if_($node);
+				$ret = $this->ifStmt($node);
 				break;
 			case \ast\AST_IF_ELEM:
 				$ret = $this->ifElem($node);
@@ -214,16 +214,16 @@ class PhpAstToPhpParser {
 				$ret = $this->includeOrEval($node);
 				break;
 			case \ast\AST_INSTANCEOF:
-				$ret = $this->instanceof_($node);
+				$ret = $this->instanceofExpr($node);
 				break;
 			case \ast\AST_ISSET:
-				$ret = $this->isset_($node);
+				$ret = $this->issetExpr($node);
 				break;
 			case \ast\AST_LABEL:
 				$ret = $this->label($node);
 				break;
 			case \ast\AST_LIST:
-				$ret = $this->list_($node);
+				$ret = $this->listExpr($node);
 				break;
 			case \ast\AST_MAGIC_CONST:
 				$ret = $this->magicConst($node);
@@ -238,13 +238,13 @@ class PhpAstToPhpParser {
 				$ret = $this->name($node);
 				break;
 			case \ast\AST_NAMESPACE:
-				$ret = $this->namespace_($node);
+				$ret = $this->namespaceStmt($node);
 				break;
 			case \ast\AST_NAME_LIST:
 				$ret = $this->convertAstNodeArray($node->children);
 				break;
 			case \ast\AST_NEW:
-				$ret = $this->new_($node);
+				$ret = $this->newExpr($node);
 				break;
 			case \ast\AST_NULLABLE_TYPE:
 				$ret = $this->nullableType($node);
@@ -268,7 +268,7 @@ class PhpAstToPhpParser {
 				$ret = $this->preInc($node);
 				break;
 			case \ast\AST_PRINT:
-				$ret = $this->print_($node);
+				$ret = $this->printExpr($node);
 				break;
 			case \ast\AST_PROP:
 				$ret = $this->prop($node);
@@ -280,13 +280,13 @@ class PhpAstToPhpParser {
 				$ret = $this->propElem($node);
 				break;
 			case \ast\AST_RETURN :
-				$ret = $this->return_($node);
+				$ret = $this->returnExpr($node);
 				break;
 			case \ast\AST_SHELL_EXEC:
 				$ret = $this->shellExec($node);
 				break;
 			case \ast\AST_STATIC:
-				$ret = $this->static_($node);
+				$ret = $this->staticStmt($node);
 				break;
 			case \ast\AST_STATIC_CALL:
 				$ret = $this->staticCall($node);
@@ -298,7 +298,7 @@ class PhpAstToPhpParser {
 				$ret = $this->stmtList($node);
 				break;
 			case \ast\AST_SWITCH:
-				$ret = $this->switch_($node);
+				$ret = $this->switchStmt($node);
 				break;
 			case \ast\AST_SWITCH_CASE:
 				$ret = $this->switchCase($node);
@@ -307,7 +307,7 @@ class PhpAstToPhpParser {
 				$ret = $this->switchList($node);
 				break;
 			case \ast\AST_THROW:
-				$ret = $this->throw_($node);
+				$ret = $this->throwStmt($node);
 				break;
 			case \ast\AST_TRAIT_ADAPTATIONS:
 				$ret = $this->traitAdaptations($node);
@@ -319,7 +319,7 @@ class PhpAstToPhpParser {
 				$ret = $this->traitPrecedence($node);
 				break;
 			case \ast\AST_TRY:
-				$ret = $this->try_($node);
+				$ret = $this->tryStmt($node);
 				break;
 			case \ast\AST_TYPE:
 				$ret = $this->type($node);
@@ -328,10 +328,10 @@ class PhpAstToPhpParser {
 				$ret = $this->unaryOp($node);
 				break;
 			case \ast\AST_UNSET:
-				$ret = $this->unset_($node);
+				$ret = $this->unsetExpr($node);
 				break;
 			case \ast\AST_USE:
-				$ret = $this->use_($node);
+				$ret = $this->useStmt($node);
 				break;
 			case \ast\AST_USE_ELEM:
 				$ret = $this->useElem($node);
@@ -340,13 +340,13 @@ class PhpAstToPhpParser {
 				$ret = $this->useTrait($node);
 				break;
 			case \ast\AST_VAR:
-				$ret = $this->var_($node);
+				$ret = $this->variable($node);
 				break;
 			case \ast\AST_WHILE:
-				$ret = $this->while_($node);
+				$ret = $this->whileStmt($node);
 				break;
 			case \ast\AST_YIELD:
-				$ret = $this->yield_($node);
+				$ret = $this->yieldStmt($node);
 				break;
 			case \ast\AST_YIELD_FROM:
 				$ret = $this->yieldFrom($node);
@@ -398,7 +398,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Array_|\PhpParser\Node\Expr\List_
 	 */
-	private function array_(Node $node) {
+	private function arrayExpr(Node $node) {
 		switch ($node->flags) {
 			case \ast\flags\ARRAY_SYNTAX_LIST:
 				return new \PhpParser\Node\Expr\List_($this->convertAstNodeArray($node->children));
@@ -546,7 +546,7 @@ class PhpAstToPhpParser {
 	 * @param Node @node -
 	 * @return \PhpParser\Node\Stmt\Break_
 	 */
-	private function break_(Node $node) {
+	private function breakStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Break_($this->convertAstNode($node->children['depth']));
 	}
 
@@ -589,7 +589,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Catch_
 	 */
-	private function catch_(Node $node) {
+	private function catchStmt(Node $node) {
 		/** @var \PhpParser\Node\Expr\Variable $variable */
 		$variable = $this->convertAstNode($node->children['var']);
 		return new \PhpParser\Node\Stmt\Catch_(
@@ -611,7 +611,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Interface_|\PhpParser\Node\Stmt\Trait_
 	 */
-	private function class_(Node $node) {
+	private function classStmt(Node $node) {
 		$subNodes = [];
 		if ($node->children['extends'] !== null) {
 			$subNodes['extends'] = $this->convertAstNode($node->children['extends']);
@@ -702,7 +702,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Clone_
 	 */
-	private function clone_(Node $node) {
+	private function cloneStmt(Node $node) {
 		return new \PhpParser\Node\Expr\Clone_($this->convertAstNode($node->children['expr']));
 	}
 
@@ -759,7 +759,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\ConstFetch
 	 */
-	private function const_(Node $node) {
+	private function constStmt(Node $node) {
 		return new \PhpParser\Node\Expr\ConstFetch($this->convertAstNode($node->children['name']));
 	}
 
@@ -783,7 +783,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Continue_
 	 */
-	private function continue_(Node $node) {
+	private function continueStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Continue_($this->convertAstNode($node->children['depth']));
 	}
 
@@ -791,7 +791,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Declare_
 	 */
-	private function declare_(Node $node) {
+	private function declareStmt(Node $node) {
 		$declares = [];
 		foreach ($node->children['declares']->children as $declare) {
 			$declares[] = new \PhpParser\Node\Stmt\DeclareDeclare($declare->children['name'], $this->convertAstNode($declare->children['value']), ["startLine" => $node->lineno]);
@@ -825,7 +825,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Echo_
 	 */
-	private function echo_(Node $node) {
+	private function echoStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Echo_($this->convertAstNodeArray($node->children));
 	}
 
@@ -833,7 +833,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Empty_
 	 */
-	private function empty_(Node $node) {
+	private function emptyExpr(Node $node) {
 		return new \PhpParser\Node\Expr\Empty_($this->convertAstNode($node->children['expr']));
 	}
 
@@ -851,7 +851,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Exit_
 	 */
-	private function exit_(Node $node) {
+	private function exitExpr(Node $node) {
 		return new \PhpParser\Node\Expr\Exit_($this->convertAstNode($node->children['expr']));
 	}
 
@@ -859,7 +859,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\For_
 	 */
-	private function for_(Node $node) {
+	private function forStmt(Node $node) {
 		$subNodes['init'] = $this->convertAstNode($node->children['init']);
 		$subNodes['cond'] = $this->convertAstNode($node->children['cond']);
 		$subNodes['loop'] = $this->convertAstNode($node->children['loop']);
@@ -871,7 +871,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Foreach_
 	 */
-	private function foreach_(Node $node) {
+	private function foreachStmt(Node $node) {
 		$subNodes = ['stmts' => $this->convertAstNode($node->children['stmts']), 'byRef' => false];
 		if (isset($node->children['key'])) {
 			$subNodes['keyVar'] = $this->convertAstNode($node->children['key']);
@@ -909,7 +909,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Global_
 	 */
-	private function global_(Node $node) {
+	private function globalStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Global_([$this->convertAstNode($node->children['var'])]);
 	}
 
@@ -917,7 +917,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Goto_
 	 */
-	private function goto_(Node $node) {
+	private function gotoStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Goto_($node->children['label']);
 	}
 
@@ -933,21 +933,21 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\If_
 	 */
-	private function if_(Node $node) {
+	private function ifStmt(Node $node) {
 
 		$childCount = count($node->children);
 		$elseIf = [];
 		$else = null;
 
-		for ($i = 1; $i < $childCount; ++$i) {
-			if ($node->children[$i]->children['cond'] !== null) {
+		for ($index = 1; $index < $childCount; ++$index) {
+			if ($node->children[$index]->children['cond'] !== null) {
 				$elseIf[] = new \PhpParser\Node\Stmt\ElseIf_(
-					$this->convertAstNode($node->children[$i]->children['cond']),
-					$this->convertAstNode($node->children[$i]->children['stmts']),
-					["startLine" => $node->children[$i]->lineno]
+					$this->convertAstNode($node->children[$index]->children['cond']),
+					$this->convertAstNode($node->children[$index]->children['stmts']),
+					["startLine" => $node->children[$index]->lineno]
 				);
 			} else {
-				$else = new \PhpParser\Node\Stmt\Else_($this->convertAstNode($node->children[$i]->children['stmts']));
+				$else = new \PhpParser\Node\Stmt\Else_($this->convertAstNode($node->children[$index]->children['stmts']));
 			}
 		}
 
@@ -987,7 +987,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Instanceof_
 	 */
-	private function instanceof_(Node $node) {
+	private function instanceofExpr(Node $node) {
 		return new \PhpParser\Node\Expr\Instanceof_(
 			$this->convertAstNode($node->children['expr']),
 			$this->convertAstNode($node->children['class'])
@@ -998,7 +998,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Isset_
 	 */
-	private function isset_(Node $node) {
+	private function issetExpr(Node $node) {
 		return new \PhpParser\Node\Expr\Isset_(is_array($node->children['var']) ? $this->convertAstNodeArray($node->children['var']) : [$this->convertAstNode($node->children['var'])]);
 	}
 
@@ -1014,7 +1014,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\List_
 	 */
-	private function list_(Node $node) {
+	private function listExpr(Node $node) {
 		return new \PhpParser\Node\Expr\List_(array_map([$this, 'reverseAST'], $node->children));
 	}
 
@@ -1121,7 +1121,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Namespace_
 	 */
-	private function namespace_(Node $node) {
+	private function namespaceStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Namespace_(
 			$node->children['name'] ? new \PhpParser\Node\Name($node->children['name']) : null,
 			$this->convertAstNodeArray($node->children['stmts'])
@@ -1132,7 +1132,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\New_
 	 */
-	private function new_(Node $node) {
+	private function newExpr(Node $node) {
 		return new \PhpParser\Node\Expr\New_(
 			$this->convertAstNode($node->children['class']),
 			$this->convertAstNode($node->children['args']),
@@ -1226,7 +1226,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Print_
 	 */
-	private function print_(Node $node) {
+	private function printExpr(Node $node) {
 		return new \PhpParser\Node\Expr\Print_($this->convertAstNode($node->children['expr']));
 	}
 
@@ -1280,7 +1280,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Return_
 	 */
-	private function return_(Node $node) {
+	private function returnExpr(Node $node) {
 		return new \PhpParser\Node\Stmt\Return_(
 			$this->convertAstNode($node->children['expr'])
 		);
@@ -1321,7 +1321,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Static_
 	 */
-	private function static_(Node $node) {
+	private function staticStmt(Node $node) {
 		$staticVar = new \PhpParser\Node\Stmt\StaticVar(
 			$node->children['var']->children['name'],
 			$this->convertAstNode($node->children['default'])
@@ -1370,7 +1370,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Switch_
 	 */
-	private function switch_(Node $node) {
+	private function switchStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Switch_(
 			$this->convertAstNode($node->children['cond']),
 			$this->convertAstNode($node->children['stmts'])
@@ -1401,7 +1401,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Throw_
 	 */
-	private function throw_(Node $node) {
+	private function throwStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\Throw_($this->convertAstNode($node->children['expr']));
 	}
 
@@ -1430,7 +1430,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\TryCatch
 	 */
-	private function try_(Node $node) {
+	private function tryStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\TryCatch(
 			$this->convertAstNode($node->children['try']),
 			$this->convertAstNode($node->children['catches']),
@@ -1443,7 +1443,6 @@ class PhpAstToPhpParser {
 	/**
 	 * @param Node $node -
 	 * @return string
-	 * @throws PhpAstToPhpParserException
 	 */
 	private function type(Node $node) {
 		switch ($node->flags) {
@@ -1495,7 +1494,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Unset_
 	 */
-	private function unset_(Node $node) {
+	private function unsetExpr(Node $node) {
 		return new \PhpParser\Node\Stmt\Unset_(is_array($node->children['var']) ? $this->convertAstNodeArray($node->children['var']) : [$this->convertAstNode($node->children['var'])]);
 	}
 
@@ -1521,7 +1520,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\Use_
 	 */
-	private function use_(Node $node) {
+	private function useStmt(Node $node) {
 		static $map = [
 			\ast\flags\USE_CONST => \PhpParser\Node\Stmt\Use_::TYPE_CONSTANT,
 			\ast\flags\USE_FUNCTION => \PhpParser\Node\Stmt\Use_::TYPE_FUNCTION,
@@ -1589,7 +1588,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Variable
 	 */
-	private function var_(Node $node) {
+	private function variable(Node $node) {
 		return new \PhpParser\Node\Expr\Variable(is_string($node->children['name']) ? $node->children['name'] : $this->convertAstNode($node->children['name']));
 	}
 
@@ -1597,7 +1596,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Stmt\While_
 	 */
-	private function while_(Node $node) {
+	private function whileStmt(Node $node) {
 		return new \PhpParser\Node\Stmt\While_(
 			$this->convertAstNode($node->children['cond']),
 			$this->convertAstNodeArray($node->children['stmts'])
@@ -1608,7 +1607,7 @@ class PhpAstToPhpParser {
 	 * @param Node $node -
 	 * @return \PhpParser\Node\Expr\Yield_
 	 */
-	private function yield_(Node $node) {
+	private function yieldStmt(Node $node) {
 		return new \PhpParser\Node\Expr\Yield_(
 			$this->convertAstNode($node->children['value']),
 			$this->convertAstNode($node->children['key'])
