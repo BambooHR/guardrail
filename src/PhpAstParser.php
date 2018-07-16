@@ -29,6 +29,7 @@ class PhpAstParser {
 	/**
 	 * @param string $str The string to parse
 	 * @return \PhpParser\Node\Stmt[]
+	 * @guardrail-ignore Standard.Unknown.Function
 	 */
 	function parse($str) {
 		return $this->reverter->convertAstNodeArray(\ast\parse_code($str, 50));
