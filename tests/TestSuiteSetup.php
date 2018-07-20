@@ -29,6 +29,17 @@ abstract class TestSuiteSetup extends TestCase {
 	 * @return int
 	 */
 	public function runAnalyzerOnFile($fileName, $emit) {
+		$output = $this->runAnalyzerOnFileReturnAllOutput($fileName, $emit);
+
+		return $output->getErrorCount();
+	}
+
+	/**
+	* @param string           $fileName
+	* @param string|string[]  $emit
+	* @return XUnitOutput
+	*/
+	protected function runAnalyzerOnFileReturnAllOutput($fileName, $emit) {
 		$testDataDirectory = $this->getCallerTestDataDirectory($this);
 		if (false === strpos($fileName, $testDataDirectory)) {
 			$fileName = $testDataDirectory . $fileName;
@@ -48,7 +59,7 @@ abstract class TestSuiteSetup extends TestCase {
 		$analyzer->initParser($config, $output);
 		$analyzer->analyzeFile($fileName, $config);
 
-		return $output->getErrorCount();
+		return $output;
 	}
 
 	/**
