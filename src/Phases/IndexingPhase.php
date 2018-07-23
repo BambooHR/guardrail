@@ -189,7 +189,6 @@ class IndexingPhase {
 				}
 				list($message, $details) = explode(' ', $msg, 2);
 
-
 				//echo "RECEIVED:$msg from index: $index\n";
 				if ($message == 'INDEXED') {
 					if ($itr->valid()) {

@@ -34,8 +34,7 @@ class PhpAstParser {
 	function parse($str) {
 		try {
 			return $this->reverter->convertAstNodeArray(\ast\parse_code($str, 50));
-		}
-		catch(\ParseError $ex) {
+		} catch (\ParseError $ex) {
 			return [];
 		}
 	}
