@@ -40,7 +40,7 @@ class ClassAbstraction implements ClassInterface {
 	 */
 	public function getName() {
 		$class = $this->class;
-		return strval($class->namespacedName);
+		return isset($class->namespacedName) ? strval($class->namespacedName) : "";
 	}
 
 	/**

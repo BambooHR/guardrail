@@ -32,6 +32,11 @@ class PhpAstParser {
 	 * @guardrail-ignore Standard.Unknown.Function
 	 */
 	function parse($str) {
-		return $this->reverter->convertAstNodeArray(\ast\parse_code($str, 50));
+		try {
+			return $this->reverter->convertAstNodeArray(\ast\parse_code($str, 50));
+		}
+		catch(\ParseError $ex) {
+			return [];
+		}
 	}
 }

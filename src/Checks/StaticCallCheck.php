@@ -96,7 +96,7 @@ class StaticCallCheck extends BaseCheck {
 	protected function checkDefaultSwitch(ClassLike $inside = null, $name) {
 		$possibleDynamic = false;
 		if ($inside) {
-			$currentClass = strval($inside->namespacedName);
+			$currentClass = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
 			if ($this->symbolTable->isParentClassOrInterface($name, $currentClass)) {
 				$possibleDynamic = true;
 			}

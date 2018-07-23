@@ -73,7 +73,7 @@ class TypeInferrer {
 		} elseif ($expr instanceof Node\Expr\Variable) {
 			if (gettype($expr->name) == "string") {
 				$varName = strval($expr->name);
-				if ($varName == "this" && $inside) {
+				if ($varName == "this" && $inside && isset($inside->namespacedName)) {
 					return [strval($inside->namespacedName), false];
 				}
 				$scopeType = $scope->getVarType($varName);

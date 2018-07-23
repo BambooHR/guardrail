@@ -118,8 +118,8 @@ class DocBlockTypesCheck extends BaseCheck {
 			$docBlockType = $node->getAttribute("namespacedType");
 			$docBlockType = Scope::constFromDocBlock(
 				$docBlockType,
-				$inside ? strval($inside->namespacedName) : "",
-				$inside ? strval($inside->namespacedName) : ""
+				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : "",
+				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : ""
 			);
 
 			if ($docBlockType && $docBlockType[0] != "!") {

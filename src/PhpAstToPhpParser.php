@@ -9,6 +9,7 @@ namespace BambooHR\Guardrail;
 
 use ast\Node;
 use ast\Node\Decl;
+use PhpParser\Node\Name;
 
 
 /**
@@ -1512,8 +1513,8 @@ class PhpAstToPhpParser {
 			0 => \PhpParser\Node\Stmt\Use_::TYPE_UNKNOWN
 		];
 		return new \PhpParser\Node\Stmt\GroupUse(
-			$node->children['prefix'],
-			$this->convertAstNode($node->children['uses']),
+			new Name($node->children['prefix']),
+			$this->convertAstNodeArray($node->children['uses']->children),
 			$map[$node->flags]
 		);
 	}

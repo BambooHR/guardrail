@@ -183,7 +183,12 @@ class IndexingPhase {
 
 		$this->processManager->loopWhileConnections(
 			function ($socket, $msg) use (&$itr, &$fileNumber, &$bytes, $output, $start) {
+				if ($msg === false) {
+					echo "Error: Unexpected error reading from socket\n";
+					return ProcessManager::CLOSE_CONNECTION;
+				}
 				list($message, $details) = explode(' ', $msg, 2);
+
 
 				//echo "RECEIVED:$msg from index: $index\n";
 				if ($message == 'INDEXED') {

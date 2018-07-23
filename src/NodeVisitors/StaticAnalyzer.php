@@ -553,6 +553,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$isStatic = true;
 		if ($func instanceof ClassMethod) {
 			$isStatic = $func->isStatic();
+		} else if ($func instanceof Closure) {
+			$isStatic = $func->static;
 		}
 //		echo "Function: ".$func->name." depth=".(count($this->scopeStack)+1)."\n";
 		$scope = new Scope($isStatic, false, $func);
