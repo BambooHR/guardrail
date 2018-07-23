@@ -29,7 +29,7 @@ class PhpAstParser {
 	/**
 	 * @param string $str The string to parse
 	 * @return \PhpParser\Node\Stmt[]
-	 * @guardrail-ignore Standard.Unknown.Function
+	 * @guardrail-ignore Standard.Unknown.Function, Standard.Unknown.Class
 	 */
 	function parse($str) {
 		try {
