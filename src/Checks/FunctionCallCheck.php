@@ -177,6 +177,13 @@ class FunctionCallCheck extends BaseCheck {
 		}
 	}
 
+	/**
+	 * @param string   $fileName The file being scanned.
+	 * @param FuncCall $node     The FuncCall node being inspected
+	 * @param string   $name     The function being called.
+	 *
+	 * @return void
+	 */
 	protected function checkForRegularExpression($fileName, FuncCall $node, $name) {
 		$name = strtolower($name);
 		// All of these functions accept a regex in parameter 1.
