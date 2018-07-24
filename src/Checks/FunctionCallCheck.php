@@ -94,6 +94,7 @@ class FunctionCallCheck extends BaseCheck {
 				}
 				$this->checkForDebugMethods($fileName, $node, $name);
 				$this->checkForDateWithoutTimeZone($fileName, $node, $name);
+				$this->checkForRegularExpression($fileName, $node, $name);
 
 				$func = $this->symbolTable->getAbstractedFunction($name);
 				if ($func) {
@@ -173,6 +174,26 @@ class FunctionCallCheck extends BaseCheck {
 			count($node->args) < 2
 		) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNSAFE_TIME_ZONE, "Calling the date_create() function without a timezone uses the local time zone.");
+		}
+	}
+
+	/**
+	 * @param string   $fileName The file being scanned.
+	 * @param FuncCall $node     The FuncCall node being inspected
+	 * @param string   $name     The function being called.
+	 *
+	 * @return void
+	 */
+	protected function checkForRegularExpression($fileName, FuncCall $node, $name) {
+		$name = strtolower($name);
+		// All of these functions accept a regex in parameter 1.
+		if ($name == "preg_match" || $name == "preg_match_all" || $name == "preg_replace" || $name == "preg_filter" || $name == "preg_replace_callback" || $name == "preg_filter") {
+			if (count($node->args) > 0) {
+				$arg = $node->args[0]->value;
+				if ($arg instanceof Node\Scalar\String_ && @preg_match($arg->value, null) === false) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_REGEX, "Regular expression syntax error in \"" . $arg->value . "\"");
+				}
+			}
 		}
 	}
 

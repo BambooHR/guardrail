@@ -29,6 +29,7 @@ class ErrorConstants {
 	const TYPE_GOTO = 'Standard.Goto';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';
 	const TYPE_INCORRECT_STATIC_CALL = 'Standard.Incorrect.Static';
+	const TYPE_INCORRECT_REGEX = 'Standard.Incorrect.Regex';
 	const TYPE_METRICS_COMPLEXITY = 'Standard.Metrics.Complexity';
 	const TYPE_MISSING_BREAK = 'Standard.Switch.Break';
 	const TYPE_MISSING_CONSTRUCT = 'Standard.Constructor.MissingCall';
