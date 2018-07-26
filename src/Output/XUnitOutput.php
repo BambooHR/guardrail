@@ -223,7 +223,7 @@ class XUnitOutput implements OutputInterface {
 		}
 
 		$message .= " on line " . $lineNumber;
-		$case->addFailure($message, $name);
+		$case->addFailure($name . ":" . $message, "error");
 		if ($this->emitErrors) {
 			echo "E";
 		}
