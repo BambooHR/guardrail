@@ -203,6 +203,15 @@ class Scope {
 	}
 
 	/**
+	 * Used to inject an existing variable into a different scope.  Used for references in uses() clauses.
+	 * @param string   $name -
+	 * @param ScopeVar $ref  -
+	 */
+	public function setVarReference($name, ScopeVar $ref) {
+		$this->vars[$name] = $ref;
+	}
+
+	/**
 	 * setVarWritten
 	 *
 	 * @param string $name The name
@@ -339,6 +348,14 @@ class Scope {
 	 */
 	function getVarAttributes($name) {
 		return (isset($this->vars[$name]) ? $this->vars[$name]->attributes : 0);
+	}
+
+	/**
+	 * @param string $name
+	 * @return ScopeVar|null
+	 */
+	function getVarObject($name) {
+		return (isset($this->vars[$name]) ? $this->vars[$name]  : null);
 	}
 
 	/**

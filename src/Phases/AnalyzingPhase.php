@@ -238,7 +238,7 @@ class AnalyzingPhase {
 		$processDied = false;
 		$bytes = 0;
 		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$processingCount, &$it, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
+			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
 				if ($msg === false) {
 					$processDied = true;
 					echo "Error: Unexpected error reading from socket\n";

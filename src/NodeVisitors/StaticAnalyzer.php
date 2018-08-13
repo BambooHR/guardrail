@@ -604,6 +604,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$var = self::checksForNonNullVariable($cond);
 			if ($var) {
 				$newScope->setVarNull($var, false);
+				if($newScope->getVarType($var)==Scope::NULL_TYPE) {
+					// Change the type in our scope, without setting the line as written.
+					$newScope->getVarObject($var)->type = Scope::MIXED_TYPE;
+				}
 			}
 		}
 		array_push($this->scopeStack, $newScope);
@@ -736,11 +740,21 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$oldScope = end($this->scopeStack);
 			foreach ($func->uses as $variable) {
 				$type = $oldScope->getVarType($variable->var);
-				$oldScope->setVarUsed($variable->var);
-				if ($type == Scope::UNDEFINED) {
-					$type = Scope::MIXED_TYPE;
+				if ($type==Scope::UNDEFINED) {
+					$this->output->emitError(__CLASS__, $this->file, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$".$variable->var." in uses() clause");
+				} else {
+					if($variable->byRef) {
+						// This is kind of fun, it's passed by reference so we literally reference the exact same
+						// scope variable object in the new scope.
+						$scope->setVarReference($variable->var, $oldScope->getVarObject($variable->var));
+					} else {
+						$oldScope->setVarUsed($variable->var);
+						if ($type == Scope::UNDEFINED) {
+							$type = Scope::MIXED_TYPE;
+						}
+						$scope->setVarType($variable->var, $type, $variable->getLine());
+					}
 				}
-				$scope->setVarType($variable->var, $type, $variable->getLine());
 			}
 		}
 
