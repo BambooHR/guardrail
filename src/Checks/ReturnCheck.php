@@ -57,37 +57,76 @@ class ReturnCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Return_) {
+			$insideFunc = $scope->getInsideFunction();
+
+			if(!$insideFunc) {
+				return;
+			}
+			$functionName = $this->getFunctionName($inside, $insideFunc);
+
 			/** @var Return_ $node */
+			if ($node->expr != null && $insideFunc->getReturnType() == "void") {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a void function $functionName");
+				return;
+			}
+
+			if ($node->expr == null && $insideFunc->getReturnType() != "void" && $insideFunc->getReturnType() != "") {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return without a value in function $functionName");
+				return;
+			}
 			list($type) = $this->typeInferer->inferType($inside, $node->expr, $scope);
 
-			$insideFunc = $scope->getInsideFunction();
-			if ($insideFunc && $type) {
-				$returnType = $insideFunc->getReturnType();
-				$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
-				$expectedReturnType = Scope::constFromName($typeString);
+			if (!$type) {
+				return;
+			}
+			$returnType = $insideFunc->getReturnType();
+			$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
+			if (strcasecmp($typeString,"self") == 0 && $inside) {
+				$typeString = strval($inside->namespacedName);
+			}
+			$expectedReturnType = Scope::constFromName($typeString);
 
-				if ($type == Scope::NULL_TYPE && $typeString != "" && !($returnType instanceof Node\NullableType)) {
-					$functionName = $this->getFunctionName($inside, $insideFunc);
-					$msg = "Attempt to return NULL from a non-nullable function $functionName() returned from $functionName()";
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
-					return;
-				}
+			if ($type == Scope::NULL_TYPE && $typeString != "" && !($returnType instanceof Node\NullableType)) {
 
-				// For now, we don't worry about checking returns of scalar types.
-				if ($type != "" &&
-					$type[0] != "!" &&
-					$expectedReturnType != "" &&
-					$expectedReturnType[0] != "!" &&
-					strcasecmp($type, $expectedReturnType) != 0 &&
-					!$this->isClosureCallableMix($expectedReturnType, $type) &&
-					!$this->symbolTable->isParentClassOrInterface($expectedReturnType, $type)
-				) {
-					$functionName = $this->getFunctionName($inside, $insideFunc);
-					$msg = "Value returned from $functionName()" .
-						" must be a " . Scope::nameFromConst($expectedReturnType) .
-						", returning " . Scope::nameFromConst($type);
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
-				}
+				$msg = "Attempt to return NULL from a non-nullable function $functionName()";
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
+				return;
+			}
+
+			// For now, we don't worry about checking returns of scalar types.
+			if ($type != "" &&
+				$type[0] != "!" &&
+				$expectedReturnType != "" &&
+				$expectedReturnType[0] != "!" &&
+				strcasecmp($type, $expectedReturnType) != 0 &&
+				!$this->isClosureCallableMix($expectedReturnType, $type) &&
+				!$this->symbolTable->isParentClassOrInterface($expectedReturnType, $type)
+			) {
+				$functionName = $this->getFunctionName($inside, $insideFunc);
+				$msg = "Value returned from $functionName()" .
+					" must be a " . Scope::nameFromConst($expectedReturnType) .
+					", returning " . Scope::nameFromConst($type);
+
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
+			}
+
+			if(
+				$type != "" &&
+				$expectedReturnType != "" &&
+				$type != $expectedReturnType &&
+				$expectedReturnType[0] == "!" &&
+				$type != Scope::MIXED_TYPE &&
+				$type != Scope::NULL_TYPE  && // Already handled above
+				!($expectedReturnType=="callable" && $type == Scope::ARRAY_TYPE) && // Arrays are (potentially) callable.
+				!(strcasecmp($expectedReturnType, Scope::ARRAY_TYPE) == 0 && substr($type, -2) == "[]" ) &&
+				!($type == Scope::INT_TYPE && $expectedReturnType == Scope::FLOAT_TYPE) &&
+				!($type == Scope::FLOAT_TYPE && $expectedReturnType == Scope::INT_TYPE)
+			) {
+				$functionName = $this->getFunctionName($inside, $insideFunc);
+				$msg = "Value returned from $functionName()" .
+					" must be a " . Scope::nameFromConst($expectedReturnType) .
+					", returning " . Scope::nameFromConst($type);
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 			}
 		}
 	}

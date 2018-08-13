@@ -60,7 +60,16 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return string
 	 */
 	public function getReturnType() {
-		return "";
+		$type = $this->refl->getReturnType();
+		return $type ? $type->getName() : "";
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function hasNullableReturnType() {
+		$type = $this->refl->getReturnType();
+		return $type ? $type->allowsNull() : true;
 	}
 
 	/**

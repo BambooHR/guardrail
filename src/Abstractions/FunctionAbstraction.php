@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Function_ as AstFunction;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
@@ -37,6 +38,13 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 */
 	public function getReturnType() {
 		return $this->function->returnType instanceof NullableType ? strval($this->function->returnType->type) : strval($this->function->returnType);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function hasNullableReturnType() {
+		return $this->function->returnType instanceof NullableType;
 	}
 
 
@@ -92,7 +100,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 				$param->name,
 				$param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType
+				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name,"null")==0)
 			);
 		}
 		return $ret;

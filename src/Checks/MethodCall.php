@@ -5,7 +5,9 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Abstractions\MethodInterface;
+use BambooHR\Guardrail\Attributes;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
@@ -87,7 +89,11 @@ class MethodCall extends BaseCheck {
 				}
 			}
 			if ($scope) {
-				list($className) = $this->inferenceEngine->inferType($inside, $node->var, $scope);
+				list($className, $attributes) = $this->inferenceEngine->inferType($inside, $node->var, $scope);
+			}
+			if($className  && $className!=Scope::MIXED_TYPE && $attributes & Attributes::NULL_POSSIBLE) {
+				$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $'.$node->var->name : '';
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
 			}
 			if ($className != "" && $className[0] != "!") {
 				if (!$this->symbolTable->isDefinedClass($className)) {
@@ -159,20 +165,20 @@ class MethodCall extends BaseCheck {
 	}
 
 	/**
-	 * @param string    $fileName -
-	 * @param Node      $node     -
-	 * @param string    $name     -
-	 * @param Scope     $scope    -
-	 * @param ClassLike $inside   -
-	 * @param Node\Arg  $arg      -
-	 * @param int       $index    -
-	 * @param array     $params   -
+	 * @param string                  $fileName -
+	 * @param Node                    $node     -
+	 * @param string                  $name     -
+	 * @param Scope                   $scope    -
+	 * @param ClassLike               $inside   -
+	 * @param Node\Arg                $arg      -
+	 * @param int                     $index    -
+	 * @param FunctionLikeParameter[] $params   -
 	 * @return void
 	 */
 	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside=null, $arg, $index, $params) {
 		if ($scope && $arg->value instanceof Expr && $index < count($params)) {
 			$variableName = $params[$index]->getName();
-			list($type, $maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
+			list($type, $attributes) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
 			if ($arg->unpack) {
 				// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
 				$isSplatable = (
@@ -200,6 +206,7 @@ class MethodCall extends BaseCheck {
 						$type != "" &&
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
 						!(strcasecmp($expectedType, "callable") == 0 && strcasecmp($type, "closure") == 0) &&
+						!(strcasecmp($expectedType, "callable") == 0 && $type == Scope::ARRAY_TYPE) &&
 						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");
@@ -209,16 +216,14 @@ class MethodCall extends BaseCheck {
 						$this->callableCheck->run($fileName, $arg->value, $inside, $scope);
 					}
 
-					/*
 					// Nulls mismatch
-					if (!$params[$index]->isOptional()) {
+					if (!$params[$index]->isNullable()) {
 						if ($type == Scope::NULL_TYPE) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to method " . $className . "->" . $methodName. "() parameter \$$variableName that does not accept nulls");
-						} else if ($maybeNull == Scope::NULL_POSSIBLE) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName that does not accept nulls");
-						}
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to $name parameter \$$variableName that does not accept nulls");
+						} /*else if ($maybeNull == Scope::NULL_POSSIBLE) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to $name parameter \$$variableName that does not accept nulls");
+						}*/
 					}
-					*/
 				}
 			}
 		}

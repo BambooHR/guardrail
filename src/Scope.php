@@ -90,7 +90,7 @@ class Scope {
 		} elseif (strcasecmp($str, "integer") == 0) {
 			return static::INT_TYPE;
 		} elseif (strcasecmp($str, "boolean") == 0) {
-			return static::SCALAR_TYPE;
+			return static::BOOL_TYPE;
 		} elseif (strcasecmp($str, "\$this") == 0) {
 			return $insideClassName;
 		} elseif (strcasecmp($str, "static") == 0) {
@@ -180,10 +180,21 @@ class Scope {
 
 		$var = $this->vars[$name];
 		if ($type == self::NULL_TYPE) {
-			$var->canBeNull = self::NULL_POSSIBLE;
+			$var->attributes |= Attributes::NULL_POSSIBLE;
 		}
 		$var->type = $type;
 		$this->setVarWritten($name, $line);
+	}
+
+	public function setVarAttributes($name, $attributes) {
+		if (!isset($this->vars[$name])) {
+			$var = new ScopeVar();
+			$var->name = $name;
+			$var->attributes = $attributes;
+			$this->vars[$name]= $var;
+		} else {
+			$this->vars[$name]->attributes = $attributes;
+		}
 	}
 
 	/**
@@ -225,15 +236,16 @@ class Scope {
 	 * @param int    $canBeNull It's nullability state
 	 * @return void
 	 */
-	public function setVarNull($name, $canBeNull = self::NULL_POSSIBLE) {
+	public function setVarNull($name, $canBeNull ) {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
 			$var->type = self::UNDEFINED;
-			$var->canBeNull = $canBeNull;
+			$var->attributes = ($canBeNull ? Attributes::NULL_POSSIBLE : 0);
 			$this->vars[$name] = $var;
 		} else {
-			$this->vars[$name]->canBeNull = $canBeNull;
+			$ob = $this->vars[$name];
+			$ob->attributes = ($ob->attributes & ~Attributes::NULL_POSSIBLE) | ($canBeNull ? Attributes::NULL_POSSIBLE : 0);
 		}
 	}
 
@@ -241,9 +253,10 @@ class Scope {
 	 * @return void
 	 */
 	public function dump() {
-		echo "Scope: \n";
+		echo "\nScope: \n";
 		foreach ($this->vars as $name => $var) {
-			echo "Name $name, Type " . $var->type . " " . ($var->canBeNull == self::NULL_POSSIBLE ? "can be null" : "") . " " . ($var->used ? "used" : " not used") . "\n";
+			echo "  Name $name, Type " . $var->type . " " . ($var->attributes & Attributes::NULL_POSSIBLE ? "can be null" : "") . " " . ($var->used ? "used" : " not used") . " ".$var->attributes."\n";
+
 		}
 	}
 
@@ -272,9 +285,6 @@ class Scope {
 			} else {
 				if ($this->getVarType($name) != $var->type) {
 					$this->vars[$name]->type = self::MIXED_TYPE;
-				}
-				if ($var->canBeNull != self::NULL_IMPOSSIBLE) {
-					$this->vars[$name]->canBeNull = $var->canBeNull;
 				}
 				if ($var->used) {
 					$this->setVarUsed($var->name);
@@ -314,7 +324,12 @@ class Scope {
 	 * @return bool
 	 */
 	function getVarNullability($name) {
-		return (isset($this->vars[$name]) ? $this->vars[$name]->canBeNull : false );
+		return (isset($this->vars[$name]) ? $this->vars[$name]->attributes & Attributes::NULL_POSSIBLE : false );
+	}
+
+
+	function getVarAttributes($name) {
+		return (isset($this->vars[$name]) ? $this->vars[$name]->attributes : 0);
 	}
 
 	/**

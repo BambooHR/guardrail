@@ -34,6 +34,13 @@ interface FunctionLikeInterface {
 	public function getReturnType();
 
 	/**
+	 * hasNulllableReturnType
+	 *
+	 * @return bool
+	 */
+	public function hasNullableReturnType();
+
+	/**
 	 * getDocBlockReturnType
 	 *
 	 * @return string|null

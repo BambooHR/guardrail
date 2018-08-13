@@ -33,6 +33,7 @@ class ErrorConstants {
 	const TYPE_METRICS_COMPLEXITY = 'Standard.Metrics.Complexity';
 	const TYPE_MISSING_BREAK = 'Standard.Switch.Break';
 	const TYPE_MISSING_CONSTRUCT = 'Standard.Constructor.MissingCall';
+	const TYPE_NULL_DEREFERENCE = "Standard.Null.Dereference";
 	const TYPE_PARSE_ERROR = 'Standard.Parse.Error';
 	const TYPE_SCOPE_ERROR = 'Standard.Scope';
 	const TYPE_SECURITY_BACKTICK = 'Standard.Security.Backtick';

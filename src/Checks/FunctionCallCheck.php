@@ -211,7 +211,7 @@ class FunctionCallCheck extends BaseCheck {
 	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, $arg, $index, $params) {
 		if ($scope && $arg->value instanceof Node\Expr && $index < count($params)) {
 			$variableName = $params[$index]->getName();
-			list($type, $maybeNull) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
+			list($type, $attributes) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
 			if ($arg->unpack) {
 				// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
 				$isSplatable = (
@@ -245,6 +245,7 @@ class FunctionCallCheck extends BaseCheck {
 						$type != "" &&
 						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
 						!(strcasecmp($expectedType, "callable") == 0 && strcasecmp($type, "closure") == 0) &&
+						!(strcasecmp($expectedType, "callable") == 0 && $type == Scope::ARRAY_TYPE) &&
 						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");

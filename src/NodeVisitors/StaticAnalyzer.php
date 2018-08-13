@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Abstractions\ClassMethod as AbstractClassMethod;
+use BambooHR\Guardrail\Attributes;
 use BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck;
 use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
@@ -258,6 +259,18 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$next = end($this->scopeStack);
 			$next->merge($last);
 		};
+
+		$func[Node\Expr\BinaryOp\BooleanOr::class] = function($node) {
+			$last = array_pop($this->scopeStack);
+			$next=end($this->scopeStack);
+			$next->merge($last);
+		};
+
+		$func[Node\Expr\BinaryOp\BooleanAnd::class] = function($node) {
+			$last = array_pop($this->scopeStack);
+			$next=end($this->scopeStack);
+			$next->merge($last);
+		};
 		return $func;
 	}
 
@@ -350,7 +363,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 							if ($class instanceof Node\Name) {
 								if (gettype($expr->name) == "string") {
 									end($this->scopeStack)->setVarType($expr->name, strval($class), $var->getLine());
-									end($this->scopeStack)->setVarNull($expr->name, Scope::NULL_IMPOSSIBLE);
+									end($this->scopeStack)->setVarNull($expr->name, false);
 								}
 							}
 						}
@@ -416,8 +429,31 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$this->pushIfScope($node, $last);
 		};
 
+		$func[Node\Expr\Ternary::class] =  function(Node\Expr\Ternary $node) {
+
+			if($node->if) {
+				// Push any scope we'll need to restore at the end of the "true" branch.
+				array_push($this->scopeStack, end($this->scopeStack)->getScopeClone());
+				$node->if->setAttribute('merge-scope-on-leave',true);
+			}
+
+			// Then push the scope that will be true if the cond was true and prepare to merge it with
+			// either the condition (if there is no true clause) or the true clause.
+			$this->pushIfScope($node);
+			$node->else->setAttribute('merge-scope-on-leave',true);
+
+		};
+
 		$func[If_::class] = function (If_ $node) {
 			$this->pushIfScope($node);
+		};
+
+		$func[Node\Expr\BinaryOp\BooleanOr::class] = function(Node\Expr\BinaryOp\BooleanOr $node) {
+			$this->pushShortCircuitOrScope($node);
+		};
+
+		$func[Node\Expr\BinaryOp\BooleanAnd::class] = function(Node\Expr\BinaryOp\BooleanAnd $node) {
+			$this->pushShortCircuitAndScope($node);
 		};
 
 		$func[Node\Stmt\Else_::class] = function (Node\Stmt\Else_ $node) {
@@ -446,7 +482,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$vars = $node->getAttribute("namespacedInlineVar");
 			if (is_array($vars)) {
 				foreach ($vars as $varName => $varType) {
-					end($this->scopeStack)->setVarType($varName, $varType, $node->getLine());
+					$type = Scope::constFromDocBlock($varType);
+					end($this->scopeStack)->setVarType($varName, $type, $node->getLine());
 				}
 			}
 		}
@@ -468,6 +505,81 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		return null;
 	}
 
+	public static function checksForNonNullVariable(Node\Expr $node) {
+		if($node instanceof Node\Expr\BinaryOp\BooleanAnd || $node instanceof Node\Expr\BinaryOp\BooleanOr) {
+			$var = self::checksForNonNullVariable($node->left);
+			return $var;
+		}
+
+		// $var!==NULL
+		// $var!=NULL
+		if($node instanceof Node\Expr\BinaryOp\NotEqual || $node instanceof Node\Expr\BinaryOp\NotIdentical) {
+			// NULL!=$var
+			if ( ($node->left instanceof Node\Expr\ConstFetch && strcasecmp($node->left->name,'null')==0) &&
+				$node->right instanceof Variable &&
+				is_string($node->right->name)
+			) {
+				return $node->right->name;
+			}
+
+			// $var!=NULL
+			if ( ($node->right instanceof Node\Expr\ConstFetch && strcasecmp($node->right->name,'null')==0) &&
+				$node->left instanceof Variable &&
+				is_string($node->left->name)
+			) {
+				return $node->left->name;
+			}
+		}
+
+		// $var instancof Foo
+		if (
+			$node instanceof  Instanceof_ &&
+			$node->expr instanceof Variable &&
+			is_string($node->expr->name)
+		) {
+			return $node->expr->name;
+		}
+
+		// $var
+		if ($node instanceof Variable && is_string($node->name)) {
+			return $node->name;
+		}
+
+		// isset($var)
+		if (
+			$node instanceof Node\Expr\Isset_ &&
+			count($node->vars) == 1 &&
+			$node->vars[0] instanceof Variable &&
+			is_string($node->vars[0]->name)
+		) {
+			return $node->vars[0]->name;
+		}
+
+		// !is_null($var)
+		if (
+			$node instanceof Node\Expr\BooleanNot &&
+			$node->expr instanceof Node\Expr\FuncCall &&
+			$node->expr->name instanceof Node\Name &&
+			$node->expr->name=="is_null" &&
+			count($node->expr->args) == 1 &&
+			$node->expr->args[0] instanceof Variable &&
+			is_string($node->expr->args[0]->name)
+		) {
+			return $node->expr->args[0]->name;
+		}
+
+		// !empty($var)
+		if (
+			$node instanceof Node\Expr\BooleanNot &&
+			$node->expr instanceof Node\Expr\Empty_ &&
+			$node->expr->expr instanceof Variable &&
+			is_string($node->expr->expr->name)
+		) {
+			return $node->expr->expr->name;
+		}
+		return "";
+	}
+
 	/**
 	 * pushIfScope
 	 *
@@ -476,19 +588,56 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	function pushIfScope(Node $node, Scope $previous = null) {
+	function pushIfScope($node, Scope $previous = null) {
 		/** @var Scope $scope */
 		$scope = end($this->scopeStack);
 		$newScope = $scope->getScopeClone($previous);
-		if (self::isCastableIf($node)) {
-			$this->addCastedScope($node, $newScope);
+		$cond = self::getIfCond($node);
+		if ($cond) {
+			if ($cond instanceof Instanceof_) {
+				$this->addCastedType($cond, $newScope);
+			}
+			$var = self::checksForNonNullVariable($cond);
+			if ($var) {
+				$newScope->setVarNull($var, false);
+			}
 		}
 		array_push($this->scopeStack, $newScope);
 //		echo "  New scope created, depth=".count($this->scopeStack)."\n";
 	}
 
 	/**
-	 * addCastedScope
+	 * @param Node\Expr\BinaryOp\LogicalAnd|Node\Expr\BinaryOp\LogicalOr $node     -
+	 * @param Scope|null                                                 $previous -
+	 */
+	function pushShortCircuitAndScope($node, Scope $previous=null) {
+		/** @var Scope $scope */
+		$scope = end($this->scopeStack);
+		$newScope = $scope->getScopeClone($previous);
+		$cond = $node->left;
+		if ($cond instanceof Instanceof_) {
+			$this->addCastedType($cond, $newScope);
+		}
+		$var = self::checksForNonNullVariable($cond);
+		if ($var) {
+			$newScope->setVarNull($var, false);
+		}
+		array_push($this->scopeStack, $newScope);
+	}
+
+	/**
+	 * @param Node\Expr\BinaryOp\LogicalAnd|Node\Expr\BinaryOp\LogicalOr $node     -
+	 * @param Scope|null                                                 $previous -
+	 */
+	function pushShortCircuitOrScope($node, Scope $previous=null) {
+		/** @var Scope $scope */
+		$scope = end($this->scopeStack);
+		$newScope = $scope->getScopeClone($previous);
+		array_push($this->scopeStack, $newScope);
+	}
+
+	/**
+	 * addCastedType
 	 *
 	 * When a node is of the form "if ($var instanceof ClassName)" (with no else clauses) then we can
 	 * relax the scoping rules inside the if statement to allow a different set of methods that might not
@@ -502,11 +651,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	public function addCastedScope(Node $node, Scope $newScope) {
-
-		/** @var Instanceof_ $cond */
-		$cond = $node->cond;
-
+	public function addCastedType(Instanceof_ $cond, Scope $newScope) {
 		if ($cond->expr instanceof Variable && gettype($cond->expr->name) == "string" && $cond->class instanceof Node\Name) {
 			$newScope->setVarType($cond->expr->name, strval($cond->class), $cond->expr->getLine());
 		}
@@ -556,18 +701,27 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		} else if ($func instanceof Closure) {
 			$isStatic = $func->static;
 		}
-//		echo "Function: ".$func->name." depth=".(count($this->scopeStack)+1)."\n";
+		//echo "Function: ".$func->name." depth=".(count($this->scopeStack)+1)."\n";
 		$scope = new Scope($isStatic, false, $func);
 		foreach ($func->getParams() as $param) {
 			//echo "  Param ".$param->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
 			if ($param->variadic) {
-				// TODO: Track the type of a variadic array
-				$scope->setVarType(strval($param->name), 'array', $param->getLine());
+				if($param->getType()) {
+					$type =$param->type;
+					if($type instanceof Node\NullableType) {
+						$type = $type->type;
+					}
+					$type=strval($type);
+					$scope->setVarType(strval($param->name), $type."[]", $param->getLine());
+				} else {
+					$scope->setVarType(strval($param->name), Scope::ARRAY_TYPE, $param->getLine());
+				}
 			} else {
 				$paramType = $param->type instanceof Node\NullableType ? strval($param->type->type) : strval($param->type);
 				$scope->setVarType(strval($param->name), Scope::constFromName($paramType), $param->getLine());
+				$scope->setVarAttributes(strval($param->name), Attributes::TOUCHED_FUNCTION_PARAM);
 				if ($param->type != null && $param->default == null) {
-					$scope->setVarNull(strval($param->name), Scope::NULL_IMPOSSIBLE);
+					$scope->setVarNull(strval($param->name), false);
 				}
 				$scope->setVarUsed(strval($param->name));
 			}
@@ -599,14 +753,17 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return bool
 	 */
-	static public function isCastableIf(Node $node) {
-		if ($node instanceof If_) {
-			return $node->cond instanceof Instanceof_;
-		} else if ($node instanceof ElseIf_) {
-			return $node->cond instanceof Instanceof_;
-		} else {
-			return false;
+	static public function getIfCond(Node $node) {
+		if ($node instanceof Node\Expr\Ternary) {
+			return $node->cond;
 		}
+		if ($node instanceof If_) {
+			return $node->cond;
+		}
+		if ($node instanceof ElseIf_) {
+			return $node->cond;
+		}
+		return null;
 	}
 
 	/**
@@ -621,10 +778,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	private function setScopeExpression($varName, $expr, $line) {
 		$scope = end($this->scopeStack);
 		$class = end($this->classStack) ?: null;
-		list($newType, $nullable) = $this->typeInferrer->inferType($class, $expr, $scope);
-		$this->setScopeType($varName, $newType, $line);
-		if ($nullable == Scope::NULL_POSSIBLE) {
-			$scope->setVarNull($varName);
+		list($newType, $attributes) = $this->typeInferrer->inferType($class, $expr, $scope);
+		$this->setScopeType($varName, $newType, $line, $attributes);
+		if ($attributes & Attributes::NULL_POSSIBLE) {
+			$scope->setVarNull($varName, true);
 		}
 	}
 
@@ -638,19 +795,20 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	private function setScopeType($varName, $newType, $line) {
+	private function setScopeType($varName, $newType, $line, $attributes = 0) {
 		$scope = end($this->scopeStack);
 		$oldType = $scope->getVarType($varName);
 		if ($oldType != $newType) {
 			if ($oldType == Scope::UNDEFINED) {
 				$scope->setVarType($varName, $newType, $line);
 			} elseif ($newType == Scope::NULL_TYPE) {
-				$scope->setVarNull($varName);
+				$scope->setVarNull($varName, true);
 			} else {
 				// The variable has been used with 2 different types.  Update it in the scope as a mixed type.
 				$scope->setVarType($varName, Scope::MIXED_TYPE, $line);
 			}
 		}
+		$scope->setVarAttributeS($varName, $attributes);
 	}
 
 	/**
@@ -729,8 +887,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 			if ($var instanceof Variable && gettype($var->name) == "string") {
 				$varName = strval($var->name);
-//				echo "  Set $varName\n";
-				$this->setScopeType($varName, "array", $var->getLine());
+				$currentType = end($this->scopeStack)->getVarType($varName);
+				if ($currentType == Scope::UNDEFINED) {
+					// Implicitly create an array on the first assignment to an undefined array.
+					$this->setScopeType($varName, Scope::ARRAY_TYPE, $var->getLine());
+				}
+
 
 			}
 		}
@@ -746,6 +908,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	public function leaveNode(Node $node) {
 		$class = get_class($node);
 
+		if ($node instanceof Node\Expr && $node->hasAttribute('merge-scope-on-leave')) {
+			$top = array_pop($this->scopeStack);
+			end($this->scopeStack)->merge($top);
+
+		}
 		if (isset($this->exitHooks[$class])) {
 			$this->exitHooks[$class]($node);
 		}

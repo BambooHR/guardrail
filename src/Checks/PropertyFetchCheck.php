@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Abstractions\Property;
+use BambooHR\Guardrail\Attributes;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeInferrer;
@@ -59,8 +60,12 @@ class PropertyFetchCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof PropertyFetch) {
-			list($type) = $this->typeInferer->inferType($inside, $node->var, $scope);
+			list($type, $attributes) = $this->typeInferer->inferType($inside, $node->var, $scope);
 			if ($type && $type[0] != '!' && !$this->symbolTable->ignoreType($type)) {
+				if($attributes & Attributes::NULL_POSSIBLE) {
+					$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $'.$node->var->name : '';
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
+				}
 
 				if (!is_string($node->name)) {
 					// Variable property name.  Yuck!

@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
 
@@ -97,7 +98,7 @@ class ClassMethod implements MethodInterface {
 				$param->name,
 				$param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType
+				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name,"null")==0)
 			);
 		}
 		return $ret;
