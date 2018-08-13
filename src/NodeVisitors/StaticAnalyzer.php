@@ -740,7 +740,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$oldScope = end($this->scopeStack);
 			foreach ($func->uses as $variable) {
 				$type = $oldScope->getVarType($variable->var);
-				if ($type==Scope::UNDEFINED) {
+				// We don't track variables in global scope, so we'll have to assume those are ok.
+				if ($type==Scope::UNDEFINED && !$oldScope->isGlobal()) {
 					$this->output->emitError(__CLASS__, $this->file, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$".$variable->var." in uses() clause");
 				} else {
 					if($variable->byRef) {
