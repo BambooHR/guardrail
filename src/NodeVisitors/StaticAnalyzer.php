@@ -506,7 +506,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	}
 
 	/**
-	 * @param Node\Expr $node
+	 * @param Node\Expr $node -
 	 * @return string
 	 */
 	public static function checksForNonNullVariable(Node\Expr $node) {

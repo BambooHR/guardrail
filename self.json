@@ -7,7 +7,7 @@
   },
   "index": ["src","vendor"],
   "test": ["src"],
-  "ignore": ["**/src/bin/**/*", "**/test/**/*", "**/Tests/**/*", "**/tests/**/*" ,"**/ExtraStubs/**/*"],
+  "ignore": ["**/src/bin/**/*", "**/test/**/*", "**/Tests/**/*", "**/tests/**/*" ,"**/ExtraStubs/**/*", "**/bamboohr/phpcs/**/*"],
   "test-ignore": ["**/src/PhpAstToPhpParser.php","**/src/ExtraStubs/**/*" ,"**/tests/**/*", "**/src/bin/**/*"],
   "emit": [
     "Standard.Access.Violation",

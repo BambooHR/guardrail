@@ -189,6 +189,7 @@ class Scope {
 	/**
 	 * @param string $name       The name of the variable (without $)
 	 * @param int    $attributes A bitset of attributes for the variable.
+	 * @return void
 	 */
 	public function setVarAttributes($name, $attributes) {
 		if (!isset($this->vars[$name])) {
