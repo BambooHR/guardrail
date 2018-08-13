@@ -604,7 +604,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$var = self::checksForNonNullVariable($cond);
 			if ($var) {
 				$newScope->setVarNull($var, false);
-				if($newScope->getVarType($var) == Scope::NULL_TYPE) {
+				if ($newScope->getVarType($var) == Scope::NULL_TYPE) {
 					// Change the type in our scope, without setting the line as written.
 					$newScope->getVarObject($var)->type = Scope::MIXED_TYPE;
 				}
