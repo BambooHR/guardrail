@@ -59,7 +59,7 @@ class ReturnCheck extends BaseCheck {
 		if ($node instanceof Return_) {
 			$insideFunc = $scope->getInsideFunction();
 
-			if(!$insideFunc) {
+			if (!$insideFunc) {
 				return;
 			}
 			$functionName = $this->getFunctionName($inside, $insideFunc);
@@ -81,7 +81,7 @@ class ReturnCheck extends BaseCheck {
 			}
 			$returnType = $insideFunc->getReturnType();
 			$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
-			if (strcasecmp($typeString,"self") == 0 && $inside) {
+			if (strcasecmp($typeString, "self") == 0 && $inside) {
 				$typeString = strval($inside->namespacedName);
 			}
 			$expectedReturnType = Scope::constFromName($typeString);
@@ -110,14 +110,14 @@ class ReturnCheck extends BaseCheck {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 			}
 
-			if(
+			if (
 				$type != "" &&
 				$expectedReturnType != "" &&
 				$type != $expectedReturnType &&
 				$expectedReturnType[0] == "!" &&
 				$type != Scope::MIXED_TYPE &&
 				$type != Scope::NULL_TYPE  && // Already handled above
-				!($expectedReturnType=="callable" && $type == Scope::ARRAY_TYPE) && // Arrays are (potentially) callable.
+				!($expectedReturnType == "callable" && $type == Scope::ARRAY_TYPE) && // Arrays are (potentially) callable.
 				!(strcasecmp($expectedReturnType, Scope::ARRAY_TYPE) == 0 && substr($type, -2) == "[]" ) &&
 				!($type == Scope::INT_TYPE && $expectedReturnType == Scope::FLOAT_TYPE) &&
 				!($type == Scope::FLOAT_TYPE && $expectedReturnType == Scope::INT_TYPE)

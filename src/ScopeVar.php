@@ -20,7 +20,7 @@ class ScopeVar {
 		if ($other->used) {
 			$this->used = true;
 		}
-		if ($other->type != $this->type && $other->type!=Scope::UNDEFINED) {
+		if ($other->type != $this->type && $other->type != Scope::UNDEFINED) {
 			$this->type = Scope::MIXED_TYPE;
 		}
 		if ($other->modified) {

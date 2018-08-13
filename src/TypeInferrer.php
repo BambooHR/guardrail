@@ -192,6 +192,12 @@ class TypeInferrer {
 	}
 
 
+	/**
+	 * @param Expr\BinaryOp  $expr   -
+	 * @param ClassLike|null $inside -
+	 * @param Scope          $scope  -
+	 * @return array
+	 */
 	function inferBinaryOp(Node\Expr\BinaryOp $expr, ClassLike $inside=null, Scope $scope) {
 		list($type1, $attr1) = $this->inferType($inside, $expr->left, $scope);
 		list($type2, $attr2) = $this->inferType($inside, $expr->right, $scope);
@@ -202,7 +208,7 @@ class TypeInferrer {
 		if ($expr instanceof Expr\BinaryOp\Coalesce) {
 			return [
 				$type1 == $type2 ? $type1 : Scope::MIXED_TYPE,
-				($attr2 & Attributes::NULL_POSSIBLE) | (~Attributes::NULL_POSSIBLE & Attributes::combine($attr1,$attr2))
+				($attr2 & Attributes::NULL_POSSIBLE) | (~Attributes::NULL_POSSIBLE & Attributes::combine($attr1, $attr2))
 			];
 		}
 		if ($expr instanceof Expr\BinaryOp\Concat) {
@@ -213,17 +219,15 @@ class TypeInferrer {
 			$expr instanceof Expr\BinaryOp\Mul
 		) {
 			$attr = Attributes::combine($attr1, $attr2) & ~Attributes::NULL_POSSIBLE;
-			if ($type1 == $type2 && $type1==Scope::INT_TYPE) {
+			if ($type1 == $type2 && $type1 == Scope::INT_TYPE) {
 				return [Scope::INT_TYPE, $attr];
 			}
-			if ($type1 == $type2 && $type1==Scope::FLOAT_TYPE) {
+			if ($type1 == $type2 && $type1 == Scope::FLOAT_TYPE) {
 				return [Scope::FLOAT_TYPE, $attr];
 			}
 			return [Scope::MIXED_TYPE, $attr];
 		}
-
-
-		return [Scope::MIXED_TYPE, Attributes::combine($attr1,$attr2)];
+		return [Scope::MIXED_TYPE, Attributes::combine($attr1, $attr2)];
 	}
 
 	// @codingStandardsIgnoreStart

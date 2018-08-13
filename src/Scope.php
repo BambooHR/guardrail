@@ -186,12 +186,16 @@ class Scope {
 		$this->setVarWritten($name, $line);
 	}
 
+	/**
+	 * @param string $name       The name of the variable (without $)
+	 * @param int    $attributes A bitset of attributes for the variable.
+	 */
 	public function setVarAttributes($name, $attributes) {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
 			$var->attributes = $attributes;
-			$this->vars[$name]= $var;
+			$this->vars[$name] = $var;
 		} else {
 			$this->vars[$name]->attributes = $attributes;
 		}
@@ -255,7 +259,7 @@ class Scope {
 	public function dump() {
 		echo "\nScope: \n";
 		foreach ($this->vars as $name => $var) {
-			echo "  Name $name, Type " . $var->type . " " . ($var->attributes & Attributes::NULL_POSSIBLE ? "can be null" : "") . " " . ($var->used ? "used" : " not used") . " ".$var->attributes."\n";
+			echo "  Name $name, Type " . $var->type . " " . ($var->attributes & Attributes::NULL_POSSIBLE ? "can be null" : "") . " " . ($var->used ? "used" : " not used") . " " . $var->attributes . "\n";
 
 		}
 	}
@@ -328,6 +332,10 @@ class Scope {
 	}
 
 
+	/**
+	 * @param string $name The variable to search for
+	 * @return int
+	 */
 	function getVarAttributes($name) {
 		return (isset($this->vars[$name]) ? $this->vars[$name]->attributes : 0);
 	}

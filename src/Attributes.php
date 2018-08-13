@@ -31,8 +31,8 @@ class Attributes {
 	}
 
 	/**
-	 * @param int $mask
-	 * @param int $pattern
+	 * @param int $mask    -
+	 * @param int $pattern -
 	 * @return int
 	 */
 	static function unset($mask, $pattern) {

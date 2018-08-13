@@ -62,8 +62,8 @@ class PropertyFetchCheck extends BaseCheck {
 		if ($node instanceof PropertyFetch) {
 			list($type, $attributes) = $this->typeInferer->inferType($inside, $node->var, $scope);
 			if ($type && $type[0] != '!' && !$this->symbolTable->ignoreType($type)) {
-				if($attributes & Attributes::NULL_POSSIBLE) {
-					$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $'.$node->var->name : '';
+				if ($attributes & Attributes::NULL_POSSIBLE) {
+					$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $' . $node->var->name : '';
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
 				}
 

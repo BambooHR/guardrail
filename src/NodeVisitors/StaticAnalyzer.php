@@ -505,17 +505,21 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		return null;
 	}
 
+	/**
+	 * @param Node\Expr $node
+	 * @return string
+	 */
 	public static function checksForNonNullVariable(Node\Expr $node) {
-		if($node instanceof Node\Expr\BinaryOp\BooleanAnd || $node instanceof Node\Expr\BinaryOp\BooleanOr) {
+		if ($node instanceof Node\Expr\BinaryOp\BooleanAnd || $node instanceof Node\Expr\BinaryOp\BooleanOr) {
 			$var = self::checksForNonNullVariable($node->left);
 			return $var;
 		}
 
 		// $var!==NULL
 		// $var!=NULL
-		if($node instanceof Node\Expr\BinaryOp\NotEqual || $node instanceof Node\Expr\BinaryOp\NotIdentical) {
+		if ($node instanceof Node\Expr\BinaryOp\NotEqual || $node instanceof Node\Expr\BinaryOp\NotIdentical) {
 			// NULL!=$var
-			if ( ($node->left instanceof Node\Expr\ConstFetch && strcasecmp($node->left->name,'null')==0) &&
+			if ( ($node->left instanceof Node\Expr\ConstFetch && strcasecmp($node->left->name, 'null') == 0) &&
 				$node->right instanceof Variable &&
 				is_string($node->right->name)
 			) {
@@ -523,7 +527,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 
 			// $var!=NULL
-			if ( ($node->right instanceof Node\Expr\ConstFetch && strcasecmp($node->right->name,'null')==0) &&
+			if ( ($node->right instanceof Node\Expr\ConstFetch && strcasecmp($node->right->name, 'null') == 0) &&
 				$node->left instanceof Variable &&
 				is_string($node->left->name)
 			) {
@@ -560,7 +564,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$node instanceof Node\Expr\BooleanNot &&
 			$node->expr instanceof Node\Expr\FuncCall &&
 			$node->expr->name instanceof Node\Name &&
-			$node->expr->name=="is_null" &&
+			$node->expr->name == "is_null" &&
 			count($node->expr->args) == 1 &&
 			$node->expr->args[0] instanceof Variable &&
 			is_string($node->expr->args[0]->name)
@@ -609,6 +613,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * @param Node\Expr\BinaryOp\LogicalAnd|Node\Expr\BinaryOp\LogicalOr $node     -
 	 * @param Scope|null                                                 $previous -
+	 * @return void
 	 */
 	function pushShortCircuitAndScope($node, Scope $previous=null) {
 		/** @var Scope $scope */
@@ -628,6 +633,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * @param Node\Expr\BinaryOp\LogicalAnd|Node\Expr\BinaryOp\LogicalOr $node     -
 	 * @param Scope|null                                                 $previous -
+	 * @return void
 	 */
 	function pushShortCircuitOrScope($node, Scope $previous=null) {
 		/** @var Scope $scope */
@@ -645,8 +651,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 *
 	 * "ClassName" inside the true clause.
 	 *
-	 * @param Node  $node     Instance of Node
-	 * @param Scope $newScope Instance of Scope
+	 * @param Instanceof_ $cond     -
+	 * @param Scope       $newScope Instance of Scope
 	 * @guardrail-ignore Standard.Unknown.Property
 	 *
 	 * @return void
@@ -706,13 +712,13 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		foreach ($func->getParams() as $param) {
 			//echo "  Param ".$param->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
 			if ($param->variadic) {
-				if($param->getType()) {
-					$type =$param->type;
-					if($type instanceof Node\NullableType) {
+				if ($param->getType()) {
+					$type = $param->type;
+					if ($type instanceof Node\NullableType) {
 						$type = $type->type;
 					}
-					$type=strval($type);
-					$scope->setVarType(strval($param->name), $type."[]", $param->getLine());
+					$type = strval($type);
+					$scope->setVarType(strval($param->name), $type . "[]", $param->getLine());
 				} else {
 					$scope->setVarType(strval($param->name), Scope::ARRAY_TYPE, $param->getLine());
 				}
@@ -789,9 +795,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * setScopeType
 	 *
-	 * @param string $varName Variable name
-	 * @param string $newType The new type
-	 * @param int    $line    The line number
+	 * @param string $varName    Variable name
+	 * @param string $newType    The new type
+	 * @param int    $line       The line number
+	 * @param int    $attributes Any attributes to set
 	 *
 	 * @return void
 	 */
@@ -892,8 +899,6 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 					// Implicitly create an array on the first assignment to an undefined array.
 					$this->setScopeType($varName, Scope::ARRAY_TYPE, $var->getLine());
 				}
-
-
 			}
 		}
 	}

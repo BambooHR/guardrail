@@ -91,8 +91,8 @@ class MethodCall extends BaseCheck {
 			if ($scope) {
 				list($className, $attributes) = $this->inferenceEngine->inferType($inside, $node->var, $scope);
 			}
-			if($className  && $className!=Scope::MIXED_TYPE && $attributes & Attributes::NULL_POSSIBLE) {
-				$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $'.$node->var->name : '';
+			if ($className  && $className != Scope::MIXED_TYPE && $attributes & Attributes::NULL_POSSIBLE) {
+				$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $' . $node->var->name : '';
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
 			}
 			if ($className != "" && $className[0] != "!") {

@@ -100,7 +100,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 				$param->name,
 				$param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name,"null")==0)
+				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name, "null") == 0)
 			);
 		}
 		return $ret;
