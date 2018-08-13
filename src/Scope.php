@@ -206,6 +206,7 @@ class Scope {
 	 * Used to inject an existing variable into a different scope.  Used for references in uses() clauses.
 	 * @param string   $name -
 	 * @param ScopeVar $ref  -
+	 * @return void
 	 */
 	public function setVarReference($name, ScopeVar $ref) {
 		$this->vars[$name] = $ref;
@@ -351,11 +352,11 @@ class Scope {
 	}
 
 	/**
-	 * @param string $name
+	 * @param string $name The name of the object.
 	 * @return ScopeVar|null
 	 */
 	function getVarObject($name) {
-		return (isset($this->vars[$name]) ? $this->vars[$name]  : null);
+		return (isset($this->vars[$name]) ? $this->vars[$name] : null);
 	}
 
 	/**
