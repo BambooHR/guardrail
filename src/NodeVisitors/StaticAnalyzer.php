@@ -510,10 +510,21 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @return string
 	 */
 	public static function checksForNonNullVariable(Node\Expr $node) {
-		if ($node instanceof Node\Expr\BinaryOp\BooleanAnd || $node instanceof Node\Expr\BinaryOp\BooleanOr) {
+		if ($node instanceof Node\Expr\BinaryOp\BooleanOr) {
 			$var = self::checksForNonNullVariable($node->left);
 			return $var;
 		}
+		if ($node instanceof Node\Expr\BinaryOp\BooleanAnd) {
+			$var = self::checksForNonNullVariable($node->left);
+			if ($var) {
+				return $var;
+			}
+			$var = self::checksForNonNullVariable($node->right);
+			if ($var) {
+				return $var;
+			}
+		}
+
 
 		// $var!==NULL
 		// $var!=NULL
@@ -564,12 +575,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$node instanceof Node\Expr\BooleanNot &&
 			$node->expr instanceof Node\Expr\FuncCall &&
 			$node->expr->name instanceof Node\Name &&
-			$node->expr->name == "is_null" &&
+			strval($node->expr->name) == "is_null" &&
 			count($node->expr->args) == 1 &&
-			$node->expr->args[0] instanceof Variable &&
-			is_string($node->expr->args[0]->name)
+			$node->expr->args[0]->value instanceof Variable &&
+			is_string($node->expr->args[0]->value->name)
 		) {
-			return $node->expr->args[0]->name;
+			return $node->expr->args[0]->value->name;
 		}
 
 		// !empty($var)
@@ -602,6 +613,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				$this->addCastedType($cond, $newScope);
 			}
 			$var = self::checksForNonNullVariable($cond);
+
 			if ($var) {
 				$newScope->setVarNull($var, false);
 				if ($newScope->getVarType($var) == Scope::NULL_TYPE) {
