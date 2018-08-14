@@ -55,10 +55,16 @@ class ReflectedClassMethod implements MethodInterface {
 
 	/**
 	 * getReturnType
-	 *
+	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 * @return string
 	 */
 	public function getReturnType() {
+		if ( method_exists($this->refl, "getReturnType")) {
+			$type = $this->refl->getReturnType();
+			if($type) {
+				return $type->getName();
+			}
+		}
 		return "";
 	}
 
@@ -138,7 +144,13 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @return bool
 	 */
 	public function hasNullableReturnType() {
-		return method_exists($this->refl, "getReturnType") ? $this->refl->getReturnType()->allowsNull() : false;
+		if ( method_exists($this->refl, "getReturnType")) {
+			$type = $this->refl->getReturnType();
+			if($type) {
+				return $type->allowsNull();
+			}
+		}
+		return false;
 	}
 
 	/**
