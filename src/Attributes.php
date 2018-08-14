@@ -16,7 +16,7 @@ class Attributes {
 	const CLEAN_DB_TERM           = 0x0200;
 	const CLEAN_TABLE_NAME        = 0x0400;
 	const CLEAN_HTML              = 0x0800;
-	const CONST                   = 0x1000;
+	const IS_CONST                = 0x1000;
 
 	/**
 	 * Combines data from two different masks so that all eager terms exist in the result and combining terms are included

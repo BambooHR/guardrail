@@ -84,18 +84,18 @@ class TypeInferrer {
 			$type = Scope::SCALAR_TYPE;
 			if ($expr instanceof Scalar\LNumber) {
 				$type = Scope::INT_TYPE;
-				$attributes = Attributes::CONST;
+				$attributes = Attributes::IS_CONST;
 			} else if ($expr instanceof Scalar\DNumber) {
 				$type = Scope::FLOAT_TYPE;
-				$attributes = Attributes::CONST;
+				$attributes = Attributes::IS_CONST;
 			} else if ($expr instanceof Scalar\String_) {
 				$type = Scope::STRING_TYPE;
-				$attributes = Attributes::CONST;
+				$attributes = Attributes::IS_CONST;
 			} else if ($expr instanceof Scalar\Encapsed) {
 				$type = Scope::STRING_TYPE;
 			} else if ($expr instanceof Scalar\MagicConst) {
 				$type = Scope::STRING_TYPE;
-				$attributes = Attributes::CONST;
+				$attributes = Attributes::IS_CONST;
 			}
 			return [$type, $attributes];
 		}
@@ -162,17 +162,17 @@ class TypeInferrer {
 		}
 		if ($expr instanceof Expr\ConstFetch) {
 			if (strcasecmp($expr->name, "null") == 0) {
-				return [Scope::NULL_TYPE, Attributes::CONST | Attributes::NULL_POSSIBLE];
+				return [Scope::NULL_TYPE, Attributes::IS_CONST | Attributes::NULL_POSSIBLE];
 			}
 			if (strcasecmp($expr->name, "false") == 0 || strcasecmp($expr->name, "true") == 0) {
-				return [Scope::BOOL_TYPE, Attributes::CONST];
+				return [Scope::BOOL_TYPE, Attributes::IS_CONST];
 			}
 			if (defined($expr->name)) {
 				// Guardrail doesn't declare any global constants.  Any that exist are from the runtime.
-				return [Scope::MIXED_TYPE, Attributes::CONST];
+				return [Scope::MIXED_TYPE, Attributes::IS_CONST];
 			}
 			if ($this->index->isDefined($expr->name)) {
-				return [Scope::MIXED_TYPE, Attributes::CONST];
+				return [Scope::MIXED_TYPE, Attributes::IS_CONST];
 			}
 			return [Scope::UNDEFINED, Attributes::NULL_POSSIBLE];
 		}
