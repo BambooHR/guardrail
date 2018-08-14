@@ -29,13 +29,4 @@ class Attributes {
 	static function combine($mask1, $mask2) {
 		return (($mask1 | $mask2) & 0xFF) | (($mask1 & $mask2) & 0xFF00);
 	}
-
-	/**
-	 * @param int $mask    -
-	 * @param int $pattern -
-	 * @return int
-	 */
-	static function unset($mask, $pattern) {
-		return $mask & ~($pattern);
-	}
 }
