@@ -61,7 +61,7 @@ class ReflectedClassMethod implements MethodInterface {
 	public function getReturnType() {
 		if ( method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
-			if($type) {
+			if ($type) {
 				return $type->getName();
 			}
 		}
@@ -146,7 +146,7 @@ class ReflectedClassMethod implements MethodInterface {
 	public function hasNullableReturnType() {
 		if ( method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
-			if($type) {
+			if ($type) {
 				return $type->allowsNull();
 			}
 		}
