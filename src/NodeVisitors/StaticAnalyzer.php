@@ -525,7 +525,6 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			}
 		}
 
-
 		// $var!==NULL
 		// $var!=NULL
 		if ($node instanceof Node\Expr\BinaryOp\NotEqual || $node instanceof Node\Expr\BinaryOp\NotIdentical) {
