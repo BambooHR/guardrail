@@ -732,11 +732,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 					if ($type instanceof Node\NullableType) {
 						$type = $type->type;
 					}
-					$type = strval($type);
+					$type = Scope::constFromName(strval($type));
 					$scope->setVarType(strval($param->name), $type . "[]", $param->getLine());
 				} else {
 					$scope->setVarType(strval($param->name), Scope::ARRAY_TYPE, $param->getLine());
 				}
+				$scope->setVarNull(strval($param->name), false); // Variadic parameter will never be null.
 			} else {
 				$paramType = $param->type instanceof Node\NullableType ? strval($param->type->type) : strval($param->type);
 				$scope->setVarType(strval($param->name), Scope::constFromName($paramType), $param->getLine());
@@ -744,8 +745,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				if ($param->type != null && $param->default == null) {
 					$scope->setVarNull(strval($param->name), false);
 				}
-				$scope->setVarUsed(strval($param->name));
 			}
+			$scope->setVarUsed(strval($param->name)); // It's ok to leave a parameter unused, so we just mark it used.
 		}
 		if ($func instanceof Closure) {
 			$oldScope = end($this->scopeStack);
