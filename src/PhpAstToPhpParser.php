@@ -52,6 +52,32 @@ class PhpAstToPhpParser {
 	}
 
 	/**
+	 * Checks $node and all of it's children (recursively) for func_num_args(), func_get_args() or func_get_arg().
+	 * Existance of one of these functions means that the function can potentially be called variadically.
+	 *
+	 * @param Node $node An \ast\Node object
+	 * @return bool
+	 */
+	static function nodeContainsVariadicMethodCall($node) {
+		if(
+			$node->kind == \ast\AST_CALL &&
+			$node->children['expr']->kind == \ast\AST_NAME
+		) {
+			$name=strtolower($node->children['expr']->children['name']);
+			if ($name == 'func_num_args' || $name == 'func_get_args' || $name == 'func_get_arg') {
+				return true;
+			}
+		}
+		foreach ($node->children as $child) {
+			// Some children could be strings, ints, or floats.  We don't need to recurse into those.
+			if ($child instanceof Node && self::nodeContainsVariadicMethodCall($child)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * @param array|null|Node $nodes A statement list or array that should be converted and returned as a PHP array.
 	 * @return array
 	 */
@@ -905,7 +931,12 @@ class PhpAstToPhpParser {
 			"params" => $this->convertAstNode($node->children['params']),
 			"returnType" => $this->convertAstNode($node->children["returnType"]),
 		];
-		return new \PhpParser\Node\Stmt\Function_($this->getNodeName($node), $subNodes);
+		$function = new \PhpParser\Node\Stmt\Function_($this->getNodeName($node), $subNodes);
+		if(!$this->includeMethodBodies) {
+			$function->setAttribute('variadic_implementation', self::nodeContainsVariadicMethodCall($node));
+		}
+		return $function;
+
 	}
 
 	/**
@@ -1085,10 +1116,15 @@ class PhpAstToPhpParser {
 			"stmts" => $this->includeMethodBodies ? $this->convertAstNode($node->children['stmts']) : [],
 			"returnType" => $this->convertAstNode($node->children['returnType'])
 		];
-		return new \PhpParser\Node\Stmt\ClassMethod(
+
+		$method = new \PhpParser\Node\Stmt\ClassMethod(
 			$this->getNodeName($node),
 			$subNodes
 		);
+		if(!$this->includeMethodBodies) {
+			$method->setAttribute('variadic_implementation', self::nodeContainsVariadicMethodCall($node));
+		}
+		return $method;
 	}
 
 	/**
