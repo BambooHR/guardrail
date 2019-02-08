@@ -59,11 +59,11 @@ class PhpAstToPhpParser {
 	 * @return bool
 	 */
 	static function nodeContainsVariadicMethodCall($node) {
-		if(
+		if (
 			$node->kind == \ast\AST_CALL &&
 			$node->children['expr']->kind == \ast\AST_NAME
 		) {
-			$name=strtolower($node->children['expr']->children['name']);
+			$name = strtolower($node->children['expr']->children['name']);
 			if ($name == 'func_num_args' || $name == 'func_get_args' || $name == 'func_get_arg') {
 				return true;
 			}
@@ -932,7 +932,7 @@ class PhpAstToPhpParser {
 			"returnType" => $this->convertAstNode($node->children["returnType"]),
 		];
 		$function = new \PhpParser\Node\Stmt\Function_($this->getNodeName($node), $subNodes);
-		if(!$this->includeMethodBodies) {
+		if (!$this->includeMethodBodies) {
 			$function->setAttribute('variadic_implementation', self::nodeContainsVariadicMethodCall($node));
 		}
 		return $function;
@@ -1121,7 +1121,7 @@ class PhpAstToPhpParser {
 			$this->getNodeName($node),
 			$subNodes
 		);
-		if(!$this->includeMethodBodies) {
+		if (!$this->includeMethodBodies) {
 			$method->setAttribute('variadic_implementation', self::nodeContainsVariadicMethodCall($node));
 		}
 		return $method;
