@@ -1,6 +1,7 @@
 <?php namespace BambooHR\Guardrail\Tests\Checks;
 
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
+use BambooHR\Guardrail\PhpAstToPhpParser;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
 
 /**
@@ -33,6 +34,20 @@ class TestVariadicCheck extends TestSuiteSetup {
 	}
 
 	/**
+	 * This test confirms that nodecontainsVariadicMethodCall will work.  The test only runs in the presence of the
+	 * \ast extension.
+	 * @param $code
+	 * @param $message
+	 */
+	public function testAstIsVardicData($code,$message) {
+		if (function_exists("\\ast\\parse_code")) {
+			$code = '<?php function foo() { if(true) { func_get_args(); } } ?>';
+			$parsed = \ast\parse_code($code, 50);
+			$this->assertTrue(PhpAstToPhpParser::nodeContainsVariadicMethodCall($parsed[0]), "Nested call not detected");
+		}
+	}
+
+	/**
 	 * testIsNotVariadicData
 	 *
 	 * @param $code
@@ -56,5 +71,7 @@ class TestVariadicCheck extends TestSuiteSetup {
 			['<?php safe_func();', 'Clean code not detected variadic'],
 		];
 	}
+
+
 
 }

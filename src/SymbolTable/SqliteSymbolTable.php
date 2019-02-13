@@ -297,6 +297,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$clone = unserialize(serialize($class));
 		foreach ($clone->stmts as $index => &$stmt) {
 			if ($stmt instanceof ClassMethod) {
+				// Note: the attribute could already be set, so we explicitly check for === null rather than ==
 				if ($stmt->getAttribute('variadic_implementation', null) === null) {
 					$stmt->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic($stmt->stmts));
 				}
