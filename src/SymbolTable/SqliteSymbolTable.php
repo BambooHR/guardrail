@@ -200,6 +200,14 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		}
 	}
 
+	public function begin() {
+		$this->con->beginTransaction();
+	}
+
+	public function commit() {
+		$this->con->commit();
+	}
+
 	/**
 	 * getInterface
 	 *

@@ -94,11 +94,17 @@ class AnalyzingPhase {
 	function getTimingResults() {
 		$ret = [];
 		foreach ($this->timingResults as $timingArr) {
-			foreach ($timingArr as $class => $time) {
-				$ret[$class] = (isset($ret[$class]) ? $ret[$class] : 0) + $time;
+			list($timings, $counts) = $timingArr;
+			foreach ($timings as $class => $time) {
+				$ret[$class]['time'] = (isset($ret[$class]['time']) ? $ret[$class]['time'] : 0) + $time;
+				$ret[$class]['count'] = (isset($ret[$class]['count']) ? $ret[$class]['count'] : 0) + $counts[$class];
+
 			}
 		}
-		arsort($ret, SORT_NUMERIC);
+		uasort( $ret, function($a,$b) {
+			return -($a['time'] <=> $b['time']);
+		});
+
 		return $ret;
 	}
 
@@ -221,7 +227,7 @@ class AnalyzingPhase {
 						$receive = socket_read($socket, 4096, PHP_NORMAL_READ);
 						$receive = trim($receive);
 						if ($receive == "TIMINGS") {
-							socket_write($socket, "TIMINGS " . json_encode($this->analyzer->getTimings()) . "\n");
+							socket_write($socket, "TIMINGS " . json_encode($this->analyzer->getTimingsAndCounts()) . "\n");
 							return 0;
 						} else {
 							list($command, $file) = explode(' ', $receive, 2);

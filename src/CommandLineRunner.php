@@ -111,10 +111,13 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 			if ($config->shouldOutputTimings()) {
 				$timings = $analyzer->getTimingResults();
-				$totalTime = array_sum($timings);
-				foreach ($analyzer->getTimingResults() as $class => $time) {
-					printf("%-60s %4.1fs %3d%%\n", $class, $time, intval($time / $totalTime * 100));
+				$totalTime = array_sum( array_map( function($a) { return $a['time']; }, $timings) );
+				foreach ($analyzer->getTimingResults() as $class => $values) {
+					$time = $values['time'];
+					$count = $values['count'];
+					printf("%-60s %4.1f s %4.1f%% %7s calls %4.1f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count,0), $time/$count*1000 );
 				}
+
 				printf("Total = %d:%04.1f CPU time", intval($totalTime / 60), $totalTime - floor($totalTime / 60) * 60);
 			}
 			exit($exitCode);

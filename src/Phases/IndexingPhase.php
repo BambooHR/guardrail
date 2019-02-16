@@ -122,11 +122,13 @@ class IndexingPhase {
 	public function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
 		$output->outputVerbose("\n\nImporting traits\n");
 		$count = 0;
+		$symbolTable->begin();
 		foreach ($symbolTable->getClassesThatUseAnyTrait() as $className) {
 			$class = $symbolTable->getClass($className);
 			$symbolTable->updateClass( $class );
 			$output->output(".", " - " . (++$count) . ": " . $className);
 		}
+		$symbolTable->commit();
 	}
 
 

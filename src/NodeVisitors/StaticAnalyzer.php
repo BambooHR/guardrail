@@ -87,7 +87,13 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/** @var OutputInterface */
 	private $output;
 
+	/** @var float[] */
 	private $timings = [];
+
+	/** @var int[] */
+	private $counts = [];
+
+
 
 	/**
 	 * @var \Closure[]
@@ -102,9 +108,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/**
 	 * @return array
 	 */
-	function getTimings() {
-		return $this->timings;
+	function getTimingsAndCounts() {
+		return [$this->timings,$this->counts];
 	}
+
 
 	/**
 	 * StaticAnalyzer constructor.
@@ -500,6 +507,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				$last = microtime(true);
 				$name = get_class($check);
 				$this->timings[$name] = (isset($this->timings[$name]) ? $this->timings[$name] : 0) + ($last - $start);
+				$this->counts[$name] = (isset($this->counts[$name]) ? $this->counts[$name] : 0) + 1;
+
 			}
 		}
 		return null;
