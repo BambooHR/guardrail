@@ -127,6 +127,15 @@ abstract class SymbolTable {
 	 */
 	abstract public function updateClass(ClassLike $class);
 
+	/** @return void */
+	public function begin() {
+	}
+
+	/** @return void */
+	public function commit() {
+
+	}
+
 	/**
 	 * getAbstractedClass
 	 *

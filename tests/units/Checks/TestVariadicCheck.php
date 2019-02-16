@@ -36,10 +36,9 @@ class TestVariadicCheck extends TestSuiteSetup {
 	/**
 	 * This test confirms that nodecontainsVariadicMethodCall will work.  The test only runs in the presence of the
 	 * \ast extension.
-	 * @param $code
-	 * @param $message
+
 	 */
-	public function testAstIsVardicData($code,$message) {
+	public function testAstIsVariadicData() {
 		if (function_exists("\\ast\\parse_code")) {
 			$code = '<?php function foo() { if(true) { func_get_args(); } } ?>';
 			$parsed = \ast\parse_code($code, 50);
