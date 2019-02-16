@@ -101,8 +101,8 @@ class AnalyzingPhase {
 
 			}
 		}
-		uasort( $ret, function($a,$b) {
-			return -($a['time'] <=> $b['time']);
+		uasort( $ret, function($first, $second) {
+			return ($first['time'] > $second['time'] ? -1 : ($first['time'] < $second['time'] ? 1 : 0));
 		});
 
 		return $ret;

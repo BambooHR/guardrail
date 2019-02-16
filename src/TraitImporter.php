@@ -121,16 +121,16 @@ class TraitImporter {
 			$trait = $this->index->getTrait($traitName);
 			$line = $use->getLine();
 
-			if($trait) {
+			if ($trait) {
 				$imports = [];
 				// Recurse down into any use statements inside of the trait.
-				foreach($trait->stmts as $index=>$stmt) {
+				foreach ($trait->stmts as $index => $stmt) {
 					if ($stmt instanceof TraitUse) {
 						$imports[] = $stmt;
 						unset($trait->stmts[$index]);
 					}
 				}
-				foreach($imports as $stmt) {
+				foreach ($imports as $stmt) {
 					$newStatements = $this->resolveTraits($stmt, $trait);
 					if ($newStatements) {
 						$trait->stmts = array_merge($trait->stmts, $newStatements);
@@ -138,7 +138,6 @@ class TraitImporter {
 				}
 				$trait->stmts = array_values($trait->stmts);
 			}
-
 
 			if (!$trait) {
 				throw new \BambooHR\Guardrail\Exceptions\UnknownTraitException($traitName, $use->getLine());
