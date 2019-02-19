@@ -87,7 +87,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	/** @var OutputInterface */
 	private $output;
 
-	/** @var float[] */
+	/** @var array */
 	private $timings = [];
 
 	/** @var int[] */
