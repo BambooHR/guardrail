@@ -14,17 +14,27 @@ use PhpParser\NodeVisitorAbstract;
  */
 
 class PropertyUsageVisitor extends NodeVisitorAbstract {
-
+	/** @var array */
 	private $usedProperties = [];
 
+	/**
+	 * @return void
+	 */
 	function reset() {
 		$this->usedProperties = [];
 	}
 
+	/**
+	 * @return array Key is property name, value = true
+	 */
 	function getUsedProperties() {
 		return $this->usedProperties;
 	}
 
+	/**
+	 * @param Node $node Any AST node
+	 * @return null|int
+	 */
 	function enterNode(Node $node) {
 		if ($node instanceof Node\Stmt\Class_) {
 			// Don't look for usage in nested classes.
@@ -32,7 +42,6 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 		}
 		if ($node instanceof Node\Expr\PropertyFetch &&
 			$node->var instanceof Node\Expr\Variable &&
-			is_string($node->var->name) &&
 			$node->var->name === 'this' &&
 			is_string($node->name)
 		) {

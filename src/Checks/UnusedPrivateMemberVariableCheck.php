@@ -23,6 +23,10 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 	/** @var PropertyUsageVisitor  */
 	private $usedPropertyVisitor;
 
+	/**
+	 * @param SymbolTable     $symbolTable The symbol table to check
+	 * @param OutputInterface $doc         The interface to output to
+	 */
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 
@@ -54,9 +58,9 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 		$props = [];
 
 		// Catalog all private properties
-		foreach($node->stmts as $stmt) {
+		foreach ($node->stmts as $stmt) {
 			if ($stmt instanceof Property && $stmt->type == Class_::MODIFIER_PRIVATE) {
-				foreach($stmt->props as $prop) {
+				foreach ($stmt->props as $prop) {
 					$props[$prop->name] = $prop;
 				}
 			}
@@ -65,7 +69,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 		$usedVariables = $this->checkInside($node);
 
 		// Output an error for each unused private variable.
-		foreach ($props as $memberVariable=>$propNode) {
+		foreach ($props as $memberVariable => $propNode) {
 			if (array_key_exists($memberVariable, $usedVariables)) {
 				$this->emitError($fileName, $propNode, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
 			}

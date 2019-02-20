@@ -43,8 +43,8 @@ class ReflectedClass implements ClassInterface {
 	 */
 	public function getInterfaceNames() {
 		$names = $this->refl->getInterfaceNames();
-		if (strcasecmp($this->refl->name,'exception')==0) {
-			$names[]='Throwable';
+		if (strcasecmp($this->refl->name, 'exception') == 0) {
+			$names[] = 'Throwable';
 		}
 		return $names;
 	}
