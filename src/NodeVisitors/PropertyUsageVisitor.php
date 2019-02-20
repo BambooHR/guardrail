@@ -36,6 +36,9 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 		return $this->usedProperties;
 	}
 
+	/**
+	 * @return bool
+	 */
 	function detectedDynamicScripting() {
 		return $this->detectedDynamicScripting;
 	}
