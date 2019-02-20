@@ -70,7 +70,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 
 		// Output an error for each unused private variable.
 		foreach ($props as $memberVariable => $propNode) {
-			if (array_key_exists($memberVariable, $usedVariables)) {
+			if (!array_key_exists($memberVariable, $usedVariables)) {
 				$this->emitError($fileName, $propNode, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
 			}
 		}

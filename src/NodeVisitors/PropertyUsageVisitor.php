@@ -45,7 +45,7 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 			$node->var->name === 'this' &&
 			is_string($node->name)
 		) {
-			$usedVariables[$node->name] = true;
+			$this->usedProperties[$node->name] = true;
 		}
 	}
 }
