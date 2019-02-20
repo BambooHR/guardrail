@@ -55,23 +55,25 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		$props = [];
+		if ($node instanceof Class_) {
+			$props = [];
 
-		// Catalog all private properties
-		foreach ($node->stmts as $stmt) {
-			if ($stmt instanceof Property && $stmt->type == Class_::MODIFIER_PRIVATE) {
-				foreach ($stmt->props as $prop) {
-					$props[$prop->name] = $prop;
+			// Catalog all private properties
+			foreach ($node->stmts as $stmt) {
+				if ($stmt instanceof Property && $stmt->type == Class_::MODIFIER_PRIVATE) {
+					foreach ($stmt->props as $prop) {
+						$props[$prop->name] = $prop;
+					}
 				}
 			}
-		}
-		// Catalog which properties are actually referenced
-		$usedVariables = $this->checkInside($node);
+			// Catalog which properties are actually referenced
+			$usedVariables = $this->checkInside($node);
 
-		// Output an error for each unused private variable.
-		foreach ($props as $memberVariable => $propNode) {
-			if (!array_key_exists($memberVariable, $usedVariables)) {
-				$this->emitError($fileName, $propNode, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
+			// Output an error for each unused private variable.
+			foreach ($props as $memberVariable => $propNode) {
+				if (!array_key_exists($memberVariable, $usedVariables)) {
+					$this->emitError($fileName, $propNode, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
+				}
 			}
 		}
 	}
