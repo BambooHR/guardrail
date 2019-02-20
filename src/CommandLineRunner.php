@@ -123,7 +123,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 					printf("%-60s %4.1f s %4.1f%% %7s calls %4.1f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );
 				}
 
-				printf("Total = %d:%04.1f CPU time", intval($totalTime / 60), $totalTime - floor($totalTime / 60) * 60);
+				printf("Total = %d:%04.1f CPU time\n", intval($totalTime / 60), $totalTime - floor($totalTime / 60) * 60);
 			}
 			exit($exitCode);
 		}

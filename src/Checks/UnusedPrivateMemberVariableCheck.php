@@ -1,17 +1,35 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
+use BambooHR\Guardrail\NodeVisitors\PropertyUsageVisitor;
+use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Property;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitorAbstract;
 
 /**
  * Class UnusedPrivateMemberVariableCheck
  * @package BambooHR\Guardrail\Checks
  */
 class UnusedPrivateMemberVariableCheck extends BaseCheck {
+	/** @var NodeTraverser */
+	private $traverser;
+
+	/** @var PropertyUsageVisitor  */
+	private $usedPropertyVisitor;
+
+	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+		parent::__construct($symbolTable, $doc);
+
+		$this->usedPropertyVisitor = new PropertyUsageVisitor();
+		$this->traverser = new NodeTraverser();
+		$this->traverser->addVisitor( $this->usedPropertyVisitor );
+	}
 
 	/**
 	 * getCheckNodeTypes
@@ -19,7 +37,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 	 * @return string[]
 	 */
 	function getCheckNodeTypes() {
-		return [Property::class];
+		return [Class_::class];
 	}
 
 	/**
@@ -33,17 +51,23 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		$memberVariables = [];
-		if ($node instanceof Property && $node->type == Class_::MODIFIER_PRIVATE) {
-			$memberVariables[] = $node->props[0]->name;
-			$usedVariables = [];
-			if ($inside instanceof Class_) {
-				$usedVariables = $this->checkInside($inside);
-			}
-			foreach ($memberVariables as $memberVariable) {
-				if (!in_array($memberVariable, $usedVariables)) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
+		$props = [];
+
+		// Catalog all private properties
+		foreach($node->stmts as $stmt) {
+			if ($stmt instanceof Property && $stmt->type == Class_::MODIFIER_PRIVATE) {
+				foreach($stmt->props as $prop) {
+					$props[$prop->name] = $prop;
 				}
+			}
+		}
+		// Catalog which properties are actually referenced
+		$usedVariables = $this->checkInside($node);
+
+		// Output an error for each unused private variable.
+		foreach ($props as $memberVariable=>$propNode) {
+			if (array_key_exists($memberVariable, $usedVariables)) {
+				$this->emitError($fileName, $propNode, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
 			}
 		}
 	}
@@ -56,17 +80,13 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 	 * @return array
 	 */
 	protected function checkInside(ClassLike $inside) {
-		$usedVariables = [];
+		$this->usedPropertyVisitor->reset();
 		foreach ($inside->stmts as $statement) {
 			// we will ignore constructors for the purposes of usage
-			if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct') {
-				ForEachNode::run($statement->stmts, function ($object) use (&$usedVariables) {
-					if ($object instanceof Node\Expr\PropertyFetch) {
-						$usedVariables[] = $object->name;
-					}
-				});
+			if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct' && $statement->stmts) {
+				$this->traverser->traverse($statement->stmts);
 			}
 		}
-		return $usedVariables;
+		return $this->usedPropertyVisitor->getUsedProperties();
 	}
 }
