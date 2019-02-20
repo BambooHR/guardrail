@@ -66,13 +66,19 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 					}
 				}
 			}
+
 			// Catalog which properties are actually referenced
 			$usedVariables = $this->checkInside($node);
+
+			if ($this->usedPropertyVisitor->detectedDynamicScripting()) {
+				// All bets are off if there was dynamic scripting.
+				return;
+			}
 
 			// Output an error for each unused private variable.
 			foreach ($props as $memberVariable => $propNode) {
 				if (!array_key_exists($memberVariable, $usedVariables)) {
-					$this->emitError($fileName, $propNode, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable detected");
+					$this->emitError($fileName, $propNode, ErrorConstants::TYPE_UNUSED_PROPERTY, "Unused private variable \$$memberVariable detected");
 				}
 			}
 		}

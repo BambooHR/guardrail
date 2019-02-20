@@ -2,6 +2,7 @@
 
 namespace BambooHR\Guardrail\NodeVisitors;
 
+use BambooHR\Guardrail\Checks\MethodCall;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
@@ -17,11 +18,15 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 	/** @var array */
 	private $usedProperties = [];
 
+	/** @var bool  */
+	private $detectedDynamicScripting = false;
+
 	/**
 	 * @return void
 	 */
 	function reset() {
 		$this->usedProperties = [];
+		$this->detectedDynamicScripting = false;
 	}
 
 	/**
@@ -29,6 +34,10 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 	 */
 	function getUsedProperties() {
 		return $this->usedProperties;
+	}
+
+	function detectedDynamicScripting() {
+		return $this->detectedDynamicScripting;
 	}
 
 	/**
@@ -42,10 +51,24 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 		}
 		if ($node instanceof Node\Expr\PropertyFetch &&
 			$node->var instanceof Node\Expr\Variable &&
-			$node->var->name === 'this' &&
-			is_string($node->name)
+			$node->var->name === 'this'
 		) {
-			$this->usedProperties[$node->name] = true;
+			if (is_string($node->name)) {
+				$this->usedProperties[$node->name] = true;
+			} else {
+				// $this->$variable
+				$this->detectedDynamicScripting = true;
+			}
+		}
+
+		if ($node instanceof Node\Expr\FuncCall &&
+			$node->name == "get_object_vars" &&
+			count($node->args) >= 1 &&
+			$node->args[0]->value instanceof Node\Expr\Variable &&
+			($node->args[0]->value->name === 'this' || !($node->args[0]->value->name instanceof Node\Name))
+		) {
+			// get_object_vars($this), get_object_vars($$somevar))
+			$this->detectedDynamicScripting = true;
 		}
 	}
 }
