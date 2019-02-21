@@ -17,13 +17,13 @@ class SocketBuffer {
 		if (socket_recv($socket, $read, 4096, 0) !== false) {
 			$this->buffer .= $read;
 			$last = 0;
-			for ($i = 0; $i < strlen($this->buffer); ++$i) {
-				if ($this->buffer[$i] == "\n" || $this->buffer[$i] == "\r") {
-					$msg = substr($this->buffer, $last, $i);
+			for ($index = 0; $index < strlen($this->buffer); ++$index) {
+				if ($this->buffer[$index] == "\n" || $this->buffer[$index] == "\r") {
+					$msg = substr($this->buffer, $last, $index);
 					if (trim($msg) != '') {
 						$this->messages[] = $msg;
 					}
-					$last = $i + 1;
+					$last = $index + 1;
 				}
 			}
 			$this->buffer = substr($this->buffer, $last + 1);

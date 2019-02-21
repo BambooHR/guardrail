@@ -60,7 +60,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 	/**
 	 * Reconnect after a pcntl_fork()
-	 *
+	 * @param int $processNumber The number representing which indexer is running.
 	 * @return void
 	 */
 	public function connect($processNumber) {
@@ -90,8 +90,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		if (!isset($this->index[$type])) {
 			$this->index[$type] = [];
 		}
-		$this->index[$type][strtolower($name)] =
-			['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
+		$this->index[$type][strtolower($name)] = ['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
 	}
 
 	/**
@@ -105,11 +104,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	/**
 	 * Add the index to the symbol table.  This is faster than adding it ahead of time.
 	 *
+	 * @param int $processCount The total number of indexing processes.
 	 * @return void
 	 */
 	function indexTable($processCount) {
-		for ($i = 1; $i <= $processCount; ++$i) {
-			$fileName = $this->fileName . '.' . $i;
+		for ($index = 1; $index <= $processCount; ++$index) {
+			$fileName = $this->fileName . '.' . $index;
 			$arr = json_decode(file_get_contents($fileName), true);
 			foreach ($arr as $type => $arr2) {
 				if (!isset($this->index[$type])) {

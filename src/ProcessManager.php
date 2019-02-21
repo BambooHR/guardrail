@@ -69,11 +69,11 @@ class ProcessManager {
 	 * @param int      $index              The index into the connections array
 	 * @param array    $messages           Any messages to transmit
 	 * @param callable $serverReadCallBack The callable to pass along to the user function.
+	 * @return void
 	 */
-
 	function dispatchMessages($index, $messages, $serverReadCallBack) {
 		$socket = $this->connections[$index];
-		foreach($messages as $msg) {
+		foreach ($messages as $msg) {
 			if (trim($msg) !== "" && self::CLOSE_CONNECTION == call_user_func($serverReadCallBack, $socket, $msg)) {
 				socket_close($socket);
 				$status = 0;
