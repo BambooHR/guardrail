@@ -39,6 +39,8 @@ where: -p #/#                 = Define the number of partitions and the current 
                                 Defaults to yes if using in memory index.
 
        -s                     = prefer sqlite index
+        
+       -j                     = prefer json index (new)
 
        -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
 

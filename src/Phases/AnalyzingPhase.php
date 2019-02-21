@@ -13,6 +13,7 @@ use BambooHR\Guardrail\NodeVisitors\DoWhileVisitor;
 use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Output\XUnitOutput;
 use BambooHR\Guardrail\ProcessManager;
+use BambooHR\Guardrail\SocketBuffer;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use FilesystemIterator;
 use PhpParser\Comment;
@@ -217,22 +218,25 @@ class AnalyzingPhase {
 
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
-				function ($socket) use ($config) {
+				function ($socket) use ($fileNumber, $config) {
 					$table = $config->getSymbolTable();
 					if ($table instanceof PersistantSymbolTable) {
-						$table->connect();
+						$table->connect(0);
 					}
 					$this->initChildThread($socket, $config);
+					$buffer = new SocketBuffer();
 					while (1) {
-						$receive = socket_read($socket, 4096, PHP_NORMAL_READ);
-						$receive = trim($receive);
-						if ($receive == "TIMINGS") {
-							socket_write($socket, "TIMINGS " . json_encode($this->analyzer->getTimingsAndCounts()) . "\n");
-							return 0;
-						} else {
-							list($command, $file) = explode(' ', $receive, 2);
-							$size = $this->analyzeFile($file, $config);
-							socket_write($socket, "ANALYZED $size $file\n");
+						$buffer->read($socket);
+						foreach ($buffer->getMessages() as $receive) {
+							$receive = trim($receive);
+							if ($receive == "TIMINGS") {
+								socket_write($socket, "TIMINGS " . json_encode($this->analyzer->getTimingsAndCounts()) . "\n");
+								return 0;
+							} else {
+								list($command, $file) = explode(' ', $receive, 2);
+								$size = $this->analyzeFile($file, $config);
+								socket_write($socket, "ANALYZED $size $file\n");
+							}
 						}
 					}
 

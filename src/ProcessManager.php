@@ -18,6 +18,7 @@ class ProcessManager {
 	const CLOSE_CONNECTION = 1;
 	const READ_CONNECTION = 2;
 	private $connections = [];
+	private $buffers = [];
 
 	/**
 	 * @param callable $childProcess a closure to run inside the child process.
@@ -33,6 +34,7 @@ class ProcessManager {
 			// error
 		} else if ($pid) {
 			$this->connections[] = $pair[1];
+			$this->buffers[] = new SocketBuffer();
 			socket_close($pair[0]);
 			return $pair[1];
 		} else {
@@ -53,14 +55,26 @@ class ProcessManager {
 			$none = null;
 			if (socket_select($read, $none, $none, null)) {
 				foreach ($read as $index => $socket) {
-					$msg = socket_read($socket, 4096, PHP_NORMAL_READ);
-					if (self::CLOSE_CONNECTION == call_user_func($serverReadCallBack, $socket, $msg)) {
-						socket_close($socket);
-						$status = 0;
-						unset($this->connections[$index]);
-						pcntl_wait($status);
-					}
+					$this->buffers[$index]->read( $socket );
 				}
+			}
+			foreach($this->buffers as $index=> $buffer) {
+				$messages = $buffer->getMessages();
+				$this->dispatchMessages( $index, $messages, $serverReadCallBack );
+			}
+		}
+	}
+
+
+	function dispatchMessages($index, $messages, $serverReadCallBack) {
+		$socket = $this->connections[$index];
+		foreach($messages as $msg) {
+			if (trim($msg) !== "" && self::CLOSE_CONNECTION == call_user_func($serverReadCallBack, $socket, $msg)) {
+				socket_close($socket);
+				$status = 0;
+				unset($this->connections[$index]);
+				unset($this->buffers[$index]);
+				pcntl_wait($status);
 			}
 		}
 	}

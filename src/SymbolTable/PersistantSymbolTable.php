@@ -9,9 +9,10 @@ namespace BambooHR\Guardrail\SymbolTable;
 
 interface PersistantSymbolTable {
 	/**
+	 * @param int $processNumber Used for persistence per thread.
 	 * @return void
 	 */
-	public function connect();
+	public function connect($processNumber);
 
 	/**
 	 * @return void
@@ -26,5 +27,5 @@ interface PersistantSymbolTable {
 	/**
 	 * @return void
 	 */
-	function indexTable();
+	function indexTable($processCount);
 }

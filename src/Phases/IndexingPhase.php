@@ -10,6 +10,7 @@ namespace BambooHR\Guardrail\Phases;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\PhpAstParser;
 use BambooHR\Guardrail\ProcessManager;
+use BambooHR\Guardrail\SocketBuffer;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use Phar;
@@ -136,26 +137,30 @@ class IndexingPhase {
 	 * @param Config $config -
 	 * @return resource The client socket that the server should communicate with.
 	 */
-	function createIndexingChild(Config $config) {
+	function createIndexingChild($fileNumber, Config $config) {
 		return $this->processManager->createChild(
 			// This closure represents the child process.  The value it returns
 			// will be the exit code of the child process.
-			function($socket) use($config) {
+			function($socket) use($config, $fileNumber) {
 				$table = $config->getSymbolTable();
 				if ($table instanceof PersistantSymbolTable) {
-					$table->connect();
+					$table->connect( $fileNumber+1 );
 				}
+				$buffer = new SocketBuffer();
 				while (1) {
-					$receive = trim(socket_read($socket, 200, PHP_NORMAL_READ));
-					if ($receive == "DONE") {
-						if ($table instanceof PersistantSymbolTable) {
-							$table->flushInserts();
+					$buffer->read($socket);
+					foreach($buffer->getMessages() as $receive) {
+						if ($receive == "DONE") {
+							if ($table instanceof PersistantSymbolTable) {
+								$table->flushInserts();
+								$table->disconnect();
+							}
+							return 0;
+						} else {
+							list(, $file) = explode(' ', trim($receive));
+							$size = $this->indexFile($config, $file);
+							socket_write($socket, "INDEXED $size $file\n");
 						}
-						return 0;
-					} else {
-						list(, $file) = explode(' ', trim($receive));
-						$size = $this->indexFile($config, $file);
-						socket_write($socket, "INDEXED $size $file\n");
 					}
 				}
 			}
@@ -171,14 +176,14 @@ class IndexingPhase {
 	function indexList(Config $config, OutputInterface $output, \Generator $itr) {
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
-			$table->disconnect();
+			//$table->disconnect();
 		}
 
 		$start = microtime(true);
 		$bytes = 0.0;
 		// Fire up our child processes and give them each a file to index.
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $itr->valid(); ++$fileNumber, $itr->next()) {
-			$child = $this->createIndexingChild($config);
+			$child = $this->createIndexingChild($fileNumber, $config);
 			socket_write($child, "INDEX " . $itr->current() . "\n");
 			$output->output(".", sprintf("%d - %s", $fileNumber, $itr->current()));
 		}
@@ -250,9 +255,11 @@ class IndexingPhase {
 
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
-			$table->connect();
-			$table->indexTable();
+			$table->connect(0);
+			$table->indexTable($config->getProcessCount());
 		}
+		$table->connect(0);
 		$this->indexTraitClasses($table, $output);
+		$table->disconnect();
 	}
 }

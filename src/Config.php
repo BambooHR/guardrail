@@ -21,6 +21,7 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 class Config {
 	const MEMORY_SYMBOL_TABLE = 1;
 	const SQLITE_SYMBOL_TABLE = 2;
+	const JSON_SYMBOL_TABLE = 3;
 
 	/** @var int Number of analyzer processes to run.  If 1 then we don't run a child process. */
 	private $processes = 1;
@@ -38,7 +39,7 @@ class Config {
 	private $config = [];
 
 	/** @var string */
-	private $symbolTableFile = "symbol_table.sqlite3";
+	private $symbolTableFile = "symbol_table";
 
 	/** @var int The number of partitions */
 	private $partitions = 1;
@@ -151,11 +152,11 @@ class Config {
 			$this->emitList = $this->config['emit'];
 		}
 
-		if ($this->processes > 1) {
+		if ($this->processes > 1 && $this->preferredTable == self::MEMORY_SYMBOL_TABLE) {
 			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 		}
 
-		if ($this->preferredTable == self::SQLITE_SYMBOL_TABLE) {
+		if ($this->preferredTable == self::SQLITE_SYMBOL_TABLE || $this->preferredTable== self::JSON_SYMBOL_TABLE) {
 			if (!file_exists($this->getSymbolTableFile())) {
 				$this->forceIndex = true;
 			}
@@ -163,7 +164,11 @@ class Config {
 				unlink($this->getSymbolTableFile());
 			}
 
-			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
+			if($this->preferredTable == self::JSON_SYMBOL_TABLE) {
+				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\JsonSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
+			} else {
+				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
+			}
 		} else {
 			$this->forceIndex = true;
 			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable($this->getBasePath());
@@ -298,6 +303,9 @@ class Config {
 					break;
 				case '-m':
 					$this->preferredTable = self::MEMORY_SYMBOL_TABLE;
+					break;
+				case '-j':
+					$this->preferredTable = self::JSON_SYMBOL_TABLE;
 					break;
 				case '-p':
 					$params = [];
@@ -482,7 +490,8 @@ class Config {
 	 * @return string
 	 */
 	private function getSymbolTableFile() {
-		return $this->basePath . "/" . $this->symbolTableFile;
+		return $this->basePath . "/" . $this->symbolTableFile .
+			($this->preferredTable==self::SQLITE_SYMBOL_TABLE ? ".sqlite3" : ".json");
 	}
 
 	/**

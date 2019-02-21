@@ -27,17 +27,15 @@ use ReflectionException;
 /**
  * Class SqliteSymbolTable
  */
-class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
+class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
-	/**
-	 * @var PDO
-	 */
-	private $con;
+	/** @var array [$type][$name] = ['has_trait'=>,'data'=>,'file'=>] */
+	private $index = [];
+
+	private $processNumber = 0;
 
 	private $fileName;
 
-	private $statement = null;
-	private $queries = [];
 
 	/**
 	 * SqliteSymbolTable constructor.
@@ -48,7 +46,6 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function __construct($fileName, $basePath) {
 		parent::__construct($basePath);
 		$this->fileName = $fileName;
-
 	}
 
 	/**
@@ -57,7 +54,8 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	public function disconnect() {
-		$this->con = null;
+		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
+		file_put_contents( $fileName, json_encode($this->index) );
 	}
 
 	/**
@@ -66,21 +64,15 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	public function connect($processNumber) {
-		$this->con = new PDO("sqlite:" . $this->fileName);
-		$this->init();
+		$this->processNumber = $processNumber;
+		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
+		if(file_exists($fileName)) {
+			$this->index = json_decode(file_get_contents($fileName), true);
+		} else {
+			$this->index = [];
+		}
 	}
 
-	/**
-	 * init
-	 *
-	 * @return void
-	 */
-	public function init() {
-		$this->con->exec('
-			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data blob not null );
-		');
-
-	}
 
 	/**
 	 * addType
@@ -95,14 +87,11 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @throws Exception
 	 */
 	private function addType($name, $file, $type, $hasTrait=0, $data="") {
-		if (!$this->statement) {
-			$sql = "INSERT INTO symbol_table(name,file,type,has_trait,data) values(?,?,?,?,?)";
-			$this->statement = $this->con->prepare($sql);
+		if (!isset($this->index[$type])) {
+			$this->index[$type] = [];
 		}
-		$this->queries[] = [strtolower($name), $file, $type, $hasTrait, $data];
-		if (count($this->queries) >= 100) {
-			$this->flushInserts();
-		}
+		$this->index[$type][strtolower($name)] =
+			['file'=>$file,'has_trait'=>$hasTrait,'data'=>$data];
 	}
 
 	/**
@@ -111,12 +100,6 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	function flushInserts() {
-		$this->con->exec("begin");
-		foreach ($this->queries as $params) {
-			$this->statement->execute($params);
-		}
-		$this->con->exec("commit");
-		$this->queries = [];
 	}
 
 	/**
@@ -125,15 +108,20 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	function indexTable($processCount) {
-		$this->con->exec('create index on symbol_table(type,name)');
-		/* @Todo: Check for duplicates
-		$this->con->exec(
-			'SELECT type,name,count(*) c, group_concat(file)
-			FROM symbol_table
-			GROUP BY 1,2
-			HAVING count(*)>1'
-		);
-		*/
+		for ($i=1;$i<=$processCount;++$i) {
+			$fileName = $this->fileName.'.'.$i;
+			$arr = json_decode( file_get_contents( $fileName ), true );
+			foreach($arr as $type=>$arr2) {
+				if(!isset($this->index[$type])) {
+					$this->index[$type] = [];
+				}
+				foreach($arr2 as $name=>$entry) {
+					$this->index[$type][$name]=$entry;
+				}
+			}
+			unlink( $fileName );
+		}
+		$this->disconnect();
 	}
 
 	/**
@@ -145,16 +133,14 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return string
 	 */
 	public function getType($name, $type) {
-		$sql = "SELECT file FROM symbol_table WHERE name=? and type=?";
-		$statement = $this->con->prepare($sql);
-		$statement->execute([strtolower($name), $type]);
+		$name = strtolower($name);
 
-		$result = $statement->fetch(Pdo::FETCH_NUM);
-		if ($result) {
-			return $this->adjustBasePath($result[0]);
-		} else {
+		if(!isset($this->index[$type]) || !isset($this->index[$type][$name])) {
 			return "";
 		}
+
+		$result = $this->index[$type][ $name ]['file'];
+		return $this->adjustBasePath($result);
 	}
 
 	/**
@@ -178,39 +164,37 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return mixed|string
 	 */
 	public function getData($name, $type=self::TYPE_CLASS) {
-		$sql = "SELECT data FROM symbol_table WHERE name=?";
-		$params = [strtolower($name)];
-		if ($type == self::TYPE_FUNCTION) {
-			$sql .= " AND type=?";
-			$params[] = $type;
-		} else if ($type == self::TYPE_CLASS) {
-			$sql .= " AND type in (?,?)";
-			$params[] = self::TYPE_CLASS;
-			$params[] = self::TYPE_INTERFACE;
-		}
-		$statement = $this->con->prepare($sql);
-		$statement->execute($params);
 
-		$result = $statement->fetch(Pdo::FETCH_NUM);
-		if ($result) {
-			return self::unserializeObject($result[0]);
-		} else {
-			return "";
+		$name = strtolower($name);
+		if ($type == self::TYPE_FUNCTION) {
+			if (!isset($this->index[$type]) || !isset($this->index[$type][$name])) {
+				return "";
+			}
+			$result = $this->index[$type][$name]['data'];
+		} else if ($type == self::TYPE_CLASS) {
+			if (isset($this->index[self::TYPE_CLASS]) && isset($this->index[self::TYPE_CLASS][$name])) {
+				$result = $this->index[self::TYPE_CLASS][$name]['data'];
+			} else if(isset($this->index[self::TYPE_INTERFACE]) && isset($this->index[self::TYPE_INTERFACE][$name])) {
+				$result = $this->index[self::TYPE_INTERFACE][$name]['data'];
+			} else {
+				return "";
+			}
 		}
+		return self::unserializeObject($result);
 	}
 
 	/**
 	 * @return void
 	 */
 	public function begin() {
-		$this->con->beginTransaction();
+
 	}
 
 	/**
 	 * @return void
 	 */
 	public function commit() {
-		$this->con->commit();
+
 	}
 
 	/**
@@ -259,11 +243,10 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function getClassesThatUseAnyTrait() {
 		$ret = [];
-		$sql = 'SELECT name FROM symbol_table WHERE type=? and has_trait=1';
-		$statement = $this->con->prepare($sql);
-		$statement->execute([self::TYPE_CLASS]);
-		while ($row = $statement->fetch(Pdo::FETCH_NUM)) {
-			$ret[] = $row[0];
+		foreach ($this->index[self::TYPE_CLASS] as $name => $entry) {
+			if ($entry['has_trait']) {
+				$ret[] = $name;
+			}
 		}
 		return $ret;
 	}
@@ -277,12 +260,12 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function updateClass(ClassLike $class) {
 		$name = strtolower($class->namespacedName);
+
 		$clone = $this->stripMethodContents($class);
 		$serializedString = self::serializeObject($clone);
 		$type = $class instanceof Trait_ ? self::TYPE_TRAIT : self::TYPE_CLASS;
-		$sql = 'UPDATE symbol_table SET data=? WHERE name=? and type=?';
-		$statement = $this->con->prepare($sql);
-		$statement->execute( [ $serializedString, $name, $type] );
+
+		$this->index[$type][$name]['data'] = $serializedString;
 	}
 
 	/**
@@ -293,9 +276,13 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	public function removeFileFromIndex($name) {
-		$sql = "DELETE FROM symbol_table WHERE file=?";
-		$statement = $this->con->prepare($sql);
-		$statement->execute($name);
+		foreach ($this->index as $type=>$arr) {
+			foreach ($arr as $elName=>$data) {
+				if ($data['file']==$name) {
+					unset($this->inset[$type][$elName]);
+				}
+			}
+		}
 	}
 
 	/**
@@ -331,6 +318,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return string
 	 */
 	private static function serializeObject($string) {
+		//return base64_encode( serialize($string) );
 		//return ( gzdeflate( serialize( $string ) ) );
 		return base64_encode( gzdeflate( serialize( $string ) ) );
 		//return serialize( $string );
@@ -345,6 +333,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return mixed
 	 */
 	private static function unserializeObject($string) {
+		//return unserialize(base64_decode($string));
 		//return unserialize( gzinflate( ( $string ) ) );
 		return unserialize( gzinflate( base64_decode( $string ) ) );
 		//return unserialize( $string );
@@ -544,11 +533,14 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return bool
 	 */
 	public function classExistsAnyNamespace($name) {
-		$sql = 'SELECT COUNT(*) FROM symbol_table WHERE name LIKE ? AND type in (?,?)';
-		$params = ['%' . strtolower($name), self::TYPE_CLASS, self::TYPE_INTERFACE];
-		$statement = $this->con->prepare($sql);
-		$statement->execute($params);
-		$result = $statement->fetch(Pdo::FETCH_NUM);
-		return $result[0] > 0;
+		$name = strtolower($name);
+		foreach ([self::TYPE_INTERFACE, self::TYPE_CLASS] as $type) {
+			foreach ($this->index[$type] as $elName=>$data) {
+				if (strrpos($name,$elName) === strlen($elName)-strlen($name)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
