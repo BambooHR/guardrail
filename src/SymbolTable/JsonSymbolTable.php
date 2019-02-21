@@ -55,7 +55,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function disconnect() {
 		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
-		file_put_contents( $fileName, json_encode($this->index) );
+		file_put_contents($fileName, json_encode($this->index));
 	}
 
 	/**
@@ -66,7 +66,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function connect($processNumber) {
 		$this->processNumber = $processNumber;
 		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
-		if(file_exists($fileName)) {
+		if (file_exists($fileName)) {
 			$this->index = json_decode(file_get_contents($fileName), true);
 		} else {
 			$this->index = [];
@@ -86,12 +86,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 * @throws Exception
 	 */
-	private function addType($name, $file, $type, $hasTrait=0, $data="") {
+	private function addType($name, $file, $type, $hasTrait = 0, $data = "") {
 		if (!isset($this->index[$type])) {
 			$this->index[$type] = [];
 		}
 		$this->index[$type][strtolower($name)] =
-			['file'=>$file,'has_trait'=>$hasTrait,'data'=>$data];
+			['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
 	}
 
 	/**
@@ -108,18 +108,18 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	function indexTable($processCount) {
-		for ($i=1;$i<=$processCount;++$i) {
-			$fileName = $this->fileName.'.'.$i;
-			$arr = json_decode( file_get_contents( $fileName ), true );
-			foreach($arr as $type=>$arr2) {
-				if(!isset($this->index[$type])) {
+		for ($i = 1; $i <= $processCount; ++$i) {
+			$fileName = $this->fileName . '.' . $i;
+			$arr = json_decode(file_get_contents($fileName), true);
+			foreach ($arr as $type => $arr2) {
+				if (!isset($this->index[$type])) {
 					$this->index[$type] = [];
 				}
-				foreach($arr2 as $name=>$entry) {
-					$this->index[$type][$name]=$entry;
+				foreach ($arr2 as $name => $entry) {
+					$this->index[$type][$name] = $entry;
 				}
 			}
-			unlink( $fileName );
+			unlink($fileName);
 		}
 		$this->disconnect();
 	}
@@ -135,11 +135,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function getType($name, $type) {
 		$name = strtolower($name);
 
-		if(!isset($this->index[$type]) || !isset($this->index[$type][$name])) {
+		if (!isset($this->index[$type]) || !isset($this->index[$type][$name])) {
 			return "";
 		}
 
-		$result = $this->index[$type][ $name ]['file'];
+		$result = $this->index[$type][$name]['file'];
 		return $this->adjustBasePath($result);
 	}
 
@@ -163,7 +163,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return mixed|string
 	 */
-	public function getData($name, $type=self::TYPE_CLASS) {
+	public function getData($name, $type = self::TYPE_CLASS) {
 
 		$name = strtolower($name);
 		if ($type == self::TYPE_FUNCTION) {
@@ -174,7 +174,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		} else if ($type == self::TYPE_CLASS) {
 			if (isset($this->index[self::TYPE_CLASS]) && isset($this->index[self::TYPE_CLASS][$name])) {
 				$result = $this->index[self::TYPE_CLASS][$name]['data'];
-			} else if(isset($this->index[self::TYPE_INTERFACE]) && isset($this->index[self::TYPE_INTERFACE][$name])) {
+			} else if (isset($this->index[self::TYPE_INTERFACE]) && isset($this->index[self::TYPE_INTERFACE][$name])) {
 				$result = $this->index[self::TYPE_INTERFACE][$name]['data'];
 			} else {
 				return "";
@@ -276,9 +276,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	public function removeFileFromIndex($name) {
-		foreach ($this->index as $type=>$arr) {
-			foreach ($arr as $elName=>$data) {
-				if ($data['file']==$name) {
+		foreach ($this->index as $type => $arr) {
+			foreach ($arr as $elName => $data) {
+				if ($data['file'] == $name) {
 					unset($this->inset[$type][$elName]);
 				}
 			}
@@ -320,7 +320,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	private static function serializeObject($string) {
 		//return base64_encode( serialize($string) );
 		//return ( gzdeflate( serialize( $string ) ) );
-		return base64_encode( gzdeflate( serialize( $string ) ) );
+		return base64_encode(gzdeflate(serialize($string)));
 		//return serialize( $string );
 	}
 
@@ -335,7 +335,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	private static function unserializeObject($string) {
 		//return unserialize(base64_decode($string));
 		//return unserialize( gzinflate( ( $string ) ) );
-		return unserialize( gzinflate( base64_decode( $string ) ) );
+		return unserialize(gzinflate(base64_decode($string)));
 		//return unserialize( $string );
 	}
 
@@ -439,9 +439,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function addFunction($name, Function_ $function, $file) {
 		$clone = clone $function;
-		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic( $function->stmts ));
+		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic($function->stmts));
 		$clone->stmts = [];
-		$this->addType($name, $file, self::TYPE_FUNCTION, 0, self::serializeObject($clone) );
+		$this->addType($name, $file, self::TYPE_FUNCTION, 0, self::serializeObject($clone));
 	}
 
 	/**
@@ -535,8 +535,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function classExistsAnyNamespace($name) {
 		$name = strtolower($name);
 		foreach ([self::TYPE_INTERFACE, self::TYPE_CLASS] as $type) {
-			foreach ($this->index[$type] as $elName=>$data) {
-				if (strrpos($name,$elName) === strlen($elName)-strlen($name)) {
+			foreach ($this->index[$type] as $elName => $data) {
+				if (strrpos($name, $elName) === strlen($elName) - strlen($name)) {
 					return true;
 				}
 			}

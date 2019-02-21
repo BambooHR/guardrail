@@ -134,7 +134,8 @@ class IndexingPhase {
 
 
 	/**
-	 * @param Config $config -
+	 * @param int    $fileNumber -
+	 * @param Config $config     -
 	 * @return resource The client socket that the server should communicate with.
 	 */
 	function createIndexingChild($fileNumber, Config $config) {
@@ -144,12 +145,12 @@ class IndexingPhase {
 			function($socket) use($config, $fileNumber) {
 				$table = $config->getSymbolTable();
 				if ($table instanceof PersistantSymbolTable) {
-					$table->connect( $fileNumber+1 );
+					$table->connect( $fileNumber + 1 );
 				}
 				$buffer = new SocketBuffer();
 				while (1) {
 					$buffer->read($socket);
-					foreach($buffer->getMessages() as $receive) {
+					foreach ($buffer->getMessages() as $receive) {
 						if ($receive == "DONE") {
 							if ($table instanceof PersistantSymbolTable) {
 								$table->flushInserts();

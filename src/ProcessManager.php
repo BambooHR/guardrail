@@ -58,13 +58,18 @@ class ProcessManager {
 					$this->buffers[$index]->read( $socket );
 				}
 			}
-			foreach($this->buffers as $index=> $buffer) {
+			foreach ($this->buffers as $index => $buffer) {
 				$messages = $buffer->getMessages();
 				$this->dispatchMessages( $index, $messages, $serverReadCallBack );
 			}
 		}
 	}
 
+	/**
+	 * @param int      $index              The index into the connections array
+	 * @param array    $messages           Any messages to transmit
+	 * @param callable $serverReadCallBack The callable to pass along to the user function.
+	 */
 
 	function dispatchMessages($index, $messages, $serverReadCallBack) {
 		$socket = $this->connections[$index];

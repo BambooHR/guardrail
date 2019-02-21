@@ -63,6 +63,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	/**
 	 * Reconnect after a pcntl_fork()
 	 *
+	 * @param int $processNumber Which process number we're running as.
 	 * @return void
 	 */
 	public function connect($processNumber) {
@@ -122,6 +123,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	/**
 	 * Add the index to the symbol table.  This is faster than adding it ahead of time.
 	 *
+	 * @param int $processCount The number of processes doing the indexing.
 	 * @return void
 	 */
 	function indexTable($processCount) {

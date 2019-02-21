@@ -25,6 +25,7 @@ interface PersistantSymbolTable {
 	function flushInserts();
 
 	/**
+	 * @param int $processCount The number of child processes.
 	 * @return void
 	 */
 	function indexTable($processCount);

@@ -14,19 +14,19 @@ class SocketBuffer {
 	 */
 	function read($socket) {
 		$read = "";
-		if(socket_recv($socket, $read, 4096, 0)!==false) {
+		if (socket_recv($socket, $read, 4096, 0) !== false) {
 			$this->buffer .= $read;
 			$last = 0;
 			for ($i = 0; $i < strlen($this->buffer); ++$i) {
-				if($this->buffer[$i] == "\n" || $this->buffer[$i] == "\r") {
+				if ($this->buffer[$i] == "\n" || $this->buffer[$i] == "\r") {
 					$msg = substr($this->buffer, $last, $i);
-					if(trim($msg)!='') {
+					if (trim($msg) != '') {
 						$this->messages[] = $msg;
 					}
-					$last = $i+1;
+					$last = $i + 1;
 				}
 			}
-			$this->buffer = substr($this->buffer, $last+1);
+			$this->buffer = substr($this->buffer, $last + 1);
 		}
 	}
 

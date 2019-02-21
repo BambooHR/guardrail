@@ -156,7 +156,7 @@ class Config {
 			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 		}
 
-		if ($this->preferredTable == self::SQLITE_SYMBOL_TABLE || $this->preferredTable== self::JSON_SYMBOL_TABLE) {
+		if ($this->preferredTable == self::SQLITE_SYMBOL_TABLE || $this->preferredTable == self::JSON_SYMBOL_TABLE) {
 			if (!file_exists($this->getSymbolTableFile())) {
 				$this->forceIndex = true;
 			}
@@ -164,7 +164,7 @@ class Config {
 				unlink($this->getSymbolTableFile());
 			}
 
-			if($this->preferredTable == self::JSON_SYMBOL_TABLE) {
+			if ($this->preferredTable == self::JSON_SYMBOL_TABLE) {
 				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\JsonSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
 			} else {
 				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
@@ -491,7 +491,7 @@ class Config {
 	 */
 	private function getSymbolTableFile() {
 		return $this->basePath . "/" . $this->symbolTableFile .
-			($this->preferredTable==self::SQLITE_SYMBOL_TABLE ? ".sqlite3" : ".json");
+			($this->preferredTable == self::SQLITE_SYMBOL_TABLE ? ".sqlite3" : ".json");
 	}
 
 	/**
