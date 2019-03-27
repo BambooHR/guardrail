@@ -86,7 +86,7 @@ class FunctionCallCheck extends BaseCheck {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
 		} else if ($node instanceof FuncCall) {
 			if ($node->name instanceof Name) {
-				$namespacedName = $node->namespacedName->toString();
+				$namespacedName = isset($node->namespacedName) ? $node->namespacedName->toString() : "";
 				$name = $node->name->toString();
 
 				$func = null;
