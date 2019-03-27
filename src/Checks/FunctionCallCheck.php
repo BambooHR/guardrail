@@ -86,7 +86,19 @@ class FunctionCallCheck extends BaseCheck {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
 		} else if ($node instanceof FuncCall) {
 			if ($node->name instanceof Name) {
+				$namespacedName = $node->namespacedName->toString();
 				$name = $node->name->toString();
+
+				$func = null;
+				if ($namespacedName) {
+					$func = $this->symbolTable->getAbstractedFunction($namespacedName);
+					if ($func) {
+						$name = $namespacedName;
+					}
+				}
+				if (!$func && $namespacedName != $name) {
+					$func = $this->symbolTable->getAbstractedFunction($name);
+				}
 
 				$toLower = strtolower($name);
 				if (array_key_exists($toLower, self::$dangerous)) {
@@ -96,7 +108,6 @@ class FunctionCallCheck extends BaseCheck {
 				$this->checkForDateWithoutTimeZone($fileName, $node, $name);
 				$this->checkForRegularExpression($fileName, $node, $name);
 
-				$func = $this->symbolTable->getAbstractedFunction($name);
 				if ($func) {
 					$minimumArgs = $func->getMinimumRequiredParameters($name);
 					if (count($node->args) < $minimumArgs) {

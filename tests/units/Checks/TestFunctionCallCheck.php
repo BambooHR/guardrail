@@ -79,4 +79,11 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	public function testTimeZones() {
 		$this->assertEquals(3, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_UNSAFE_TIME_ZONE));
 	}
+
+	/**
+	 * @return void
+	 */
+	public function testNamespaces() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_UNKNOWN_FUNCTION));
+	}
 }
