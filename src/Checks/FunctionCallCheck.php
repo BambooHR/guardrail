@@ -96,7 +96,7 @@ class FunctionCallCheck extends BaseCheck {
 						$name = $namespacedName;
 					}
 				}
-				if (!$func && $namespacedName != $name) {
+				if (!$func && $namespacedName != $name && $node->name->isUnqualified()) {
 					$func = $this->symbolTable->getAbstractedFunction($name);
 				}
 
