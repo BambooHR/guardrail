@@ -156,6 +156,21 @@ class DefinedConstantCheck extends BaseCheck {
 	}
 
 	/**
+	 * @param string $namespacedName Namespaced name if possible
+	 * @param string $name           Original name of the constant reference.
+	 * @return bool
+	 */
+	protected function constantIsDefined($namespacedName, $name) {
+		if ($namespacedName && $this->symbolTable->isDefined($namespacedName)) {
+			return true;
+		}
+		if ($namespacedName != $name && $this->symbolTable->isDefined($name)) {
+			return true ;
+		}
+		return false;
+	}
+
+	/**
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
@@ -167,8 +182,10 @@ class DefinedConstantCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof ConstFetch) {
-			$name = strval($node->name);
-			if (!$this->isLanguageConst($name) && !$this->isMagicConstant($name) && !$this->isExtensionConstant($name) && !$this->symbolTable->isDefined($name)) {
+			$namespacedName = isset($node->namespacedName) ? $node->namespacedName->toString() : "";
+			$name = $node->name->toString();
+
+			if (!$this->isLanguageConst($name) && !$this->isMagicConstant($name) && !$this->isExtensionConstant($name) && !$this->constantIsDefined($namespacedName, $name)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT, "That's not a thing.  Can't find define named \"$name\"");
 				return;
 			}
