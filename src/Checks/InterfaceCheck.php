@@ -47,14 +47,13 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @param string          $fileName     The file name
 	 * @param Class_          $class        Instance of ClassAbstraction
-	 * @param ClassMethod     $method       Instance of ClassMethod
-	 * @param ClassInterface  $parentClass  Instance of ClassInterface
+	 * @param MethodInterface $method       Instance of MethodInterface
 	 * @param MethodInterface $parentMethod Instance of MethodInterface
 	 * @guardrail-ignore Standard.Unknown.Property
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, Class_ $class, ClassMethod $method, ClassInterface $parentClass, MethodInterface $parentMethod) {
+	protected function checkMethod($fileName, Class_ $class, MethodInterface $method, MethodInterface $parentMethod) {
 
 		$visibility = $method->getAccessLevel();
 		$oldVisibility = $parentMethod->getAccessLevel();
@@ -107,13 +106,12 @@ class InterfaceCheck extends BaseCheck {
 	/**
 	 * implementsMethod
 	 *
-	 * @param string $fileName        The file name
 	 * @param Class_ $node            Instance of ClassAbstraction
 	 * @param string $interfaceMethod The interface
 	 *
 	 * @return ClassMethod|null
 	 */
-	protected function implementsMethod($fileName, Class_ $node, $interfaceMethod) {
+	protected function implementsMethod(Class_ $node, $interfaceMethod) {
 		$current = new AbstractedClass_($node);
 		while (true) {
 			// Is it directly in the class
@@ -192,7 +190,7 @@ class InterfaceCheck extends BaseCheck {
 			if ($methodName != "__construct") {
 				$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
 				if ($method) {
-					$this->checkMethod($fileName, $node, $class->getMethod($methodName), $parentClass, $method);
+					$this->checkMethod($fileName, $node, $class->getMethod($methodName), $method);
 				}
 			}
 		}
@@ -211,13 +209,13 @@ class InterfaceCheck extends BaseCheck {
 		// Don't force abstract classes to implement all methods.
 		if (! $node->isAbstract()) {
 			foreach ($interface->getMethodNames() as $interfaceMethod) {
-				$classMethod = $this->implementsMethod($fileName, $node, $interfaceMethod);
+				$classMethod = $this->implementsMethod($node, $interfaceMethod);
 				if (! $classMethod) {
 					if (! $node->isAbstract()) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
 					}
 				} else {
-					$this->checkMethod($fileName, $node, $classMethod, $interface, $interface->getMethod($interfaceMethod));
+					$this->checkMethod($fileName, $node, $classMethod, $interface->getMethod($interfaceMethod));
 				}
 			}
 		}
