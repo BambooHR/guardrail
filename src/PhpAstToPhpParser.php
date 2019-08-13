@@ -170,9 +170,9 @@ class PhpAstToPhpParser {
 			case \ast\AST_CLOSURE_VAR:
 				$ret = $this->closureVar($node);
 				break;
-			case \ast\AST_COALESCE:
-				$ret = $this->coalesce($node);
-				break;
+			//case \ast\AST_COALESCE:
+			//	$ret = $this->coalesce($node);
+			//	break;
 			case \ast\AST_CONDITIONAL:
 				$ret = $this->conditional($node);
 				break;
