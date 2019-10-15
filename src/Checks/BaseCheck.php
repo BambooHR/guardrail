@@ -22,7 +22,7 @@ abstract class BaseCheck extends ErrorConstants {
 	protected $symbolTable;
 
 	/** @var \BambooHR\Guardrail\Output\OutputInterface  */
-	private $doc;
+	protected $doc;
 
 	/**
 	 * BaseCheck constructor.

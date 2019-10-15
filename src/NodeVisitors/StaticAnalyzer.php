@@ -318,12 +318,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		};
 
 		$func[Node\Stmt\StaticVar::class] = function (Node\Stmt\StaticVar $node) {
-			$this->setScopeExpression($node->name, $node->default, $node->getLine());
+			$this->setScopeExpression($node->var->name, $node->default, $node->getLine());
 		};
 
 		$func[Node\Stmt\Catch_::class] = function (Node\Stmt\Catch_ $node) {
-			$this->setScopeType(strval($node->var), count($node->types)==1 ? strval($node->types[0]) : Scope::MIXED_TYPE, $node->getLine());
-			$this->setScopeUsed(strval($node->var));
+			$this->setScopeType(strval($node->var->name), count($node->types)==1 ? strval($node->types[0]) : Scope::MIXED_TYPE, $node->getLine());
+			$this->setScopeUsed(strval($node->var->name));
 		};
 
 		$func[Node\Stmt\Global_::class] = function (Node\Stmt\Global_ $node) {
@@ -379,22 +379,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 				$function = $this->index->getAbstractedFunction(strval($node->name));
 				if ($function) {
-					$params = $function->getParameters();
-					$paramCount = count($params);
-					foreach ($node->args as $index => $arg) {
-						$value = $arg->value;
-						if ($value instanceof Variable) {
-							if (
-								gettype($value->name) == "string" &&
-									(
-										isset($params[$index]) && $params[$index]->isReference()) ||
-										($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference()
-									)
-							) {
-								$this->setScopeType($value->name, Scope::MIXED_TYPE, $value->getLine());
-							}
-						}
-					}
+					$this->addReferenceParametersToLocalScope($node->args, $function->getParameters());
 				}
 			}
 		};
@@ -742,39 +727,39 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 						$type = $type->type;
 					}
 					$type = Scope::constFromName(strval($type));
-					$scope->setVarType(strval($param->name), $type . "[]", $param->getLine());
+					$scope->setVarType(strval($param->var->name), $type . "[]", $param->getLine());
 				} else {
-					$scope->setVarType(strval($param->name), Scope::ARRAY_TYPE, $param->getLine());
+					$scope->setVarType(strval($param->var->name), Scope::ARRAY_TYPE, $param->getLine());
 				}
-				$scope->setVarNull(strval($param->name), false); // Variadic parameter will never be null.
+				$scope->setVarNull(strval($param->var->name), false); // Variadic parameter will never be null.
 			} else {
 				$paramType = $param->type instanceof Node\NullableType ? strval($param->type->type) : strval($param->type);
-				$scope->setVarType(strval($param->name), Scope::constFromName($paramType), $param->getLine());
-				$scope->setVarAttributes(strval($param->name), Attributes::TOUCHED_FUNCTION_PARAM);
+				$scope->setVarType(strval($param->var->name), Scope::constFromName($paramType), $param->getLine());
+				$scope->setVarAttributes(strval($param->var->name), Attributes::TOUCHED_FUNCTION_PARAM);
 				if ($param->type != null && $param->default == null) {
-					$scope->setVarNull(strval($param->name), false);
+					$scope->setVarNull(strval($param->var->name), false);
 				}
 			}
-			$scope->setVarUsed(strval($param->name)); // It's ok to leave a parameter unused, so we just mark it used.
+			$scope->setVarUsed(strval($param->var->name)); // It's ok to leave a parameter unused, so we just mark it used.
 		}
 		if ($func instanceof Closure) {
 			$oldScope = end($this->scopeStack);
 			foreach ($func->uses as $variable) {
-				$type = $oldScope->getVarType($variable->var);
+				$type = $oldScope->getVarType($variable->var->name);
 				// We don't track variables in global scope, so we'll have to assume those are ok.
 				if ($type == Scope::UNDEFINED && !$oldScope->isGlobal()) {
-					$this->output->emitError(__CLASS__, $this->file, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$" . $variable->var . " in uses() clause");
+					$this->output->emitError(__CLASS__, $this->file, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$" . $variable->var->name . " in uses() clause");
 				} else {
 					if ($variable->byRef) {
 						// This is kind of fun, it's passed by reference so we literally reference the exact same
 						// scope variable object in the new scope.
-						$scope->setVarReference($variable->var, $oldScope->getVarObject($variable->var));
+						$scope->setVarReference($variable->var->name, $oldScope->getVarObject($variable->var->name));
 					} else {
-						$oldScope->setVarUsed($variable->var);
+						$oldScope->setVarUsed($variable->var->name);
 						if ($type == Scope::UNDEFINED) {
 							$type = Scope::MIXED_TYPE;
 						}
-						$scope->setVarType($variable->var, $type, $variable->getLine());
+						$scope->setVarType($variable->var->name, $type, $variable->getLine());
 					}
 				}
 			}
@@ -990,22 +975,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @return void
 	 */
 	private function processMethodCall(Node\Expr\MethodCall $node, $method) {
-		/** @var FunctionLikeParameter[] $params */
-		$params = $method->getParameters();
-		$paramCount = count($params);
-		foreach ($node->args as $index => $arg) {
-			if (
-				(isset($params[$index]) && $params[$index]->isReference()) ||
-				($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
-			) {
-				$value = $arg->value;
-				if ($value instanceof Variable) {
-					if (gettype($value->name) == "string") {
-						$this->setScopeType($value->name, Scope::MIXED_TYPE, $value->getLine());
-					}
-				}
-			}
-		}
+		$this->addReferenceParametersToLocalScope($node->args, $method->getParameters());
 	}
 
 	/**
@@ -1017,18 +987,25 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @return void
 	 */
 	private function processStaticCall(Node\Expr\StaticCall $node, $method) {
-		/** @var FunctionLikeParameter[] $params */
-		$params = $method->getParameters();
+		$this->addReferenceParametersToLocalScope($node->args, $method->getParameters());
+	}
+
+	/**
+	 * @param Node\Arg[]   $args
+	 * @param Node\Param[] $params
+	 */
+	private function addReferenceParametersToLocalScope(array $args, array $params): void {
 		$paramCount = count($params);
-		foreach ($node->args as $index => $arg) {
+		foreach ($args as $index => $arg) {
 			if (
 				(isset($params[$index]) && $params[$index]->isReference()) ||
 				($index >= $paramCount && $paramCount > 0 && $params[$paramCount - 1]->isReference())
 			) {
 				$value = $arg->value;
 				if ($value instanceof Variable) {
-					if (gettype($value->name) == "string") {
-						$this->setScopeType($value->name, Scope::MIXED_TYPE, $value->getLine());
+					if (gettype($value->name) == "string" || $value instanceof Node\Identifier) {
+						//echo "SEtting reference parameter ". strval($value->name)."\n";
+						$this->setScopeType(strval($value->name), Scope::MIXED_TYPE, $value->getLine());
 					}
 				}
 			}

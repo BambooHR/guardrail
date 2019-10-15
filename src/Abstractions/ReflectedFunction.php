@@ -155,9 +155,9 @@ class ReflectedFunction implements FunctionLikeInterface {
 			$type = ($class ? $class->getName() : "");
 			$isPassedByReference = $param->isPassedByReference();
 			$isNullable = (method_exists($param, "allowsNull") ? $param->allowsNull() : false);
+			$name = $this->getName();
 			switch ($index) {
 				case 0:
-					$name = $this->getName();
 					if (
 						$name == "call_user_func" || $name == "call_user_func_array" ||
 						$name == "forward_static_call" || $name == "forward_static_call_array"
@@ -166,13 +166,16 @@ class ReflectedFunction implements FunctionLikeInterface {
 					}
 					break;
 				case 1:
-					$name = $this->getName();
+
 					if ($name == "usort" || $name == "uksort" || $name == "uasort") {
 						$type = "callable";
 					}
+					if ($name=='exec') {
+						$isPassedByReference = true;
+					}
 					break;
 				case 2:
-					if ($this->getName() == "preg_match") {
+					if ($name == "preg_match" || $name == 'exec') {
 						$isPassedByReference = true;
 					}
 					break;

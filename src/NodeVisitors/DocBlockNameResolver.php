@@ -65,19 +65,6 @@ class DocBlockNameResolver extends NameResolver {
 			$this->classAliases[$use->alias] = $name;
 		}
 	}
-
-	/**
-	 * resetState
-	 *
-	 * @param Name|null $namespace Instance of Name (or null)
-	 *
-	 * @return void
-	 */
-	protected function resetState(Name $namespace = null) {
-		parent::resetState($namespace);
-		$this->classAliases = [];
-	}
-
 	/**
 	 * enterNode
 	 *
@@ -104,10 +91,11 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	function importInlineVarType(Node $node) {
+		return;
 		$comment = $node->getDocComment();
 		if ($comment) {
 			try {
-				$block = $this->factory->create($comment->getText(), $this->getDocBlockContext());
+				$block = $this->factory->create($comment->getText());
 				$tags = $block->getTagsByName("var");
 				if ($tags) {
 					$vars = $this->buildVarsFromTag($tags);
@@ -115,19 +103,10 @@ class DocBlockNameResolver extends NameResolver {
 						$node->setAttribute("namespacedInlineVar", $vars);
 					}
 				}
-			} catch (\InvalidArgumentException $exception) {
+			} catch (\InvalidArgumentException|\RuntimeException $exception) {
 				// Skip it.
 			}
 		}
-	}
-
-	/**
-	 * getDocBlockContext
-	 *
-	 * @return Context
-	 */
-	public function getDocBlockContext() {
-		return new Context(strval($this->namespace), $this->classAliases);
 	}
 
 	/**
@@ -180,7 +159,14 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	private function setDocBlockAttributes(Property $prop, $str) {
-		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
+		return;
+		try {
+			$docBlock = $this->factory->create($str);
+		}
+		catch(\Exception $ex) {
+			echo "ERROR Exception in DocBlock: ".$ex->getMessage()."\n";
+			return;
+		}
 		/** @var Var_[] $types */
 		$types = $docBlock->getTagsByName("var");
 		if (count($types) > 0) {
@@ -191,7 +177,11 @@ class DocBlockNameResolver extends NameResolver {
 				}
 
 				// Ignore union types.
-				if (strpos($type, "|") === false) {
+				if ($type && strval($type)!= "" && strpos($type, "|") === false) {
+					$resolvedName = $this->getNameContext()->getResolvedClassName( new Name($type) );
+					if ($resolvedName) {
+						$type = strval($resolvedName);
+					}
 					$prop->props[0]->setAttribute("namespacedType", $type);
 				}
 			}
@@ -207,7 +197,14 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	private function processDockBlockReturn($node, $str) {
-		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
+		return;
+		try {
+			$docBlock = $this->factory->create($str);
+		}
+		catch(\Exception $ex) {
+			echo "ERROR Exception in DocBlock: ".$ex->getMessage()."\n";
+			return;
+		}
 		$return = $docBlock->getTagsByName("return");
 		if (count($return)) {
 			$returnType = strval($return[0]);
@@ -215,6 +212,12 @@ class DocBlockNameResolver extends NameResolver {
 			if ($returnType != "" && strpos($returnType, "|") === false) {
 				if ($returnType[0] == "\\") {
 					$returnType = substr($returnType, 1);
+				}
+				if ($returnType && strval($returnType)!="") {
+					$resolvedType = $this->getNameContext()->getResolvedClassName(new Name($returnType));
+					if($resolvedType) {
+						$returnType = strval($resolvedType);
+					}
 				}
 				$node->setAttribute("namespacedReturn", strval($returnType));
 			}
@@ -233,6 +236,10 @@ class DocBlockNameResolver extends NameResolver {
 				$type = strval($tag->getType());
 				if ($type && $type[0] == "\\") {
 					$type = substr($type, 1);
+				}
+				$resolvedName = $this->getNameContext()->getResolvedClassName( new Name($type));
+				if ($resolvedName) {
+					$type = strval($resolvedName);
 				}
 
 				if ($type != "type") {

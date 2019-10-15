@@ -45,34 +45,35 @@ class TraitImporter {
 	private function resolveAdaptations(array $adaptations, array &$methods) {
 		foreach ($adaptations as $adaptation) {
 			if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
+				$adaptationMethodStr = strval($adaptation->method);
 				// Alias adaptation renames the alias
-				if (!array_key_exists($adaptation->method, $methods)) {
+				if (!array_key_exists($adaptationMethodStr, $methods)) {
 					continue;
 				}
 
 				/** @var Node\Stmt\ClassMethod $method */
 				if (strval($adaptation->trait) == "") {
-					$method = end($methods[$adaptation->method]);
+					$method = end($methods[$adaptationMethodStr]);
 				} else {
-					$method = $methods[$adaptation->method][strval($adaptation->trait)];
+					$method = $methods[$adaptationMethodStr][strval($adaptation->trait)];
 				}
 
 				if ($adaptation->newModifier != null) {
-					$method->type = $method->type & ~(Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
+					$method->flags = $method->flags & ~(Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
 				}
 
 				if ($adaptation->newName != null) {
 					$method->name = $adaptation->newName;
 
 					// Unset it from the old name.
-					unset($methods[$adaptation->method][strval($adaptation->trait)]);
+					unset($methods[$adaptationMethodStr][strval($adaptation->trait)]);
 					// Add it with the new name.
-					$methods[$adaptation->newName][strval($adaptation->trait)] = $method;
+					$methods[strval($adaptation->newName)][strval($adaptation->trait)] = $method;
 				}
 			} else if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
 				foreach ($adaptation->insteadof as $name) {
-					unset($methods[$adaptation->method][$name]);
+					unset($methods[strval($adaptation->method)][$name]);
 				}
 			}
 		}
@@ -156,7 +157,7 @@ class TraitImporter {
 					// Make a deep copy of the node
 					$method = unserialize( serialize( $stmt ) );
 					ForEachNode::run([$method], $apply);
-					$methods[$stmt->name][$traitName] = $method;
+					$methods[strval($stmt->name)][$traitName] = $method;
 				}
 			}
 		}
