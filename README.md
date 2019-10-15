@@ -5,7 +5,7 @@ Copyright (c) 2017 Jon Gardiner and BambooHR
 
 ## Introduction
 
-Guardrail is a static analysis engine for PHP 5 - 7.  Guardrail will index your code base, learn
+Guardrail is a static analysis engine for PHP 7.  Guardrail will index your code base, learn
 every symbol, and then confirm that every file in the system uses those symbols in a way that
 makes sense.  For example, if you have a function call to an undefined function, it will be
 found by Guardrail.
