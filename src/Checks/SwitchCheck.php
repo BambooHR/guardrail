@@ -40,12 +40,10 @@ class SwitchCheck extends BaseCheck {
 			$lastStatement == null ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Return_ ||
-			$lastStatement instanceof \PhpParser\Node\Expr\Exit_ ||
-			(
-				$lastStatement instanceof \PhpParser\Node\Expr\FuncCall &&
-				$lastStatement->name instanceof \PhpParser\Node\Name &&
-				$lastStatement->name == "die"
-			) || (
+				(
+					$lastStatement instanceof \PhpParser\Node\Stmt\Expression &&
+					$lastStatement->expr instanceof Node\Expr\Exit_
+				) || (
 				(
 					$lastStatement instanceof \PhpParser\Node\Stmt\Switch_ ||
 					$lastStatement instanceof \PhpParser\Node\Stmt\If_

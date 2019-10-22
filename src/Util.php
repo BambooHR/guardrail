@@ -10,6 +10,7 @@ use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Expr\MethodCall;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
@@ -298,7 +299,9 @@ class Util {
 
 		if (!$lastStatement) {
 			return false;
-		} else if ($lastStatement instanceof Exit_ || $lastStatement instanceof Return_) {
+		} else if ($lastStatement instanceof Expression && $lastStatement->expr instanceof Exit_) {
+			return true;
+		} else if ($lastStatement instanceof Return_) {
 			return true;
 		} else if ($lastStatement instanceof If_) {
 			return self::allIfBranchesExit($lastStatement);

@@ -249,6 +249,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 		$func[Closure::class] = function (Closure $node) {
 			$this->handleUnusedVars($node);
+
+		};
+
+		$func[Node\Expr\ArrowFunction::class] = function(Node\Expr\ArrowFunction $node) {
+			array_pop($this->scopeStack);
+			//TODO: distinguish unused locally declared variables vs variables wrapped by the closure scope.
 		};
 
 		$func[ElseIf_::class] = function (ElseIf_ $node) {
@@ -305,6 +311,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$this->pushFunctionScope($node);
 		};
 
+		$func[Node\Expr\ArrowFunction::class] = function(Node\Expr\ArrowFunction $node) {
+			$this->pushFunctionScope($node);
+		};
+
 		$func[Closure::class] = function (Closure $node) {
 			$this->pushFunctionScope($node);
 		};
@@ -337,10 +347,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		};
 
 		$func[Node\Expr\MethodCall::class] = function (Node\Expr\MethodCall $node) {
-			if (gettype($node->name) == "string") {
+			if ($node->name instanceof Node\Identifier) {
 				list($type) = $this->typeInferrer->inferType(end($this->classStack) ?: null, $node->var, end($this->scopeStack));
 				if ($type && $type[0] != "!") {
-					$method = $this->index->getAbstractedMethod($type, $node->name);
+					$method = $this->index->getAbstractedMethod($type, $node->name->name);
 					if ($method) {
 						$this->processMethodCall($node, $method);
 					}
@@ -715,11 +725,16 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			$isStatic = $func->isStatic();
 		} else if ($func instanceof Closure) {
 			$isStatic = $func->static;
+		} else if ($func instanceof Node\Expr\ArrowFunction) {
+			$isStatic = $func->static;
 		}
+
+
 		//echo "Function: ".$func->name." depth=".(count($this->scopeStack)+1)."\n";
 		$scope = new Scope($isStatic, false, $func);
+
 		foreach ($func->getParams() as $param) {
-			//echo "  Param ".$param->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
+			//echo "  Param ".$param->var->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
 			if ($param->variadic) {
 				if ($param->getType()) {
 					$type = $param->type;
@@ -741,6 +756,10 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				}
 			}
 			$scope->setVarUsed(strval($param->var->name)); // It's ok to leave a parameter unused, so we just mark it used.
+		}
+		if ($func instanceof Node\Expr\ArrowFunction) {
+			// Arrow functions automatically inherit all local scope.
+			$scope->merge( end($this->scopeStack) );
 		}
 		if ($func instanceof Closure) {
 			$oldScope = end($this->scopeStack);
@@ -764,6 +783,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				}
 			}
 		}
+
 
 		if ($func instanceof ClassMethod || $func instanceof Function_) {
 			$this->updateFunctionEmit($func, "push");
@@ -898,10 +918,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			if (!isset($overrides[$varName])) {
 				$this->setScopeExpression($varName, $op->expr, $op->expr->getLine());
 			}
-		} else if ($op->var instanceof List_) {
+		} else if ($op->var instanceof List_ || $op->var instanceof Node\Expr\Array_) {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to mixed.
 			foreach ($op->var->items as $var) {
 				if ($var) {
+					/** @var Node\Expr\ArrayItem $var */
 					$value = $var->value;
 					if ($var->key == null && $value && $value instanceof Variable && gettype($value->name) == "string") {
 						$this->setScopeType(strval($value->name), Scope::MIXED_TYPE, $var->getLine());
@@ -1004,7 +1025,6 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				$value = $arg->value;
 				if ($value instanceof Variable) {
 					if (gettype($value->name) == "string" || $value instanceof Node\Identifier) {
-						//echo "SEtting reference parameter ". strval($value->name)."\n";
 						$this->setScopeType(strval($value->name), Scope::MIXED_TYPE, $value->getLine());
 					}
 				}

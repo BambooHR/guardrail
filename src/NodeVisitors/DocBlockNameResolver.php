@@ -7,8 +7,6 @@
 
 use BambooHR\Guardrail\Scope;
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
-use phpDocumentor\Reflection\DocBlockFactory;
-use phpDocumentor\Reflection\Types\Context;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -26,11 +24,6 @@ use BambooHR\Guardrail\Abstractions\ClassMethod;
 class DocBlockNameResolver extends NameResolver {
 
 	/**
-	 * @var DocBlockFactory
-	 */
-	private $factory;
-
-	/**
 	 * @var array
 	 */
 	private $classAliases = [];
@@ -45,7 +38,6 @@ class DocBlockNameResolver extends NameResolver {
 	 */
 	function __construct() {
 		parent::__construct();
-		$this->factory = DocBlockFactory::createInstance();
 	}
 
 	/**
@@ -91,21 +83,9 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	function importInlineVarType(Node $node) {
-		return;
 		$comment = $node->getDocComment();
-		if ($comment) {
-			try {
-				$block = $this->factory->create($comment->getText());
-				$tags = $block->getTagsByName("var");
-				if ($tags) {
-					$vars = $this->buildVarsFromTag($tags);
-					if (count($vars) > 0) {
-						$node->setAttribute("namespacedInlineVar", $vars);
-					}
-				}
-			} catch (\InvalidArgumentException|\RuntimeException $exception) {
-				// Skip it.
-			}
+		if ($comment && preg_match_all('/@var +([A-Z0-9_-|\\\\]+)( +([A-Z0-9_]+))?/', $comment, $matchArray, PREG_SET_ORDER)) {
+			$this->buildVarsFromTag($matchArray);
 		}
 	}
 
@@ -117,9 +97,8 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	public function importVarType(Property $prop) {
-		$prop->getDocComment();
 		$comment = $prop->getDocComment();
-		if ($comment) {
+		if ($comment && preg_match_all('/@var +([A-Z0-9_-|\\\\]+)( +(\\$[A-Z0-9_]+))?/', $comment, $matchArray, PREG_SET_ORDER)) {
 			$str = $comment->getText();
 			if (count($prop->props) >= 1) {
 				try {
@@ -158,19 +137,9 @@ class DocBlockNameResolver extends NameResolver {
 	 *
 	 * @return void
 	 */
-	private function setDocBlockAttributes(Property $prop, $str) {
-		return;
-		try {
-			$docBlock = $this->factory->create($str);
-		}
-		catch(\Exception $ex) {
-			echo "ERROR Exception in DocBlock: ".$ex->getMessage()."\n";
-			return;
-		}
-		/** @var Var_[] $types */
-		$types = $docBlock->getTagsByName("var");
-		if (count($types) > 0) {
-			$type = strval($types[0]->getType());
+	private function setDocBlockAttributes(Property $prop, $matches) {
+		if (count($matches) > 0) {
+			$type = strval($matches[0]);
 			if (!empty($type)) {
 				if ($type[0] == '\\') {
 					$type = substr($type, 1);
@@ -197,17 +166,8 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	private function processDockBlockReturn($node, $str) {
-		return;
-		try {
-			$docBlock = $this->factory->create($str);
-		}
-		catch(\Exception $ex) {
-			echo "ERROR Exception in DocBlock: ".$ex->getMessage()."\n";
-			return;
-		}
-		$return = $docBlock->getTagsByName("return");
-		if (count($return)) {
-			$returnType = strval($return[0]);
+		if ($str && preg_match_all('/@return +([A-Z0-9_-|\\\\]+)( +([A-Z0-9_]+))?/', $str, $matchArray, PREG_SET_ORDER)) {
+			$returnType = strval($matchArray[0][1]);
 			list($returnType) = explode(" ", $returnType, 2);
 			if ($returnType != "" && strpos($returnType, "|") === false) {
 				if ($returnType[0] == "\\") {
@@ -225,15 +185,14 @@ class DocBlockNameResolver extends NameResolver {
 	}
 
 	/**
-	 * @param Tag_[] $tags An array of Tag_ objects
+	 * @param array[] $tags array of arrays.  [[0=> whole match, 1=>type, 3=>optional name],...]
 	 * @return array
 	 */
 	protected function buildVarsFromTag($tags) {
 		$vars = [];
 		foreach ($tags as $tag) {
-			/** @var Var_ $tag */
-			if ($tag->getVariableName()) {
-				$type = strval($tag->getType());
+			if (isset($tag[3])) {
+				$type = strval($tag[1]);
 				if ($type && $type[0] == "\\") {
 					$type = substr($type, 1);
 				}
@@ -243,7 +202,7 @@ class DocBlockNameResolver extends NameResolver {
 				}
 
 				if ($type != "type") {
-					$vars[$tag->getVariableName()] = Scope::nameFromConst($type);
+					$vars[$tag[3]] = Scope::nameFromConst($type);
 				}
 			}
 		}
