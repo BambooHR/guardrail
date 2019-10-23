@@ -17,7 +17,7 @@ use PhpParser\NodeVisitorAbstract;
 class ForEachNode extends NodeVisitorAbstract {
 
 	/**
-	 * @var
+	 * @var callable
 	 */
 	private $callBack;
 

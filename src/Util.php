@@ -56,7 +56,7 @@ class Util {
 	 * @return bool
 	 */
 	static public function isLegalNonObject($name) {
-		return self::isScalarType($name) || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0;
+		return self::isScalarType($name) || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name,"resource") == 0;
 	}
 
 	/**

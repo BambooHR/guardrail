@@ -472,6 +472,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * enterNode
 	 *
 	 * @param Node $node Instance of the node
+	 * @guardrail-ignore Standard.VariableFunctionCall
 	 *
 	 * @return null
 	 */
@@ -949,7 +950,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * leaveNode
 	 *
 	 * @param Node $node Instance of node
-	 *
+	 * @guardrail-ignore Standard.VariableFunctionCall
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
