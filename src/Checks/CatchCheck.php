@@ -41,10 +41,10 @@ class CatchCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Catch_) {
 			foreach ($node->types as $nameOb) {
-				$name = strval($nameOb);
+				$name = strtolower(strval($nameOb));
 				if ($this->symbolTable->ignoreType($name)) {
 					// exception is in the ignore list... but if the error constant is turned on, we should emit this error
-					if ('exception' == $node->var) {
+					if ( $name == 'exception' ) {
 						/* Detect a throw at any depth in the catch() subtree.  (Ignoring nested try/catch blocks).
 						   We trust that if they throw anything, they made a conscious decision about how the
 						   exception needed to bubble up. */

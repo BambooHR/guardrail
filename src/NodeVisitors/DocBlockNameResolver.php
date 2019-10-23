@@ -6,9 +6,8 @@
  */
 
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\Util;
 use phpDocumentor\Reflection\DocBlock\Tags\Var_;
-use phpDocumentor\Reflection\DocBlockFactory;
-use phpDocumentor\Reflection\Types\Context;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -26,11 +25,6 @@ use BambooHR\Guardrail\Abstractions\ClassMethod;
 class DocBlockNameResolver extends NameResolver {
 
 	/**
-	 * @var DocBlockFactory
-	 */
-	private $factory;
-
-	/**
 	 * @var array
 	 */
 	private $classAliases = [];
@@ -45,7 +39,6 @@ class DocBlockNameResolver extends NameResolver {
 	 */
 	function __construct() {
 		parent::__construct();
-		$this->factory = DocBlockFactory::createInstance();
 	}
 
 	/**
@@ -65,19 +58,6 @@ class DocBlockNameResolver extends NameResolver {
 			$this->classAliases[$use->alias] = $name;
 		}
 	}
-
-	/**
-	 * resetState
-	 *
-	 * @param Name|null $namespace Instance of Name (or null)
-	 *
-	 * @return void
-	 */
-	protected function resetState(Name $namespace = null) {
-		parent::resetState($namespace);
-		$this->classAliases = [];
-	}
-
 	/**
 	 * enterNode
 	 *
@@ -105,29 +85,13 @@ class DocBlockNameResolver extends NameResolver {
 	 */
 	function importInlineVarType(Node $node) {
 		$comment = $node->getDocComment();
-		if ($comment) {
-			try {
-				$block = $this->factory->create($comment->getText(), $this->getDocBlockContext());
-				$tags = $block->getTagsByName("var");
-				if ($tags) {
-					$vars = $this->buildVarsFromTag($tags);
-					if (count($vars) > 0) {
-						$node->setAttribute("namespacedInlineVar", $vars);
-					}
-				}
-			} catch (\InvalidArgumentException $exception) {
-				// Skip it.
+		if ($comment && preg_match_all('/@var +([-A-Z0-9_|\\\\]+)( +\\$([A-Z0-9_]+))?/i', $comment->getText(), $matchArray, PREG_SET_ORDER)) {
+			$vars = $this->buildVarsFromTag($matchArray);
+
+			if (count($vars) > 0) {
+				$node->setAttribute("namespacedInlineVar", $vars);
 			}
 		}
-	}
-
-	/**
-	 * getDocBlockContext
-	 *
-	 * @return Context
-	 */
-	public function getDocBlockContext() {
-		return new Context(strval($this->namespace), $this->classAliases);
 	}
 
 	/**
@@ -138,13 +102,11 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	public function importVarType(Property $prop) {
-		$prop->getDocComment();
 		$comment = $prop->getDocComment();
-		if ($comment) {
-			$str = $comment->getText();
+		if ($comment && preg_match_all('/@var +([-A-Z0-9_|\\\\]+)( +(\\$[A-Z0-9_]+))?/i', $comment, $matchArray, PREG_SET_ORDER)) {
 			if (count($prop->props) >= 1) {
 				try {
-					$this->setDocBlockAttributes($prop, $str);
+					$this->setDocBlockAttributes($prop, $matchArray);
 				} catch (\InvalidArgumentException $exception) {
 					// Skip it.
 				}
@@ -179,19 +141,22 @@ class DocBlockNameResolver extends NameResolver {
 	 *
 	 * @return void
 	 */
-	private function setDocBlockAttributes(Property $prop, $str) {
-		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
-		/** @var Var_[] $types */
-		$types = $docBlock->getTagsByName("var");
-		if (count($types) > 0) {
-			$type = strval($types[0]->getType());
+	private function setDocBlockAttributes(Property $prop, $matches) {
+		if (count($matches) > 0) {
+			$type = strval($matches[0][1]);
 			if (!empty($type)) {
-				if ($type[0] == '\\') {
-					$type = substr($type, 1);
+				if ($type=='mixed') {
+					$type = '';
 				}
-
 				// Ignore union types.
-				if (strpos($type, "|") === false) {
+				if ($type && strval($type) != "" && strpos($type,'\\') !== 0 && strpos($type, "|") === false && !Util::isLegalNonObject($type)) {
+					$resolvedName = $this->getNameContext()->getResolvedClassName( new Name($type) );
+					if ($resolvedName) {
+						$type = strval($resolvedName);
+					}
+					if ($type[0] == '\\') {
+						$type = substr($type, 1);
+					}
 					$prop->props[0]->setAttribute("namespacedType", $type);
 				}
 			}
@@ -207,13 +172,21 @@ class DocBlockNameResolver extends NameResolver {
 	 * @return void
 	 */
 	private function processDockBlockReturn($node, $str) {
-		$docBlock = $this->factory->create($str, $this->getDocBlockContext());
-		$return = $docBlock->getTagsByName("return");
-		if (count($return)) {
-			$returnType = strval($return[0]);
+		if ($str && preg_match_all('/@return +([A-Z0-9_|\\\\]+)/i', $str, $matchArray, PREG_SET_ORDER)) {
+			$returnType = strval($matchArray[0][1]);
 			list($returnType) = explode(" ", $returnType, 2);
 			if ($returnType != "" && strpos($returnType, "|") === false) {
-				if ($returnType[0] == "\\") {
+
+				if ($returnType == "mixed") {
+					$returnType = "";
+				}
+				if ($returnType && strval($returnType) != "" && strpos($returnType, '\\') !== 0 && !Util::isLegalNonObject($returnType)) {
+					$resolvedType = $this->getNameContext()->getResolvedClassName( new Name($returnType) );
+					if($resolvedType) {
+						$returnType = strval($resolvedType);
+					}
+				}
+				if (substr($returnType, 0, 1) == "\\") {
 					$returnType = substr($returnType, 1);
 				}
 				$node->setAttribute("namespacedReturn", strval($returnType));
@@ -222,21 +195,28 @@ class DocBlockNameResolver extends NameResolver {
 	}
 
 	/**
-	 * @param Tag_[] $tags An array of Tag_ objects
+	 * @param array[] $tags array of arrays.  [[0=> whole match, 1=>type, 3=>optional name],...]
 	 * @return array
 	 */
 	protected function buildVarsFromTag($tags) {
 		$vars = [];
 		foreach ($tags as $tag) {
-			/** @var Var_ $tag */
-			if ($tag->getVariableName()) {
-				$type = strval($tag->getType());
+			if (isset($tag[3])) {
+				$type = strval($tag[1]);
+
+				if(strpos($type, '\\') !== 0 && !Util::isLegalNonObject($type)) {
+					$resolvedName = $this->getNameContext()->getResolvedClassName( new Name($type) );
+					if ($resolvedName) {
+						$type = strval($resolvedName);
+					}
+				}
+
 				if ($type && $type[0] == "\\") {
 					$type = substr($type, 1);
 				}
 
 				if ($type != "type") {
-					$vars[$tag->getVariableName()] = Scope::nameFromConst($type);
+					$vars[$tag[3]] = Scope::nameFromConst($type);
 				}
 			}
 		}

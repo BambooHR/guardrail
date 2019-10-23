@@ -60,9 +60,9 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 
 			// Catalog all private properties
 			foreach ($node->stmts as $stmt) {
-				if ($stmt instanceof Property && $stmt->type == Class_::MODIFIER_PRIVATE) {
+				if ($stmt instanceof Property && $stmt->flags == Class_::MODIFIER_PRIVATE) {
 					foreach ($stmt->props as $prop) {
-						$props[$prop->name] = $prop;
+						$props[$prop->name->name] = $prop;
 					}
 				}
 			}
@@ -95,7 +95,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 		$this->usedPropertyVisitor->reset();
 		foreach ($inside->stmts as $statement) {
 			// we will ignore constructors for the purposes of usage
-			if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct' && $statement->stmts) {
+			if ($statement instanceof Node\Stmt\ClassMethod && strval($statement->name) !== '__construct' && $statement->stmts) {
 				$this->traverser->traverse($statement->stmts);
 			}
 		}

@@ -76,7 +76,7 @@ class AnalyzingPhase {
 	function initParser(Config $config, OutputInterface $output) {
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor(new DocBlockNameResolver());
-		$traverser1->addVisitor(new DoWhileVisitor());
+		//$traverser1->addVisitor(new DoWhileVisitor());
 
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));

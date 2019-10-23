@@ -79,6 +79,7 @@ class IndexingPhase {
 	 * @param Config $config   -
 	 * @param string $pathName -
 	 * @return int The length in bytes of the file that was indexed.
+	 * @guardrail-ignore Standard.Exception.Base
 	 */
 	function indexFile(Config $config, $pathName) {
 		$baseDir = $config->getBasePath();

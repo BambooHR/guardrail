@@ -95,7 +95,7 @@ class ClassMethod implements MethodInterface {
 		foreach ($this->method->params as $param) {
 			$ret[] = new FunctionLikeParameter(
 				$param->type instanceof NullableType ? $param->type->type : $param->type,
-				$param->name,
+				$param->var->name,
 				$param->default != null,
 				$param->byRef,
 				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name, "null") == 0)
