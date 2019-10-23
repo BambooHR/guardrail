@@ -47,9 +47,9 @@ class IndexingPhase {
 		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
 		$this->traverser2->addVisitor($this->indexer);
 		//if (PhpAstParser::isSupported()) {
-			$this->parser = new PhpAstParser();
+		//	$this->parser = new PhpAstParser();
 		//} else {
-		//	$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+			$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 		//}
 	}
 
