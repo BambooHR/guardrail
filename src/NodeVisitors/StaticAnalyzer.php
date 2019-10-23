@@ -1015,7 +1015,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @param Node\Arg[]   $args
 	 * @param Node\Param[] $params
 	 */
-	private function addReferenceParametersToLocalScope(array $args, array $params): void {
+	private function addReferenceParametersToLocalScope(array $args, array $params) {
 		$paramCount = count($params);
 		foreach ($args as $index => $arg) {
 			if (

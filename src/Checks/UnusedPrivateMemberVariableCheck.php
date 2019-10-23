@@ -95,7 +95,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 		$this->usedPropertyVisitor->reset();
 		foreach ($inside->stmts as $statement) {
 			// we will ignore constructors for the purposes of usage
-			if ($statement instanceof Node\Stmt\ClassMethod && $statement->name !== '__construct' && $statement->stmts) {
+			if ($statement instanceof Node\Stmt\ClassMethod && strval($statement->name) !== '__construct' && $statement->stmts) {
 				$this->traverser->traverse($statement->stmts);
 			}
 		}

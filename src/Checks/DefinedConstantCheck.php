@@ -182,7 +182,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof ConstFetch) {
-			$namespacedName = isset($node->namespacedName) ? $node->namespacedName->toString() : "";
+			$namespacedName = $node->name->hasAttribute('namespacedName') ? $node->name->getAttribute('namespacedName')->toString() : "";
 			$name = $node->name->toString();
 
 			if (!$this->isLanguageConst($name) && !$this->isMagicConstant($name) && !$this->isExtensionConstant($name) && !$this->constantIsDefined($namespacedName, $name)) {

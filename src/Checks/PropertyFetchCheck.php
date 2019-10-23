@@ -67,7 +67,7 @@ class PropertyFetchCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
 				}
 
-				if (!is_string($node->name)) {
+				if (!$node->name instanceof Node\Identifier) {
 					// Variable property name.  Yuck!
 					return;
 				}
@@ -77,7 +77,7 @@ class PropertyFetchCheck extends BaseCheck {
 					return;
 				}
 
-				list($property,$declaredIn) = Util::findAbstractedProperty($type, $node->name, $this->symbolTable);
+				list($property,$declaredIn) = Util::findAbstractedProperty($type, strval($node->name), $this->symbolTable);
 
 				if (!$property) {
 					$this->handleUndeclaredProperty($fileName, $node, $type);

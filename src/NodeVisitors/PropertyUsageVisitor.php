@@ -56,8 +56,8 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 			$node->var instanceof Node\Expr\Variable &&
 			$node->var->name === 'this'
 		) {
-			if (is_string($node->name)) {
-				$this->usedProperties[$node->name] = true;
+			if ($node->name instanceof Node\Identifier) {
+				$this->usedProperties[strval($node->name)] = true;
 			} else {
 				// $this->$variable
 				$this->detectedDynamicScripting = true;
