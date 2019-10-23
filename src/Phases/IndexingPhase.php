@@ -46,11 +46,11 @@ class IndexingPhase {
 		$this->traverser2 = new NodeTraverser;
 		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
 		$this->traverser2->addVisitor($this->indexer);
-		if (PhpAstParser::isSupported()) {
+		//if (PhpAstParser::isSupported()) {
 			$this->parser = new PhpAstParser();
-		} else {
-			$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
-		}
+		//} else {
+		//	$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		//}
 	}
 
 	/**
