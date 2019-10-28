@@ -8,6 +8,7 @@
 class ErrorConstants {
 
 
+	const TYPE_ASSIGN_MISMATCH = 'Standard.Assign.Type';
 	const TYPE_ACCESS_VIOLATION = 'Standard.Access.Violation';
 	const TYPE_AUTOLOAD_ERROR = 'Standard.Autoload.Unsafe';
 	const TYPE_BREAK_NUMBER = 'Standard.Switch.BreakMultiple';
@@ -36,6 +37,7 @@ class ErrorConstants {
 	const TYPE_NULL_DEREFERENCE = "Standard.Null.Dereference";
 	const TYPE_PARSE_ERROR = 'Standard.Parse.Error';
 	const TYPE_SCOPE_ERROR = 'Standard.Scope';
+	const TYPE_SPLAT_MISMATCH = "Standard.Splat.Type";
 	const TYPE_SECURITY_BACKTICK = 'Standard.Security.Backtick';
 	const TYPE_SECURITY_DANGEROUS = 'Standard.Security.Shell';
 	const TYPE_SIGNATURE_COUNT = 'Standard.Param.Count';

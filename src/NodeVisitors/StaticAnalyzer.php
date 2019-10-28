@@ -27,8 +27,10 @@ use BambooHR\Guardrail\Checks\InterfaceCheck;
 use BambooHR\Guardrail\Checks\MethodCall;
 use BambooHR\Guardrail\Checks\ParamTypesCheck;
 use BambooHR\Guardrail\Checks\PropertyFetchCheck;
+use BambooHR\Guardrail\Checks\PropertyStoreCheck;
 use BambooHR\Guardrail\Checks\Psr4Check;
 use BambooHR\Guardrail\Checks\ReturnCheck;
+use BambooHR\Guardrail\Checks\SplatCheck;
 use BambooHR\Guardrail\Checks\StaticCallCheck;
 use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
 use BambooHR\Guardrail\Checks\SwitchCheck;
@@ -156,6 +158,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new ConditionalAssignmentCheck($this->index, $output),
 			new ClassMethodStringCheck($this->index, $output),
 			new UnusedPrivateMemberVariableCheck($this->index, $output),
+			new SplatCheck($this->index, $output),
+			new PropertyStoreCheck($this->index, $output),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
@@ -737,7 +741,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		foreach ($func->getParams() as $param) {
 			//echo "  Param ".$param->var->name." ". $param->type. " ". ($param->default==NULL ? "Not null" : "default"). " ".($param->variadic ? "variadic" : "")."\n";
 			if ($param->variadic) {
-				if ($param->getType()) {
+				if ($param->type) {
 					$type = $param->type;
 					if ($type instanceof Node\NullableType) {
 						$type = $type->type;

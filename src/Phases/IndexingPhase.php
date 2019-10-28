@@ -14,6 +14,7 @@ use BambooHR\Guardrail\SocketBuffer;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use Phar;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 use BambooHR\Guardrail\NodeVisitors\SymbolTableIndexer;
@@ -42,7 +43,8 @@ class IndexingPhase {
 	function __construct(Config $config) {
 		$this->processManager = new ProcessManager();
 		$this->traverser1 = new NodeTraverser;
-		$this->traverser1->addVisitor(new DocBlockNameResolver());
+		$this->traverser1->addVisitor($resolver = new NameResolver());
+		$this->traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 		$this->traverser2 = new NodeTraverser;
 		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
 		$this->traverser2->addVisitor($this->indexer);

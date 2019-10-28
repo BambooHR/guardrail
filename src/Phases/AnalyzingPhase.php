@@ -9,9 +9,7 @@ use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
-use BambooHR\Guardrail\NodeVisitors\DoWhileVisitor;
 use BambooHR\Guardrail\Output\SocketOutput;
-use BambooHR\Guardrail\Output\XUnitOutput;
 use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SocketBuffer;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
@@ -26,6 +24,7 @@ use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Use_;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 use BambooHR\Guardrail\Config;
@@ -75,8 +74,8 @@ class AnalyzingPhase {
 	 */
 	function initParser(Config $config, OutputInterface $output) {
 		$traverser1 = new NodeTraverser;
-		$traverser1->addVisitor(new DocBlockNameResolver());
-		//$traverser1->addVisitor(new DoWhileVisitor());
+		$traverser1->addVisitor($resolver = new NameResolver());
+		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));

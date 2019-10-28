@@ -8,6 +8,7 @@
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
@@ -164,7 +165,8 @@ class Grabber extends NodeVisitorAbstract {
 			}
 
 			$traverser = new NodeTraverser;
-			$traverser->addVisitor(new DocBlockNameResolver());
+			$traverser->addVisitor($resolver = new NameResolver());
+			$traverser->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 			$stmts = $traverser->traverse( $stmts );
 
 			if ($classType == Class_::class) {

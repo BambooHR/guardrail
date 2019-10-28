@@ -62,6 +62,9 @@ class TypeInferrer {
 		if ($expr instanceof Expr\Cast\Double) {
 			return [Scope::FLOAT_TYPE, 0];
 		}
+		if ($expr instanceof Expr\ArrowFunction) {
+			return ['Closure', 0];
+		}
 		if ($expr instanceof Expr\Cast\String_) {
 			list(, $attributes) = $this->inferType($inside, $expr->expr, $scope);
 			return [Scope::STRING_TYPE, $attributes & ~Attributes::NULL_POSSIBLE];
@@ -242,13 +245,11 @@ class TypeInferrer {
 	 * @return array
 	 */
 	public function inferPropertyFetch(PropertyFetch $expr, $inside, $scope) {
-		if (!Config::shouldUseDocBlockForProperties()) {
-			return [Scope::MIXED_TYPE, Scope::NULL_UNKNOWN];
-		}
 		list($class) = $this->inferType($inside, $expr->var, $scope);
 		if (!empty($class) && $class[0] != "!") {
-			if (gettype($expr->name) == 'string') {
-				$propName = $expr->name;
+			if ($expr->name instanceof Node\Identifier) {
+
+				$propName = strval($expr->name);
 				if ($propName != "") {
 					$classDef = $this->index->getAbstractedClass($class);
 					if ($classDef) {

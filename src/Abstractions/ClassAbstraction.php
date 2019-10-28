@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Config;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
@@ -184,7 +185,11 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-					return new Property($propertyProperty->name, $propertyProperty->getAttribute("namespacedType") ?: "", $access, $prop->isStatic());
+					$type = strval($prop->type);
+					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
+						$type = $propertyProperty->getAttribute("namespacedType");
+					}
+					return new Property($propertyProperty->name, $type, $access, $prop->isStatic());
 				}
 			}
 		}
