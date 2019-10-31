@@ -187,6 +187,7 @@ class MethodCall extends BaseCheck {
 					$type == Scope::ARRAY_TYPE ||
 					$type == Scope::UNDEFINED ||
 					$type == Scope::MIXED_TYPE ||
+					$type == "" ||
 					$this->symbolTable->isParentClassOrInterface(\Traversable::class, $type)
 				);
 				if (!$isSplatable) {

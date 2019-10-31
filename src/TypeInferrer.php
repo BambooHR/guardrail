@@ -128,6 +128,9 @@ class TypeInferrer {
 					return [Scope::STRING_TYPE, Attributes::TOUCHED_USER_INPUT];
 				}
 				$scopeType = $scope->getVarType($varName);
+				if($scopeType=="") {
+					$scopeType = Scope::UNDEFINED;
+				}
 				$attributes = $scope->getVarAttributes($varName);
 				if ($scopeType != Scope::UNDEFINED) {
 					return [$scopeType, $scope->getVarNullability($varName), $attributes];
