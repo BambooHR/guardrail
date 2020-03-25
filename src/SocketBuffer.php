@@ -2,11 +2,26 @@
 
 namespace BambooHR\Guardrail;
 
+use BambooHR\Guardrail\Exceptions\SocketException;
 
 class SocketBuffer {
 
 	private $buffer = "";
 	private $messages = [];
+
+	static function firstEol($str) {
+		$index1 = strpos($str,"\n");
+		$index2 = strpos($str,"\r");
+		if ($index1 === false && $index2 === false) {
+			return false;
+		} else if ($index1 === false) {
+			return $index2;
+		} else if ($index2 === false) {
+			return $index1;
+		} else {
+			return min($index1, $index2);
+		}
+	}
 
 	/**
 	 * @param resource $socket Connection to read
@@ -16,17 +31,15 @@ class SocketBuffer {
 		$read = "";
 		if (socket_recv($socket, $read, 4096, 0) !== false) {
 			$this->buffer .= $read;
-			$last = 0;
-			for ($index = 0; $index < strlen($this->buffer); ++$index) {
-				if ($this->buffer[$index] == "\n" || $this->buffer[$index] == "\r") {
-					$msg = substr($this->buffer, $last, $index);
-					if (trim($msg) != '') {
-						$this->messages[] = $msg;
-					}
-					$last = $index + 1;
+			do {
+				$index = self::firstEol($this->buffer);
+				if ($index !== false) {
+					$this->messages[] = trim(substr($this->buffer, 0, $index + 1), "\r\n\0\x0B");
+					$this->buffer = substr($this->buffer, $index + 1);
 				}
-			}
-			$this->buffer = substr($this->buffer, $last + 1);
+			} while (strlen($this->buffer) > 0 && $index !== false);
+		} else {
+			throw new SocketException(socket_strerror(socket_last_error($socket)));
 		}
 	}
 
