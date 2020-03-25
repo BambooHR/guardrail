@@ -9,6 +9,8 @@
 namespace BambooHR\Guardrail;
 
 
+use BambooHR\Guardrail\Exceptions\SocketException;
+
 /**
  * Class ProcessManager
  *
@@ -55,7 +57,14 @@ class ProcessManager {
 			$none = null;
 			if (socket_select($read, $none, $none, null)) {
 				foreach ($read as $index => $socket) {
-					$this->buffers[$index]->read( $socket );
+					try {
+						$this->buffers[$index]->read($socket);
+					}
+					catch(SocketException $socketException) {
+						echo "Socket error: ".$socketException->getMessage(). "\n";
+						unset($this->connections[$index]);
+						unset($this->buffers[$index]);
+					}
 				}
 			}
 			foreach ($this->buffers as $index => $buffer) {

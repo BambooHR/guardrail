@@ -229,7 +229,7 @@ class AnalyzingPhase {
 						foreach ($buffer->getMessages() as $receive) {
 							$receive = trim($receive);
 							if ($receive == "TIMINGS") {
-								socket_write($socket, "TIMINGS " . json_encode($this->analyzer->getTimingsAndCounts()) . "\n");
+								socket_write($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
 								return 0;
 							} else {
 								list($command, $file) = explode(' ', $receive, 2);
@@ -293,7 +293,11 @@ class AnalyzingPhase {
 						}
 						break;
 					case 'TIMINGS':
-						$this->timingResults[] = json_decode($details, true);
+						$this->timingResults[] = json_decode(base64_decode($details), true);
+						return ProcessManager::CLOSE_CONNECTION;
+					default:
+						$processDied = true;
+						$output->outputVerbose("Internal protocol Error.  Unknown message($message)\n");
 						return ProcessManager::CLOSE_CONNECTION;
 				}
 				return ProcessManager::READ_CONNECTION;
