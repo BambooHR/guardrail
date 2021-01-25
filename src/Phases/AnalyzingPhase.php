@@ -43,6 +43,9 @@ use RecursiveIteratorIterator;
 class AnalyzingPhase {
 	private $traversers = [];
 	private $parser = null;
+	/**
+	 * @var StaticAnalyzer
+	 */
 	private $analyzer;
 	private $timingResults = [];
 
@@ -281,7 +284,7 @@ class AnalyzingPhase {
 						$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
 						if ($fileNumber < count($toProcess)) {
 							$bytes += intval($size);
-							socket_write($socket, "INDEX " . $toProcess[$fileNumber] . "\n");
+							socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 							$fileNumber++;
 						} else {
 							socket_write($socket, "TIMINGS\n");

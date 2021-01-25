@@ -15,6 +15,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeTraverserInterface;
 use BambooHR\Guardrail\Checks\BaseCheck;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -25,7 +26,7 @@ use PhpParser\NodeVisitorAbstract;
 class SymbolTableIndexer extends NodeVisitorAbstract {
 
 	/**
-	 * @var
+	 * @var SymbolTable
 	 */
 	private $index;
 
@@ -45,7 +46,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	/**
 	 * SymbolTableIndexer constructor.
 	 *
-	 * @param string $index The index
+	 * @param SymbolTable $index The index
 	 */
 	public function __construct($index) {
 		$this->index = $index;

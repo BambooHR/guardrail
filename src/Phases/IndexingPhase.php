@@ -110,7 +110,7 @@ class IndexingPhase {
 				$this->traverser2->traverse($statements);
 			}
 		} catch (\Exception $exc) {
-			echo "ERROR " . $exc->getMessage() . "\n";
+			echo "\n[$pathName] ERROR " . $exc->getMessage() . "\n";
 		}
 		return strlen($fileData);
 	}

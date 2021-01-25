@@ -175,7 +175,7 @@ class Grabber extends NodeVisitorAbstract {
 					$traverser->addVisitor(new TraitImportingVisitor($table));
 					$stmts = $traverser->traverse($stmts);
 				} catch (UnknownTraitException $exception) {
-					echo "Unknown trait! " . $exception->getMessage() . "\n";
+					echo "[$className] Unknown trait! " . $exception->getMessage() . "\n";
 					// Ignore these for now.
 				}
 			}
