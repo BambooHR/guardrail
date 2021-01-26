@@ -91,7 +91,7 @@ class TraitImporter {
 		$stmts = [];
 		foreach ($methods as $methodName => $methodArr) {
 			if (count($methodArr) > 1) {
-				echo "Too many implementations for $methodName\n";
+				echo "[{$class->name}] Too many implementations for $methodName\n";
 			}
 			foreach ($methodArr as $traitName => $method) {
 				if (!$class->getMethod($method->name)) {
