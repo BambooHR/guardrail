@@ -8,6 +8,8 @@
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Abstractions\MethodInterface;
 use BambooHR\Guardrail\Attributes;
+use BambooHR\Guardrail\Metrics\Metric;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
@@ -34,16 +36,29 @@ class MethodCall extends BaseCheck {
 	 */
 	private $callableCheck;
 
+	/** @var MetricOutputInterface */
+	protected $metricDoc;
+
 	/**
 	 * MethodCall constructor.
 	 *
 	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
 	 * @param OutputInterface $doc         Instance of OutputInterface
 	 */
-	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc, MetricOutputInterface $metricOutputInterface) {
+		$this->metricDoc = $metricOutputInterface;
 		parent::__construct($symbolTable, $doc);
 		$this->inferenceEngine = new TypeInferrer($symbolTable);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
+	}
+
+	public function emitMetric($fileName, Node $node, $errorType, $metricData) {
+		$lineNumber= $node->getLine();
+		$metric = new Metric($fileName, $lineNumber, $errorType, $metricData);
+		if ($trait = $node->getAttribute('importedByTrait')) {
+			$metric->setCausedByTraitData($trait, $node->getAttribute('importedOnLine'));
+		}
+		$this->metricDoc->emitMetric($metric);
 	}
 
 	/**
@@ -156,6 +171,7 @@ class MethodCall extends BaseCheck {
 		if ($method->isDeprecated()) {
 			$errorType = $method->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 			$this->emitError($fileName, $node, $errorType, "Call to deprecated function " . $method->getName());
+			$this->emitMetric($fileName, $node, $errorType, ['class' => $className, 'method' => $methodName, 'line' => $method->getStartingLine()]);
 		}
 
 		$name = $className . "->" . $methodName;

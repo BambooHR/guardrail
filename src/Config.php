@@ -538,4 +538,8 @@ class Config {
 			return $this->outputFile;
 		}
 	}
+
+	public function getMetricOutputFile() {
+		return "metrics.json";
+	}
 }
