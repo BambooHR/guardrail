@@ -2,7 +2,7 @@
 
 use JsonSerializable;
 
-class Metric implements MetricInterface, JsonSerializable {
+class Metric implements MetricInterface {
     private $file;
     private $lineNumber;
     private $type;
