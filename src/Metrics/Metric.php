@@ -25,8 +25,8 @@ class Metric implements MetricInterface, JsonSerializable {
     /**
      * @param array $traitData
      */
-    public function setCausedByTraitData($traitData) {
-        $this->causedByTraitData = $traitData;
+    public function setCausedByTraitData($traitName, $importLine) {
+        $this->causedByTraitData = ['name' => $traitName, 'importLine' => $importLine];
     }
 
     /**

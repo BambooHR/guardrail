@@ -129,7 +129,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$this->scopeStack = [new Scope(true, true)];
 		$this->typeInferrer = new TypeInferrer($index);
 		$this->output = $output;
-		$this->metricOutput = new JsonMetricOutput($config->getMetricOutputFile());
+		$this->metricOutput = $output;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
