@@ -62,6 +62,7 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Metrics\JsonMetricOutput;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 
 /**
  * Class StaticAnalyzer
@@ -129,7 +130,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		$this->scopeStack = [new Scope(true, true)];
 		$this->typeInferrer = new TypeInferrer($index);
 		$this->output = $output;
-		$this->metricOutput = $output;
+		if ($this->output instanceof MetricOutputInterface) {
+			$this->metricOutput = $output;
+		} else {
+			$this->metricOutput = new JsonMetricOutput($config);
+		}
+		
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [

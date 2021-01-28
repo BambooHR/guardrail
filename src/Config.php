@@ -152,6 +152,10 @@ class Config {
 			$this->emitList = $this->config['emit'];
 		}
 
+		if (isset($this->config['emitMetrics']) && is_array($this->config['emitMetrics'])) {
+			$this->emitList = $this->config['emitMetrics'];
+		}
+
 		if ($this->processes > 1 && $this->preferredTable == self::MEMORY_SYMBOL_TABLE) {
 			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 		}
@@ -510,6 +514,19 @@ class Config {
 	 */
 	public function getEmitList() {
 		return $this->emitList;
+	}
+
+	public function getMetricEmitList() {
+		return [
+			[
+				'emit' => 'Standard.Method.Call',
+				'threshold' => [
+					'data.sharedNamespaceParts' => 3,
+					'operator' => '<'
+				]
+			],
+			'Standard.*'
+		];
 	}
 
 	/**

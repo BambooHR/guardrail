@@ -214,7 +214,7 @@ class AnalyzingPhase {
 	 */
 	public function phase2(Config $config, OutputInterface $output, $toProcess) {
 		$processingCount = 0;
-		$metricOutput = new JsonMetricOutput($config->getMetricOutputFile());
+		$metricOutput = new JsonMetricOutput($config);
 
 		$pm = new ProcessManager();
 

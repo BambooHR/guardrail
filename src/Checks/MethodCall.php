@@ -171,12 +171,24 @@ class MethodCall extends BaseCheck {
 		if ($method->isDeprecated()) {
 			$errorType = $method->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 			$this->emitError($fileName, $node, $errorType, "Call to deprecated function " . $method->getName());
-			$this->emitMetric($fileName, $node, $errorType, ['class' => $className, 'method' => $methodName, 'line' => $method->getStartingLine()]);
+			$metricType = $method->isInternal() ? MetricConstants::TYPE_DEPRECATED_INTERNAL : MetricConstants::TYPE_DEPRECATED_USER;
+			$this->emitMetric($fileName, $node, $metricType, ['class' => $className, 'method' => $methodName]);
 		}
 
 		$name = $className . "->" . $methodName;
 		foreach ($node->args as $index => $arg) {
 			$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $index, $params);
+		}
+		$calledClassParts = explode('\\', $className);
+		if ($inside) {
+			$callingClassParts = $inside->namespacedName->parts;
+			for ($i = 0; $i < min(count($calledClassParts), count($callingClassParts)); $i++) {
+				if ($callingClassParts[$i] !== $callingClassParts[$i]) {
+					break;
+				}
+			}
+			$sharedPrefixParts = $i-1;
+			$this->emitMetric($fileName, $node, MetricConstants::TYPE_METHOD_CALL, ['callingClass' => implode('\\', $callingClassParts), 'calledClass' => $className, 'calledMethod' => $methodName, 'sharedNamespacePrefixParts' => $sharedPrefixParts]);
 		}
 	}
 
