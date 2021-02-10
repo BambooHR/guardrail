@@ -6,7 +6,7 @@ namespace {
 }
 
 namespace Space1 {
-	const MY_CONST_2;
+	const MY_CONST_2 = 2;
 
 	echo MY_CONST;
 	echo \Space1\MY_CONST_2;

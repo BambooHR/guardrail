@@ -28,6 +28,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 use BambooHR\Guardrail\Config;
+use BambooHR\Guardrail\Metrics\JsonMetricOutput;
 use BambooHR\Guardrail\NodeVisitors\TraitImportingVisitor;
 use BambooHR\Guardrail\Util;
 use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
@@ -213,6 +214,7 @@ class AnalyzingPhase {
 	 */
 	public function phase2(Config $config, OutputInterface $output, $toProcess) {
 		$processingCount = 0;
+		$metricOutput = new JsonMetricOutput($config);
 
 		$pm = new ProcessManager();
 
@@ -250,7 +252,7 @@ class AnalyzingPhase {
 		$processDied = false;
 		$bytes = 0;
 		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
+			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied, $metricOutput) {
 				if ($msg === false) {
 					$processDied = true;
 					echo "Error: Unexpected error reading from socket\n";
@@ -294,6 +296,10 @@ class AnalyzingPhase {
 								sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start))
 							);
 						}
+						break;
+					case 'METRIC':
+						$metric = unserialize(base64_decode($details));
+						$metricOutput->emitMetric($metric);
 						break;
 					case 'TIMINGS':
 						$this->timingResults[] = json_decode(base64_decode($details), true);

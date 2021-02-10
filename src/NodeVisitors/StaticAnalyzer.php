@@ -61,6 +61,8 @@ use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Metrics\JsonMetricOutput;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 
 /**
  * Class StaticAnalyzer
@@ -123,11 +125,17 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	 * @param OutputInterface $output   Instance if OutputInterface
 	 * @param Config          $config   The config
 	 */
-	function __construct($basePath, $index, OutputInterface $output, $config) {
+	function __construct($basePath, $index, OutputInterface $output, Config $config) {
 		$this->index = $index;
 		$this->scopeStack = [new Scope(true, true)];
 		$this->typeInferrer = new TypeInferrer($index);
 		$this->output = $output;
+		if ($this->output instanceof MetricOutputInterface) {
+			$this->metricOutput = $output;
+		} else {
+			$this->metricOutput = new JsonMetricOutput($config);
+		}
+		
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
@@ -139,12 +147,12 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new InterfaceCheck($this->index, $output),
 			new ParamTypesCheck($this->index, $output),
 			new StaticCallCheck($this->index, $output),
-			new InstantiationCheck($this->index, $output),
+			new InstantiationCheck($this->index, $output, $this->metricOutput),
 			new InstanceOfCheck($this->index, $output),
 			new CatchCheck($this->index, $output),
 			new ClassConstantCheck($this->index, $output),
 			new FunctionCallCheck($this->index, $output),
-			new MethodCall($this->index, $output),
+			new MethodCall($this->index, $output, $this->metricOutput),
 			new SwitchCheck($this->index, $output),
 			new BreakCheck($this->index, $output),
 			new ConstructorCheck($this->index, $output),

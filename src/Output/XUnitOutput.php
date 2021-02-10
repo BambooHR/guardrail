@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Config;
+use BambooHR\Guardrail\Filters\EmitFilterApplier;
 use N98\JUnitXml;
 use Webmozart\Glob\Glob;
 
@@ -17,7 +18,7 @@ use Webmozart\Glob\Glob;
 class XUnitOutput implements OutputInterface {
 
 	/** @var Config  */
-	private $config;
+	protected $config;
 
 	/** @var JUnitXml\TestSuiteElement[] */
 	protected $suites;
@@ -107,23 +108,6 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	/**
-	 * emitPatternMatches
-	 *
-	 * @param string $name    The name
-	 * @param string $pattern The pattern
-	 *
-	 * @return bool
-	 */
-	static public function emitPatternMatches($name, $pattern) {
-		if (substr($pattern, -2) == '.*') {
-			$start = substr($pattern, 0, -2);
-			return (strpos($name, $start) === 0);
-		} else {
-			return $name == $pattern;
-		}
-	}
-
-	/**
 	 * shouldEmit
 	 *
 	 * @param string $fileName   The file name
@@ -133,38 +117,7 @@ class XUnitOutput implements OutputInterface {
 	 * @return bool
 	 */
 	public function shouldEmit($fileName, $name, $lineNumber) {
-		if (isset($this->silenced[$name]) && $this->silenced[$name] > 0) {
-			return false;
-		}
-		foreach ($this->emitList as $entry) {
-			if (
-				is_array($entry)
-			) {
-				if (isset($entry['emit']) && !self::emitPatternMatches($name, $entry['emit'])) {
-					continue;
-				}
-				if (isset($entry['glob']) && !Glob::match( "/" . $fileName, "/" . $entry['glob'])) {
-					continue;
-				}
-				if (isset($entry['ignore']) && Glob::match("/" . $fileName, "/" . $entry['ignore'])) {
-					continue;
-				}
-				if (
-					isset($entry['when']) &&
-					$entry['when'] == 'new' &&
-					(
-						!$this->config->getFilter() ||
-						!$this->config->getFilter()->shouldEmit($fileName, $name, $lineNumber)
-					)
-				) {
-					continue;
-				}
-				return true;
-			} else if (is_string($entry) && self::emitPatternMatches($name, $entry)) {
-				return true;
-			}
-		}
-		return false;
+		return EmitFilterApplier::shouldEmit($fileName, $name, $lineNumber, $this->emitList, $this->silenced, $this->config->getFilter());
 	}
 
 	/**
