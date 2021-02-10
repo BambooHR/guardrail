@@ -240,6 +240,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 		$func[Node\Stmt\Class_::class] = function (Node\Stmt\Class_ $node) {
 			array_pop($this->classStack);
+			$this->updateClassEmit($node, "pop");
 		};
 
 		$func[ClassMethod::class] = function (ClassMethod $node) {
