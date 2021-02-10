@@ -61,6 +61,7 @@ use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use PhpParser\Node\Stmt\ClassLike;
 
 /**
  * Class StaticAnalyzer
@@ -299,6 +300,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 		$func[Class_::class] = function (Class_ $node) {
 			array_push($this->classStack, $node);
+			$this->updateClassEmit($node, "push");
 		};
 
 		$func[Trait_::class] = function (Trait_ $node) {
@@ -698,6 +700,27 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 	public function updateFunctionEmit(FunctionLike $func, $pushOrPop) {
 
 		$docBlock = trim($func->getDocComment());
+		$ignoreList = [];
+
+		if (preg_match_all("/@guardrail-ignore ([A-Za-z. ,]*)/", $docBlock, $ignoreList)) {
+			foreach ($ignoreList[1] as $ignoreListEntry) {
+				$toIgnore = explode(",", $ignoreListEntry);
+				foreach ($toIgnore as $type) {
+					$type = trim($type);
+					if (!empty($type)) {
+						if ($pushOrPop == "push") {
+							$this->output->silenceType($type);
+						} else {
+							$this->output->resumeType($type);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public function updateClassEmit(ClassLike $class, $pushOrPop) {
+		$docBlock = trim($class->getDocComment());
 		$ignoreList = [];
 
 		if (preg_match_all("/@guardrail-ignore ([A-Za-z. ,]*)/", $docBlock, $ignoreList)) {
