@@ -36,10 +36,14 @@ class EmitFilterApplier {
 		if (isset($silenced[$name]) && $silenced[$name] > 0) {
 			return false;
 		}
-		$entry = static::findEmitEntry($emitList, $name);
+		$entry = static::findEmitEntry($emitList, $fileName, $name);
 		if ($entry === false) {
 			return $entry;
 		}
+		return static::applyEmitEntry($entry, $filter, $fileName, $name, $lineNumber);
+	}
+
+	static public function applyEmitEntry($entry, ?FilterInterface $filter, $fileName, $name, $lineNumber) {
 		if (
 			isset($entry['when']) &&
 			$entry['when'] == 'new' &&
@@ -53,7 +57,7 @@ class EmitFilterApplier {
 		return true;
 	}
 	
-	static public function findEmitEntry($emitList, $name) {
+	static public function findEmitEntry($emitList, $fileName, $name) {
 		foreach ($emitList as $entry) {
 			if (
 				is_array($entry)

@@ -85,6 +85,9 @@ class Config {
 	/** @var string */
 	private $filterFileName = "";
 
+	/** @var string */
+	private $metricOutputFile;
+
 	/** @var bool */
 	static private $useDocBlockForProperties = false;
 
@@ -153,7 +156,7 @@ class Config {
 		}
 
 		if (isset($this->config['emitMetrics']) && is_array($this->config['emitMetrics'])) {
-			$this->emitList = $this->config['emitMetrics'];
+			$this->emitMetricList = $this->config['emitMetrics'];
 		}
 
 		if ($this->processes > 1 && $this->preferredTable == self::MEMORY_SYMBOL_TABLE) {
@@ -356,6 +359,13 @@ class Config {
 					$filter->display();
 					$this->filter = $filter;
 					break;
+				case '--metrics-file':
+					if ($argCount + 1 >= count($argv)) {
+						echo "not enough arguments";
+						throw new InvalidConfigException();
+					}
+					$this->metricOutputFile = $argv[++$argCount];
+					break;
 				case '-h':
 				case '--help':
 					throw new InvalidConfigException;
@@ -517,6 +527,8 @@ class Config {
 	}
 
 	public function getMetricEmitList() {
+		return $this->emitMetricList;
+		/*
 		return [
 			[
 				'emit' => 'Standard.Method.Call',
@@ -527,6 +539,7 @@ class Config {
 			],
 			'Standard.*'
 		];
+		*/
 	}
 
 	/**
@@ -557,6 +570,6 @@ class Config {
 	}
 
 	public function getMetricOutputFile() {
-		return "metrics.json";
+		return $this->metricOutputFile;
 	}
 }
