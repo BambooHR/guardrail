@@ -35,8 +35,8 @@ class ProcessManager {
 		if ($pid == -1) {
 			// error
 		} else if ($pid) {
-			$this->connections[] = $pair[1];
-			$this->buffers[] = new SocketBuffer();
+			$this->connections[$pid] = $pair[1];
+			$this->buffers[$pid] = new SocketBuffer();
 			socket_close($pair[0]);
 			return $pair[1];
 		} else {
@@ -55,6 +55,18 @@ class ProcessManager {
 		while (count($this->connections) > 0) {
 			$read = $this->connections;
 			$none = null;
+			$childPid = 0;
+			$closeSockets = [];
+			do {
+				$childPid = pcntl_wait($status, WNOHANG);
+				if ($childPid > 0) {
+					$closeSockets[] = $childPid;
+					if ($status != 0) {
+						call_user_func($serverReadCallBack, $this->connections[$childPid], "Child died with non-zero status");
+					}
+				}
+			} while ($childPid > 0);
+
 			if (socket_select($read, $none, $none, null)) {
 				foreach ($read as $index => $socket) {
 					try {
@@ -70,6 +82,10 @@ class ProcessManager {
 			foreach ($this->buffers as $index => $buffer) {
 				$messages = $buffer->getMessages();
 				$this->dispatchMessages( $index, $messages, $serverReadCallBack );
+			}
+			foreach ($closeSockets as $childPid) {
+				unset($this->connections[$childPid]);
+				unset($this->buffers[$childPid]);
 			}
 		}
 	}
