@@ -243,7 +243,17 @@ class AnalyzingPhase {
 					}
 
 				});
-			socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
+			$succeeded = $this->retry(
+				function () use ($socket, $toProcess, $fileNumber) {
+					return false !== socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
+				},
+				3
+			);
+			if (!$succeeded) {
+				$output->outputVerbose("Error writing to socket: " . socket_strerror(socket_last_error($socket)));
+				socket_close($socket);
+				exit(1);
+			}
 		}
 
 		// Server process reports the errors and serves up new files to the list.
@@ -306,6 +316,16 @@ class AnalyzingPhase {
 				return ProcessManager::READ_CONNECTION;
 		});
 		return ($processDied || $output->getErrorCount() > 0 ? 1 : 0);
+	}
+
+	protected function retry($callable, $retries) {
+		$succeeded = false;
+		$tries = 0;
+		while (!$succeeded && $tries < $retries) {
+			$succeeded = $callable();
+			$tries++;
+		}
+		return $succeeded;
 	}
 
 	/**
