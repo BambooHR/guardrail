@@ -323,11 +323,7 @@ class AnalyzingPhase {
 		$succeeded = false;
 		$tries = 0;
 		while ($succeeded === false && $tries < $retries) {
-			//used for testing possible socket errors, remove before merging
-			$succeed = mt_rand(0, 10);
-			if ($succeed !== 1) {
-				$succeeded = $callable();
-			}
+			$succeeded = $callable();
 			$tries++;
 		}
 		return $succeeded;
