@@ -28,6 +28,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 use BambooHR\Guardrail\Config;
+use BambooHR\Guardrail\Exceptions\SocketException;
 use BambooHR\Guardrail\NodeVisitors\TraitImportingVisitor;
 use BambooHR\Guardrail\Util;
 use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
@@ -221,29 +222,9 @@ class AnalyzingPhase {
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
 				function ($socket) use ($fileNumber, $config) {
-					$table = $config->getSymbolTable();
-					if ($table instanceof PersistantSymbolTable) {
-						$table->connect(0);
-					}
-					$this->initChildThread($socket, $config);
-					$buffer = new SocketBuffer();
-					while (1) {
-						$buffer->read($socket);
-						foreach ($buffer->getMessages() as $receive) {
-							$receive = trim($receive);
-							if ($receive == "TIMINGS") {
-								socket_write($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
-								return 0;
-							} else {
-								list($command, $file) = explode(' ', $receive, 2);
-								$size = $this->analyzeFile($file, $config);
-								socket_write($socket, "ANALYZED $size $file\n");
-							}
-						}
-					}
-
+					$this->runChildAnalyzer($socket, $config);
 				});
-			socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
+			$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 		}
 
 		// Server process reports the errors and serves up new files to the list.
@@ -284,10 +265,10 @@ class AnalyzingPhase {
 						$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
 						if ($fileNumber < count($toProcess)) {
 							$bytes += intval($size);
-							socket_write($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
+							$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 							$fileNumber++;
 						} else {
-							socket_write($socket, "TIMINGS\n");
+							$this->socket_write_all($socket, "TIMINGS\n");
 						}
 						if ($fileNumber % 50 == 0) {
 							$output->outputExtraVerbose(
@@ -306,6 +287,61 @@ class AnalyzingPhase {
 				return ProcessManager::READ_CONNECTION;
 		});
 		return ($processDied || $output->getErrorCount() > 0 ? 1 : 0);
+	}
+
+	/**
+	 * runChildAnalyzer
+	 *
+	 * @param  resource $socket
+	 * @param  Config $config
+	 * @return void
+	 */
+	protected function runChildAnalyzer($socket, Config $config) {
+		$table = $config->getSymbolTable();
+		if ($table instanceof PersistantSymbolTable) {
+			$table->connect(0);
+		}
+		$this->initChildThread($socket, $config);
+		$buffer = new SocketBuffer();
+		while (1) {
+			$buffer->read($socket);
+			foreach ($buffer->getMessages() as $receive) {
+				$receive = trim($receive);
+				if ($receive == "TIMINGS") {
+					$this->socket_write_all($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
+					return 0;
+				} else {
+					list($command, $file) = explode(' ', $receive, 2);
+					$size = $this->analyzeFile($file, $config);
+					$this->socket_write_all($socket, "ANALYZED $size $file\n");
+				}
+			}
+		}
+	}
+
+	protected function retryOnFalse($callable, $retries) {
+		$succeeded = false;
+		$tries = 0;
+		while ($succeeded === false && $tries < $retries) {
+			$succeeded = $callable();
+			$tries++;
+		}
+		return $succeeded;
+	}
+
+	/* This function adapted from the PHP documentation on php.net */
+	protected function socket_write_all($fp, $string) {
+		$length = strlen($string);
+		$fwrite=0;
+		for ($written = 0; $written < $length; $written += $fwrite) {
+			$fwrite = $this->retryOnFalse(function () use ($fp, $string, $written) {
+				return @socket_write($fp, substr($string, $written));
+			}, 3);
+			if ($fwrite === false) {
+				throw new SocketException(socket_strerror(socket_last_error($fp)));
+			}
+		}
+		return $written;
 	}
 
 	/**
