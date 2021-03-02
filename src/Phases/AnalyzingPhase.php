@@ -224,69 +224,82 @@ class AnalyzingPhase {
 				function ($socket) use ($fileNumber, $config) {
 					$this->runChildAnalyzer($socket, $config);
 				});
+			$childPid = $pm->getPidForSocket($socket);
+			$this->output->outputVerbose("Starting child $childPid with first file\n");
 			$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 		}
 
 		// Server process reports the errors and serves up new files to the list.
 		$processDied = false;
 		$bytes = 0;
+		$this->output->outputVerbose("Parent looking for messages from the children\n");
 		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, &$pm, &$processDied) {
-				if ($msg === false) {
-					$processDied = true;
-					echo "Error: Unexpected error reading from socket\n";
+			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, $pm) {
+				$processComplete = $this->processChildMessage($socket, $msg, $processingCount, $fileNumber, $bytes, $output, $toProcess, $start, $pm);
+				if ($processComplete) {
 					return ProcessManager::CLOSE_CONNECTION;
-				}
-				$msg = trim($msg);
-				list($message, $details) = explode(' ', $msg, 2);
-				switch ($message) {
-					case 'VERBOSE':
-						$this->output->outputVerbose(base64_decode($details));
-						break;
-					case 'EXTRAVERBOSE':
-						$this->output->outputExtraVerbose(base64_decode($details));
-						break;
-					case 'OUTPUT':
-						$vars = unserialize(base64_decode($details));
-						$this->output->output($vars['v'], $vars['ev']);
-						break;
-					case 'ERROR' :
-						$vars = unserialize(base64_decode($details));
-						$this->output->emitError(
-							$vars['className'],
-							$vars['file'],
-							$vars['line'],
-							$vars['type'],
-							$vars['message']
-						);
-						break;
-					case 'ANALYZED':
-						list($size, $name) = explode(' ', $details, 2);
-						$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
-						if ($fileNumber < count($toProcess)) {
-							$bytes += intval($size);
-							$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
-							$fileNumber++;
-						} else {
-							$this->socket_write_all($socket, "TIMINGS\n");
-						}
-						if ($fileNumber % 50 == 0) {
-							$output->outputExtraVerbose(
-								sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start))
-							);
-						}
-						break;
-					case 'TIMINGS':
-						$this->timingResults[] = json_decode(base64_decode($details), true);
-						return ProcessManager::CLOSE_CONNECTION;
-					default:
-						$processDied = true;
-						$output->outputVerbose("Internal protocol Error.  Unknown message($message)\n");
-						return ProcessManager::CLOSE_CONNECTION;
 				}
 				return ProcessManager::READ_CONNECTION;
 		});
 		return ($processDied || $output->getErrorCount() > 0 ? 1 : 0);
+	}
+
+	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, ProcessManager $pm) {
+		if ($fileNumber < 30) {
+			$childPid = $pm->getPidForSocket($socket);
+			echo "parent received from $childPid: $msg\n";
+		}
+		if ($msg === false) {
+			echo "Error: Unexpected error reading from socket\n";
+			return true;
+		}
+		$msg = trim($msg);
+		list($message, $details) = explode(' ', $msg, 2);
+		switch ($message) {
+			case 'VERBOSE':
+				$this->output->outputVerbose(base64_decode($details));
+				break;
+			case 'EXTRAVERBOSE':
+				$this->output->outputExtraVerbose(base64_decode($details));
+				break;
+			case 'OUTPUT':
+				$vars = unserialize(base64_decode($details));
+				$this->output->output($vars['v'], $vars['ev']);
+				break;
+			case 'ERROR' :
+				$vars = unserialize(base64_decode($details));
+				$this->output->emitError(
+					$vars['className'],
+					$vars['file'],
+					$vars['line'],
+					$vars['type'],
+					$vars['message']
+				);
+				break;
+			case 'ANALYZED':
+				list($size, $name) = explode(' ', $details, 2);
+				$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
+				if ($fileNumber < count($toProcess)) {
+					$bytes += intval($size);
+					$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
+					$fileNumber++;
+				} else {
+					$this->socket_write_all($socket, "TIMINGS\n");
+				}
+				if ($fileNumber % 50 == 0) {
+					$output->outputExtraVerbose(
+						sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start))
+					);
+				}
+				break;
+			case 'TIMINGS':
+				$this->timingResults[] = json_decode(base64_decode($details), true);
+				return true;
+			default:
+				$output->outputVerbose("Internal protocol Error.  Unknown message($message)\n");
+				return true;
+		}
+		return false;
 	}
 
 	/**
@@ -303,9 +316,14 @@ class AnalyzingPhase {
 		}
 		$this->initChildThread($socket, $config);
 		$buffer = new SocketBuffer();
+		$pid = getmypid();
+		$iterations = 0;
 		while (1) {
 			$buffer->read($socket);
 			foreach ($buffer->getMessages() as $receive) {
+				if ($iterations < 3) {
+					echo "Child $pid recieved $receive\n";
+				}
 				$receive = trim($receive);
 				if ($receive == "TIMINGS") {
 					$this->socket_write_all($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
@@ -316,6 +334,7 @@ class AnalyzingPhase {
 					$this->socket_write_all($socket, "ANALYZED $size $file\n");
 				}
 			}
+			$iterations++;
 		}
 	}
 

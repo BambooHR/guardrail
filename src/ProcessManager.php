@@ -47,6 +47,10 @@ class ProcessManager {
 		}
 	}
 
+	function getPidForSocket($socket) {
+		return array_search($socket, $this->connections);
+	}
+
 	/**
 	 * @param callable $serverReadCallBack A closure to run for the server process.
 	 * @return void
