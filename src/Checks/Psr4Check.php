@@ -2,10 +2,30 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-use PhpParser\Node;
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\Scope;
+use PhpParser\Node;
 
 class Psr4Check extends BaseCheck {
+	/**
+	 * @var array
+	 */
+	private $psrRoots;
+
+	/**
+	 * Psr4Check constructor.
+	 *
+	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
+	 * @param OutputInterface $doc         Instance of the OutputInterface
+	 * @param array           $psrRoots
+	 */
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc, array $psrRoots) {
+		parent::__construct($symbolTable, $doc);
+		$this->psrRoots = $psrRoots;
+	}
+
+
 	/**
 	 * @return string[]
 	 */
@@ -18,7 +38,13 @@ class Psr4Check extends BaseCheck {
 	 * @return string
 	 */
 	private function getPsr4Path(Node\Name $name = null) {
-		return $name ? implode('/', $name->parts) . ".php" : "";
+		$name = $name ? implode('/', $name->parts) . ".php" : "";
+		foreach ($this->psrRoots as $root => $path) {
+			if (strpos($name, $root) === 0) {
+				return $path . substr($name, strlen($root));
+			}
+		}
+		return "";
 	}
 
 	/**
@@ -51,6 +77,9 @@ class Psr4Check extends BaseCheck {
 
 		// All classes with a name, must follow PSR-4 naming.
 		// (Anonymous classes obviously don't need to be in their own file.)
+		file_put_contents('guardrail-test.txt', "\nfull file: $fullName", 8);
+		file_put_contents('guardrail-test.txt', "\nfile name: $fileName", 8);
+
 		if ($fullName != "" && (strpos($fullName, "/") === false || substr($fileName, -strlen($fullName)) != $fullName)) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_PSR4, "Class $name is not namespaced as a PSR-4 class");
 		}
