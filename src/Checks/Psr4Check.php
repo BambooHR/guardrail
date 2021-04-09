@@ -77,9 +77,6 @@ class Psr4Check extends BaseCheck {
 
 		// All classes with a name, must follow PSR-4 naming.
 		// (Anonymous classes obviously don't need to be in their own file.)
-		file_put_contents('guardrail-test.txt', "\nfull file: $fullName", 8);
-		file_put_contents('guardrail-test.txt', "\nfile name: $fileName", 8);
-
 		if ($fullName != "" && (strpos($fullName, "/") === false || substr($fileName, -strlen($fullName)) != $fullName)) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_PSR4, "Class $name is not namespaced as a PSR-4 class");
 		}
