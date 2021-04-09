@@ -177,6 +177,16 @@ class Config {
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getPsrRoots() {
+		if (isset($this->config) && array_key_exists('psr-roots', $this->config) && is_array($this->config['psr-roots'])) {
+			return $this->config['psr-roots'];
+		}
+		return [];
+	}
+
+	/**
 	 * @return bool
 	 */
 	static function shouldUseDocBlockForProperties() {
