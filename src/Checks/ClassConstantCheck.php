@@ -111,8 +111,10 @@ class ClassConstantCheck extends BaseCheck {
 				}
 
 				$class = $this->symbolTable->getAbstractedClass($name);
-				$trait = $this->symbolTable->getTrait($name);
-				if (!$class && !$trait) {
+				if (!$class) {
+					$class = $this->symbolTable->getAbstractedTrait($name);
+				}
+				if (!$class) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface/trait $name");
 					return;
 				}

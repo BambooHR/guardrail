@@ -238,6 +238,18 @@ abstract class SymbolTable {
 		return $ob;
 	}
 
+	public function getAbstractedTrait($name) {
+		$cacheKey = 'ATrait:' . strtolower(strval($name));
+		$ob = $this->cache->get($cacheKey);
+		if ($ob !== null) {
+			return $ob;
+		}
+		$trait = $this->getTrait($name);
+		$ob = new AbstractionClass($trait);
+		$this->cache->add($cacheKey, $ob);
+		return $ob;
+	}
+
 	/**
 	 * isDefined
 	 *
