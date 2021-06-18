@@ -245,6 +245,9 @@ abstract class SymbolTable {
 			return $ob;
 		}
 		$trait = $this->getTrait($name);
+		if ($trait === null) {
+			return null;
+		}
 		$ob = new AbstractionClass($trait);
 		$this->cache->add($cacheKey, $ob);
 		return $ob;
