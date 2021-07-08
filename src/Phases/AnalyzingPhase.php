@@ -287,8 +287,8 @@ class AnalyzingPhase {
 					$this->socket_write_all($socket, "TIMINGS\n");
 				}
 				if ($fileNumber % 50 == 0) {
-					$output->outputExtraVerbose(
-						sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start))
+					$output->outputVerbose(
+						sprintf("Processing %.1f KB/second\n", $bytes / 1024 / (microtime(true) - $start))
 					);
 				}
 				break;

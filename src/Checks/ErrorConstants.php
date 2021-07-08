@@ -9,6 +9,7 @@ class ErrorConstants {
 
 
 	const TYPE_ASSIGN_MISMATCH = 'Standard.Assign.Type';
+	const TYPE_ASSIGN_MISMATCH_SCALAR = 'Standard.Assign.ScalarType';
 	const TYPE_ACCESS_VIOLATION = 'Standard.Access.Violation';
 	const TYPE_AUTOLOAD_ERROR = 'Standard.Autoload.Unsafe';
 	const TYPE_BREAK_NUMBER = 'Standard.Switch.BreakMultiple';
