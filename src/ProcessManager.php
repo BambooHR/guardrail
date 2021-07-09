@@ -105,9 +105,12 @@ class ProcessManager {
 		$socket = $this->connections[$index];
 		foreach ($messages as $msg) {
 			if (trim($msg) !== "" && self::CLOSE_CONNECTION == call_user_func($serverReadCallBack, $socket, $msg)) {
+				$childPid = $this->getPidForSocket($socket);
+				$status = 0;
 				socket_close($socket);
 				unset($this->connections[$index]);
 				unset($this->buffers[$index]);
+				pcntl_waitpid($childPid, $status);
 			}
 		}
 	}
