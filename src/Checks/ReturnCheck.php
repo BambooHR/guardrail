@@ -12,6 +12,7 @@ use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Return_;
+use PhpParser\Node\UnionType;
 
 /**
  * Class ReturnCheck
@@ -80,7 +81,11 @@ class ReturnCheck extends BaseCheck {
 				return;
 			}
 			$returnType = $insideFunc->getReturnType();
-			$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
+			if ($returnType instanceof UnionType) {
+				$typeString = Scope::MIXED_TYPE;
+			} else {
+				$typeString = $returnType instanceof Node\NullableType ? strval($returnType->type) : strval($returnType);
+			}
 			if (strcasecmp($typeString, "self") == 0 && $inside) {
 				$typeString = strval($inside->namespacedName);
 			}
