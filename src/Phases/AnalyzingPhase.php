@@ -225,14 +225,14 @@ class AnalyzingPhase {
 					$this->runChildAnalyzer($socket, $config);
 				});
 			$childPid = $pm->getPidForSocket($socket);
-			$this->output->outputVerbose("Starting child $childPid with first file\n");
+			$this->output->outputExtraVerbose("Starting child $childPid with first file\n");
 			$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 		}
 
 		// Server process reports the errors and serves up new files to the list.
 		$processDied = false;
 		$bytes = 0;
-		$this->output->outputVerbose("Parent looking for messages from the children\n");
+		$this->output->outputExtraVerbose("Parent looking for messages from the children\n");
 		$pm->loopWhileConnections(
 			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, $pm) {
 				$processComplete = $this->processChildMessage($socket, $msg, $processingCount, $fileNumber, $bytes, $output, $toProcess, $start, $pm);
@@ -244,11 +244,9 @@ class AnalyzingPhase {
 		return ($processDied || $output->getErrorCount() > 0 ? 1 : 0);
 	}
 
-	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, ProcessManager $pm) {
-		if ($fileNumber < 30) {
-			$childPid = $pm->getPidForSocket($socket);
-			echo "parent received from $childPid: $msg\n";
-		}
+	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, OutputInterface $output, $toProcess, $start, ProcessManager $pm) {
+		$childPid = $pm->getPidForSocket($socket);
+		$output->outputExtraVerbose("parent received from $childPid: $msg\n");
 		if ($msg === false) {
 			echo "Error: Unexpected error reading from socket\n";
 			return true;
@@ -321,7 +319,7 @@ class AnalyzingPhase {
 		while (1) {
 			$buffer->read($socket);
 			foreach ($buffer->getMessages() as $receive) {
-				if ($iterations < 3) {
+				if ($config->getOutputLevel() >= 2) {
 					echo "Child $pid recieved $receive\n";
 				}
 				$receive = trim($receive);

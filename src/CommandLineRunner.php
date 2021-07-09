@@ -107,8 +107,8 @@ where: -p #/#                 = Define the number of partitions and the current 
 			$output->outputExtraVerbose("Analyzing\n");
 
 			$exitCode = $analyzer->run($config, $output);
-
-			$output->outputExtraVerbose("\nDone\n\n");
+			$output->outputVerbose("\n");
+			$output->outputExtraVerbose("Done\n\n");
 			$output->renderResults();
 
 			if ($config->shouldOutputTimings()) {
