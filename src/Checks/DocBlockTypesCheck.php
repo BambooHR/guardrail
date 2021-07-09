@@ -10,6 +10,7 @@ use PhpParser\Node;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\PropertyProperty;
+use PhpParser\Node\UnionType;
 
 /**
  * Class DocBlockTypesCheck
@@ -99,7 +100,11 @@ class DocBlockTypesCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof FunctionLike) {
 			$returnTypeOb = $node->getReturnType();
-			$return = $returnTypeOb instanceof Node\NullableType ? strval($returnTypeOb->type) : strval($returnTypeOb);
+			if ($returnTypeOb instanceOf UnionType) {
+				$return = Scope::MIXED_TYPE;
+			} else {
+				$return = $returnTypeOb instanceof Node\NullableType ? strval($returnTypeOb->type) : strval($returnTypeOb);
+			}
 			$docBlockReturn = Scope::constFromDocBlock(
 				$node->getAttribute("namespacedReturn"),
 				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : "",

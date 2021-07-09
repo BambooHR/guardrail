@@ -4,7 +4,7 @@ class A {}
 
 class B {}
 
-function C(A | B $param) {
+function C(A | B $param): A | B {
 
 }
 

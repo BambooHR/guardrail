@@ -341,9 +341,7 @@ class Config {
 					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException;
 					}
-					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 					$this->fileList = [$argv[++$argCount]];
-					$this->reindex = true;
 					break;
 				case '-o':
 					if ($argCount + 1 >= count($argv)) {

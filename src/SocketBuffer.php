@@ -24,7 +24,7 @@ class SocketBuffer {
 	}
 
 	/**
-	 * @param resource $socket Connection to read
+	 * @param \Socket $socket Connection to read
 	 * @return void
 	 */
 	function read($socket) {
@@ -65,7 +65,7 @@ class SocketBuffer {
 		$readSockets = [$socket];
 		$writeSockets = [];
 		$exceptSockets = [];
-		$results = socket_select($readSockets, $writeSockets, $exceptSockets, null, null);
+		$results = socket_select($readSockets, $writeSockets, $exceptSockets, null);
 		if ($results === false) {
 			throw new SocketException(socket_strerror(socket_last_error($socket)));
 		}

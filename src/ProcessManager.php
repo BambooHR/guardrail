@@ -20,6 +20,7 @@ class ProcessManager {
 	const CLOSE_CONNECTION = 1;
 	const READ_CONNECTION = 2;
 	private $connections = [];
+	/** @var SocketBuffer[] */
 	private $buffers = [];
 
 	/**
@@ -104,11 +105,12 @@ class ProcessManager {
 		$socket = $this->connections[$index];
 		foreach ($messages as $msg) {
 			if (trim($msg) !== "" && self::CLOSE_CONNECTION == call_user_func($serverReadCallBack, $socket, $msg)) {
-				socket_close($socket);
+				$childPid = $this->getPidForSocket($socket);
 				$status = 0;
+				socket_close($socket);
 				unset($this->connections[$index]);
 				unset($this->buffers[$index]);
-				pcntl_wait($status);
+				pcntl_waitpid($childPid, $status);
 			}
 		}
 	}

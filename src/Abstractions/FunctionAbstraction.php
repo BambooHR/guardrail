@@ -9,6 +9,8 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Function_ as AstFunction;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
+use BambooHR\Guardrail\Scope;
+use PhpParser\Node\UnionType;
 
 /**
  * Class FunctionAbstraction
@@ -37,6 +39,9 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 * @return string
 	 */
 	public function getReturnType() {
+		if ($this->function->returnType instanceof UnionType) {
+			return Scope::MIXED_TYPE;
+		}
 		return $this->function->returnType instanceof NullableType ? strval($this->function->returnType->type) : strval($this->function->returnType);
 	}
 
