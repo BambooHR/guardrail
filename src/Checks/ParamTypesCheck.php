@@ -14,7 +14,6 @@ use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\Node\UnionType;
 
 /**
  * Class ParamTypesCheck
@@ -59,8 +58,7 @@ class ParamTypesCheck extends BaseCheck {
 	 * @return string
 	 */
 	private function getNullableTypeName($type) {
-		$type = $type instanceof Node\NullableType ? $type->type : $type;
-		return $type instanceof UnionType ? 'object' : strval($type);
+		return $type instanceof Node\NullableType ? strval($type->type) : strval($type);
 	}
 
 	/**

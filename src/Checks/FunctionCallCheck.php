@@ -13,9 +13,18 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 use BambooHR\Guardrail\Scope;
-use PhpParser\Node\UnionType;
 
-class FunctionCallCheck extends CallCheck {
+class FunctionCallCheck extends BaseCheck {
+
+	/**
+	 * @var CallableCheck
+	 */
+	private $callableCheck;
+
+	/**
+	 * @var TypeInferrer
+	 */
+	private $inferenceEngine;
 
 	/**
 	 * FunctionCallCheck constructor.
@@ -194,6 +203,79 @@ class FunctionCallCheck extends CallCheck {
 				$arg = $node->args[0]->value;
 				if ($arg instanceof Node\Scalar\String_ && @preg_match($arg->value, null) === false) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_REGEX, "Regular expression syntax error in \"" . $arg->value . "\"");
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param string    $fileName -
+	 * @param Node      $node     -
+	 * @param string    $name     -
+	 * @param Scope     $scope    -
+	 * @param ClassLike $inside   -
+	 * @param Node\Arg  $arg      -
+	 * @param int       $index    -
+	 * @param array     $params   -
+	 * @return void
+	 */
+	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, $arg, $index, $params) {
+		if ($scope && $arg->value instanceof Node\Expr && $index < count($params)) {
+			$variableName = $params[$index]->getName();
+			list($type, $attributes) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
+			if ($arg->unpack) {
+				// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
+				$isSplatable = (
+					substr($type, -2) == "[]" ||
+					$type == "array" ||
+					$type == Scope::ARRAY_TYPE ||
+					$type == Scope::UNDEFINED ||
+					$type == Scope::MIXED_TYPE ||
+					$this->symbolTable->isParentClassOrInterface(\Traversable::class, $type)
+				);
+				if (!$isSplatable) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array or traversable object.  Passing " . Scope::nameFromConst($type) . " from \$$variableName.");
+				}
+				return;// After we unpack an arg, we can't check the remaining parameters.
+			} else {
+				if ($params[$index]->getType() != "") {
+					// Reference mismatch
+					if ($params[$index]->isReference() &&
+						!(
+							$arg->value instanceof Node\Expr\Variable ||
+							$arg->value instanceof Node\Expr\ArrayDimFetch ||
+							$arg->value instanceof Node\Expr\PropertyFetch
+						)
+					) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name() parameter \$$variableName must be a reference type not an expression.");
+					}
+
+					// Type mismatch
+					$expectedType = $params[$index]->getType();
+					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]) &&
+						$type != "" &&
+						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
+						!(strcasecmp($expectedType, "callable") == 0 && strcasecmp($type, "closure") == 0) &&
+						!(strcasecmp($expectedType, "callable") == 0 && $type == Scope::ARRAY_TYPE) &&
+						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))
+					) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");
+					}
+
+					if (strcasecmp($expectedType, "callable") == 0) {
+						$this->callableCheck->run($fileName, $arg->value, $inside, $scope);
+					}
+
+					/*
+					// Nulls mismatch
+					if (!$params[$index]->isOptional()) {
+						if ($type == Scope::NULL_TYPE) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to method " . $className . "->" . $methodName. "() parameter \$$variableName that does not accept nulls");
+						} else if ($maybeNull == Scope::NULL_POSSIBLE) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName that does not accept nulls");
+						}
+					}
+					*/
 				}
 			}
 		}

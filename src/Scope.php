@@ -47,8 +47,6 @@ class Scope {
 				return "int";
 			case static::FLOAT_TYPE:
 				return "float";
-			case static::ARRAY_TYPE:
-				return "array";
 			case static::NULL_TYPE:
 				return "null";
 			default:

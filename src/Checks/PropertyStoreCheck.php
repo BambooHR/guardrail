@@ -62,6 +62,7 @@ class PropertyStoreCheck extends BaseCheck {
 		if ($node instanceof Node\Expr\Assign && $node->var instanceof PropertyFetch && $node->var->name instanceof Node\Identifier) {
 			list($leftType, $leftAttributes) = $this->typeInferer->inferType($inside, $node->var, $scope);
 			list($rightType, $rightAttributes) = $this->typeInferer->inferType($inside, $node->expr, $scope);
+
 			if ($leftType && $rightType && $leftType != $rightType && $leftType != Scope::MIXED_TYPE && $rightType != Scope::MIXED_TYPE) {
 				if ($leftType[0] != "!" && $rightType[0] != "!") {
 					if (!$this->symbolTable->isParentClassOrInterface($leftType, $rightType)) {
@@ -69,18 +70,6 @@ class PropertyStoreCheck extends BaseCheck {
 					}
 				} else if (!$this->isArray($leftType) && $this->isArray($rightType)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ASSIGN_MISMATCH, "Type mismatch can not assign $rightType into a $leftType");
-				} else {
-					//at least one of the parameters is scalar
-					if ($leftType[0] == '!') {
-						$leftType = Scope::nameFromConst(substr($leftType,0,2)) . substr($leftType, 2);
-					}
-					if ($rightType[0] == '!') {
-						$rightType = Scope::nameFromConst(substr($rightType, 0, 2)) . substr($rightType,2);
-					}
-
-					if (!$this->isArray($leftType) && !$this->isArray($rightType) && $rightType !== $leftType) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR, "Type mismatch can not assign $rightType into a $leftType");
-					}
 				}
 			}
 		}

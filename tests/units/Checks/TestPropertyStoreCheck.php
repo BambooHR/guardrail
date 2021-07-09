@@ -12,7 +12,6 @@ class TestPropertyStoreCheck extends TestSuiteSetup {
 	}
 
 	function testBadAssigns() {
-		$this->assertEquals(2, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_ASSIGN_MISMATCH));
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR));
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_ASSIGN_MISMATCH));
 	}
 }

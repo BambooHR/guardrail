@@ -86,11 +86,4 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	public function testNamespaces() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_UNKNOWN_FUNCTION));
 	}
-
-	/**
-	 * @return void
-	 */
-	public function testUnionTypeHints() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
-	}
 }
