@@ -61,6 +61,7 @@ use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use PhpParser\Node\UnionType;
 
 /**
  * Class StaticAnalyzer
@@ -753,7 +754,8 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 				}
 				$scope->setVarNull(strval($param->var->name), false); // Variadic parameter will never be null.
 			} else {
-				$paramType = $param->type instanceof Node\NullableType ? strval($param->type->type) : strval($param->type);
+				$paramType = $param->type instanceof Node\NullableType ? $param->type : $param;
+				$paramType = $paramType->type instanceOf UnionType ? Scope::MIXED_TYPE : strval($paramType->type);
 				$scope->setVarType(strval($param->var->name), Scope::constFromName($paramType), $param->getLine());
 				$scope->setVarAttributes(strval($param->var->name), Attributes::TOUCHED_FUNCTION_PARAM);
 				if ($param->type != null && $param->default == null) {

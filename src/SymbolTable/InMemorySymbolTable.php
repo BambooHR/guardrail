@@ -140,6 +140,9 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return mixed
 	 */
 	public function getTraitFile($name) {
+		if (!array_key_exists(strtolower($name), $this->traits)) {
+			return null;
+		}
 		return $this->traits[strtolower($name)];
 	}
 
