@@ -37,7 +37,8 @@ class ClassStoredAsVariableCheck extends BaseCheck {
 			// full match
 			if ($this->symbolTable->isDefinedClass($node->value)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_CLASS_STORED_VARIABLE, "Class used in variable. Please use {CLASS_NAME}::class instead.");
-			} elseif ($this->symbolTable->classExistsAnyNamespace($node->value)) {
+			// partial match, but add a preceding namespace separator to make sure it matches the ENTIRE class name on the partial match
+			} elseif ($this->symbolTable->classExistsAnyNamespace('\\' . $node->value)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_CLASS_STORED_VARIABLE, "Class used in variable. Please use {CLASS_NAME}::class instead.");
 			}
 		}
