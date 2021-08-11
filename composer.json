@@ -19,7 +19,7 @@
     "webmozart/glob":"^4.1.0",
     "n98/junit-xml":"^1.0.0",
     "seld/jsonlint": "^1.7",
-    "ext-pcntl": "*",
+    "ext-pcntl": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "<6.0"
