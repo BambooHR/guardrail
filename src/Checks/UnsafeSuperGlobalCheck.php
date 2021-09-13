@@ -35,7 +35,3 @@ class UnsafeSuperGlobalCheck extends BaseCheck {
 		return is_string($name) && $name === '_REQUEST';
 	}
 }
-
-return function ($index, $output) {
-	return new UnsafeSuperGlobalCheck($index, $output);
-};

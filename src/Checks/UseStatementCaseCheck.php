@@ -7,7 +7,6 @@ use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\Stmt\UseUse;
 
 class UseStatementCaseCheck extends BaseCheck {
-
 	/**
 	 * @return string[]
 	 */
@@ -39,7 +38,3 @@ class UseStatementCaseCheck extends BaseCheck {
 		}
 	}
 }
-
-return function($index, $output) {
-	return new UseStatementCaseCheck($index, $output);
-};

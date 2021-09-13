@@ -24,7 +24,3 @@ class ImagickCheck extends BaseCheck
 		}
 	}
 }
-
-return function($index, $output) {
-	return new ImagickCheck($index, $output);
-};
