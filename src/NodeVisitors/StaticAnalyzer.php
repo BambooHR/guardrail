@@ -21,6 +21,7 @@ use BambooHR\Guardrail\Checks\DefinedConstantCheck;
 use BambooHR\Guardrail\Checks\DocBlockTypesCheck;
 use BambooHR\Guardrail\Checks\FunctionCallCheck;
 use BambooHR\Guardrail\Checks\GotoCheck;
+use BambooHR\Guardrail\Checks\ImagickCheck;
 use BambooHR\Guardrail\Checks\InstanceOfCheck;
 use BambooHR\Guardrail\Checks\InstantiationCheck;
 use BambooHR\Guardrail\Checks\InterfaceCheck;
@@ -36,7 +37,9 @@ use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
 use BambooHR\Guardrail\Checks\SwitchCheck;
 use BambooHR\Guardrail\Checks\UndefinedVariableCheck;
 use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
+use BambooHR\Guardrail\Checks\UnsafeSuperGlobalCheck;
 use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
+use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
 use BambooHR\Guardrail\Config;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -162,6 +165,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new UnusedPrivateMemberVariableCheck($this->index, $output),
 			new SplatCheck($this->index, $output),
 			new PropertyStoreCheck($this->index, $output),
+			new ImagickCheck($this->index, $output),
+			new UnsafeSuperGlobalCheck($this->index, $output),
+			new UseStatementCaseCheck($this->index, $output),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
