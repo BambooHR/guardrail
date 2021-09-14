@@ -1,8 +1,10 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
+use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -13,12 +15,12 @@ abstract class CallCheck extends BaseCheck {
 	/**
 	 * @var CallableCheck
 	 */
-	protected $callableCheck;
+	protected CallableCheck $callableCheck;
 
 	/**
 	 * @var TypeInferrer
 	 */
-	protected $inferenceEngine;
+	protected TypeInferrer $inferenceEngine;
 
 	/**
 	 * @param string                  $fileName -
@@ -31,7 +33,7 @@ abstract class CallCheck extends BaseCheck {
 	 * @param FunctionLikeParameter[] $params   -
 	 * @return void
 	 */
-	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, $arg, $index, $params) {
+	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, $arg, $index, $params):void {
 		if ($scope && $arg->value instanceof Node\Expr && $index < count($params)) {
 			$variableName = $params[$index]->getName();
 			list($type, $attributes) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
@@ -85,16 +87,37 @@ abstract class CallCheck extends BaseCheck {
 		}
 	}
 
-	protected function verifyParamType($fileName, $node, $name, $variableName, $arg, $inside, $scope, $type, $expectedTypes) {
+	protected function verifyParamType($fileName, $node, $name, $variableName, $arg, $inside, $scope, $type, $expectedTypes):void {
+		/*
+		if (str_ends_with($fileName,"9.inc")) {
+			echo $type;
+			print_r($expectedTypes);
+		}*/
 		$passedAScalar = in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]);
-		$passedTypeIsKnown = $type != '';
+		$passedTypeIsKnown = $type != '' && Scope::constFromName($type)!=Scope::MIXED_TYPE;
 		if ($passedAScalar || !$passedTypeIsKnown) {
 			return;
 		}
 		foreach ($expectedTypes as $expectedType) {
+			if(strcasecmp($expectedType, "throwable") === 0 && (
+					$this->symbolTable->isParentClassOrInterface("exception", $type) ||
+					$this->symbolTable->isParentClassOrInterface("error", $type)
+				)
+			) {
+				return;
+			}
+
 			if ($this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
 				return;
 			}
+			if (strcasecmp($expectedType, 'countable') === 0) {
+				if (strcasecmp($type, 'array') === 0 || $type === Scope::ARRAY_TYPE || substr($type, -2) === '[]') {
+					return;
+				}
+			}
+
+
+
 			if ((strcasecmp($expectedType, "callable") == 0 && strcasecmp($type, "closure") == 0) ||
 				(strcasecmp($expectedType, "callable") == 0 && $type == Scope::ARRAY_TYPE) ||
 				(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))

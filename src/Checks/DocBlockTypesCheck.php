@@ -46,7 +46,7 @@ class DocBlockTypesCheck extends BaseCheck {
 	 *
 	 * @return array
 	 */
-	public function getCheckNodeTypes() {
+	public function getCheckNodeTypes(): array {
 		return [Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class, PropertyProperty::class];
 	}
 
@@ -91,13 +91,13 @@ class DocBlockTypesCheck extends BaseCheck {
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @param Node           $node Instance of the Node
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run(string $fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof FunctionLike) {
 			$returnTypeOb = $node->getReturnType();
 			if ($returnTypeOb instanceOf UnionType) {
@@ -111,9 +111,16 @@ class DocBlockTypesCheck extends BaseCheck {
 				$inside && isset($inside->namespacedName) ? strval($inside->namespacedName) : ""
 			);
 
+			$return = Scope::constFromName($return);
+
 			if (!empty($docBlockReturn)) {
 				if ($docBlockReturn != $return && !empty($return)) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_MISMATCH, "Function return type ($return) doesn't match DocBlock return type($docBlockReturn");
+					if (substr($docBlockReturn,-2) === '[]' && $return == Scope::ARRAY_TYPE) {
+						return;
+					}
+					$returnStr = Scope::nameFromConst($return);
+					$docBlockReturnStr = Scope::nameFromConst($docBlockReturn);
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_MISMATCH, "Function return type ($returnStr) doesn't match DocBlock return type($docBlockReturnStr)");
 				}
 				if ($docBlockReturn[0] != "!") {
 					$this->checkOrEmit($docBlockReturn, $fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_RETURN, "Unknown function return type \"$docBlockReturn\" specified in DocBlock");

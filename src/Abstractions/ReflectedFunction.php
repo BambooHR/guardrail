@@ -1,5 +1,7 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use BambooHR\Guardrail\Scope;
+
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
@@ -30,9 +32,9 @@ class ReflectedFunction implements FunctionLikeInterface {
 	/**
 	 * isStatic
 	 *
-	 * @return mixed
+	 * @return bool
 	 */
-	public function isStatic() {
+	public function isStatic():bool {
 		return false;
 	}
 
@@ -41,7 +43,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isDeprecated() {
+	public function isDeprecated():bool {
 		return $this->refl->isDeprecated();
 	}
 
@@ -50,7 +52,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isInternal() {
+	public function isInternal():bool {
 		return true;
 	}
 
@@ -59,11 +61,13 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 * @return string
 	 */
-	public function getReturnType() {
+	public function getReturnType():string {
 		if ( method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
-			if ($type) {
+			if ($type instanceof \ReflectionNamedType) {
 				return $type->getName();
+			} else if ($type instanceof \ReflectionUnionType) {
+				return Scope::MIXED_TYPE;
 			}
 		}
 		return "";
@@ -73,7 +77,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 * @return bool
 	 */
-	public function hasNullableReturnType() {
+	public function hasNullableReturnType():bool {
 		if ( method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			if ($type) {
@@ -88,7 +92,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return mixed
 	 */
-	public function isAbstract() {
+	public function isAbstract():bool {
 		return false;
 	}
 
@@ -97,7 +101,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return string
 	 */
-	public function getDocBlockReturnType() {
+	public function getDocBlockReturnType():string {
 		return "";
 	}
 
@@ -106,7 +110,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return string
 	 */
-	public function getAccessLevel() {
+	public function getAccessLevel():string {
 		return "public";
 	}
 
@@ -115,7 +119,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return int|mixed
 	 */
-	public function getMinimumRequiredParameters() {
+	public function getMinimumRequiredParameters():int {
 		$min = self::getOverriddenMinimumParams($this->refl->name);
 		return $min >= 0 ? $min : $this->refl->getNumberOfRequiredParameters();
 	}
@@ -125,9 +129,9 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @param string $name The name
 	 *
-	 * @return int|mixed
+	 * @return int
 	 */
-	private static function getOverriddenMinimumParams($name) {
+	private static function getOverriddenMinimumParams($name):int {
 		static $overrides = [
 			"define" => 2,
 			"implode" => 1,
@@ -146,7 +150,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return array
 	 */
-	public function getParameters() {
+	public function getParameters():array{
 		$ret = [];
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
@@ -190,7 +194,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return string
 	 */
-	public function getName() {
+	public function getName():string {
 		return $this->refl->getName();
 	}
 
@@ -199,7 +203,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 *
 	 * @return int
 	 */
-	public function getStartingLine() {
+	public function getStartingLine():int {
 		return 0;
 	}
 
@@ -209,7 +213,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return bool
 	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 */
-	public function isVariadic() {
+	public function isVariadic():bool {
 		if (method_exists($this->refl, "isVariadic")) {
 			return $this->refl->isVariadic();
 		} else {

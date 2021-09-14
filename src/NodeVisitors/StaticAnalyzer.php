@@ -144,6 +144,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new InstanceOfCheck($this->index, $output),
 			new CatchCheck($this->index, $output),
 			new ClassConstantCheck($this->index, $output),
+			// SLOW!!! new ClassStoredAsVariableCheck($this->index, $output),
 			new FunctionCallCheck($this->index, $output),
 			new MethodCall($this->index, $output),
 			new SwitchCheck($this->index, $output),

@@ -44,7 +44,7 @@ class PropertyStoreCheck extends BaseCheck {
 	 *
 	 * @return array
 	 */
-	public function getCheckNodeTypes() {
+	public function getCheckNodeTypes(): array {
 		return [ Node\Expr\Assign::class ];
 	}
 
@@ -52,13 +52,13 @@ class PropertyStoreCheck extends BaseCheck {
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @param Node           $node Instance of the Node
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run(string $fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof Node\Expr\Assign && $node->var instanceof PropertyFetch && $node->var->name instanceof Node\Identifier) {
 			list($leftType, $leftAttributes) = $this->typeInferer->inferType($inside, $node->var, $scope);
 			list($rightType, $rightAttributes) = $this->typeInferer->inferType($inside, $node->expr, $scope);
@@ -68,7 +68,9 @@ class PropertyStoreCheck extends BaseCheck {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_ASSIGN_MISMATCH, "Type mismatch can not assign $rightType into a $leftType");
 					}
 				} else if (!$this->isArray($leftType) && $this->isArray($rightType)) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ASSIGN_MISMATCH, "Type mismatch can not assign $rightType into a $leftType");
+					$leftStr = Scope::nameFromConst($leftType);
+					$rightStr = Scope::nameFromConst($rightType);
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_ASSIGN_MISMATCH, "Type mismatch can not assign $rightStr into a $leftStr");
 				} else {
 					//at least one of the parameters is scalar
 					if ($leftType[0] == '!') {

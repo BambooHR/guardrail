@@ -6,9 +6,10 @@
  */
 
 use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Expr\MethodCall;
+use BambooHR\Guardrail\Abstractions\MethodInterface;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
@@ -26,24 +27,13 @@ use Webmozart\Glob\Glob;
 class Util {
 
 	/**
-	 * finalPart
-	 *
-	 * @param Object $parts The class we are checking
-	 *
-	 * @return mixed
-	 */
-	static public function finalPart( $parts ) {
-		return property_exists($parts, "parts") && is_array($parts->parts) ? $parts->parts[count($parts->parts) - 1] : $parts;
-	}
-
-	/**
 	 * isScalarType
 	 *
 	 * @param string $name The scalar type
 	 *
 	 * @return bool
 	 */
-	static public function isScalarType($name) {
+	static public function isScalarType($name):bool {
 		$name = strtolower($name);
 		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float';
 	}
@@ -55,24 +45,10 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function isLegalNonObject($name) {
+	static public function isLegalNonObject($name):bool {
 		return self::isScalarType($name) || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name,"resource") == 0 || strcasecmp($name,"object")==0;
 	}
 
-	/**
-	 * methodSignatureString
-	 *
-	 * @param ClassMethod $method Instance of ClassMethod
-	 *
-	 * @return string
-	 */
-	static public function methodSignatureString(ClassMethod $method) {
-		$ret = [];
-		foreach ($method->params as $param) {
-			$ret[] = $param->type ? static::finalPart($param->type) : '$' . $param->name;
-		}
-		return static::finalPart($method->name) . "(" . implode(",", $ret) . ")";
-	}
 
 	/**
 	 * getMethodAccessLevel
@@ -81,7 +57,7 @@ class Util {
 	 *
 	 * @return string
 	 */
-	static public function getMethodAccessLevel(ClassMethod $level) {
+	static public function getMethodAccessLevel(ClassMethod $level):string {
 		if ($level->isPublic()) {
 			return "public";
 		}
@@ -99,11 +75,11 @@ class Util {
 	 *
 	 * @param string $basePath The base path
 	 * @param string $path     The path
-	 * @param string $globArr  The rest
+	 * @param array  $globArr  The rest
 	 *
 	 * @return bool
 	 */
-	static public function matchesGlobs($basePath, $path, $globArr) {
+	static public function matchesGlobs(string $basePath, string $path, array $globArr):bool {
 		foreach ($globArr as $glob) {
 			if ($glob[0] == '/') {
 				if (Glob::match($path, $glob)) {
@@ -124,9 +100,9 @@ class Util {
 	 * @param string $path The path
 	 * @param string $name The name
 	 *
-	 * @return bool|string
+	 * @return string
 	 */
-	static public function removeInitialPath($path, $name) {
+	static public function removeInitialPath($path,$name):string {
 		if (strpos($name, $path) === 0) {
 			$name = substr($name, strlen($path));
 			while ($name[0] == "/") {
@@ -145,9 +121,9 @@ class Util {
 	 * @param string      $name        The method name
 	 * @param SymbolTable $symbolTable Instance of SymbolTable
 	 *
-	 * @return null|\BambooHR\Guardrail\Abstractions\ClassAbstraction|\BambooHR\Guardrail\Abstractions\ClassMethod|\BambooHR\Guardrail\Abstractions\ReflectedClassMethod
+	 * @return null|MethodInterface
 	 */
-	static public function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
+	static public function findAbstractedMethod(string $className,string $name, SymbolTable $symbolTable):?MethodInterface {
 		$className = strval($className);
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
@@ -173,16 +149,16 @@ class Util {
 	 *
 	 * @return array First param is the abstracted method, second param is the class it was declared in.
 	 */
-	static public function findAbstractedProperty($className, $name, SymbolTable $symbolTable) {
+	static public function findAbstractedProperty(string $className, string $name, SymbolTable $symbolTable):array {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
 				return [null,""];
 			}
 
-			$method = $class->getProperty($name);
-			if ($method) {
-				return [$method, $className];
+			$property = $class->getProperty($name);
+			if ($property) {
+				return [$property, $className];
 			}
 			$className = $class->getParentClassName();
 		}
@@ -196,9 +172,9 @@ class Util {
 	 * @param string      $name        The name
 	 * @param SymbolTable $symbolTable Instance of SymbolTable
 	 *
-	 * @return Abstractions\ClassMethod|null
+	 * @return MethodInterface|null
 	 */
-	static public function findAbstractedSignature($className, $name, SymbolTable $symbolTable) {
+	static public function findAbstractedSignature(string $className, string $name, SymbolTable $symbolTable):?MethodInterface  {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
@@ -220,17 +196,6 @@ class Util {
 		return null;
 	}
 
-	/**
-	 * callIsCompatible
-	 *
-	 * @param ClassMethod $method Instance of ClassMethod
-	 * @param MethodCall  $call   Instance of MethodCall
-	 *
-	 * @return void
-	 */
-	static public function callIsCompatible(ClassMethod $method,MethodCall $call) {
-
-	}
 
 	/**
 	 * configDirectoriesAreValid
@@ -240,13 +205,14 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function configDirectoriesAreValid($baseDirectory, $paths) {
+	static public function configDirectoriesAreValid(string $baseDirectory,array $paths):bool {
 		if (is_object($baseDirectory) || !is_array($paths) || empty($paths)) {
 			throw new \InvalidArgumentException('The config data is bad');
 		}
 		$results = true;
 		foreach ($paths as $path) {
 			$location = static::fullDirectoryPath($baseDirectory, $path);
+
 			if (! is_dir($location)) {
 				$results = false;
 			}
@@ -262,7 +228,7 @@ class Util {
 	 *
 	 * @return string
 	 */
-	static public function fullDirectoryPath($baseDirectory, $path) {
+	static public function fullDirectoryPath(string $baseDirectory, string $path):string {
 		$baseDirectory = substr($baseDirectory, -1) === '/' ? $baseDirectory : $baseDirectory . '/';
 		return strpos($path, "/") === 0 ? $path : $baseDirectory . $path;
 	}
@@ -274,7 +240,7 @@ class Util {
 	 *
 	 * @return array
 	 */
-	static public function jsonFileContentIsValid($jsonFile) {
+	static public function jsonFileContentIsValid(string $jsonFile):array {
 		$status = ['success' => true, 'message' => 'json is valid'];
 		if (!file_exists($jsonFile)) {
 			throw new \InvalidArgumentException('File does not exist.');
@@ -294,7 +260,7 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function allBranchesExit(array $stmts) {
+	static public function allBranchesExit(array $stmts):bool {
 		$lastStatement = self::getLastStatement($stmts);
 
 		if (!$lastStatement) {
@@ -319,7 +285,7 @@ class Util {
 	 *
 	 * @return mixed|null
 	 */
-	static public function getLastStatement(array $stmts) {
+	static public function getLastStatement(array $stmts):?Stmt {
 		$lastStatement = null;
 		foreach ($stmts as $stmt) {
 			if (!$stmt instanceof Nop) {
@@ -336,7 +302,7 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static protected function allIfBranchesExit(If_ $lastStatement) {
+	static protected function allIfBranchesExit(If_ $lastStatement):bool {
 		if (!$lastStatement->else && !$lastStatement->elseifs) {
 			return false;
 		}
@@ -364,7 +330,7 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static protected function allSwitchCasesExit(Switch_ $lastStatement) {
+	static protected function allSwitchCasesExit(Switch_ $lastStatement):bool {
 		$hasDefault = false;
 		foreach ($lastStatement->cases as $case) {
 			if (!$case->cond) {

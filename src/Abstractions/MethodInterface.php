@@ -17,29 +17,29 @@ interface MethodInterface extends FunctionLikeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isAbstract();
+	public function isAbstract():bool;
 
 	/**
 	 * isStatic
 	 *
 	 * @return bool
 	 */
-	public function isStatic();
+	public function isStatic():bool;
 
 	/**
 	 * getAccessLevel
 	 *
 	 * @return string
 	 */
-	public function getAccessLevel();
+	public function getAccessLevel():string;
 
 	/**
 	 * @return bool
 	 */
-	public function hasNullableReturnType();
+	public function hasNullableReturnType():bool;
 
 	/**
 	 * @return string
 	 */
-	public function getReturnType();
+	public function getReturnType():string;
 }

@@ -36,14 +36,14 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return string
 	 */
-	public function getReturnType() {
+	public function getReturnType():string {
 		return $this->method->returnType instanceof NullableType ? strval($this->method->returnType->type) : strval($this->method->returnType);
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function hasNullableReturnType() {
+	public function hasNullableReturnType():bool {
 		return $this->method->returnType && $this->method->returnType instanceof NullableType;
 	}
 
@@ -52,19 +52,17 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isDeprecated() {
+	public function isDeprecated():bool {
 		$docBlock = $this->method->getDocComment();
-		if (strpos($docBlock, "@deprecated") !== false) {
-			return true;
-		}
+		return (strpos($docBlock, "@deprecated") !== false);
 	}
 
 	/**
 	 * getDocBlockReturnType
 	 *
-	 * @return mixed|null
+	 * @return string|null
 	 */
-	public function getDocBlockReturnType() {
+	public function getDocBlockReturnType():?string {
 		return $this->method->getAttribute('namespacedReturn');
 	}
 
@@ -73,7 +71,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return int
 	 */
-	public function getMinimumRequiredParameters() {
+	public function getMinimumRequiredParameters():int {
 		$minimumArgs = 0;
 		foreach ($this->method->params as $param) {
 			if ($param->default || $param->variadic) {
@@ -89,7 +87,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return FunctionLikeParameter[]
 	 */
-	public function getParameters() {
+	public function getParameters():array {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
@@ -109,7 +107,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return string
 	 */
-	public function getAccessLevel() {
+	public function getAccessLevel():string {
 		return Util::getMethodAccessLevel($this->method);
 	}
 
@@ -118,7 +116,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isInternal() {
+	public function isInternal():bool {
 		return false;
 	}
 
@@ -127,7 +125,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isAbstract() {
+	public function isAbstract():bool {
 		return $this->method->isAbstract();
 	}
 
@@ -136,7 +134,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isStatic() {
+	public function isStatic():bool {
 		return $this->method->isStatic();
 	}
 
@@ -145,8 +143,8 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return string
 	 */
-	public function getName() {
-		return $this->method->name;
+	public function getName():string {
+		return $this->method->name->name;
 	}
 
 	/**
@@ -154,7 +152,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return int
 	 */
-	public function getStartingLine() {
+	public function getStartingLine():int {
 		return $this->method->getLine();
 	}
 
@@ -163,7 +161,7 @@ class ClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isVariadic() {
+	public function isVariadic():bool {
 		foreach ($this->method->getParams() as $param) {
 			if ($param->variadic) {
 				return true;

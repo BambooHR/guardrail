@@ -23,7 +23,7 @@ class BreakCheck extends BaseCheck {
 	 *
 	 * @return string[]
 	 */
-	public function getCheckNodeTypes() {
+	public function getCheckNodeTypes(): array {
 		return [ Break_::class, Continue_::class ];
 	}
 
@@ -31,13 +31,13 @@ class BreakCheck extends BaseCheck {
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @param Node           $node Instance of the Node
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run(string $fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Break_) {
 			if ($node->num != null) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_BREAK_NUMBER, "Usage of unsafe \"break [expression]\" form");

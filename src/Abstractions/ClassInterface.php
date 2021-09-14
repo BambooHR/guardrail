@@ -17,35 +17,35 @@ interface ClassInterface {
 	 *
 	 * @return string
 	 */
-	public function getName();
+	public function getName():string;
 
 	/**
 	 * isDeclaredAbstract
 	 *
 	 * @return bool
 	 */
-	public function isDeclaredAbstract();
+	public function isDeclaredAbstract():bool;
 
 	/**
 	 * getMethodNames
 	 *
 	 * @return array
 	 */
-	public function getMethodNames();
+	public function getMethodNames():array;
 
 	/**
 	 * getParentClassName
 	 *
 	 * @return string
 	 */
-	public function getParentClassName();
+	public function getParentClassName():string;
 
 	/**
 	 * getInterfaceNames
 	 *
 	 * @return array
 	 */
-	public function getInterfaceNames();
+	public function getInterfaceNames():array;
 
 	/**
 	 * getMethod
@@ -54,7 +54,7 @@ interface ClassInterface {
 	 *
 	 * @return ClassMethod|null
 	 */
-	public function getMethod($name);
+	public function getMethod(string $name):?MethodInterface;
 
 	/**
 	 * getProperty
@@ -63,14 +63,14 @@ interface ClassInterface {
 	 *
 	 * @return Property;
 	 */
-	public function getProperty($name);
+	public function getProperty(string $name):?Property;
 
 	/**
 	 * getPropertyNames
 	 *
 	 * @return array
 	 */
-	public function getPropertyNames();
+	public function getPropertyNames():array;
 
 	/**
 	 * hasConstant
@@ -79,12 +79,12 @@ interface ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name);
+	public function hasConstant(string $name):bool;
 
 	/**
 	 * isInterface
 	 *
 	 * @return bool
 	 */
-	public function isInterface();
+	public function isInterface():bool;
 }

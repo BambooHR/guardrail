@@ -40,10 +40,10 @@ class Property {
 	 * @param string $access   The access
 	 * @param bool   $isStatic Is it static
 	 */
-	public function __construct($name,$type, $access, $isStatic) {
+	public function __construct(string $name,?string $type, string $access,bool $isStatic) {
 		$this->name = $name;
 		$this->access = $access;
-		$this->type = $type;
+		$this->type = ($type === null ? "" : $type);
 		$this->static = $isStatic;
 	}
 
@@ -52,7 +52,7 @@ class Property {
 	 *
 	 * @return string
 	 */
-	public function getName() {
+	public function getName():string {
 		return $this->name;
 	}
 
@@ -61,7 +61,7 @@ class Property {
 	 *
 	 * @return string
 	 */
-	public function getAccess() {
+	public function getAccess():string {
 		return $this->access;
 	}
 
@@ -70,7 +70,7 @@ class Property {
 	 *
 	 * @return string
 	 */
-	public function getType() {
+	public function getType():string {
 		return $this->type;
 	}
 
@@ -79,7 +79,7 @@ class Property {
 	 *
 	 * @return bool
 	 */
-	public function isStatic() {
+	public function isStatic():bool {
 		return $this->static;
 	}
 }

@@ -9,9 +9,9 @@ abstract class MyTestClass {
 class MyOtherClass {
 
 	public function checkStoredClass() {
-		$classVar = 'BambooHR\Guardrail\Checks\MyTestClass';
+		$classVar = 'BambooHR\\Guardrail\\Checks\\MyTestClass';
 		$object = new $classVar;
 
-		$otherNonClass = 'BambooHR\Guardrail\Checks\WasHere';
+		$otherNonClass = 'BambooHR\\Guardrail\\Checks\\WasHere';
 	}
 }

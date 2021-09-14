@@ -17,68 +17,68 @@ interface FunctionLikeInterface {
 	 *
 	 * @return FunctionLikeParameter[]
 	 */
-	public function getParameters();
+	public function getParameters():array;
 
 	/**
 	 * getMinimumRequiredParameters
 	 *
-	 * @return mixed
+	 * @return int
 	 */
-	public function getMinimumRequiredParameters();
+	public function getMinimumRequiredParameters():int;
 
 	/**
 	 * getReturnType
 	 *
 	 * @return string
 	 */
-	public function getReturnType();
+	public function getReturnType():string;
 
 	/**
 	 * hasNulllableReturnType
 	 *
 	 * @return bool
 	 */
-	public function hasNullableReturnType();
+	public function hasNullableReturnType():bool;
 
 	/**
 	 * getDocBlockReturnType
 	 *
 	 * @return string|null
 	 */
-	public function getDocBlockReturnType();
+	public function getDocBlockReturnType():?string;
 
 	/**
 	 * isInternal
 	 *
 	 * @return bool
 	 */
-	public function isInternal();
+	public function isInternal():bool;
 
 	/**
 	 * isDeprecated
 	 *
 	 * @return bool
 	 */
-	public function isDeprecated();
+	public function isDeprecated():bool;
 
 	/**
 	 * getName
 	 *
 	 * @return string
 	 */
-	public function getName();
+	public function getName():string;
 
 	/**
 	 * getStartingLine
 	 *
 	 * @return int
 	 */
-	public function getStartingLine();
+	public function getStartingLine():int;
 
 	/**
 	 * isVariadic
 	 *
 	 * @return bool
 	 */
-	public function isVariadic();
+	public function isVariadic():bool;
 }

@@ -31,7 +31,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isStatic() {
+	public function isStatic():bool {
 		return $this->refl->isStatic();
 	}
 
@@ -40,7 +40,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isDeprecated() {
+	public function isDeprecated():bool {
 		return $this->refl->isDeprecated();
 	}
 
@@ -49,7 +49,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isInternal() {
+	public function isInternal():bool {
 		return true;
 	}
 
@@ -58,7 +58,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 * @return string
 	 */
-	public function getReturnType() {
+	public function getReturnType():string {
 		if ( method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			if ($type) {
@@ -73,7 +73,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return string
 	 */
-	public function getDocBlockReturnType() {
+	public function getDocBlockReturnType():string {
 		return "";
 	}
 
@@ -82,7 +82,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return bool
 	 */
-	public function isAbstract() {
+	public function isAbstract():bool {
 		return $this->refl->isAbstract();
 	}
 
@@ -91,7 +91,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return string
 	 */
-	public function getAccessLevel() {
+	public function getAccessLevel():string {
 		if ($this->refl->isPrivate()) {
 			return "private";
 		}
@@ -108,7 +108,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return int
 	 */
-	public function getMinimumRequiredParameters() {
+	public function getMinimumRequiredParameters():int {
 
 		$class = strtolower($this->refl->getDeclaringClass()->getName());
 		$method = strtolower($this->refl->getName());
@@ -128,7 +128,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return array
 	 */
-	public function getParameters() {
+	public function getParameters():array {
 		$ret = [];
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
@@ -143,7 +143,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 * @return bool
 	 */
-	public function hasNullableReturnType() {
+	public function hasNullableReturnType():bool {
 		if ( method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			if ($type) {
@@ -158,7 +158,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return string
 	 */
-	public function getName() {
+	public function getName():string {
 		return $this->refl->getName();
 	}
 
@@ -167,7 +167,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 *
 	 * @return int
 	 */
-	public function getStartingLine() {
+	public function getStartingLine():int {
 		return 0;
 	}
 
@@ -177,7 +177,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @return bool
 	 * @guardrail-ignore Standard.Unknown.Class.Method
 	 */
-	public function isVariadic() {
+	public function isVariadic():bool {
 		if (method_exists($this->refl, "isVariadic")) {
 			return $this->refl->isVariadic();
 		} else {

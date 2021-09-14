@@ -11,7 +11,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	/**
 	 * @return string[]
 	 */
-	function getCheckNodeTypes() {
+	function getCheckNodeTypes(): array {
 		return [Node\Stmt\ClassMethod::class, Node\Stmt\Function_::class];
 	}
 
@@ -65,12 +65,12 @@ class CyclomaticComplexityCheck extends BaseCheck {
 
 	/**
 	 * @param string                   $fileName The file being scanned
-	 * @param Node                     $node     The node being scanned
-	 * @param Node\Stmt\ClassLike|null $inside   The class we're inside
-	 * @param Scope|null               $scope    Any other relevant scope
+	 * @param Node                     $node The node being scanned
+	 * @param Node\Stmt\ClassLike|null $inside The class we're inside
+	 * @param Scope|null               $scope Any other relevant scope
 	 * @return void
 	 */
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run(string $fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
 		if ($node->stmts) {
 			if ($node instanceof Node\Stmt\ClassMethod) {
 				$this->checkStatements($fileName, $node->name, $node, $node->stmts);

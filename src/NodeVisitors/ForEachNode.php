@@ -26,7 +26,7 @@ class ForEachNode extends NodeVisitorAbstract {
 	 *
 	 * @param string $callBack The callback
 	 */
-	public function __construct($callBack) {
+	public function __construct(callable $callBack) {
 		$this->callBack = $callBack;
 	}
 

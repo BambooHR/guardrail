@@ -53,7 +53,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 *
 	 * @return void
 	 */
-	public function addFunction($name, Function_ $function, $file) {
+	public function addFunction(string $name, Function_ $function, string $file) {
 		$this->functions[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 

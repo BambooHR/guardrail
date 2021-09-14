@@ -39,7 +39,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return string
 	 */
-	public function getName() {
+	public function getName():string {
 		$class = $this->class;
 		return isset($class->namespacedName) ? strval($class->namespacedName) : "";
 	}
@@ -49,7 +49,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function isDeclaredAbstract() {
+	public function isDeclaredAbstract():bool {
 		$class = $this->class;
 		if ($class instanceof Class_) {
 			return $class->isAbstract();
@@ -63,7 +63,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return array
 	 */
-	public function getMethodNames() {
+	public function getMethodNames():array {
 		$ret = [];
 		foreach ($this->class->getMethods() as $method) {
 			$ret[] = $method->name;
@@ -76,7 +76,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return string
 	 */
-	public function getParentClassName() {
+	public function getParentClassName():string {
 		$class = $this->class;
 		if ($class instanceof \PhpParser\Node\Stmt\Class_) {
 			return strval($class->extends);
@@ -90,7 +90,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function isInterface() {
+	public function isInterface():bool {
 		return $this->class instanceof \PhpParser\Node\Stmt\Interface_;
 	}
 
@@ -99,7 +99,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return array
 	 */
-	public function getInterfaceNames() {
+	public function getInterfaceNames():array {
 		$ret = [];
 		$class = $this->class;
 		if ($class instanceof Interface_) {
@@ -120,9 +120,9 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @param string $name Instance of ClassMethod
 	 *
-	 * @return ClassMethod|null
+	 * @return MethodInterface|null
 	 */
-	public function getMethod($name) {
+	public function getMethod(string $name):?MethodInterface {
 		$method = $this->class->getMethod($name);
 		return $method ? new ClassMethod($method) : null;
 	}
@@ -134,7 +134,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name) {
+	public function hasConstant(string $name):bool {
 		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
 		foreach ($constants as $constList) {
 			foreach ($constList->consts as $const) {
@@ -151,7 +151,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return array
 	 */
-	public function getPropertyNames() {
+	public function getPropertyNames():array {
 		$ret = [];
 		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
 		foreach ($properties as $prop) {
@@ -171,7 +171,7 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return Property
 	 */
-	public function getProperty($name) {
+	public function getProperty(string $name):?Property {
 		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
 		foreach ($properties as $prop) {
 			/** @var \PhpParser\Node\Stmt\Property $prop */
@@ -189,9 +189,10 @@ class ClassAbstraction implements ClassInterface {
 					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
 						$type = $propertyProperty->getAttribute("namespacedType");
 					}
-					return new Property($propertyProperty->name, $type, $access, $prop->isStatic());
+					return new Property($propertyProperty->name->name, $type, $access, $prop->isStatic());
 				}
 			}
 		}
+		return null;
 	}
 }

@@ -38,7 +38,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return string
 	 */
-	public function getReturnType() {
+	public function getReturnType():string {
 		if ($this->function->returnType instanceof UnionType) {
 			return Scope::MIXED_TYPE;
 		}
@@ -48,7 +48,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	/**
 	 * @return bool
 	 */
-	public function hasNullableReturnType() {
+	public function hasNullableReturnType():bool {
 		return $this->function->returnType instanceof NullableType;
 	}
 
@@ -58,7 +58,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isDeprecated() {
+	public function isDeprecated():bool {
 		$docBlock = $this->function->getDocComment();
 		if (strpos($docBlock, "@deprecated") !== false) {
 			return true;
@@ -71,7 +71,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return mixed|null
 	 */
-	public function getDocBlockReturnType() {
+	public function getDocBlockReturnType():?string {
 		return $this->function->getAttribute('namespacedReturn');
 	}
 
@@ -80,7 +80,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return int
 	 */
-	public function getMinimumRequiredParameters() {
+	public function getMinimumRequiredParameters():int {
 		$minimumArgs = 0;
 		foreach ($this->function->params as $param) {
 			if ($param->default) {
@@ -96,7 +96,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return FunctionLikeParameter[]
 	 */
-	public function getParameters() {
+	public function getParameters():array {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->function->params as $param) {
@@ -116,7 +116,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isInternal() {
+	public function isInternal():bool {
 		return false;
 	}
 
@@ -125,8 +125,8 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return string
 	 */
-	public function getName() {
-		return $this->function->name;
+	public function getName():string {
+		return $this->function->name->name;
 	}
 
 	/**
@@ -134,7 +134,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return int
 	 */
-	public function getStartingLine() {
+	public function getStartingLine():int {
 		return $this->function->getLine();
 	}
 
@@ -143,7 +143,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isVariadic() {
+	public function isVariadic():bool {
 		foreach ($this->function->getParams() as $param) {
 			if ($param->variadic) {
 				return true;

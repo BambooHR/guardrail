@@ -51,7 +51,7 @@ class CallableCheck extends BaseCheck {
 	 *
 	 * @return array|string[]
 	 */
-	function getCheckNodeTypes() {
+	function getCheckNodeTypes(): array {
 		return [];
 
 	}
@@ -102,12 +102,12 @@ class CallableCheck extends BaseCheck {
 	/**
 	 *
 	 * @param string         $fileName -
-	 * @param Node           $node     -
-	 * @param ClassLike|null $inside   -
-	 * @param Scope|null     $scope    -l
+	 * @param Node           $node -
+	 * @param ClassLike|null $inside -
+	 * @param Scope|null     $scope -l
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run(string $fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Scalar\String_) {
 			$funcName = $node->value;
 			if ($funcName && $funcName[0] == "\\") {

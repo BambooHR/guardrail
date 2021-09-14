@@ -44,23 +44,22 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return array
 	 */
-	public function getCheckNodeTypes() {
+	public function getCheckNodeTypes(): array {
 		return [\PhpParser\Node\Expr\MethodCall::class];
 	}
-
 
 
 	/**
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @param Node           $node Instance of the Node
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 * @return mixed
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run(string $fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		static $checkable = 0, $uncheckable = 0;
 		if ($node instanceof Expr\MethodCall) {
 			if ($inside instanceof Trait_) {

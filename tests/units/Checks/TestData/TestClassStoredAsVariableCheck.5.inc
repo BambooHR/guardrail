@@ -1,6 +1,6 @@
 <?php
 
-abstract class MyTestClass {
+class MyTestClass {
 	public function checkStoredClass() {
 
 	}

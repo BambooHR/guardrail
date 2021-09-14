@@ -44,7 +44,7 @@ class PropertyFetchCheck extends BaseCheck {
 	 *
 	 * @return array
 	 */
-	public function getCheckNodeTypes() {
+	public function getCheckNodeTypes(): array {
 		return [ PropertyFetch::class];
 	}
 
@@ -52,13 +52,13 @@ class PropertyFetchCheck extends BaseCheck {
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @param Node           $node Instance of the Node
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run(string $fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof PropertyFetch) {
 			list($type, $attributes) = $this->typeInferer->inferType($inside, $node->var, $scope);
 			if ($type && $type[0] != '!' && !$this->symbolTable->ignoreType($type)) {

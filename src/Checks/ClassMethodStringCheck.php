@@ -15,7 +15,7 @@ class ClassMethodStringCheck extends BaseCheck {
 	/**
 	 * @return string[]
 	 */
-	function getCheckNodeTypes() {
+	function getCheckNodeTypes(): array {
 		return [Node\Expr\BinaryOp\Concat::class];
 	}
 
@@ -25,12 +25,12 @@ class ClassMethodStringCheck extends BaseCheck {
 	 * is a method name, so we emit a different error that can be disabled if the user desires.
 	 *
 	 * @param string         $fileName -
-	 * @param Node           $node     -
-	 * @param ClassLike|null $inside   -
-	 * @param Scope|null     $scope    -
+	 * @param Node           $node -
+	 * @param ClassLike|null $inside -
+	 * @param Scope|null     $scope -
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run(string $fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		assert($node instanceof Node\Expr\BinaryOp\Concat);
 
 		// Look for ClassName::class."@method"

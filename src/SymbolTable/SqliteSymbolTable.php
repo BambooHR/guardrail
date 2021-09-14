@@ -450,7 +450,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return void
 	 */
-	public function addFunction($name, Function_ $function, $file) {
+	public function addFunction(string $name, Function_ $function, string $file) {
 		$clone = clone $function;
 		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic( $function->stmts ));
 		$clone->stmts = [];

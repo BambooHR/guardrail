@@ -54,7 +54,7 @@ class TestConfig extends Config {
 	 *
 	 * @return string
 	 */
-	public function getBasePath() {
+	public function getBasePath():string {
 		return $this->basePath;
 	}
 
@@ -63,7 +63,7 @@ class TestConfig extends Config {
 	 *
 	 * @return SymbolTable
 	 */
-	public function getSymbolTable() {
+	public function getSymbolTable():SymbolTable {
 		return $this->symbolTable;
 	}
 
@@ -72,7 +72,7 @@ class TestConfig extends Config {
 	 *
 	 * @return mixed|\string[]
 	 */
-	public function getEmitList() {
+	public function getEmitList():array {
 		return $this->emitList;
 	}
 

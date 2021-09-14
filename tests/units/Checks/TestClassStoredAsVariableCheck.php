@@ -17,7 +17,7 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
 	 */
 	public function testClassVariableClass() {
-	//	$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
 	}
 
 	/**
@@ -27,7 +27,7 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
 	 */
 	public function testClassVariableAbstractClass() {
-	//	$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
 	}
 
 	/**
@@ -37,7 +37,7 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
 	 */
 	public function testClassVariableNamespacedClass() {
-	//	$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
 	}
 
 	/**
@@ -47,7 +47,7 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
 	 */
 	public function testClassVariableNamespacedAbstractClass() {
-	//	$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
 	}
 
 	/**
@@ -57,7 +57,7 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
 	 */
 	public function testClassVariableClassNotInString() {
-	//	$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
 	}
 
 	/**
@@ -67,7 +67,7 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
 	 */
 	public function testClassVariableNamespacedClassNotInString() {
-	//	$this->assertEquals(0, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
 	}
 
 	/**
@@ -76,8 +76,8 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 	 * @return void
 	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
 	 */
-	public function testNamspacedClassVariableClass() {
-	//	$this->assertEquals(1, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
+	public function testNamespacedClassVariableClass() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
 	}
 
 }

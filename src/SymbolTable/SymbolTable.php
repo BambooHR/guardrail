@@ -136,6 +136,8 @@ abstract class SymbolTable {
 
 	}
 
+	abstract public function addFunction(string $name, Function_ $function, string $file);
+
 	/**
 	 * getAbstractedClass
 	 *

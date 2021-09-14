@@ -4,15 +4,17 @@ class A {}
 
 class B {}
 
-function C(A | B $param): A | B {
+
+// Not part of the union
+class C {}
+
+// D only accepts A or B, not D.
+function D(A | B $param): A | B {
 
 }
 
-class D {}
 
-$a = new A();
-C($a);
-$b = new B();
-C($b);
-$d = new D();
-C($d);
+
+D(new A());
+D(new B());
+D(new C());

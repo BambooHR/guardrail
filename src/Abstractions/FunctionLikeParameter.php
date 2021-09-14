@@ -1,5 +1,7 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use PhpParser\Node\UnionType;
+
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
@@ -13,41 +15,41 @@
 class FunctionLikeParameter {
 
 	/**
-	 * @var string
+	 * @var string|UnionType
 	 */
 	private $type;
 
 	/**
 	 * @var string
 	 */
-	private $name;
+	private string $name;
 
 	/**
 	 * @var bool
 	 */
-	private $optional;
+	private bool $optional;
 
 	/**
 	 * @var bool
 	 */
-	private $reference;
+	private bool $reference;
 
 	/**
 	 * @var bool
 	 */
-	private $nullable;
+	private bool $nullable;
 
 	/**
 	 * FunctionLikeParameter constructor.
 	 *
-	 * @param string $type      The type
-	 * @param string $name      The name
-	 * @param bool   $optional  Is it optional
-	 * @param bool   $reference Is it a reference
-	 * @param bool   $nullable  Is it nullable
+	 * @param string|UnionType $type The type
+	 * @param string           $name The name
+	 * @param bool             $optional Is it optional
+	 * @param bool             $reference Is it a reference
+	 * @param bool             $nullable Is it nullable
 	 */
-	public function __construct($type, $name, $optional, $reference, $nullable) {
-		$this->type = $type;
+	public function __construct($type, string $name, bool $optional, bool $reference, bool $nullable) {
+		$this->type = ($type === NULL ? "" : $type);
 		$this->name = $name;
 		$this->optional = $optional;
 		$this->reference = $reference;
@@ -57,7 +59,7 @@ class FunctionLikeParameter {
 	/**
 	 * getType
 	 *
-	 * @return string
+	 * @return string|UnionType
 	 */
 	public function getType() {
 		return $this->type;
@@ -68,7 +70,7 @@ class FunctionLikeParameter {
 	 *
 	 * @return string
 	 */
-	public function getName() {
+	public function getName():string {
 		return $this->name;
 	}
 
@@ -77,7 +79,7 @@ class FunctionLikeParameter {
 	 *
 	 * @return bool
 	 */
-	public function isOptional() {
+	public function isOptional():bool {
 		return $this->optional;
 	}
 
@@ -86,14 +88,14 @@ class FunctionLikeParameter {
 	 *
 	 * @return bool
 	 */
-	public function isReference() {
+	public function isReference():bool {
 		return $this->reference;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function isNullable() {
+	public function isNullable():bool {
 		return $this->nullable;
 	}
 }

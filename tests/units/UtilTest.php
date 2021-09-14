@@ -71,11 +71,11 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return void
 	 * @dataProvider exceptionData
-	 * @expectedException \InvalidArgumentException
 	 * @rapid-unit Util:ConfigDirectoryValidation:Validation will throw exception for missing data.
 	 */
-	public function testConfigDirectoriesAreValidThrowsException($baseDirectory, $paths) {
-		$this->assertFalse(Util::configDirectoriesAreValid($baseDirectory, $paths));
+	public function testConfigDirectoriesAreValidThrowsException($baseDirectory, $paths, $class) {
+		$this->expectException( $class );
+		Util::configDirectoriesAreValid($baseDirectory, $paths);
 	}
 
 	/**
@@ -85,9 +85,9 @@ class UtilTest  extends TestCase {
 	 */
 	public function exceptionData() {
 		return [
-			[null, ''],
-			[new \stdClass(), null],
-			[0, []],
+			[null, '', \TypeError::class],
+			[new \stdClass(), null, \TypeError::class],
+			[0, [], \InvalidArgumentException::class],
 		];
 	}
 
@@ -137,6 +137,20 @@ class UtilTest  extends TestCase {
 	}
 
 	/**
+	 * testJsonFileContentIsValidThrowsException
+	 *
+	 * @param string $file     The file to test
+	 *
+	 * @return void
+	 * @dataProvider missingJsonFiles
+	 * @rapid-unit Util:JsonFileValidation:Missing files will throw exceptions
+	 */
+	public function testJsonFileContentIsValidThrowsException($file) {
+		$this->expectException(\InvalidArgumentException::class);
+		Util::jsonFileContentIsValid($file);
+	}
+
+	/**
 	 * jsonFileData
 	 *
 	 * @return array
@@ -146,20 +160,6 @@ class UtilTest  extends TestCase {
 			[__DIR__ . '/sampleData/good.json', true],
 			[__DIR__ . '/sampleData/bad.json', false],
 		];
-	}
-
-	/**
-	 * testJsonFileContentIsValidThrowsException
-	 *
-	 * @param string $file     The file to test
-	 *
-	 * @return void
-	 * @expectedException \InvalidArgumentException
-	 * @dataProvider missingJsonFiles
-	 * @rapid-unit Util:JsonFileValidation:Missing files will throw exceptions
-	 */
-	public function testJsonFileContentIsValidThrowsException($file) {
-		Util::jsonFileContentIsValid($file);
 	}
 
 	/**

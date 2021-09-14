@@ -38,14 +38,14 @@ abstract class BaseCheck extends ErrorConstants {
 	/**
 	 * emitError
 	 *
-	 * @param string $file    The file
-	 * @param Node   $node    Instance of the Node
-	 * @param string $class   The name of the class
+	 * @param string $file The file
+	 * @param Node   $node Instance of the Node
+	 * @param string $class The name of the class
 	 * @param string $message The message
 	 *
 	 * @return mixed
 	 */
-	public function emitError($file, \PhpParser\Node $node, $class, $message="") {
+	public function emitError(string $file, \PhpParser\Node $node, string $class, string $message="") {
 		$trait = $node->getAttribute("importedFromTrait");
 		if ($trait) {
 			$trait = str_replace("//", "/", $trait);
@@ -59,14 +59,14 @@ abstract class BaseCheck extends ErrorConstants {
 	/**
 	 * emitErrorOnLine
 	 *
-	 * @param string $file       The file name
+	 * @param string $file The file name
 	 * @param int    $lineNumber The line number
-	 * @param string $class      The class
-	 * @param string $message    The message
+	 * @param string $class The class
+	 * @param string $message The message
 	 *
 	 * @return mixed
 	 */
-	public function emitErrorOnLine($file, $lineNumber, $class, $message="") {
+	public function emitErrorOnLine(string $file, int $lineNumber, string $class, string $message="") {
 		return $this->doc->emitError(get_class($this), $file, $lineNumber, $class, $message);
 	}
 
@@ -84,17 +84,17 @@ abstract class BaseCheck extends ErrorConstants {
 	 *
 	 * @return string[]
 	 */
-	abstract function getCheckNodeTypes();
+	abstract function getCheckNodeTypes(): array;
 
 	/**
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @param Node           $node Instance of the Node
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 * @return void
 	 */
-	abstract public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null);
+	abstract public function run(string $fileName, Node $node, ClassLike $inside = null, Scope $scope = null);
 }

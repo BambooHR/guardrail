@@ -31,7 +31,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return string
 	 */
-	public function getParentClassName() {
+	public function getParentClassName():string {
 		$parent = $this->refl->getParentClass();
 		return $parent ? $parent->getName() : "";
 	}
@@ -41,7 +41,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return array
 	 */
-	public function getInterfaceNames() {
+	public function getInterfaceNames():array {
 		$names = $this->refl->getInterfaceNames();
 		if (strcasecmp($this->refl->name, 'exception') == 0) {
 			$names[] = 'Throwable';
@@ -54,7 +54,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function isInterface() {
+	public function isInterface():bool {
 		return $this->refl->isInterface();
 	}
 
@@ -63,7 +63,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function isDeclaredAbstract() {
+	public function isDeclaredAbstract():bool {
 		return $this->refl->isAbstract();
 	}
 
@@ -72,7 +72,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return array
 	 */
-	public function getMethodNames() {
+	public function getMethodNames():array {
 		$ret = [];
 		foreach ($this->refl->getMethods() as $method) {
 			$ret[] = $method->name;
@@ -87,7 +87,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name) {
+	public function hasConstant(string $name):bool {
 		$constants = $this->refl->getConstants();
 		return array_key_exists($name, $constants);
 	}
@@ -97,9 +97,9 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @param string $name The name of the method to get
 	 *
-	 * @return \BambooHR\Guardrail\Abstractions\ReflectedClassMethod|null
+	 * @return MethodInterface|null
 	 */
-	public function getMethod($name) {
+	public function getMethod(string $name):?MethodInterface {
 		try {
 			$method = $this->refl->getMethod($name);
 			if ($method) {
@@ -116,7 +116,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return string
 	 */
-	public function getName() {
+	public function getName():string {
 		return $this->refl->getName();
 	}
 
@@ -127,7 +127,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return Property|null
 	 */
-	public function getProperty($name) {
+	public function getProperty(string $name):?Property {
 		try {
 			$prop = $this->refl->getProperty($name);
 			if ($prop) {
@@ -153,7 +153,7 @@ class ReflectedClass implements ClassInterface {
 	 *
 	 * @return array
 	 */
-	public function getPropertyNames() {
+	public function getPropertyNames():array {
 		$ret = [];
 		$props = $this->refl->getProperties();
 		foreach ($props as $prop) {

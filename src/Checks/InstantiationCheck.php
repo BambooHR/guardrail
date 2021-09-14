@@ -25,7 +25,7 @@ class InstantiationCheck extends MethodCall {
 	 *
 	 * @return array
 	 */
-	public function getCheckNodeTypes() {
+	public function getCheckNodeTypes(): array {
 		return [New_::class];
 	}
 
@@ -35,13 +35,13 @@ class InstantiationCheck extends MethodCall {
 	 * @override
 	 *
 	 * @param string         $fileName The name of the file we are parsing
-	 * @param Node           $node     Instance of the Node
-	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
+	 * @param Node           $node Instance of the Node
+	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
+	 * @param Scope|null     $scope Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run(string $fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof New_) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();

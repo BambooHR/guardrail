@@ -90,7 +90,14 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		if (!isset($this->index[$type])) {
 			$this->index[$type] = [];
 		}
-		$this->index[$type][strtolower($name)] = ['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
+		$this->index[$type][strtolower($name)] = ['name'=>$name, 'file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
+	}
+
+	public function getOriginalName(string $name, $type):string {
+		if (isset($this->index[$type]) && isset($this->index[$type][$name])) {
+			return $this->index[$type][$name]=$name;
+		}
+		return "";
 	}
 
 	/**
@@ -437,7 +444,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return void
 	 */
-	public function addFunction($name, Function_ $function, $file) {
+	public function addFunction(string $name, Function_ $function, string $file) {
 		$clone = clone $function;
 		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic($function->stmts));
 		$clone->stmts = [];

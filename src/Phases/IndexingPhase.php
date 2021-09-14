@@ -51,7 +51,7 @@ class IndexingPhase {
 		//if (PhpAstParser::isSupported()) {
 		//	$this->parser = new PhpAstParser();
 		//} else {
-			$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+			$this->parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP7);
 		//}
 	}
 

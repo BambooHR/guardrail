@@ -27,6 +27,7 @@ class Config {
 	private $processes = 1;
 
 	/** @var string Directory containing the config file.  All files are relative to this directory */
+	/** @var string Directory containing the config file.  All files are relative to this directory */
 	private $basePath = "";
 
 	/**
@@ -100,7 +101,7 @@ class Config {
 	/**
 	 * @return void
 	 */
-	private function loadConfigVars() {
+	private function loadConfigVars():void {
 		if (isset($this->config) && array_key_exists('options', $this->config) && is_array($this->config['options'])) {
 			foreach ($this->config['options'] as $key => $value) {
 				if ($value === true) {
@@ -179,7 +180,7 @@ class Config {
 	/**
 	 * @return array
 	 */
-	public function getPsrRoots() {
+	public function getPsrRoots():array {
 		if (isset($this->config) && array_key_exists('psr-roots', $this->config) && is_array($this->config['psr-roots'])) {
 			return $this->config['psr-roots'];
 		}
@@ -189,35 +190,35 @@ class Config {
 	/**
 	 * @return bool
 	 */
-	static function shouldUseDocBlockForProperties() {
+	static function shouldUseDocBlockForProperties():bool {
 		return self::$useDocBlockForProperties;
 	}
 
 	/**
 	 * @return bool
 	 */
-	static function shouldUseDocBlockForParameters() {
+	static function shouldUseDocBlockForParameters():bool {
 		return self::$useDocBlockForParameters;
 	}
 
 	/**
 	 * @return bool
 	 */
-	static function shouldUseDocBlockForReturnValues() {
+	static function shouldUseDocBlockForReturnValues():bool {
 		return self::$useDocBlockForReturnValue;
 	}
 
 	/**
 	 * @return bool
 	 */
-	static function shouldUseDocBlockForInlineVars() {
+	static function shouldUseDocBlockForInlineVars():bool {
 		return self::$useDocBlockForInlineVars;
 	}
 
 	/**
 	 * @return bool
 	 */
-	public function shouldOutputTimings() {
+	public function shouldOutputTimings():bool {
 		return $this->timings;
 	}
 
@@ -229,7 +230,7 @@ class Config {
 	 *
 	 * @return BaseCheck[]
 	 */
-	public function getPlugins(SymbolTable $index, OutputInterface $output) {
+	public function getPlugins(SymbolTable $index, OutputInterface $output):array {
 		$plugins = [];
 		if (isset($this->config['plugins']) && is_array($this->config['plugins'])) {
 			foreach ($this->config['plugins'] as $fileName) {
@@ -246,30 +247,24 @@ class Config {
 	 *
 	 * @return int
 	 */
-	public function getOutputLevel() {
+	public function getOutputLevel():int {
 		return $this->outputLevel;
 	}
 
 	/**
 	 * @return FilterInterface
 	 */
-	public function getFilter() {
+	public function getFilter():?FilterInterface {
 		return $this->filter;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getFilterFileName() {
-		return $this->filterFileName;
-	}
 
 	/**
 	 * showStandardTests
 	 *
 	 * @return void
 	 */
-	public function showStandardTests() {
+	public function showStandardTests():void {
 		echo "The following constants are supported:\n    " . implode("\n    ", ErrorConstants::getConstants()) . "\n";
 	}
 
@@ -391,7 +386,7 @@ class Config {
 	 *
 	 * @return int
 	 */
-	public function getProcessCount() {
+	public function getProcessCount():int {
 		return $this->processes;
 	}
 
@@ -409,7 +404,7 @@ class Config {
 	 *
 	 * @return bool
 	 */
-	public function hasFileList() {
+	public function hasFileList():bool {
 		return $this->fileList !== false;
 	}
 
@@ -445,7 +440,7 @@ class Config {
 	 *
 	 * @return int
 	 */
-	public function getPartitionNumber() {
+	public function getPartitionNumber():int {
 		return $this->partitionNumber;
 	}
 
@@ -454,7 +449,7 @@ class Config {
 	 *
 	 * @return string
 	 */
-	public function getBasePath() {
+	public function getBasePath():string {
 		return $this->basePath;
 	}
 
@@ -463,7 +458,7 @@ class Config {
 	 *
 	 * @return SymbolTable
 	 */
-	public function getSymbolTable() {
+	public function getSymbolTable():SymbolTable {
 		return $this->symbolTable;
 	}
 
@@ -472,7 +467,7 @@ class Config {
 	 *
 	 * @return bool
 	 */
-	public function shouldIndex() {
+	public function shouldIndex():bool {
 		return $this->forceIndex;
 	}
 
@@ -481,14 +476,14 @@ class Config {
 	 *
 	 * @return bool
 	 */
-	public function shouldAnalyze() {
+	public function shouldAnalyze():bool {
 		return $this->forceAnalysis;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getOutputFormat() {
+	public function getOutputFormat():string {
 		return $this->format;
 	}
 
@@ -497,7 +492,7 @@ class Config {
 	 *
 	 * @return string
 	 */
-	private function getSymbolTableFile() {
+	private function getSymbolTableFile():string {
 		return $this->basePath . "/" . $this->symbolTableFile .
 			($this->preferredTable == self::SQLITE_SYMBOL_TABLE ? ".sqlite3" : ".json");
 	}
@@ -507,7 +502,7 @@ class Config {
 	 *
 	 * @return bool
 	 */
-	public function shouldReindex() {
+	public function shouldReindex():bool {
 		return $this->reindex;
 	}
 
@@ -516,7 +511,7 @@ class Config {
 	 *
 	 * @return mixed|\string[]
 	 */
-	public function getEmitList() {
+	public function getEmitList():array {
 		return $this->emitList;
 	}
 
@@ -525,7 +520,7 @@ class Config {
 	 *
 	 * @return int
 	 */
-	public function processCount() {
+	public function processCount():int {
 		return $this->processes;
 	}
 
@@ -534,7 +529,7 @@ class Config {
 	 *
 	 * @return string
 	 */
-	public function getOutputFile() {
+	public function getOutputFile():string {
 		if ($this->partitions > 1) {
 			$lastPart = strrpos($this->outputFile, ".");
 			if ($lastPart > 0) {

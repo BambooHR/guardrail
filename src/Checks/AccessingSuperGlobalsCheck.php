@@ -17,7 +17,7 @@ class AccessingSuperGlobalsCheck extends BaseCheck {
 	 *
 	 * @return array
 	 */
-	public function getCheckNodeTypes() {
+	public function getCheckNodeTypes(): array {
 		return [Global_::class, Variable::class];
 	}
 
@@ -25,13 +25,13 @@ class AccessingSuperGlobalsCheck extends BaseCheck {
 	 * run
 	 *
 	 * @param string                   $fileName The name of the file being parsed
-	 * @param Node                     $node     Reference to the object in the AST
-	 * @param Node\Stmt\ClassLike|null $inside   Instance of the ClassLike (the class we are in)
-	 * @param Scope|null               $scope    Instance of the Scope (all variables in current state)
+	 * @param Node                     $node Reference to the object in the AST
+	 * @param Node\Stmt\ClassLike|null $inside Instance of the ClassLike (the class we are in)
+	 * @param Scope|null               $scope Instance of the Scope (all variables in current state)
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	public function run(string $fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Global_) {
 			$this->checkForGlobal($fileName, $node);
 		}

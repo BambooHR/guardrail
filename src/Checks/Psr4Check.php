@@ -29,7 +29,7 @@ class Psr4Check extends BaseCheck {
 	/**
 	 * @return string[]
 	 */
-	function getCheckNodeTypes() {
+	function getCheckNodeTypes(): array {
 		return [Node\Stmt\Class_::class, Node\Stmt\Interface_::class, Node\Stmt\Trait_::class];
 	}
 
@@ -49,13 +49,13 @@ class Psr4Check extends BaseCheck {
 
 	/**
 	 * @param string                   $fileName Current filename
-	 * @param Node                     $node     Current node
-	 * @param Node\Stmt\ClassLike|null $inside   Current class
-	 * @param Scope|null               $scope    Any relevant scope
+	 * @param Node                     $node Current node
+	 * @param Node\Stmt\ClassLike|null $inside Current class
+	 * @param Scope|null               $scope Any relevant scope
 	 * @return void
 	 * @guardrail-ignore Standard.Unknown.Property
 	 */
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run(string $fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
 		$name = "";
 		$fullName = "";
 		if ($node instanceof Node\Stmt\Class_) {

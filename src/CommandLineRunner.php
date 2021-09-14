@@ -73,17 +73,13 @@ where: -p #/#                 = Define the number of partitions and the current 
 			exit(1);
 		}
 
-		if (!extension_loaded("pdo_sqlite") || !extension_loaded("sqlite3")) {
-			echo "Guardrail requires the PDO Sqlite extension, which is not loaded.\n";
-			exit(1);
-		}
-
 		try {
 			$config = new Config($argv);
 		} catch (InvalidConfigException $exception) {
 			$this->usage();
 			exit(1);
 		}
+
 
 		if ($config->getOutputFormat() == "text") {
 			$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);

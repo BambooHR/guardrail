@@ -89,7 +89,7 @@ class AnalyzingPhase {
 		$traverser3->addVisitor($this->analyzer);
 
 		$this->traversers = [$traverser1, $traverser2, $traverser3];
-		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		$this->parser = (new ParserFactory)->create(ParserFactory::ONLY_PHP7);
 	}
 
 	/**
@@ -336,7 +336,7 @@ class AnalyzingPhase {
 		}
 	}
 
-	protected function retryOnFalse($callable, $retries) {
+	protected function retryOnFalse(callable $callable, int $retries) {
 		$succeeded = false;
 		$tries = 0;
 		while ($succeeded === false && $tries < $retries) {
