@@ -32,8 +32,9 @@ class UseStatementCaseCheck extends BaseCheck {
 
 	function verifyCaseOfUseStatement(UseUse $useNode, string $fileName) {
 		$type = $useNode->name;
+		$typeStr = $type->toString();
 		/** @var AbstractionClass */
-		$className = $this->symbolTable->getOriginalName(SymbolTable::TYPE_CLASS) ?? $this->symbolTable->getOriginalNAme(SymbolTable::TYPE_INTERFACE);
+		$className = $this->symbolTable->getOriginalName(SymbolTable::TYPE_CLASS, $typeStr) ?? $this->symbolTable->getOriginalNAme(SymbolTable::TYPE_INTERFACE, $typeStr);
 
 		if ($className && $type->toString() !== $className) {
 			$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type->toString() . ' !== ' . $className);
