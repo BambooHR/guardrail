@@ -7,3 +7,4 @@ nbproject
 composer.phar
 guardrail.phar
 symbol_table.sqlite3
+/symbol_table.json

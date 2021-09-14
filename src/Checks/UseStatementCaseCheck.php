@@ -2,6 +2,7 @@
 
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractionClass;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Use_;
 use PhpParser\Node\Stmt\UseUse;
@@ -10,11 +11,11 @@ class UseStatementCaseCheck extends BaseCheck {
 	/**
 	 * @return string[]
 	 */
-	function getCheckNodeTypes() {
+	function getCheckNodeTypes():array {
 		return [ Node\Stmt\Use_::class ];
 	}
 
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run(string $fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Stmt\Use_ && ($node->type == Use_::TYPE_NORMAL)) {
 			foreach ($node->uses as $useNode) {
 				$this->verifyCaseOfUseStatement($useNode, $fileName);
@@ -32,9 +33,10 @@ class UseStatementCaseCheck extends BaseCheck {
 	function verifyCaseOfUseStatement(UseUse $useNode, string $fileName) {
 		$type = $useNode->name;
 		/** @var AbstractionClass */
-		$class = $this->symbolTable->getAbstractedClass(strtolower($type));
-		if ($class && $type->toString() !== $class->getName()) {
-			$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type->toString() . ' !== ' . $class->getName());
+		$className = $this->symbolTable->getOriginalName(SymbolTable::TYPE_CLASS) ?? $this->symbolTable->getOriginalNAme(SymbolTable::TYPE_INTERFACE);
+
+		if ($className && $type->toString() !== $className) {
+			$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type->toString() . ' !== ' . $className);
 		}
 	}
 }
