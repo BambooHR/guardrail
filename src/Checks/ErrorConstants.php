@@ -57,8 +57,11 @@ class ErrorConstants {
 	const TYPE_UNKNOWN_VARIABLE = 'Standard.Unknown.Variable';
 	const TYPE_UNREACHABLE_CODE = 'Standard.Unreachable';
 	const TYPE_UNSAFE_TIME_ZONE = "Standard.Unsafe.TimeZone";
+	const TYPE_UNSAFE_IMAGICK = "Standard.Unsafe.Imagick";
+	const TYPE_UNSAFE_SUPERGLOBAL = "Standard.Unsafe.Superglobal";
 	const TYPE_UNUSED_VARIABLE = 'Standard.Unused.Variable';
 	const TYPE_UNUSED_PROPERTY = 'Standard.Unused.Property';
+	const TYPE_USE_CASE_SENSITIVE = 'Standard.Use.CaseSensitive';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 
