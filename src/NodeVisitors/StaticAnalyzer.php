@@ -147,7 +147,6 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new InstanceOfCheck($this->index, $output),
 			new CatchCheck($this->index, $output),
 			new ClassConstantCheck($this->index, $output),
-			// SLOW!!! new ClassStoredAsVariableCheck($this->index, $output),
 			new FunctionCallCheck($this->index, $output),
 			new MethodCall($this->index, $output),
 			new SwitchCheck($this->index, $output),
@@ -168,7 +167,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 			new ImagickCheck($this->index, $output),
 			new UnsafeSuperGlobalCheck($this->index, $output),
 			new UseStatementCaseCheck($this->index, $output),
-			//new ClassStoredAsVariableCheck($this->index, $output)
+			// SLOW!!! new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
 		$this->enterHooks = $this->buildClosures();

@@ -79,8 +79,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 			$this->usage();
 			exit(1);
 		}
-
-
+		
 		if ($config->getOutputFormat() == "text") {
 			$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);
 		} else if ($config->getOutputFormat() == "counts") {
