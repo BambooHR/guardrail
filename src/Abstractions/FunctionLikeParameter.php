@@ -22,22 +22,22 @@ class FunctionLikeParameter {
 	/**
 	 * @var string
 	 */
-	private string $name;
+	private $name;
 
 	/**
 	 * @var bool
 	 */
-	private bool $optional;
+	private $optional;
 
 	/**
 	 * @var bool
 	 */
-	private bool $reference;
+	private $reference;
 
 	/**
 	 * @var bool
 	 */
-	private bool $nullable;
+	private $nullable;
 
 	/**
 	 * FunctionLikeParameter constructor.
