@@ -124,15 +124,14 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	/**
-	 * shouldEmit
 	 *
 	 * @param string $fileName   The file name
 	 * @param string $name       The name
 	 * @param int    $lineNumber The line number the error occurred on.
 	 *
-	 * @return bool
+	 * @return false|array
 	 */
-	public function shouldEmit($fileName, $name, $lineNumber) {
+	public function getEmitConfig(string $fileName, string $name, int $lineNumber) {
 		if (isset($this->silenced[$name]) && $this->silenced[$name] > 0) {
 			return false;
 		}
@@ -159,12 +158,23 @@ class XUnitOutput implements OutputInterface {
 				) {
 					continue;
 				}
-				return true;
+				return $entry['options'] ?? [];
 			} else if (is_string($entry) && self::emitPatternMatches($name, $entry)) {
-				return true;
+				return [];
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * @param string $fileName   The file name
+	 * @param string $name       The name
+	 * @param int    $lineNumber The line number the error occurred on.
+	 *
+	 * @return bool
+	 */
+	public function shouldEmit(string $fileName, string $name, int $lineNumber):bool {
+		return is_array($this->getEmitConfig($fileName,$name,$lineNumber));
 	}
 
 	/**
@@ -204,7 +214,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return void
 	 */
-	public function emitError($className, $fileName, $lineNumber, $name, $message="") {
+	public function emitError(string $className, string $fileName, int $lineNumber, string $name, string $message="") {
 
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
 			return;

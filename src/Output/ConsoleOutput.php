@@ -17,7 +17,7 @@ class ConsoleOutput extends XUnitOutput {
 	 * @param string $message    -
 	 * @return void
 	 */
-	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+	public function emitError(string $className, string $fileName, int $lineNumber, string $name, string $message = "") {
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
 			return;
 		}

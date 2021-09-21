@@ -51,14 +51,20 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 * @return void
 	 */
 	function checkStatements($fileName, $name, Node $node, array $statements) {
-		$complexity = 1;
-		ForEachNode::run($statements, function (Node $node) use (&$complexity) {
-			if (self::isStatementBranch($node) || self::isExpressionBranch($node)) {
-				++$complexity;
+		$config = $this->doc->getEmitConfig($fileName, ErrorConstants::TYPE_METRICS_COMPLEXITY, $node->getLine());
+
+		if(is_array($config)) {
+			$maxComplexity = $config['MaxComplexity'] ?? 10;
+
+			$complexity = 1;
+			ForEachNode::run($statements, function (Node $node) use (&$complexity) {
+				if (self::isStatementBranch($node) || self::isExpressionBranch($node)) {
+					++$complexity;
+				}
+			});
+			if ($complexity > $maxComplexity) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_METRICS_COMPLEXITY, "Method " . $name . " has a complexity of $complexity");
 			}
-		});
-		if ($complexity > 10) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_METRICS_COMPLEXITY, "Method " . $name . " has a complexity of $complexity");
 		}
 	}
 

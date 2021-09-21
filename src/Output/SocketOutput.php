@@ -26,7 +26,7 @@ class SocketOutput extends XUnitOutput {
 	 * @param string $message   A human readable message about the error
 	 * @return void
 	 */
-	function emitError($className, $file, $line, $type, $message = "") {
+	function emitError(string $className, string $file, int $line, string $type, string $message = "") {
 		if ($this->shouldEmit($file, $type, $line)) {
 			$arr = [
 				"file" => $file,
@@ -45,7 +45,6 @@ class SocketOutput extends XUnitOutput {
 	 * @return void
 	 */
 	function output($verbose, $extraVerbose) {
-		// TODO: Implement output() method.
 		socket_write($this->socket, "OUTPUT " . base64_encode( serialize(["v" => $verbose,"ev" => $extraVerbose]) . "\n"));
 	}
 

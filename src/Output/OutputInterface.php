@@ -20,9 +20,13 @@ interface OutputInterface {
 	 * @param string $type      The type
 	 * @param string $message   The message
 	 *
-	 * @return mixed
+	 * @return false|array
 	 */
-	function emitError($className, $file, $line, $type, $message = "");
+	function emitError(string $className, string $file, int $line, string $type, string $message = "");
+
+	function shouldEmit(string $file, string $type, int $line):bool;
+
+	function getEmitConfig(string $file, string $type, int $line);
 
 	/**
 	 * output
