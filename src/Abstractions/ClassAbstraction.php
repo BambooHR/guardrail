@@ -185,7 +185,12 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-					$type = strval($prop->type);
+                    $type = '';
+                    if(!empty($prop->type) && in_array(get_class($prop->type), [\PhpParser\Node\NullableType::class])){
+                        $type = strval($prop->type->type);
+                    } else {
+                        $type = strval($prop->type);
+                    }
 					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
 						$type = $propertyProperty->getAttribute("namespacedType");
 					}
