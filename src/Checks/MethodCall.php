@@ -152,8 +152,6 @@ class MethodCall extends CallCheck {
 		}
 
 		$name = $className . "->" . $methodName;
-		foreach ($node->args as $index => $arg) {
-			$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $index, $params);
-		}
+		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
 	}
 }
