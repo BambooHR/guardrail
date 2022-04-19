@@ -4,6 +4,7 @@ use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\TypeInferrer;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -32,10 +33,10 @@ abstract class CallCheck extends BaseCheck {
 	 * @return void
 	 */
 	protected function checkParams($fileName, $node, $name, Scope $scope, ClassLike $inside = null, array $args, array $params) {
-		$covered = [];
 		$named = false;
+		$covered = array_fill(0, count($params), 0);
 		foreach($args as $index=>$arg) {
-			if ($arg->name==null) {
+			if ($arg->name === null) {
 				if(!$named) {
 					$covered[$index] = 1;
 					if($index<count($params)) {
@@ -43,25 +44,23 @@ abstract class CallCheck extends BaseCheck {
 					}
 				} else {
 					$this->emitError($fileName, $arg, ErrorConstants::TYPE_SIGNATURE_TYPE,"Attempt to pass positional param after named param");
-					break;
 				}
 			} else {
 				$named = true;
 				$index2=self::findParam($params,$arg->name->name);
 				if($index2>=0) {
 					if ($covered[$index2]) {
-						$this->emitError($fileName, $params[$index2], ErrorConstants::TYPE_SIGNATURE_TYPE, "Attempt to pass param \"" . $arg->name->name . "\" twice");
+						$this->emitError($fileName, $arg, ErrorConstants::TYPE_SIGNATURE_TYPE, "Attempt to pass param \"" . $arg->name->name . "\" twice");
 					} else {
 						$covered[$index2]=1;
 						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $params[$index2]);
-						break;
 					}
 				}
 			}
 		}
 		foreach($params as $index=>$param) {
 			if(!$covered[$index] && !$param->isOptional()) {
-				$this->emitError($fileName, $node,ErrorConstants::TYPE_SIGNATURE_TYPE, "Required parameter ".$param->getName()." was not passed");
+				$this->emitError($fileName, $node,ErrorConstants::TYPE_SIGNATURE_TYPE, "$name: required parameter ".$param->getName()." was not passed");
 			}
 		}
 	}
@@ -72,9 +71,9 @@ abstract class CallCheck extends BaseCheck {
 	 * @return int
 	 */
 	static function findParam(array $params, string $name):int {
-		foreach($params as $index2=>$param) {
+		foreach($params as $index=>$param) {
 			if (strcasecmp($param->getName(), $name)==0) {
-				return $index2;
+				return $index;
 			}
 		}
 		return -1;
@@ -109,9 +108,9 @@ abstract class CallCheck extends BaseCheck {
 			}
 			return;// After we unpack an arg, we can't check the remaining parameters.
 		} else {
-			if ($params->getType() != "") {
+			if ($param->getType() != "") {
 				// Reference mismatch
-				if ($params->isReference() &&
+				if ($param->isReference() &&
 					!(
 						$arg->value instanceof Variable ||
 						$arg->value instanceof Expr\ArrayDimFetch ||
@@ -122,7 +121,7 @@ abstract class CallCheck extends BaseCheck {
 				}
 
 				// Type mismatch
-				$expectedType = $params->getType();
+				$expectedType = $param->getType();
 				if ($expectedType instanceof UnionType) {
 					$expectedTypes = $expectedType->types;
 				} else {
@@ -131,7 +130,7 @@ abstract class CallCheck extends BaseCheck {
 				$this->verifyParamType($fileName, $node, $name, $variableName, $arg, $inside, $scope, $type, $expectedTypes);
 
 				// Nulls mismatch
-				if (!$params->isNullable()) {
+				if (!$param->isNullable()) {
 					if ($type == Scope::NULL_TYPE) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to $name parameter \$$variableName that does not accept nulls");
 					} /*else if ($maybeNull == Scope::NULL_POSSIBLE) {

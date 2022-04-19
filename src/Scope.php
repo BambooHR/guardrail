@@ -63,7 +63,7 @@ class Scope {
 	static public function constFromName($str) {
 		if (strcasecmp($str, "null") == 0) {
 			return static::NULL_TYPE;
-		} elseif (strcasecmp($str, "bool") == 0) {
+		} elseif (strcasecmp($str, "bool") == 0 || strcasecmp($str, "false") ==0) {
 			return static::BOOL_TYPE;
 		} elseif (strcasecmp($str, "int") == 0) {
 			return static::INT_TYPE;

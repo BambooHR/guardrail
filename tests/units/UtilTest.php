@@ -71,11 +71,11 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return void
 	 * @dataProvider exceptionData
-	 * @expectedException \InvalidArgumentException
 	 * @rapid-unit Util:ConfigDirectoryValidation:Validation will throw exception for missing data.
 	 */
 	public function testConfigDirectoriesAreValidThrowsException($baseDirectory, $paths) {
-		$this->assertFalse(Util::configDirectoriesAreValid($baseDirectory, $paths));
+		$this->expectException(\InvalidArgumentException::class);
+		Util::configDirectoriesAreValid($baseDirectory, $paths);
 	}
 
 	/**
@@ -154,11 +154,11 @@ class UtilTest  extends TestCase {
 	 * @param string $file     The file to test
 	 *
 	 * @return void
-	 * @expectedException \InvalidArgumentException
 	 * @dataProvider missingJsonFiles
 	 * @rapid-unit Util:JsonFileValidation:Missing files will throw exceptions
 	 */
 	public function testJsonFileContentIsValidThrowsException($file) {
+		$this->expectException(\InvalidArgumentException::class);
 		Util::jsonFileContentIsValid($file);
 	}
 

@@ -1,14 +1,13 @@
 <?php
 
-class Exception {
+class Exception implements Throwable {
 	function __construct($message="", $code=0, $previous=null) { }
-	function getMessage() { }
+	function getMessage():string { return ""; }
 	function getPrevious() { }
 	function getCode() { }
-	function getFile() { }
-	function getLine() { }
-	function getTrace() { }
-	function getTraceAsString() { }
-	function __toString() {
- return ""; }
+	function getFile():string { return ""; }
+	function getLine():int { return 0;}
+	function getTrace():array { return []; }
+	function getTraceAsString():string { return ""; }
+	function __toString() { return ""; }
 }
