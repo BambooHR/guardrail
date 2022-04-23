@@ -63,6 +63,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		}
 	}
 
+
 	/**
 	 * importVarType
 	 *
@@ -95,7 +96,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		if ($comment) {
 			$str = $comment->getText();
 			try {
-				$this->processDockBlockReturn($node, $str);
+				$this->processDocBlockReturn($node, $str);
 			} catch (\InvalidArgumentException $exception) {
 				// Skip it.
 			}
@@ -152,7 +153,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	private function processDockBlockReturn($node, $str) {
+	private function processDocBlockReturn($node, $str) {
 		if ($str && preg_match_all('/@return +([A-Z0-9_|\\\\]+(?:\[\])*)/i', $str, $matchArray, PREG_SET_ORDER)) {
 			$returnType = strval($matchArray[0][1]);
 			list($returnType) = explode(" ", $returnType, 2);

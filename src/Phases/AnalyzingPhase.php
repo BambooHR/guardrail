@@ -7,6 +7,7 @@
 
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\Output\SocketOutput;
@@ -115,20 +116,20 @@ class AnalyzingPhase {
 	/**
 	 * getPhase2Files
 	 *
-	 * @param Config                    $config    Instance of Config
-	 * @param RecursiveIteratorIterator $it2       Instance of RecursiveIteratorIterator
-	 * @param array                     $toProcess The content to process
+	 * @param Config    $config    Instance of Config
+	 * @param \Iterator $it2       Instance of RecursiveIteratorIterator
+	 * @param array     $toProcess The content to process
 	 *
 	 * @return void
 	 */
-	public function getPhase2Files(Config $config, RecursiveIteratorIterator $it2, &$toProcess) {
+	public function getPhase2Files(Config $config, \Iterator $it2, &$toProcess) {
 		$configArr = $config->getConfigArray();
 		foreach ($it2 as $file) {
-			if ($file->getExtension() == "php" && $file->isFile()) {
-				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file->getRealPath(), $configArr['test-ignore'])) {
+			if (preg_match('/\\.php$/', $file) && is_file($file)) {
+				if (isset($configArr['test-ignore']) && is_array($configArr['test-ignore']) && Util::matchesGlobs($config->getBasePath(), $file, $configArr['test-ignore'])) {
 					continue;
 				}
-				$toProcess[] = [$file->getPathname(), $file->getSize()];
+				$toProcess[] = [$file, filesize($file)];
 			}
 		}
 	}
@@ -387,8 +388,7 @@ class AnalyzingPhase {
 			foreach ($indexPaths as $path) {
 				$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
 				$output->outputVerbose("Directory: $path\n");
-				$it = new RecursiveDirectoryIterator($tmpDirectory, FilesystemIterator::SKIP_DOTS);
-				$it2 = new RecursiveIteratorIterator($it);
+				$it2 = DirectoryLister::getGenerator($tmpDirectory);
 				$this->getPhase2Files($config, $it2, $toProcess);
 			}
 		}
