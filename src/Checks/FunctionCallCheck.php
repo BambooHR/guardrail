@@ -110,9 +110,7 @@ class FunctionCallCheck extends CallCheck {
 					}
 
 					$params = $func->getParameters();
-					foreach ($node->args as $index => $arg) {
-						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $index, $params);
-					}
+					$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
 				} else {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}

@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Config;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
@@ -185,12 +186,7 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-                    $type = '';
-                    if(!empty($prop->type) && in_array(get_class($prop->type), [\PhpParser\Node\NullableType::class])){
-                        $type = strval($prop->type->type);
-                    } else {
-                        $type = strval($prop->type);
-                    }
+					$type = ($prop->type instanceof NullableType) ? strval($prop->type->type) : strval($prop->type);
 					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
 						$type = $propertyProperty->getAttribute("namespacedType");
 					}

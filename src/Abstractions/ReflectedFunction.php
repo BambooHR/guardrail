@@ -62,7 +62,8 @@ class ReflectedFunction implements FunctionLikeInterface {
 	public function getReturnType() {
 		if ( method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
-			if ($type) {
+			// Other possibility is ReflectionUnionType, which we don't currently handle.
+			if ($type instanceof \ReflectionNamedType) {
 				return $type->getName();
 			}
 		}

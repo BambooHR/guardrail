@@ -7,6 +7,7 @@
 
 namespace BambooHR\Guardrail\Phases;
 
+use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\PhpAstParser;
 use BambooHR\Guardrail\ProcessManager;
@@ -64,15 +65,15 @@ class IndexingPhase {
 	 *
 	 * @return \Generator
 	 */
-	private function getFileList(Config $config, \RecursiveIteratorIterator $it2, $stubs = false) {
+	private function getFileList(Config $config, \Iterator $it2, $stubs = false) {
 		$baseDir = $config->getBasePath();
 		$configArr = $config->getConfigArray();
-		foreach ($it2 as $file) {
-			if (($file->getExtension() == "php" || $file->getExtension() == "inc") && $file->isFile()) {
-				if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $file->getPathname(), $configArr['ignore'])) {
+		foreach ($it2 as $filePath) {
+			if (preg_match('/\\.(php|inc)$/', $filePath) && is_file($filePath)) {
+				if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $filePath, $configArr['ignore'])) {
 					continue;
 				}
-				yield $file->getPathname();
+				yield $filePath;
 			}
 		}
 	}
@@ -174,10 +175,10 @@ class IndexingPhase {
 	/**
 	 * @param Config          $config The config
 	 * @param OutputInterface $output Output
-	 * @param \Generator      $itr    A generator function that yields filenames to scan.
+	 * @param \Iterator       $itr    A generator function that yields filenames to scan.
 	 * @return void
 	 */
-	function indexList(Config $config, OutputInterface $output, \Generator $itr) {
+	function indexList(Config $config, OutputInterface $output, $itr) {
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
 			//$table->disconnect();
@@ -245,17 +246,15 @@ class IndexingPhase {
 		foreach ($indexPaths as $path) {
 			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
 			$output->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
-			$it = new \RecursiveDirectoryIterator($tmpDirectory, \FilesystemIterator::SKIP_DOTS);
-			$it2 = new \RecursiveIteratorIterator($it);
-			$this->indexList($config, $output, $this->getFileList($config, $it2) );
+			$generator = DirectoryLister::getGenerator($tmpDirectory);
+			$this->indexList($config, $output, $this->getFileList($config, $generator) );
 		}
 
 		// If Guardrail is in vendor and you index vendor (which you should) then it won't need to
 		// re-index the extra stubs.  If guardrail is outside of vendor then we need to make sure
 		// we index the extra stubs.
-		$it = new \RecursiveDirectoryIterator(dirname(__DIR__) . "/ExtraStubs");
-		$it2 = new \RecursiveIteratorIterator($it);
-		$this->indexList($config, $output, $this->getFileList($config, $it2, true) );
+		$generator = DirectoryLister::getGenerator(dirname(__DIR__) . "/ExtraStubs");
+		$this->indexList($config, $output, $this->getFileList($config, $generator, true) );
 
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {

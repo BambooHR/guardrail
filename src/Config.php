@@ -310,6 +310,10 @@ class Config {
 					break;
 				case '-s':
 					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
+					if (!extension_loaded("pdo_sqlite") || !extension_loaded("sqlite3")) {
+						echo "Guardrail requires the PDO Sqlite extension, which is not loaded.\n";
+						throw new InvalidConfigException();
+					}
 					break;
 				case '-m':
 					$this->preferredTable = self::MEMORY_SYMBOL_TABLE;

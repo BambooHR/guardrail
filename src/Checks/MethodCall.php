@@ -129,7 +129,6 @@ class MethodCall extends CallCheck {
 	protected function checkMethod($fileName, $node, $className, $methodName, Scope $scope, MethodInterface $method, ClassLike $inside=null) {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
-			return;
 		}
 
 		if ($method->getAccessLevel() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($className, $inside->namespacedName) != 0)) {
@@ -152,8 +151,6 @@ class MethodCall extends CallCheck {
 		}
 
 		$name = $className . "->" . $methodName;
-		foreach ($node->args as $index => $arg) {
-			$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $index, $params);
-		}
+		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
 	}
 }
