@@ -167,6 +167,7 @@ class Grabber extends NodeVisitorAbstract {
 			$traverser = new NodeTraverser;
 			$traverser->addVisitor($resolver = new NameResolver());
 			$traverser->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
+			$traverser->addVisitor(new PromotedPropertyVisitor());
 			$stmts = $traverser->traverse( $stmts );
 
 			if ($classType == Class_::class) {

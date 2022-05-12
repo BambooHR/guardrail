@@ -10,6 +10,7 @@ use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
+use BambooHR\Guardrail\NodeVisitors\PromotedPropertyVisitor;
 use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SocketBuffer;
@@ -81,6 +82,7 @@ class AnalyzingPhase {
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor($resolver = new NameResolver());
 		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
+		$traverser1->addVisitor(new PromotedPropertyVisitor());
 
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
