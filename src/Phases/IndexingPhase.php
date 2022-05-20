@@ -9,6 +9,7 @@ namespace BambooHR\Guardrail\Phases;
 
 use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
+use BambooHR\Guardrail\NodeVisitors\PromotedPropertyVisitor;
 use BambooHR\Guardrail\PhpAstParser;
 use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SocketBuffer;
@@ -46,6 +47,7 @@ class IndexingPhase {
 		$this->traverser1 = new NodeTraverser;
 		$this->traverser1->addVisitor($resolver = new NameResolver());
 		$this->traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
+		$this->traverser1->addVisitor(new PromotedPropertyVisitor());
 		$this->traverser2 = new NodeTraverser;
 		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
 		$this->traverser2->addVisitor($this->indexer);
