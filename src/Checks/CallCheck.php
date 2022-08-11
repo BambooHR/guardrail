@@ -5,6 +5,7 @@ use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -148,6 +149,10 @@ abstract class CallCheck extends BaseCheck {
 			return;
 		}
 		foreach ($expectedTypes as $expectedType) {
+			//If the expected type is a string and the given argument is an object with a __toString method, the argument is valid.
+			if (strcasecmp($expectedType, 'string') == 0 && Util::findAbstractedMethod($type, '__toString', $this->symbolTable)) {
+				return;
+			}
 			if (strcasecmp($expectedType, 'countable') == 0 && ($type == Scope::ARRAY_TYPE || substr($type, -2) == "[]")) {
 				return;
 			}
