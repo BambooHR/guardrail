@@ -99,6 +99,6 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:FunctionCallCheck:Ensures that passing an object with a __toString method is allowed as a valid argument to a method or function with a string requirement
 	 */
 	public function testObjectWith__toStringMethod() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 }
