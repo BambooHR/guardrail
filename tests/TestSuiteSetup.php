@@ -25,16 +25,22 @@ abstract class TestSuiteSetup extends TestCase {
 	 *
 	 * @param string $fileName
 	 * @param mixed  $emit
-	 *
+	 * @param array  $additionalConfig
 	 * @return int
 	 */
-	public function runAnalyzerOnFile($fileName, $emit) {
-		$output = $this->analyzeFileToOutput($fileName, $emit);
+	public function runAnalyzerOnFile($fileName, $emit, array $additionalConfig = []) {
+		$output = $this->analyzeFileToOutput($fileName, $emit, $additionalConfig);
 
 		return $output->getErrorCount();
 	}
 
-	public function analyzeFileToOutput($fileName, $emit) {
+	/**
+	 * @param string $fileName
+	 * @param mixed  $emit
+	 * @param array  $additionalConfig
+	 * @return XUnitOutput
+	 */
+	public function analyzeFileToOutput($fileName, $emit, array $additionalConfig = []) {
 		$testDataDirectory = $this->getCallerTestDataDirectory($this);
 		if (false === strpos($fileName, $testDataDirectory)) {
 			$fileName = $testDataDirectory . $fileName;
@@ -44,7 +50,7 @@ abstract class TestSuiteSetup extends TestCase {
 			throw new \InvalidArgumentException("That file does not exist. Make sure it follows the NameOfTestClass.#.inc \n pattern and is in the TestData directory of the class file directory.");
 		}
 
-		$config = new TestConfig($fileName, $emit);
+		$config = new TestConfig($fileName, $emit, $additionalConfig);
 		$output = new XUnitOutput($config);
 
 		$indexer = new IndexingPhase($config);

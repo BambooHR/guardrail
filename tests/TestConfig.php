@@ -25,13 +25,15 @@ class TestConfig extends Config {
 	 * TestConfig constructor.
 	 *
 	 * @param string $file
+	 * @param mixed  $emit
+	 * @param array  $additionalConfig
 	 */
-	public function __construct($file, $emit) {
-		$this->basePath = dirname(realpath($file)) . "/";
-		$this->config = [
+	public function __construct($file, $emit, array $additionalConfig = []) {
+		$this->basePath = $additionalConfig['basePath'] ?? dirname(realpath($file)) . "/";
+		$this->config = array_merge([
 			'test' => [$file],
 			'index' => [dirname($file)],
-		];
+		], $additionalConfig);
 		$this->forceIndex = true;
 		$this->symbolTable = new InMemorySymbolTable($this->basePath);
 		if (!is_array($emit)) {
@@ -76,4 +78,14 @@ class TestConfig extends Config {
 		return $this->emitList;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getPsrRoots() {
+		// Method has to be overridden by $config is private in the parent class.
+		if (isset($this->config) && array_key_exists('psr-roots', $this->config) && is_array($this->config['psr-roots'])) {
+			return $this->config['psr-roots'];
+		}
+		return [];
+	}
 }
