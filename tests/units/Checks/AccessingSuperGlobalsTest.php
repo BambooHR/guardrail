@@ -5,11 +5,11 @@ use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
 
 /**
- * Class AccessingSuperGlobalsCheckTest
+ * Class AccessingSuperGlobalsTest
  *
  * @package BambooHR\Guardrail\Tests\Checks
  */
-class AccessingSuperGlobalsCheckTest extends TestSuiteSetup {
+class AccessingSuperGlobalsTest extends TestSuiteSetup {
 
 	/**
 	 * testRunAccessingSuperGlobalGlobalExpressions
