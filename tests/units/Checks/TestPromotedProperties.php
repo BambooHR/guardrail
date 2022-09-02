@@ -23,7 +23,7 @@ class TestPromotedProperties extends TestSuiteSetup {
 	public function testPromotedPropertyParsing() {
 		$factory=new ParserFactory();
 		$parser = $factory->create(ParserFactory::ONLY_PHP7);
-		$file = file_get_contents("./units/Checks/TestData/TestPromotedProperties.1.inc");
+		$file = file_get_contents(__DIR__ . "/TestData/TestPromotedProperties.1.inc");
 		$tokens = $parser->parse($file);
 
 		$traverser=new NodeTraverser();

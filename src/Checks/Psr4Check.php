@@ -38,10 +38,29 @@ class Psr4Check extends BaseCheck {
 	 * @return string
 	 */
 	private function getPsr4Path(Node\Name $name = null) {
-		$name = $name ? implode('/', $name->parts) . ".php" : "";
-		foreach ($this->psrRoots as $root => $path) {
-			if (strpos($name, $root) === 0) {
-				return $path . substr($name, strlen($root));
+		// PSR-4 lookup taken from Composer project
+		// Source: https://github.com/composer/composer/blob/2.3.5/src/Composer/Autoload/ClassLoader.php#L498-L513
+		$logicalPathPsr4 = '';
+		$subPath = '';
+		if ($name) {
+			$logicalPathPsr4 = implode(DIRECTORY_SEPARATOR, $name->parts) . '.php';
+			$subPath = implode('\\', $name->parts);
+		}
+		while (false !== $lastPos = strrpos($subPath, '\\')) {
+			$subPath = substr($subPath, 0, $lastPos);
+			$search = $subPath . '\\';
+			$dir = '';
+			// Composer requires the PSR roots to end in a '\', but Guardrail does not. Support both.
+			if (isset($this->psrRoots[$search])) {
+				$dir = $this->psrRoots[$search];
+			} elseif (isset($this->psrRoots[$subPath])) {
+				$dir = $this->psrRoots[$subPath];
+			}
+			if (!empty($dir)) {
+				$pathEnd = DIRECTORY_SEPARATOR . substr($logicalPathPsr4, $lastPos + 1);
+				//Note: Composer PSR-4 roots can be a list of directories, but the check does not currently account
+				// for that. Since it was not supported previously, We are not going to try to do so at this time.
+				return $dir . $pathEnd;
 			}
 		}
 		return "";
