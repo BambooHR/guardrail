@@ -100,7 +100,8 @@ class MethodCall extends CallCheck {
 					// If there is a magic __call method, then we can't know if it will handle these calls.
 					if (
 						!Util::findAbstractedMethod($className, "__call", $this->symbolTable) &&
-						!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className)
+						!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className) &&
+						!$this->precededByMethodExistsCheck($node, $scope)
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className::$methodName");
 					}
@@ -152,5 +153,61 @@ class MethodCall extends CallCheck {
 
 		$name = $className . "->" . $methodName;
 		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
+	}
+
+	/**
+	 * Is the method being called preceded by a logical check to see if the method_exists()?
+	 *
+	 * @param Node $node
+	 *
+	 * @return bool
+	 */
+	private function precededByMethodExistsCheck(Node $node, Scope $scope = null): bool {
+		if ($scope) {
+			$stmts = $scope->getInsideFunction()->getStmts();
+			foreach ($stmts as $stmt) {
+				//If the node is within the statements found in the method we'll continue.
+				if (
+					$node->getLine() >= $stmt->getStartLine() &&
+					$node->getLine() <= $stmt->getEndLine()
+				) {
+					//Iterate until we've past every expr node.
+					$tmpStmt = clone $stmt;
+					while ($this->checkNodeForSubNodeNames($tmpStmt, 'expr')) {
+						$tmpStmt = $tmpStmt->expr;
+					}
+					$conditional = $tmpStmt;
+
+					//Walk down the sequence to ensure we have a method_exists function call
+					$sequence = ['cond', 'name', 'parts'];
+					while (!empty($sequence) && $this->checkNodeForSubNodeNames($tmpStmt, $sequence[0])) {
+						$tmpStmt = $tmpStmt->{$sequence[0]};
+						array_shift($sequence);
+					}
+
+					return
+						empty($sequence) &&                                      //Make sure the sequence is empty because it means we've found a function/method call
+						in_array('method_exists', $tmpStmt) &&            //Ensure that the function is method_exists()
+						!empty($conditional->cond->args[1]->value->value) &&     //Make sure the conditional has a value with arguments to the above function method_exists(). The 1st index will contain the method name being checked -- method_exists($object, 'method')
+						!empty($node->name->name) &&                             //Make sure the node has a name (i.e. the method being called on the object)
+						$conditional->cond->args[1]->value->value === $node->name->name //Make sure the method_exists() check matches the method being called on the node
+					;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check the given node for a specific sub node name
+	 *
+	 * @param Node   $node
+	 * @param string $subNodeName
+	 *
+	 * @return bool
+	 */
+	private function checkNodeForSubNodeNames(Node $node, string $subNodeName): bool {
+		return in_array($subNodeName, $node->getSubNodeNames());
 	}
 }
