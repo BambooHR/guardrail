@@ -60,7 +60,7 @@ class ParamTypesCheck extends BaseCheck {
 	 */
 	private function getNullableTypeName($type) {
 		$type = $type instanceof Node\NullableType ? $type->type : $type;
-		return $type instanceof UnionType ? 'object' : strval($type);
+		return $type instanceof UnionType ? 'mixed' : strval($type);
 	}
 
 	/**

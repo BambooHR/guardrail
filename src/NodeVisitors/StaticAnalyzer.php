@@ -343,8 +343,11 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 		};
 
 		$func[Node\Stmt\Catch_::class] = function (Node\Stmt\Catch_ $node) {
-			$this->setScopeType(strval($node->var->name), count($node->types)==1 ? strval($node->types[0]) : Scope::MIXED_TYPE, $node->getLine());
-			$this->setScopeUsed(strval($node->var->name));
+			// Variable names are optional in a catch(). If specified, add them to the scope.
+			if($node->var) {
+				$this->setScopeType(strval($node->var->name), count($node->types) == 1 ? strval($node->types[0]) : Scope::MIXED_TYPE, $node->getLine());
+				$this->setScopeUsed(strval($node->var->name));
+			}
 		};
 
 		$func[Node\Stmt\Global_::class] = function (Node\Stmt\Global_ $node) {
@@ -1026,7 +1029,7 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 
 	/**
 	 * @param Node\Arg[]   $args
-	 * @param Node\Param[] $params
+	 * @param FunctionLikeParameter[] $params
 	 */
 	private function addReferenceParametersToLocalScope(array $args, array $params) {
 		$paramCount = count($params);
