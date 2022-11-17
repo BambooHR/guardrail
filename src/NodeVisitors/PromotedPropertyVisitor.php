@@ -64,8 +64,8 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 		if($param->flags & Class_::MODIFIER_PROTECTED) {
 			$prop->makeProtected();
 		}
-		if($param->getType()) {
-			$prop->setType( $param->getType() );
+		if($param->type) {
+			$prop->setType( $param->type );
 		}
 
 		$propNode = $prop->getNode();
