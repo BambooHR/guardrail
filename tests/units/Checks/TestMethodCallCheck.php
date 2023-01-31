@@ -20,4 +20,13 @@ class TestMethodCallCheck extends TestSuiteSetup {
 	public function testUnknownMethodWithExistsCheck(): void {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
 	}
+
+	/**
+	 * Test that using method_exists doesn't break guardrail. See TestMethodCallCheck.2.inc for the example class.
+	 *
+	 * @return void
+	 */
+	public function testMethodExistsDoesntBreak(): void {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
 }
