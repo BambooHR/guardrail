@@ -192,7 +192,7 @@ class MethodCall extends CallCheck {
 		foreach (['stmts', 'items', 'expr'] as $nodeType) {
 			if ($this->checkNodeForSubNodeNames($tmpStmt, $nodeType)) {
 				foreach ($tmpStmt->$nodeType as $stmtInner) {
-					if ($this->checkForMethodExists($node, $stmtInner)) {
+					if ($stmtInner instanceof Node && $this->checkForMethodExists($node, $stmtInner)) {
 						return true;
 					}
 				}
