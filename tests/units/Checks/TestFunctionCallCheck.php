@@ -101,4 +101,11 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	public function testObjectWith__toStringMethod() {
 		$this->assertEquals(2, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
+
+	/**
+	 * @return void
+	 */
+	public function testNullableUnionReturnType() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_SIGNATURE_RETURN));
+	}
 }

@@ -91,7 +91,12 @@ class ReturnCheck extends BaseCheck {
 			}
 			$expectedReturnType = Scope::constFromName($typeString);
 
-			if ($type == Scope::NULL_TYPE && $typeString != "" && !($returnType instanceof Node\NullableType)) {
+			if (
+				$type == Scope::NULL_TYPE &&
+				$typeString != "" &&
+				!($returnType instanceof Node\NullableType) &&
+				!$this->isNullableUnionType($returnType)
+			) {
 
 				$msg = "Attempt to return NULL from a non-nullable function $functionName()";
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
@@ -134,6 +139,27 @@ class ReturnCheck extends BaseCheck {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 			}
 		}
+	}
+
+	/**
+	 * Check if Node Type is a "Nullable Union Type"
+	 *
+	 * @param  null|Node\Identifier|Node\Name|Node\ComplexType
+	 * @return bool
+	 */
+	protected function isNullableUnionType(null | Node\Identifier | Node\Name | Node\ComplexType $nodeType) {
+		if (!$nodeType instanceof UnionType) {
+			return false;
+		}
+		foreach ($nodeType->types as $type) {
+			if (!$type instanceof Node\Identifier) {
+				continue;
+			}
+			if ($type->toString() === 'null') {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
