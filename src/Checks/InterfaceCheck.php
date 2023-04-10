@@ -15,6 +15,7 @@ use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractedClass_;
+use PhpParser\Node\UnionType;
 
 /**
  * Class InterfaceCheck
@@ -76,15 +77,46 @@ class InterfaceCheck extends BaseCheck {
 				/** @var FunctionLikeParameter $param */
 				// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
 				if ($index < $count2) {
+					$childType = $param->getType();
 					$parentParam = $parentMethodParams[$index];
-					$name1 = strval($param->getType());
-					$name2 = strval($parentParam->getType());
-					if ($oldVisibility !== 'private' && strcasecmp($name1, $name2) !== 0) {
-						$name1 = empty($name1) ? '(no parameter)' : $name1;
-						$name2 = empty($name2) ? '(no parameter)' : $name2;
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
+					$parentType = $parentParam->getType();
+					if ($childType instanceof UnionType && $parentType instanceof UnionType) {
+						if ($childType->types != $parentType->types) {
+							foreach ($childType->types as $type) {
+								//TODO: check each type to make sure at least one matches the argument
+							}
+							$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $childParamName vs $parentParamName");
+							break;
+						}
+					} elseif ($childType instanceof UnionType && !($parentType instanceof UnionType)) {
+						$match = false;
+						$childParamNames = [];
+						$parentParamName = strval($parentType);
+						foreach ($childType->types as $childType) {
+							$childParamName = strval($childType);
+							$childParamNames[] = $childParamName;
+							$match = $match || $this->doesChildSignatureMatch($childParamName, $parentParamName, $oldVisibility);
+							if ($match) {
+								break;
+							}
+						}
+						if (!$match) {
+							$childParamNamesString = implode('|', $childParamNames);
+							$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $childParamNamesString vs $parentParamName");
+							break;
+						}
+					} elseif (!($childType instanceof UnionType) && $parentType instanceof UnionType) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $childParamName vs $parentParamName");
 						break;
+					} else {
+						$childParamName = strval($childType);
+						$parentParamName = strval($parentType);
+						if (!$this->doesChildSignatureMatch($childParamName, $parentParamName, $oldVisibility)) {
+							$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $childParamName vs $parentParamName");
+							break;
+						}
 					}
+
 					if ($param->isReference() != $parentParam->isReference()) {
 						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method " . $className . "::" . $method->getName() . " add or removes & in \$" . $param->getName());
 						break;
@@ -101,6 +133,22 @@ class InterfaceCheck extends BaseCheck {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Does the child signature match the parent method?
+	 *
+	 * @param string $childParamName
+	 * @param string $parentParamName
+	 * @param string $oldVisibility
+	 *
+	 * @return bool
+	 */
+	private function doesChildSignatureMatch($childParamName, $parentParamName, $oldVisibility): bool {
+		if ($oldVisibility !== 'private' && strcasecmp($childParamName, $parentParamName) !== 0) {
+			return false;
+		}
+		return true;
 	}
 
 	/**

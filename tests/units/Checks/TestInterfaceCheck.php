@@ -70,4 +70,13 @@ class TestInterfaceCheck extends TestSuiteSetup {
 	public function testSameSignatureDifferentVisibilityValid() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
+
+	/**
+	 * Test the union type and ensure it doesn't break guardrail
+	 *
+	 * @return void
+	 */
+	public function testUnionType() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }
