@@ -164,8 +164,10 @@ class MethodCall extends CallCheck {
 	 */
 	private function wrappedByMethodExistsCheck(Expr\MethodCall $node, Scope $scope = null): bool {
 		if ($scope) {
-			$stmts = $scope->getInsideFunction()->getStmts();
-			return $this->checkForMethodExists($node, $stmts);
+			$func = $scope->getInsideFunction();
+			if($func) {
+				return $this->checkForMethodExists($node, $func->getStmts());
+			}
 		}
 
 		return false;
