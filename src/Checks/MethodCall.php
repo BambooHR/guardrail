@@ -1,13 +1,13 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Abstractions\MethodInterface;
 use BambooHR\Guardrail\Attributes;
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
@@ -101,7 +101,7 @@ class MethodCall extends CallCheck {
 					if (
 						!Util::findAbstractedMethod($className, "__call", $this->symbolTable) &&
 						!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className) &&
-						!$this->precededByMethodExistsCheck($node, $scope)
+						!$this->wrappedByMethodExistsCheck($node, $scope)
 					) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className::$methodName");
 					}
@@ -162,18 +162,10 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return bool
 	 */
-	private function precededByMethodExistsCheck(Node $node, Scope $scope = null): bool {
+	private function wrappedByMethodExistsCheck(Expr\MethodCall $node, Scope $scope = null): bool {
 		if ($scope) {
 			$stmts = $scope->getInsideFunction()->getStmts();
-			foreach ($stmts as $stmt) {
-				//If the node is within the statements found in the method we'll continue.
-				if (
-					$node->getLine() >= $stmt->getStartLine() &&
-					$node->getLine() <= $stmt->getEndLine()
-				) {
-					return $this->checkForMethodExists($node, $stmt);
-				}
-			}
+			return $this->checkForMethodExists($node, $stmts);
 		}
 
 		return false;
@@ -187,55 +179,39 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return bool
 	 */
-	private function checkForMethodExists(Node $node, Node $stmt): bool {
-		$tmpStmt = clone $stmt;
-		foreach (['stmts', 'items', 'expr'] as $nodeType) {
-			if ($this->checkNodeForSubNodeNames($tmpStmt, $nodeType)) {
-				foreach ($tmpStmt->$nodeType as $stmtInner) {
-					if ($this->checkForMethodExists($node, $stmtInner)) {
-						return true;
-					}
-				}
+	private function checkForMethodExists(Expr\MethodCall $node, array $stmts): bool {
+		$match = false;
+		ForEachNode::run( $stmts, function($candidate) use (&$match, $node) {
+			if (
+				(
+					$candidate instanceof Node\Stmt\If_ &&
+					$this->isMatchingCond($candidate->cond, $candidate->stmts, $node)
+				) || (
+					$candidate instanceof Node\Expr\Ternary &&
+					$this->isMatchingCond($candidate->cond, [$candidate->if], $node)
+				)
+			) {
+				$match = true;
 			}
-		}
-		if ($this->checkNodeForSubNodeNames($tmpStmt, 'value') && $tmpStmt->value instanceof Node) {
-			if ($this->checkForMethodExists($node, $tmpStmt->value)) {
-				return true;
-			}
-		}
-		while ($this->checkNodeForSubNodeNames($tmpStmt, 'expr')) {
-			$tmpStmt = $tmpStmt->expr;
-		}
-		$conditional = $tmpStmt;
-
-		//Walk down the sequence to ensure we have a method_exists function call
-		$sequence = ['cond', 'name', 'parts'];
-		while (!empty($sequence) && $this->checkNodeForSubNodeNames($tmpStmt, $sequence[0])) {
-			$tmpStmt = $tmpStmt->{$sequence[0]};
-			array_shift($sequence);
-			if (!($tmpStmt instanceof Node)) {
-				break;
-			}
-		}
-
-		return
-			empty($sequence) &&                                             //Make sure the sequence is empty because it means we've found a function/method call
-			in_array('method_exists', $tmpStmt) &&                   //Ensure that the function is method_exists()
-			!empty($conditional->cond->args[1]->value->value) &&            //Make sure the conditional has a value with arguments to the above function method_exists(). The 1st index will contain the method name being checked -- method_exists($object, 'method')
-			!empty($node->name->name) &&                                    //Make sure the node has a name (i.e. the method being called on the object)
-			$conditional->cond->args[1]->value->value === $node->name->name //Make sure the method_exists() check matches the method being called on the node
-		;
+		});
+		return $match;
 	}
 
-	/**
-	 * Check the given node for a specific sub node name
-	 *
-	 * @param Node   $node
-	 * @param string $subNodeName
-	 *
-	 * @return bool
-	 */
-	private function checkNodeForSubNodeNames(Node $node, string $subNodeName): bool {
-		return in_array($subNodeName, $node->getSubNodeNames());
+	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall $node):bool {
+		$match = false;
+		if ($cond instanceof Expr\FuncCall &&
+			$cond->name instanceof Node\Name &&
+			count($cond->args) >= 2 &&
+			$cond->args[1]->value instanceof Node\Scalar\String_ &&
+			$node->name instanceof Node\Identifier &&
+			$cond->args[1]->value->value === $node->name->name
+		) {
+			ForEachNode::run( $trueNodes, function($inner) use (&$match, $node) {
+				if ($node===$inner) {
+					$match = true;
+				}
+			});
+		}
+		return $match;
 	}
 }
