@@ -181,6 +181,7 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return bool
 	 */
+
 	private function checkForMethodExists(Expr\MethodCall $node, array $stmts): bool {
 		$match = false;
 		ForEachNode::run( $stmts, function($candidate) use (&$match, $node) {
@@ -194,6 +195,7 @@ class MethodCall extends CallCheck {
 				)
 			) {
 				$match = true;
+
 			}
 		});
 		return $match;
