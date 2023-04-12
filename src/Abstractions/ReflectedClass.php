@@ -1,7 +1,9 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use BambooHR\Guardrail\Util;
+
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
@@ -140,7 +142,7 @@ class ReflectedClass implements ClassInterface {
 				} else {
 					$access = "public";
 				}
-				return new Property($prop->getName(), $access, "", $modifiers & \ReflectionProperty::IS_STATIC );
+				return new Property($prop->getName(), "", $access, $modifiers & \ReflectionProperty::IS_STATIC );
 			}
 			return null;
 		} catch (\ReflectionException $exception) {
