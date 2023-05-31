@@ -58,7 +58,24 @@ abstract class TestSuiteSetup extends TestCase {
 
 		$analyzer = new AnalyzingPhase($output);
 		$analyzer->initParser($config, $output);
+
 		$analyzer->analyzeFile($fileName, $config);
+		return $output;
+	}
+
+	public function analyzeStringToOutput(string $fileName, string $fileData, $emit, array $additionalConfig = []) {
+		if (!str_starts_with($fileData,"<?php")) {
+			$fileData = "<?php\n".$fileData;
+		}
+		$config = new TestConfig($fileName, $emit, $additionalConfig);
+		$output = new XUnitOutput($config);
+
+		$indexer = new IndexingPhase($config);
+		$indexer->indexString($fileName, $fileData);
+
+		$analyzer = new AnalyzingPhase($output);
+		$analyzer->initParser($config, $output);
+		$analyzer->analyzeString($fileName, $fileData);
 		return $output;
 	}
 

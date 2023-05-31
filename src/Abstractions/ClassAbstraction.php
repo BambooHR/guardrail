@@ -5,14 +5,12 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Config;
-use BambooHR\Guardrail\Util;
-use PhpParser\Node\NullableType;
+use BambooHR\Guardrail\NodeVisitors\Grabber;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Interface_;
-use BambooHR\Guardrail\NodeVisitors\Grabber;
 use PhpParser\Node\Stmt\PropertyProperty;
 
 /**
@@ -136,16 +134,20 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name) {
+	public function hasConstant($name):bool {
+		return $this->getConstantExpr($name) ? true : false;
+	}
+
+	public function getConstantExpr($name):?Expr {
 		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
 		foreach ($constants as $constList) {
 			foreach ($constList->consts as $const) {
 				if (strcasecmp($const->name, $name) == 0) {
-					return true;
+					return $const->value;
 				}
 			}
 		}
-		return false;
+		return null;
 	}
 
 	/**
@@ -187,10 +189,10 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-					$type = Util::complexTypeToString($prop->type);
-					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
-						$type = $propertyProperty->getAttribute("namespacedType");
-					}
+					$type = $prop->type;
+					//if (Config::shouldUseDocBlockForProperties() && empty($type)) {
+					//	$type = Scope::nameFromName($propertyProperty->namespacedType);
+					//}
 					return new Property($propertyProperty->name, $type, $access, $prop->isStatic());
 				}
 			}

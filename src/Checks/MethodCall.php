@@ -6,19 +6,17 @@
  */
 
 use BambooHR\Guardrail\Abstractions\MethodInterface;
-use BambooHR\Guardrail\Attributes;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Trait_;
-use BambooHR\Guardrail\Output\OutputInterface;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
-use BambooHR\Guardrail\Util;
-use PhpParser\Node\UnionType;
 
 /**
  * Class MethodCall
@@ -35,7 +33,6 @@ class MethodCall extends CallCheck {
 	 */
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
-		$this->inferenceEngine = new TypeInferrer($symbolTable);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
 	}
 
@@ -45,7 +42,7 @@ class MethodCall extends CallCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [\PhpParser\Node\Expr\MethodCall::class];
+		return [Expr\MethodCall::class, Expr\NullsafeMethodCall::class];
 	}
 
 
@@ -61,8 +58,8 @@ class MethodCall extends CallCheck {
 	 * @return mixed
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		static $checkable = 0, $uncheckable = 0;
-		if ($node instanceof Expr\MethodCall) {
+
+		if ($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) {
 			if ($inside instanceof Trait_) {
 				// Traits should be converted into methods in the class, so that we can check them in context.
 				return;
@@ -82,35 +79,46 @@ class MethodCall extends CallCheck {
 				}
 			}
 			if ($scope) {
-				list($className, $attributes) = $this->inferenceEngine->inferType($inside, $node->var, $scope);
+				$className = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			}
-			if ($className  && $className != Scope::MIXED_TYPE && $attributes & Attributes::NULL_POSSIBLE) {
-				$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $' . $node->var->name : '';
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
+
+			if($node instanceof Expr\NullsafeMethodCall) {
+				$className = TypeComparer::removeNullOption($className);
 			}
-			if ($className != "" && $className[0] != "!") {
-				if (!$this->symbolTable->isDefinedClass($className)) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $className in method call to $methodName()");
-					return;
-				}
-				$method = Util::findAbstractedSignature($className, $methodName, $this->symbolTable);
-				if ($method) {
-					$this->checkMethod($fileName, $node, $className, $methodName, $scope, $method, $inside);
-				} else {
-					// If there is a magic __call method, then we can't know if it will handle these calls.
-					if (
-						!Util::findAbstractedMethod($className, "__call", $this->symbolTable) &&
-						!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $className) &&
-						!$this->wrappedByMethodExistsCheck($node, $scope)
-					) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $className::$methodName");
+
+			TypeComparer::forEachType($className, function($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
+				$isNull = TypeComparer::isNamedIdentifier($classNameOb,"null");
+				if($classNameOb instanceof Node\Name || $isNull) {
+					if ($isNull) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
+						return;
+					} else {
+						$typeClassName = strval($classNameOb);
+						if (!$this->symbolTable->isDefinedClass($typeClassName)) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
+							return;
+						}
 					}
+					$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
+					if ($method) {
+						$this->checkMethod($fileName, $node, $typeClassName, $methodName, $scope, $method, $inside);
+					} else {
+						// If there is a magic __call method, then we can't know if it will handle these calls.
+						if (
+							!Util::findAbstractedMethod($typeClassName, "__call", $this->symbolTable) &&
+							!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $typeClassName) &&
+							!$this->wrappedByMethodExistsCheck($node, $scope)
+						) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $typeClassName::$methodName");
+						}
+					}
+				} else {
+					if ($classNameOb != null && !TypeComparer::isNamedIdentifier($classNameOb,"mixed") && !TypeComparer::isNamedIdentifier($classNameOb,"object")) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Methods can only be called on objects in call to $methodName not on " . TypeComparer::typeToString($className));
+					}
+					// We don't emit errors on mixed or unknown objects.
 				}
-				$checkable ++;
-			} else {
-				$uncheckable++;
-				//echo "Uncheckable method call $fileName ".$node->getLine()." ".$node->name." $checkable:$uncheckable\n";
-			}
+			});
 		}
 	}
 
@@ -163,7 +171,7 @@ class MethodCall extends CallCheck {
 	 * @return bool
 	 */
 	private function wrappedByMethodExistsCheck(Expr\MethodCall $node, Scope $scope = null): bool {
-		if ($scope) {
+		if ($scope && $scope->getInsideFunction()) {
 			$stmts = $scope->getInsideFunction()->getStmts();
 			return $this->checkForMethodExists($node, $stmts);
 		}
@@ -201,6 +209,7 @@ class MethodCall extends CallCheck {
 		$match = false;
 		if ($cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&
+			$cond->name->toString()=="method_exists" &&
 			count($cond->args) >= 2 &&
 			$cond->args[1]->value instanceof Node\Scalar\String_ &&
 			$node->name instanceof Node\Identifier &&

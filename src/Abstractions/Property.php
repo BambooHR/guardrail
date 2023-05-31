@@ -35,12 +35,9 @@ class Property {
 	/**
 	 * Property constructor.
 	 *
-	 * @param string $name     The name of the property
-	 * @param string $type     The type of the property
-	 * @param string $access   The access
-	 * @param bool   $isStatic Is it static
+
 	 */
-	public function __construct($name,$type, $access, $isStatic) {
+	public function __construct(string $name,?\PhpParser\Node $type, string $access, string $isStatic) {
 		$this->name = $name;
 		$this->access = $access;
 		$this->type = $type;

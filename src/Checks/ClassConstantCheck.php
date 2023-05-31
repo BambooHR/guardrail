@@ -6,13 +6,12 @@
  */
 
 use BambooHR\Guardrail\Abstractions\ClassInterface;
-use BambooHR\Guardrail\Util;
+use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Name;
-use BambooHR\Guardrail\Scope;
 use PhpParser\Node\Stmt\Interface_;
 
 /**

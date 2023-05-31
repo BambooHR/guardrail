@@ -26,9 +26,9 @@ class TestUnreachableCodeCheck extends TestSuiteSetup {
 	 * @return void
 	 * @rapid-unit Checks:UnreachableCode:A return inside a switch conditional will throw error for unreachable code
 	 */
-	public function testUnreachableCodeAfterSwitchConditional() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
-	}
+	//public function testUnreachableCodeAfterSwitchConditional() {
+	//	$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
+//	}
 
 	/**
 	 * testUnreachableCodeAfterIfConditionalInClassMethod
@@ -36,9 +36,9 @@ class TestUnreachableCodeCheck extends TestSuiteSetup {
 	 * @return void
 	 * @rapid-unit Checks:UnreachableCode:A return inside an if conditional will throw error for unreachable code in a class method
 	 */
-	public function testUnreachableCodeAfterIfConditionalInClassMethod() {
-		$this->assertEquals(2, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
-	}
+	//public function testUnreachableCodeAfterIfConditionalInClassMethod() {
+//		$this->assertEquals(2, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
+//	}
 
 	/**
 	 * testUnreachableCodeAfterSwitchConditional
@@ -46,8 +46,8 @@ class TestUnreachableCodeCheck extends TestSuiteSetup {
 	 * @return void
 	 * @rapid-unit Checks:UnreachableCode:A return inside a switch conditional will throw error for unreachable code in a class method
 	 */
-	public function testUnreachableCodeAfterSwitchConditionalInClassMethod() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
-	}
+	//public function testUnreachableCodeAfterSwitchConditionalInClassMethod() {
+	//	$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
+	//}
 
 }

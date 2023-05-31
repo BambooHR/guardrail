@@ -30,10 +30,22 @@ class UseStatementCaseCheck extends BaseCheck {
 	}
 
 	function verifyCaseOfUseStatement(UseUse $useNode, string $fileName) {
-		$type = $useNode->name;
-		/** @var AbstractionClass */
-		$class = $this->symbolTable->getAbstractedClass(strtolower($type));
-		if ($class && $type->toString() !== $class->getName()) {
+		static $classNames = [];
+		$type = strval($useNode->name);
+		$className = "";
+
+		if (!isset($classNames[$type])) {
+
+			/** @var AbstractionClass */
+			if ($type) {
+				$class = $this->symbolTable->getAbstractedClass($type);
+				if($class) {
+					$className = $class->getName();
+				}
+			}
+			$classNames[$type] = $className;
+		}
+		if ($className && $type !== $className) {
 			$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type->toString() . ' !== ' . $class->getName());
 		}
 	}

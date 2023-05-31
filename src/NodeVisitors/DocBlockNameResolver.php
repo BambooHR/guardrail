@@ -5,15 +5,15 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\ClassMethod;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\NameContext;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Property;
-use PhpParser\NodeVisitor\NameResolver;
-use BambooHR\Guardrail\Abstractions\ClassMethod;
 use PhpParser\NodeVisitorAbstract;
 
 /**
@@ -172,9 +172,17 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		$vars = [];
 		foreach ($tags as $tag) {
 			if (isset($tag[3])) {
-				$type = $this->resolveTypeName( strval($tag[1]) );
-				if ($type != "type") {
-					$vars[$tag[3]] = Scope::nameFromConst($type);
+				$str = strval($tag[1]);
+				if(str_contains($str,'|')) {
+					$vars[$tag[3]] = new Node\UnionType(array_map(
+						fn($term)=>TypeComparer::nameFromName($this->resolveTypeName($term)),
+						explode('|', $str)
+					));
+				} else {
+					$type = $this->resolveTypeName($str);
+					if ($type != "type") {
+						$vars[$tag[3]] = TypeComparer::nameFromName($type);
+					}
 				}
 			}
 		}

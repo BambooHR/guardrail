@@ -5,12 +5,12 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 
 /**
  * Class InstantiationCheck

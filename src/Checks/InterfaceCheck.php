@@ -5,16 +5,16 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\ClassInterface;
-use BambooHR\Guardrail\Abstractions\ClassMethod;
-use BambooHR\Guardrail\Abstractions\MethodInterface;
-use PhpParser\Node;
-use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\Class_;
-use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractedClass_;
+use BambooHR\Guardrail\Abstractions\ClassMethod;
+use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
+use BambooHR\Guardrail\Abstractions\MethodInterface;
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
+use PhpParser\Node;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\ClassLike;
 
 /**
  * Class InterfaceCheck
@@ -77,16 +77,16 @@ class InterfaceCheck extends BaseCheck {
 				// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
 				if ($index < $count2) {
 					$parentParam = $parentMethodParams[$index];
-					$name1 = strval($param->getType());
-					$name2 = strval($parentParam->getType());
+					$name1 = TypeComparer::typeToString($param->getType());
+					$name2 = TypeComparer::typeToString($parentParam->getType());
 					if ($oldVisibility !== 'private' && strcasecmp($name1, $name2) !== 0) {
-						$name1 = empty($name1) ? '(no parameter)' : $name1;
-						$name2 = empty($name2) ? '(no parameter)' : $name2;
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Parameter mismatch type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
+						$name1 = empty($name1) ? '(unspecified)' : $name1;
+						$name2 = empty($name2) ? '(unspecified)' : $name2;
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method parameter #$index type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
 						break;
 					}
 					if ($param->isReference() != $parentParam->isReference()) {
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child Method " . $className . "::" . $method->getName() . " add or removes & in \$" . $param->getName());
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " add or removes & in \$" . $param->getName());
 						break;
 					}
 					if (! $param->isOptional() && $parentParam->isOptional()) {
@@ -122,6 +122,9 @@ class InterfaceCheck extends BaseCheck {
 
 			if ($current->getParentClassName()) {
 				$current = $this->symbolTable->getAbstractedClass($current->getParentClassName());
+				if (!$current) {
+					return null;
+				}
 			} else {
 				return null;
 			}

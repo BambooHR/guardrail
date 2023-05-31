@@ -3,22 +3,13 @@
 namespace BambooHR\Guardrail\Checks;
 
 
-use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\TypeComparer;
+use MongoDB\BSON\Type;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayItem;
 
 class SplatCheck extends BaseCheck {
-
-	/** @var TypeInferrer */
-	protected $typeInferer;
-
-	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
-		parent::__construct($symbolTable, $doc);
-		$this->typeInferer = new TypeInferrer($symbolTable);
-	}
 
 	/**
 	 * getCheckNodeTypes
@@ -42,11 +33,10 @@ class SplatCheck extends BaseCheck {
 	public function run($fileName, Node $node, Node\Stmt\ClassLike $inside=null, Scope $scope = null) {
 		if ($node instanceof ArrayItem) {
 			if ($node->unpack) {
-				list($type) = $this->typeInferer->inferType($inside, $node->value, $scope);
-				if ($type != Scope::MIXED_TYPE && $type != Scope::ARRAY_TYPE && $type != Scope::UNDEFINED && strpos($type,"[]")===false) {
-					if (strpos($type,'!')!==0 && !$this->symbolTable->isParentClassOrInterface(\Traversable::class, $type )) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SPLAT_MISMATCH, "Can't use ... here.  Value is not an array or traversable.");
-					}
+				$type = $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+				$tc=new TypeComparer($this->symbolTable);
+				if (!$tc->isTraversable($type)) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SPLAT_MISMATCH, "Can't use ... here.  Value is not an array or traversable.");
 				}
 			}
 		}

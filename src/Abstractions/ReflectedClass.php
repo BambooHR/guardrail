@@ -1,6 +1,11 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\DNumber;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -67,6 +72,21 @@ class ReflectedClass implements ClassInterface {
 	 */
 	public function isDeclaredAbstract() {
 		return $this->refl->isAbstract();
+	}
+
+	public function getConstantExpr($name):?Expr {
+		if($this->refl->hasConstant($name)) {
+			$value = $this->refl->getConstant($name);
+			return match(gettype($value)) {
+				"null" => new Expr\ConstFetch(new Name("null")),
+				"int" => new LNumber($value),
+				"string" => new String_($value),
+				"bool" => new Expr\ConstFetch( new Name($value ? "true" : "false")),
+				"float" => new DNumber($value),
+				default => null
+			};
+		}
+		return null;
 	}
 
 	/**
@@ -142,7 +162,8 @@ class ReflectedClass implements ClassInterface {
 				} else {
 					$access = "public";
 				}
-				return new Property($prop->getName(), "", $access, $modifiers & \ReflectionProperty::IS_STATIC );
+				$type = Util::reflectionTypeToPhpParserType($prop->getType());
+				return new Property($prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC );
 			}
 			return null;
 		} catch (\ReflectionException $exception) {

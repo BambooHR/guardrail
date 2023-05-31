@@ -10,7 +10,6 @@ namespace BambooHR\Guardrail\Phases;
 use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\NodeVisitors\PromotedPropertyVisitor;
-use BambooHR\Guardrail\PhpAstParser;
 use BambooHR\Guardrail\ProcessManager;
 use BambooHR\Guardrail\SocketBuffer;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
@@ -105,17 +104,7 @@ class IndexingPhase {
 
 		$fileData = file_get_contents($pathName);
 
-		$this->indexer->setFilename($name);
-		try {
-			$statements = $this->parser->parse($fileData);
-			if ($statements) {
-				$this->traverser1->traverse($statements);
-				$this->traverser2->traverse($statements);
-			}
-		} catch (\Exception $exc) {
-			echo "\n[$pathName] ERROR " . $exc->getMessage() . "\n";
-		}
-		return strlen($fileData);
+		return $this->indexString($name, $fileData);
 	}
 
 	/**
@@ -127,13 +116,13 @@ class IndexingPhase {
 	 * @return void
 	 */
 	public function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
-		$output->outputVerbose("\n\nImporting traits\n");
+		$output->outputVerbose("Importing traits");
 		$count = 0;
 		$symbolTable->begin();
 		foreach ($symbolTable->getClassesThatUseAnyTrait() as $className) {
 			$class = $symbolTable->getClass($className);
 			$symbolTable->updateClass( $class );
-			$output->output(".", " - " . (++$count) . ": " . $className);
+			//$output->output(".", " - " . (++$count) . ": " . $className);
 		}
 		$symbolTable->commit();
 	}
@@ -240,23 +229,18 @@ class IndexingPhase {
 		$baseDirectory = $config->getBasePath();
 		$indexPaths = $configArr['index'];
 		if (! Util::configDirectoriesAreValid($baseDirectory, $indexPaths)) {
-			$output->output("Invalid or missing paths in your index config section.\n", "Invalid or missing paths in your index config section.\n");
+			$output->output("Invalid or missing paths in your index config section.",
+				"Invalid or missing paths in your index config section.");
 			exit;
 		}
-		$output->outputVerbose("\nIndex directories are valid: Indexing starting\n");
+		$output->outputVerbose("Index directories are valid: Indexing starting.");
 
 		foreach ($indexPaths as $path) {
 			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
-			$output->outputVerbose("Indexing Directory: " . $tmpDirectory . "\n");
+			$output->outputVerbose("Indexing Directory: " . $tmpDirectory);
 			$generator = DirectoryLister::getGenerator($tmpDirectory);
 			$this->indexList($config, $output, $this->getFileList($config, $generator) );
 		}
-
-		// If Guardrail is in vendor and you index vendor (which you should) then it won't need to
-		// re-index the extra stubs.  If guardrail is outside of vendor then we need to make sure
-		// we index the extra stubs.
-		$generator = DirectoryLister::getGenerator(dirname(__DIR__) . "/ExtraStubs");
-		$this->indexList($config, $output, $this->getFileList($config, $generator, true) );
 
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
@@ -266,5 +250,26 @@ class IndexingPhase {
 		$table->connect(0);
 		$this->indexTraitClasses($table, $output);
 		$table->disconnect();
+	}
+
+	/**
+	 * @param bool|string $name
+	 * @param bool|string $fileData
+	 * @param string $pathName
+	 * @return int
+	 */
+	public function indexString(string $name, string $fileData): int
+	{
+		$this->indexer->setFilename($name);
+		try {
+			$statements = $this->parser->parse($fileData);
+			if ($statements) {
+				$this->traverser1->traverse($statements);
+				$this->traverser2->traverse($statements);
+			}
+		} catch (\Exception $exc) {
+			echo "\n[$name] ERROR " . $exc->getMessage() . "\n";
+		}
+		return strlen($fileData);
 	}
 }

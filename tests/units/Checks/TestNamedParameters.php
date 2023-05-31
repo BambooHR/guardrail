@@ -16,6 +16,6 @@ class TestNamedParameters extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testBadCalls() {
-		$this->assertEquals(4, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+		$this->assertEquals(5, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 }

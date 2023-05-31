@@ -8,6 +8,7 @@ function myGoodMethodCall() {
 	echo "Reachable code";
 }
 
+
 function myOtherGoodMethodCall() {
 	if (1 == 1) {
 		return;

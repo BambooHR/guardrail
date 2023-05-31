@@ -5,15 +5,16 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use PhpParser\Node\UnionType;
 
 class FunctionCallCheck extends CallCheck {
 
@@ -25,7 +26,6 @@ class FunctionCallCheck extends CallCheck {
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
-		$this->inferenceEngine = new TypeInferrer($symbolTable);
 	}
 
 
@@ -111,15 +111,15 @@ class FunctionCallCheck extends CallCheck {
 
 					$params = $func->getParameters();
 					$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
-				} else {
+				} else if (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}
 			} else {
-				$inferer = new TypeInferrer($this->symbolTable);
-				list($type) = $inferer->inferType($inside, $node->name, $scope);
+				$type = $node->name->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 				// If it isn't known to be "callable" or "closure" then it may just be a string.
-				if (strcasecmp($type, "callable") != 0 && strcasecmp($type, "closure") != 0) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable ($type) function name detected");
+				$typeStr = TypeComparer::typeToString($type);
+				if (strcasecmp($typeStr, "callable") != 0 && strcasecmp($typeStr, "closure") != 0) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable ($typeStr) function name detected");
 				}
 			}
 		}
@@ -195,5 +195,38 @@ class FunctionCallCheck extends CallCheck {
 				}
 			}
 		}
+	}
+
+
+	/**
+	 * Is the method being called preceded by a logical check to see if the function_exists()?
+	 *
+	 * @param Node $node
+	 *
+	 * @return bool
+	 */
+	private function wrappedByFunctionsExistsCheck(Expr\FuncCall $node, string $name, Scope $scopeStack = null): bool {
+		$parents=$scopeStack->getParentNodes();
+		foreach($parents as $parentNode) {
+			if ($parentNode instanceof Node\Stmt\If_ && self::isMatchingFunctionExistsCond($parentNode->cond, $name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
+	private function isMatchingFunctionExistsCond(Expr $cond, string $name):bool {
+		if ($cond instanceof Expr\BinaryOp\BooleanAnd || $cond instanceof Expr\BinaryOp\BooleanOr) {
+			return $this->isMatchingFunctionExistsCond($cond->left, $name) || $this->isMatchingFunctionExistsCond($cond->right, $name);
+		}
+		return (
+			$cond instanceof Expr\FuncCall &&
+			$cond->name instanceof Node\Name &&
+			$cond->name->toString()=="function_exists" &&
+			count($cond->args) >= 1 &&
+			$cond->args[0]->value instanceof Node\Scalar\String_ &&
+			strcasecmp($cond->args[0]->value->value, $name) == 0
+		);
 	}
 }

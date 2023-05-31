@@ -2,10 +2,8 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-use BambooHR\Guardrail\Output\OutputInterface;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use PhpParser\Node;
 use BambooHR\Guardrail\Scope;
+use PhpParser\Node;
 
 class ImagickCheck extends BaseCheck
 {

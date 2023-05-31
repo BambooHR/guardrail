@@ -1,5 +1,7 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use PhpParser\Node\Expr;
+
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
@@ -80,6 +82,8 @@ interface ClassInterface {
 	 * @return bool
 	 */
 	public function hasConstant($name);
+
+	public function getConstantExpr($name):?Expr;
 
 	/**
 	 * isInterface

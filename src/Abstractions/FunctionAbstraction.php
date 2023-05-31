@@ -1,16 +1,14 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, JBambooHR.
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Function_ as AstFunction;
-use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
-use BambooHR\Guardrail\Scope;
-use PhpParser\Node\UnionType;
 
 /**
  * Class FunctionAbstraction
@@ -33,16 +31,8 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		$this->function = $method;
 	}
 
-	/**
-	 * getReturnType
-	 *
-	 * @return string
-	 */
-	public function getReturnType() {
-		if ($this->function->returnType instanceof UnionType) {
-			return Scope::MIXED_TYPE;
-		}
-		return $this->function->returnType instanceof NullableType ? strval($this->function->returnType->type) : strval($this->function->returnType);
+	public function getComplexReturnType() {
+		return $this->function->returnType;
 	}
 
 	/**
@@ -59,9 +49,9 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 * @return bool
 	 */
 	public function isDeprecated() {
-		$docBlock = $this->function->getDocComment();
-		if (strpos($docBlock, "@deprecated") !== false) {
-			return true;
+		$comment = $this->function->getDocComment();
+		if ($comment) {
+			return str_contains($comment->getText(), "@deprecated");
 		}
 		return false;
 	}
@@ -101,7 +91,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->function->params as $param) {
 			$ret[] = new FunctionLikeParameter(
-				$param->type instanceof NullableType ? strval($param->type->type) : $param->type,
+				$param->type,
 				$param->var->name,
 				$param->default != null,
 				$param->byRef,

@@ -5,13 +5,13 @@
  * Apache 2.0 License
  */
 
-use PhpParser\Node\ComplexType;
+
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Expr\Exit_;
-use PhpParser\Node\NullableType;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Expr\MethodCall;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
@@ -32,10 +32,20 @@ class Util {
 	 *
 	 * @param Object $parts The class we are checking
 	 *
-	 * @return mixed
+	 * @return "mixed"
 	 */
 	static public function finalPart( $parts ) {
 		return property_exists($parts, "parts") && is_array($parts->parts) ? $parts->parts[count($parts->parts) - 1] : $parts;
+	}
+
+	static function mapClassName(string $name, string $selfName, string $staticName):string {
+		if(strcasecmp($name,'static')==0) {
+			return $staticName;
+		} else if(strcasecmp($name,'self')==0) {
+			return $selfName;
+		} else {
+			return $name;
+		}
 	}
 
 	/**
@@ -47,7 +57,7 @@ class Util {
 	 */
 	static public function isScalarType($name) {
 		$name = strtolower($name);
-		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float';
+		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float' || $name=="false" || $name =="true";
 	}
 
 	/**
@@ -120,6 +130,35 @@ class Util {
 		return false;
 	}
 
+	static public function reflectionTypeToPhpParserType(?\ReflectionType $type) {
+		if ($type instanceof \ReflectionNamedType) {
+			if($type->isBuiltin()) {
+				return TypeComparer::identifierFromName($type->getName());
+			} else {
+				return TypeComparer::nameFromName($type->getName());
+			}
+		} else if ($type instanceof \ReflectionUnionType) {
+			$subtypes = array_map(
+				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
+				$type->getTypes()
+			);
+			if($type->allowsNull()) {
+				$subtypes[]=TypeComparer::identifierFromName("null");
+			}
+			return TypeComparer::getUniqueTypes($subtypes);
+		} /* else if ($type instanceof \ReflectionIntersectionType) {
+			$subtypes = array_map(
+				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
+				$type->getTypes()
+			);
+			return new IntersectionType( [$subtypes] );
+		} */ else if ($type==null) {
+			return null;
+		} else {
+			throw new \InvalidArgumentException();
+		}
+	}
+
 	/**
 	 * removeInitialPath
 	 *
@@ -166,6 +205,22 @@ class Util {
 		return null;
 	}
 
+	static function findAbstractedConstantExpr(string $className, string $constantName, SymbolTable $symbolTable) {
+		while ($className) {
+			$class = $symbolTable->getAbstractedClass($className);
+			if (!$class) {
+				return null;
+			}
+
+			$constant = $class->getConstantExpr($constantName);
+			if ($constant) {
+				return $constant;
+			}
+			$className = $class->getParentClassName();
+		}
+		return null;
+	}
+
 	/**
 	 * findAbstractedProperty
 	 *
@@ -189,18 +244,6 @@ class Util {
 			$className = $class->getParentClassName();
 		}
 		return [null,""];
-	}
-
-	static function complexTypeToString($typeNode): string {
-		if($typeNode instanceof NullableType) {
-			$typeNode = $typeNode->type;
-		}
-		if ($typeNode instanceof ComplexType || $typeNode === NULL) {
-			$type = "";
-		} else {
-			$type = strval($typeNode);
-		}
-		return $type;
 	}
 
 	/**
@@ -334,13 +377,13 @@ class Util {
 	 * @return mixed|null
 	 */
 	static public function getLastStatement(array $stmts) {
-		$lastStatement = null;
-		foreach ($stmts as $stmt) {
-			if (!$stmt instanceof Nop) {
-				$lastStatement = $stmt;
+		for (end($stmts); key($stmts)!==null; prev($stmts)){
+			$currentElement = current($stmts);
+			if (!$currentElement instanceof Nop) {
+				return $currentElement;
 			}
 		}
-		return $lastStatement;
+		return null;
 	}
 
 	/**

@@ -38,8 +38,6 @@ interface MethodInterface extends FunctionLikeInterface {
 	 */
 	public function hasNullableReturnType();
 
-	/**
-	 * @return string
-	 */
-	public function getReturnType();
+
+	public function getComplexReturnType();
 }

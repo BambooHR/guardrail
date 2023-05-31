@@ -2,10 +2,9 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-use BambooHR\Guardrail\Abstractions\ClassMethod;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
-use PhpParser\Node;
 use BambooHR\Guardrail\Scope;
+use PhpParser\Node;
 
 class CyclomaticComplexityCheck extends BaseCheck {
 	/**
