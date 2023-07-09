@@ -1,11 +1,13 @@
 <?php namespace BambooHR\Guardrail;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Expr\MethodCall;
@@ -180,13 +182,25 @@ class Util {
 				return [null,""];
 			}
 
-			$method = $class->getProperty($name);
-			if ($method) {
-				return [$method, $className];
+			$prop = $class->getProperty($name);
+			if ($prop) {
+				return [$prop, $className];
 			}
 			$className = $class->getParentClassName();
 		}
 		return [null,""];
+	}
+
+	static function complexTypeToString($typeNode): string {
+		if($typeNode instanceof NullableType) {
+			$typeNode = $typeNode->type;
+		}
+		if ($typeNode instanceof ComplexType || $typeNode === NULL) {
+			$type = "";
+		} else {
+			$type = strval($typeNode);
+		}
+		return $type;
 	}
 
 	/**

@@ -1,11 +1,12 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
@@ -93,8 +94,9 @@ class ClassMethod implements MethodInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
+			$type = Util::complexTypeToString($param->type);
 			$ret[] = new FunctionLikeParameter(
-				$param->type instanceof NullableType ? $param->type->type : $param->type,
+				$type,
 				$param->var->name,
 				$param->default != null || $param->variadic,
 				$param->byRef,

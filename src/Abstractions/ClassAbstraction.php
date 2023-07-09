@@ -1,11 +1,12 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
 use BambooHR\Guardrail\Config;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
@@ -186,7 +187,7 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-					$type = ($prop->type instanceof NullableType) ? strval($prop->type->type) : strval($prop->type);
+					$type = Util::complexTypeToString($prop->type);
 					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
 						$type = $propertyProperty->getAttribute("namespacedType");
 					}

@@ -1,7 +1,7 @@
 <?php namespace BambooHR\Guardrail;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2017, BambooHR.
  * Apache 2.0 License
  */
 
@@ -258,7 +258,7 @@ class TypeInferrer {
 					if ($classDef) {
 						list($prop) = Util::findAbstractedProperty($class, $propName, $this->index);
 						if ($prop) {
-							$type = $prop->getType();
+							$type = Util::complexTypeToString($prop->getType());
 							if (!empty($type)) {
 								if ($type[0] == '\\') {
 									$type = substr($type, 1);
