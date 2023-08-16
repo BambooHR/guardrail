@@ -395,13 +395,13 @@ abstract class SymbolTable {
 	/**
 	 * addClass
 	 *
-	 * @param string $name  The name
-	 * @param Class_ $class Instance of ClassAbstraction
-	 * @param string $file  The file
+	 * @param string    $name  The name
+	 * @param ClassLike $class Instance of ClassAbstraction
+	 * @param string    $file  The file
 	 *
 	 * @return mixed
 	 */
-	abstract function addClass($name, Class_ $class, $file);
+	abstract function addClass($name, ClassLike $class, $file);
 
 	/**
 	 * addInterface

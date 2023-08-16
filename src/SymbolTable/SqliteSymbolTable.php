@@ -361,7 +361,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return void
 	 */
-	public function addClass($name, Class_ $class, $file) {
+	public function addClass($name, ClassLike $class, $file) {
 		$usesTrait = 0;
 		foreach ($class->stmts as $stmt) {
 			if ($stmt instanceof TraitUse) {

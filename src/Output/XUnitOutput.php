@@ -85,6 +85,10 @@ class XUnitOutput implements OutputInterface {
 
 	}
 
+	private function escapeText(string $text):string {
+		return str_replace(["&",'"'], ["&nbsp;", "&#34;"], $text );
+	}
+
 	/**
 	 * incTests
 	 *
@@ -233,7 +237,7 @@ class XUnitOutput implements OutputInterface {
 		}
 
 		$message .= " on line " . $lineNumber;
-		$case->addFailure($name . ":" . $message, "error");
+		$case->addFailure( $this->escapeText($name . ":" . $message), "error");
 		if ($this->emitErrors) {
 			// echo "E";
 		}

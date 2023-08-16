@@ -184,4 +184,8 @@ class ReflectedClass implements ClassInterface {
 		}
 		return $ret;
 	}
+
+	public function isEnum(): bool {
+		return $this->refl instanceof \ReflectionEnum;
+	}
 }

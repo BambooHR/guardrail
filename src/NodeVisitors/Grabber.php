@@ -87,18 +87,21 @@ class Grabber extends NodeVisitorAbstract {
 	 * enterNode
 	 *
 	 * @param Node $node Instance of Node
-	 * @guardrail-ignore Standard.Unknown.Property
-	 * @return void
+	 * @guardrail-ignore Standard.Unknown.Property\
 	 */
 	public function enterNode(Node $node) {
-		if (strcasecmp(get_class($node), $this->classType) == 0) {
+		$class=$node::class;
+		if (strcasecmp($class, $this->classType) == 0 ||
+			(strcasecmp($class,Node\Stmt\Enum_::class) == 0 && strcasecmp($this->classType, Class_::class)==0)
+		) {
 
 			$var = ($this->fromVar == self::FROM_FQN ? strval($node->namespacedName) : strval($node->name));
 			if (strcasecmp($var, $this->searchingForName) == 0) {
 				$this->foundClass = $node;
-
+				return NodeTraverser::STOP_TRAVERSAL;
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -109,10 +112,13 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return array
 	 */
-	static public function filterByType($stmts, $type) {
+	static public function filterByType($stmts, string|array $type) {
 		$ret = [];
+		if (is_string($type)) {
+			$type= [$type];
+		}
 		foreach ($stmts as $stmt) {
-			if (get_class($stmt) == $type) {
+			if (in_array(get_class($stmt), $type)) {
 				$ret[] = $stmt;
 			}
 		}

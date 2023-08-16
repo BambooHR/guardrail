@@ -156,6 +156,15 @@ class TypeComparer
 		}
 	}
 
+	private function simpleTypeIsCompatibleWithIntersectionType(Name|Identifier $target, IntersectionType $valueType, bool $strict) {
+		foreach($valueType->types as $valueComponentType) {
+			if ($this->areSimpleTypesCompatible($target, $valueComponentType, $strict)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Null values indicate an unknown type.  Unknown types are always considerable compatible.  Mixed *targets* can
 	 * accept any target.  Specific *targets* are too narrow to accept mixed *values*.
@@ -173,9 +182,28 @@ class TypeComparer
 
 		// Many target options, many values.  Every value option must match at least one target.
 		$ret = self::ifEveryType($value, fn($valueType) =>
-			self::ifAnyType($target, fn($targetType) =>
-				$this->areSimpleTypesCompatible($targetType, $valueType, $scope->isStrict())
-			)
+			self::ifAnyType($target, function($targetType) use ($scope, $valueType) {
+
+				if($targetType instanceof IntersectionType) {
+					$types = $targetType->types;
+				} else {
+					$types = [$targetType];
+				}
+
+
+				foreach ($types as $targetComponentType) {
+					if ($valueType instanceof IntersectionType) {
+						if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType, $scope->isStrict())) {
+							return false;
+						}
+					} else {
+						if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $scope->isStrict())) {
+							return false;
+						}
+					}
+				}
+				return true;
+			})
 		);
 		return $ret;
 	}
@@ -194,10 +222,10 @@ class TypeComparer
 		return self::getUniqueTypes(...$ret);
 	}
 
-	static function ifEveryType(UnionType|Identifier|Name|Node\NullableType $node, callable $fn) {
+	static function ifEveryType(ComplexType|Identifier|Name $node, callable $fn) {
 		if ($node instanceof Node\NullableType) {
 			$types = [TypeComparer::identifierFromName("null"), $node->type ];
-		} else if ($node instanceof Identifier || $node instanceof Name) {
+		} else if ($node instanceof Identifier || $node instanceof Name || $node instanceof IntersectionType) {
 			$types = [$node];
 		} else if ($node instanceof UnionType) {
 			$types = $node->types;
@@ -210,12 +238,12 @@ class TypeComparer
 		return true;
 	}
 
-	static function ifAnyType(UnionType|Identifier|Name|Node\NullableType|null $node, callable $fn) {
+	static function ifAnyType(ComplexType|Identifier|Name|null $node, callable $fn) {
 		if ($node === null) {
 			$types = [null];
 		} else if ($node instanceof Node\NullableType) {
 			$types = [TypeComparer::identifierFromName("null"), $node->type];
-		} else if ($node instanceof Identifier || $node instanceof Name) {
+		} else if ($node instanceof Identifier || $node instanceof Name || $node instanceof IntersectionType) {
 			$types = [$node];
 		} else {
 			$types = $node->types;
@@ -247,6 +275,18 @@ class TypeComparer
 		}
 	}
 
+	static function forEachAnyEveryType($node, callable $fn) {
+		self::forEachType($node, function($type) use ($fn) {
+			if ($type instanceof IntersectionType) {
+				foreach($type->types as $iType) {
+					call_user_func($fn, $iType);
+				}
+			} else {
+				call_user_func($fn, $type);
+			}
+		});
+	}
+
 	function isTraversable(ComplexType|Identifier|Name|null $type):bool {
 		return $type === null || TypeComparer::ifEveryType($type, function($subType) {
 			if ($subType) {
@@ -259,6 +299,9 @@ class TypeComparer
 						return true;
 					}
 					if (!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
+						return true;
+					}
+					if (!$this->symbolTable->isParentClassOrInterface(\Iterable::class, $typeStr)) {
 						return true;
 					}
 				}

@@ -6,10 +6,15 @@
  */
 
 use BambooHR\Guardrail\NodeVisitors\Grabber;
+use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\Case_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\EnumCase;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\PropertyProperty;
 
@@ -138,12 +143,30 @@ class ClassAbstraction implements ClassInterface {
 		return $this->getConstantExpr($name) ? true : false;
 	}
 
-	public function getConstantExpr($name):?Expr {
-		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
+	public function getConstantExpr($name):null|Expr|Name {
+
+		if ($this->isEnum()) {
+			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
+			foreach($constants as $enumOption) {
+				/** @var EnumCase $enumOption */
+				if (strcasecmp($enumOption->name,$name)==0) {
+					return $numOption->expr ?? $this->class->namespacedName;
+				}
+			}
+		}
+		$constants = Grabber::filterByType($this->class->stmts, [ClassConst::class, EnumCase::class]);
 		foreach ($constants as $constList) {
-			foreach ($constList->consts as $const) {
-				if (strcasecmp($const->name, $name) == 0) {
-					return $const->value;
+			if ($constList instanceof ClassConst) {
+				foreach ($constList->consts as $const) {
+					if (strcasecmp($const->name, $name) == 0) {
+						return $const->value;
+					}
+				}
+			} else {
+				if($constList instanceof EnumCase) {
+					if (strcasecmp($constList->name, $name)==0) {
+						return $this->class->namespacedName;
+					}
 				}
 			}
 		}
@@ -197,5 +220,9 @@ class ClassAbstraction implements ClassInterface {
 				}
 			}
 		}
+	}
+
+	public function isEnum(): bool {
+		return $this->class instanceof Enum_;
 	}
 }

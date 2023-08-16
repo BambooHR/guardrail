@@ -16,6 +16,7 @@ use BambooHR\Guardrail\Checks\ConstructorCheck;
 use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
 use BambooHR\Guardrail\Checks\DefinedConstantCheck;
 use BambooHR\Guardrail\Checks\DocBlockTypesCheck;
+use BambooHR\Guardrail\Checks\EnumCheck;
 use BambooHR\Guardrail\Checks\FunctionCallCheck;
 use BambooHR\Guardrail\Checks\GotoCheck;
 use BambooHR\Guardrail\Checks\ImagickCheck;
@@ -115,6 +116,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
 			new DocBlockTypesCheck($this->index, $output),
+			new EnumCheck($this->index, $output),
 			new UndefinedVariableCheck($this->index, $output),
 			new DefinedConstantCheck($this->index, $output),
 			new BackTickOperatorCheck($this->index, $output),

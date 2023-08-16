@@ -31,6 +31,7 @@ class ErrorConstants {
 	const TYPE_GLOBAL_EXPRESSION_ACCESSED = 'Standard.Global.Expression';
 	const TYPE_GLOBAL_STRING_ACCESSED = 'Standard.Global.String';
 	const TYPE_GOTO = 'Standard.Goto';
+	const TYPE_ILLEGAL_ENUM = 'Standard.Illegal.Enum';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';
 	const TYPE_INCORRECT_STATIC_CALL = 'Standard.Incorrect.Static';
 	const TYPE_INCORRECT_REGEX = 'Standard.Incorrect.Regex';
@@ -69,6 +70,8 @@ class ErrorConstants {
 	const TYPE_USE_CASE_SENSITIVE = 'Standard.Use.CaseSensitive';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
+
+
 
 	/**
 	 * @return string[]

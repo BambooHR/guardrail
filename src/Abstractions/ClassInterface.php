@@ -1,9 +1,10 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
@@ -83,7 +84,7 @@ interface ClassInterface {
 	 */
 	public function hasConstant($name);
 
-	public function getConstantExpr($name):?Expr;
+	public function getConstantExpr($name):null|Expr|Name;
 
 	/**
 	 * isInterface
@@ -91,4 +92,6 @@ interface ClassInterface {
 	 * @return bool
 	 */
 	public function isInterface();
+
+	public function isEnum():bool;
 }

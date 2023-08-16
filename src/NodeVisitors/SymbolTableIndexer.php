@@ -1,11 +1,15 @@
 <?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
 use BambooHR\Guardrail\Output\OutputInterface;
+use PhpParser\Builder\ClassConst;
+use PhpParser\Builder\Enum_;
+use PhpParser\Builder\EnumCase;
+use PhpParser\Builder\Property;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
@@ -72,7 +76,12 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return int|null
 	 */
 	public function enterNode(Node $node) {
-		if ($node instanceof Class_) {
+		if ($node instanceof Node\Stmt\Enum_) {
+			$name=strval($node->namespacedName);
+			$this->addEnumPropsAndMethods($node);
+			$this->index->addClass($name, $node, $this->filename);
+			array_push($this->classStack, $node);
+		} elseif ($node instanceof Class_) {
 			$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "anonymous class";
 			if ($name) {
 				$this->index->addClass($name, $node, $this->filename);
@@ -105,11 +114,30 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			$name = $node->namespacedName->toString();
 			$this->index->addTrait($name, $node, $this->filename);
 			array_push($this->classStack, $node);
-		} elseif ($node instanceof Node\Expr) {
+		} else if ($node instanceof Node\Expr) {
 			// Expressions don't contain anything we would index.
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
 		return null;
+	}
+
+	public function addEnumPropsAndMethods(Node\Stmt\Enum_ $enum) {
+		$isBacked = !is_null($enum->scalarType);
+		$property = new Property("name");
+		$property->setType(new Node\Identifier("string"));
+		$property->makeReadonly();
+		$enum->stmts[]= $property->getNode();
+		if ($isBacked) {
+			$enum->stmts[] = new Node\Stmt\ClassMethod("values",["returnType"=>"array"]);
+			$property = new Property("value");
+			$property->makeReadonly();
+			$property->setType( $enum->scalarType );
+			$enum->stmts[]=$property->getNode();
+
+			$enumName = $enum->namespacedName->toString();
+			$enum->stmts[]=new Node\Stmt\ClassMethod("tryFrom",["returnType" => $enumName]);
+			$enum->stmts[]=new Node\Stmt\ClassMethod("from", ["returnType" => $enumName]);
+		}
 	}
 
 	/**
@@ -120,7 +148,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
-		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_) {
+		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		}
 		return null;

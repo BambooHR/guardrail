@@ -1,7 +1,7 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
@@ -190,21 +190,9 @@ class InterfaceCheck extends BaseCheck {
 			$this->emitError($fileName, $node->extends, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent " . $node->extends);
 		}
 
-		/*
-		$str = "Checking ". $class->getName()."\n";
-		echo $str;
-		$coreDomain = $this->symbolTable->isParentClassOrInterface("Core\\Domain\\Domain", $class->getName());
-		$bambooHrDomain = $this->symbolTable->isParentClassOrInterface("BambooHR\\Domain\\Domain", $class->getName());
-		$type = ($coreDomain ? 1 : ($bambooHrDomain ? 2 : 0) );
-		if ($type) {
-			$method = Util::findAbstractedMethod($class->getName(), "__construct", $this->symbolTable);
-			if ($method) {
-				$log = fopen("/tmp/class_stats.csv", "a");
-				fputcsv($log, [$class->getName(), count($method->getParameters()), $type]);
-				fclose($log);
-			}
+		if ($parentClass->isEnum()) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_ILLEGAL_ENUM, "Enums can not be extended");
 		}
-		*/
 		foreach ($class->getMethodNames() as $methodName) {
 			if ($methodName != "__construct") {
 				$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
