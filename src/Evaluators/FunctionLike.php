@@ -133,20 +133,22 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 	 * @return void
 	 */
 	public function updateFunctionEmit(Node\FunctionLike $func, ScopeStack $scopeStack, $pushOrPop) {
+		$docBlock = $func->getDocComment();
+		if (!empty($docBlock)) {
+			$docBlock = trim($docBlock);
+			$ignoreList = [];
 
-		$docBlock = trim($func->getDocComment());
-		$ignoreList = [];
-
-		if (preg_match_all("/@guardrail-ignore ([A-Za-z. ,]*)/", $docBlock, $ignoreList)) {
-			foreach ($ignoreList[1] as $ignoreListEntry) {
-				$toIgnore = explode(",", $ignoreListEntry);
-				foreach ($toIgnore as $type) {
-					$type = trim($type);
-					if (!empty($type)) {
-						if ($pushOrPop == "push") {
-							$scopeStack->getOutput()->silenceType($type);
-						} else {
-							$scopeStack->getOutput()->resumeType($type);
+			if (preg_match_all("/@guardrail-ignore ([A-Za-z. ,]*)/", $docBlock, $ignoreList)) {
+				foreach ($ignoreList[1] as $ignoreListEntry) {
+					$toIgnore = explode(",", $ignoreListEntry);
+					foreach ($toIgnore as $type) {
+						$type = trim($type);
+						if (!empty($type)) {
+							if ($pushOrPop == "push") {
+								$scopeStack->getOutput()->silenceType($type);
+							} else {
+								$scopeStack->getOutput()->resumeType($type);
+							}
 						}
 					}
 				}
