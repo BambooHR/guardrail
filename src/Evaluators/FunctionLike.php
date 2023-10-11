@@ -11,6 +11,7 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
@@ -20,7 +21,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 
 	function getInstanceType(): array
 	{
-		return [Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
+		return [Closure::class, ArrowFunction::class, Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
 	}
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
