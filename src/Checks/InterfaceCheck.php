@@ -65,37 +65,50 @@ class InterfaceCheck extends BaseCheck {
 			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_TYPE, "Access level mismatch in " . $method->getName() . "() " . $visibility . " vs " . $oldVisibility);
 		}
 
+		// Make sure the parent and child class return types mesh together
+		$childReturnType = $method->getComplexReturnType() ?? "mixed";
+		$parentReturnType = $parentMethod->getComplexReturnType() ?? "mixed";
+		if (
+			!(strcasecmp($childReturnType, $parentReturnType) === 0) &&
+			!(strcasecmp($parentReturnType, "mixed") === 0)
+		) {
+			$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_RETURN,
+				"Child method return type does not match parent return type" . $className . "::" . $method->getName() . " : $childReturnType vs $parentReturnType"
+			);
+		}
+
 		$params = $method->getParameters();
 		$parentMethodParams = $parentMethod->getParameters();
-		$count1 = count($params);
-		$count2 = count($parentMethodParams);
-		if ($count1 < $count2) {
-			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $count1 vs $count2 in method " . $className . "->" . $method->getName());
+		$childParameterCount = count($params);
+		$parentParameterCount = count($parentMethodParams);
+		if ($childParameterCount < $parentParameterCount) {
+			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $childParameterCount vs $parentParameterCount in method " . $className . "->" . $method->getName());
 		} else {
-			foreach ($params as $index => $param) {
-				/** @var FunctionLikeParameter $param */
+			foreach ($params as $index => $childParam) {
+				/** @var FunctionLikeParameter $childParam */
 				// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
-				if ($index < $count2) {
+				if ($index < $parentParameterCount) {
 					$parentParam = $parentMethodParams[$index];
-					$name1 = TypeComparer::typeToString($param->getType());
-					$name2 = TypeComparer::typeToString($parentParam->getType());
-					if ($oldVisibility !== 'private' && strcasecmp($name1, $name2) !== 0) {
-						$name1 = empty($name1) ? '(unspecified)' : $name1;
-						$name2 = empty($name2) ? '(unspecified)' : $name2;
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method parameter #$index type mismatch " . $className . "::" . $method->getName() . " : $name1 vs $name2");
+					$childParamType = TypeComparer::typeToString($childParam->getType());
+					$parentParamType = TypeComparer::typeToString($parentParam->getType());
+
+					if ($oldVisibility !== 'private' && (strcasecmp($childParamType, $parentParamType) !== 0 && $childParamType !== 'mixed')) {
+						$childParamType = empty($childParamType) ? '(unspecified)' : $childParamType;
+						$parentParamType = empty($parentParamType) ? '(unspecified)' : $parentParamType;
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method parameter #$index type mismatch " . $className . "::" . $method->getName() . " : $childParamType vs $parentParamType");
 						break;
 					}
-					if ($param->isReference() != $parentParam->isReference()) {
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " add or removes & in \$" . $param->getName());
+					if ($childParam->isReference() != $parentParam->isReference()) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " add or removes & in \$" . $childParam->getName());
 						break;
 					}
-					if (! $param->isOptional() && $parentParam->isOptional()) {
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $param->getName() . " to be required.");
+					if (! $childParam->isOptional() && $parentParam->isOptional()) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $childParam->getName() . " to be required.");
 						break;
 					}
 				} else {
-					if (! $param->isOptional()) {
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $method->getName() . " adds parameter \$" . $param->getName() . " that doesn't have a default value");
+					if (! $childParam->isOptional()) {
+						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $method->getName() . " adds parameter \$" . $childParam->getName() . " that doesn't have a default value");
 						break;
 					}
 				}
