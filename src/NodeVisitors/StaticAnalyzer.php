@@ -255,7 +255,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 *
 	 * @param Node $node Instance of node
 	 * @guardrail-ignore Standard.VariableFunctionCall
-	 * @return null
+	 * @return void
 	 */
 	public function leaveNode(Node $node)
 	{
@@ -268,11 +268,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		}
 
 		$evaluator = $this->getEvaluator($node);
-		if ($evaluator) {
-			//echo "Node: " . get_class($node) . " line " . $node->getLine() . "\n";
-			//" ".($evaluator ? get_class($evaluator) : "no ev")."\n";
-		}
-
 		if ($evaluator instanceof Ev\OnExitEvaluatorInterface) {
 			$evaluator->onExit($node, $this->index, $this->scopeStack);
 		}
@@ -290,5 +285,10 @@ class StaticAnalyzer extends NodeVisitorAbstract
 				$this->counts[$name] = (isset($this->counts[$name]) ? $this->counts[$name] : 0) + 1;
 			}
 		}
+		// TODO: this may be needed to start checking undefined variables properly (see TestUndefinedVariableCheck.php
+		// NOTE: we will also need to remove the setvarused from Variable.php
+//		if ($node instanceof Node\Expr\Variable && is_string($node->name) && !$node->hasAttribute('assignment')) {
+//			$this->scopeStack->setVarUsed($node->name);
+//		}
 	}
 }

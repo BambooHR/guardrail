@@ -19,4 +19,20 @@ class TestComplexTypes extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SIGNATURE_TYPE), "Failed to detect traits with properties" );
 	}
 
+	public function testWithUntypedDatetime() {
+		//TODO: This test is failing type check thinking that $one is a datetime type even in the else
+		$func = <<<'ENDCODE'
+				function method($one, $two = null) {
+					if ($one instanceof \DateTime || $one instanceof \Date) {
+						$date = $one;
+					} else {
+						$test = explode('-', $one);
+					}
+				}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_SIGNATURE_TYPE, ["basePath" => "/"]);
+		var_dump($output->renderResults());
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+	}
 }

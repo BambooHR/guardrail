@@ -86,7 +86,8 @@ abstract class CallCheck extends BaseCheck {
 	 */
 	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, Node\Arg $arg, FunctionLikeParameter $param) {
 		$variableName = $param->getName();
-		$type  = $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		//TODO: There is a problem with this line getting back the wrong type.. (see TestComplexTypes.php:36)
+		$type = $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		if ($arg->unpack) {
 			$tc=new TypeComparer($this->symbolTable);
 			if (!$tc->isTraversable($type)) {

@@ -70,13 +70,10 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 		}
 		if ($func instanceof Closure) {
 			foreach ($func->uses as $variable) {
-
 				// We don't track variables in global scope, so we'll have to assume those are ok.
-				if (!$scopeStack->getVarExists($variable->var->name)) {
-					if (!$scopeStack->isGlobal()) {
-						$fileName=$scopeStack->getCurrentFile();
-						$scopeStack->getOutput()->emitError(__CLASS__, $fileName, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$" . $variable->var->name . " in uses() clause");
-					}
+				if (!$scopeStack->getVarExists($variable->var->name) && !$scopeStack->isGlobal()) {
+					$fileName=$scopeStack->getCurrentFile();
+					$scopeStack->getOutput()->emitError(__CLASS__, $fileName, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$" . $variable->var->name . " in uses() clause");
 				} else {
 					$type = $scopeStack->getVarType($variable->var->name);
 					if ($variable->byRef) {

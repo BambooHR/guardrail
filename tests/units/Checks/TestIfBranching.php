@@ -61,9 +61,8 @@ class TestIfBranching extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath"=>"/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath"=>"/"]);
 		$this->assertEquals( 1, $output->getErrorCount(),  "Failed expected no errors" );
-
 	}
 
 	public function testCompoundOrIfType() {

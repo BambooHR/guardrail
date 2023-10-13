@@ -58,7 +58,7 @@ class PropertyStoreCheck extends BaseCheck {
 		if ($node instanceof Node\Expr\Assign && $node->var instanceof PropertyFetch && $node->var->name instanceof Node\Identifier) {
 
 			$targetType = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			$valueType = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			$valueType = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope)) {
 				if($targetType instanceof Node\Identifier && util::isScalarType(strval($targetType))) {
 					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR;
