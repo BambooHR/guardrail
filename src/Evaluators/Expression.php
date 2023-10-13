@@ -61,6 +61,8 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\BooleanOr) {
+//			$node->left->setAttribute('push-false-scope-on-leave', true);
+//			$node->left->setAttribute('pop-scope-on-enter', true);
 			$node->left->setAttribute('merge-true-assert-on-leave', true);
 		}
 

@@ -210,6 +210,10 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		$this->scopeStack->setCurrentFile($name);
 	}
 
+	public function scopeStackHigherThanOne() {
+		return $this->scopeStack->getSize() > 1;
+	}
+
 	/**
 	 * enterNode
 	 *

@@ -20,6 +20,9 @@ class ScopeStack implements ScopeInterface {
 
 	function __construct(private OutputInterface $output) { }
 
+	function getSize() {
+		return count($this->scopes);
+	}
 	function getOutput(): OutputInterface {
 		return $this->output;
 	}

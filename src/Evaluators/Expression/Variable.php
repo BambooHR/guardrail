@@ -17,10 +17,10 @@ class Variable implements ExpressionInterface {
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		/** @var Node\Expr\Variable $expr */
 		$expr = $node;
-		// TODO: this may be needed to start checking undefined variables properly (see TestUndefinedVariableCheck.php
-//		if (is_string($expr->name) && !$expr->hasAttribute('assignment')) {
-//			$scopeStack->setVarUsed($expr->name);
-//		}
+		// TODO: this may be removed in favor of the code added to StaticAnalyzer (see TestUndefinedVariableCheck.php)
+		if (is_string($expr->name) && !$expr->hasAttribute('assignment')) {
+			$scopeStack->setVarUsed($expr->name);
+		}
 
 		if (is_string($expr->name)) {
 			$class = $scopeStack->getCurrentClass();

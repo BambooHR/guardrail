@@ -114,7 +114,26 @@ class TestUndefinedVariableCheck extends TestSuiteSetup {
 	}
 
 	public function testUndefinedVariableFile2() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_UNKNOWN_VARIABLE));
+		$func = <<<'ENDCODE'
+			class testClass {
+				public function method(string $one, int $two = null, int $three = 0) {
+					return collect([])
+						->filter(function ($item, $key) use ($two) {
+							$test = true || true;
+							return true;
+						})
+						->filter(function ($item) use ($one) {
+							return "";
+						})
+						->map(function($item) use ($three) {
+							return "";
+						});
+				}
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
 
 	public function testUndefinedVariableFile3() {

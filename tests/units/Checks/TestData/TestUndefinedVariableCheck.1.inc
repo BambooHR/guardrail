@@ -1,5 +1,5 @@
 <?php
-//TODO: this file will likely go away. This is me trying to reproduce the undefined variable in use statements when the variable is from the IOC container
+
 
 class EmployeeMasterController {
 
@@ -93,6 +93,7 @@ class EmployeeMasterController {
 	 */
 	public static function quickActionDropDownSetup(\Employee $employee) {
 		if (!self::$quickActionDropDown) {
+			/** @var int $helper */
 			$helper = app(QuickActionDropDownHelper::class);
 			self::$quickActionDropDown = Timer::wrap("QuickActionDropDown->getVars()", [], function() use ($helper, $employee) {
 				return $helper->getVars($employee);
