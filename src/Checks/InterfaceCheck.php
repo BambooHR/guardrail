@@ -65,17 +65,7 @@ class InterfaceCheck extends BaseCheck {
 			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_TYPE, "Access level mismatch in " . $method->getName() . "() " . $visibility . " vs " . $oldVisibility);
 		}
 
-		// Make sure the parent and child class return types mesh together
-		$childReturnType = $method->getComplexReturnType() ?? "mixed";
-		$parentReturnType = $parentMethod->getComplexReturnType() ?? "mixed";
-		if (
-			!(strcasecmp($childReturnType, $parentReturnType) === 0) &&
-			!(strcasecmp($parentReturnType, "mixed") === 0)
-		) {
-			$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_RETURN,
-				"Child method return type does not match parent return type" . $className . "::" . $method->getName() . " : $childReturnType vs $parentReturnType"
-			);
-		}
+		$this->assertParentChildReturnTypesMatch($method, $parentMethod, $fileName, $className);
 
 		$params = $method->getParameters();
 		$parentMethodParams = $parentMethod->getParameters();
@@ -114,6 +104,47 @@ class InterfaceCheck extends BaseCheck {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param MethodInterface $childMethod
+	 * @param MethodInterface $parentMethod
+	 * @param string          $fileName
+	 * @param string          $className
+	 *
+	 * @return void
+	 */
+	private function assertParentChildReturnTypesMatch(
+		MethodInterface $childMethod,
+		MethodInterface $parentMethod,
+		string $fileName,
+		string $className) {
+		$parentReturnTypes = $this->getReturnTypesForMethod($parentMethod);
+		$childReturnTypes = $this->getReturnTypesForMethod($childMethod);
+
+		$differentChildReturnTypes = array_diff($childReturnTypes, $parentReturnTypes);
+		if (!empty($differentChildReturnTypes) && !in_array("mixed", $parentReturnTypes)) {
+			$diffTypesStr = implode(", and", $differentChildReturnTypes);
+			$this->emitErrorOnLine($fileName, $childMethod->getStartingLine(), self::TYPE_SIGNATURE_RETURN,
+				"Child method return types do not match parent return types" . $className . "::" .
+				$childMethod->getName() . " : Child can return $diffTypesStr and parent cannot."
+			);
+		}
+	}
+
+	/**
+	 * @param MethodInterface $method
+	 *
+	 * @return string[]
+	 */
+	private function getReturnTypesForMethod(MethodInterface $method) {
+		$returnTypes = [];
+		TypeComparer::forEachType($method->getComplexReturnType(), function($type) use (&$returnTypes) {
+			$returnTypes[] = $type;
+		});
+		$returnTypes = array_column($returnTypes, 'name');
+		$returnTypes = !empty($returnTypes) ? $returnTypes : ["mixed"];
+		return $returnTypes;
 	}
 
 	/**

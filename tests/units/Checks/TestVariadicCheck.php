@@ -39,11 +39,13 @@ class TestVariadicCheck extends TestSuiteSetup {
 
 	 */
 	public function testAstIsVariadicData() {
-		if (function_exists("\\ast\\parse_code")) {
-			$code = '<?php function foo() { if(true) { func_get_args(); } } ?>';
-			$parsed = \ast\parse_code($code, 50);
-			$this->assertTrue(PhpAstToPhpParser::nodeContainsVariadicMethodCall($parsed[0]), "Nested call not detected");
+		if (!function_exists("\\ast\\parse_code")) {
+			$this->markTestSkipped("AST parse_code method does not exist");
 		}
+
+		$code = '<?php function foo() { if(true) { func_get_args(); } } ?>';
+		$parsed = \ast\parse_code($code, 50);
+		$this->assertTrue(PhpAstToPhpParser::nodeContainsVariadicMethodCall($parsed[0]), "Nested call not detected");
 	}
 
 	/**
