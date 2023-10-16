@@ -452,9 +452,6 @@ class AnalyzingPhase {
 					$traverser->traverse($stmts);
 
 				}
-				if ($this->analyzer->scopeStackHigherThanOne()) {
-					$this->output->outputVerbose("SCOPE HIGHER THAN 1!!" . PHP_EOL);
-				}
 				return strlen($fileData);
 			}
 		} catch (Error $exception) {

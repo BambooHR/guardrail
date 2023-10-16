@@ -210,10 +210,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		$this->scopeStack->setCurrentFile($name);
 	}
 
-	public function scopeStackHigherThanOne() {
-		return $this->scopeStack->getSize() > 1;
-	}
-
 	/**
 	 * enterNode
 	 *
@@ -289,10 +285,5 @@ class StaticAnalyzer extends NodeVisitorAbstract
 				$this->counts[$name] = (isset($this->counts[$name]) ? $this->counts[$name] : 0) + 1;
 			}
 		}
-		// TODO: this may be needed to start checking undefined variables properly (see TestUndefinedVariableCheck.php
-		// NOTE: we will also need to remove the setvarused from Variable.php
-//		if ($node instanceof Node\Expr\Variable && is_string($node->name) && !$node->hasAttribute('assignment')) {
-//			$this->scopeStack->setVarUsed($node->name);
-//		}
 	}
 }

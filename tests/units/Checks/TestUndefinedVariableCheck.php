@@ -109,8 +109,49 @@ class TestUndefinedVariableCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
 
-	public function testUndefinedVariableFile() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_UNKNOWN_VARIABLE));
+	public function testTryCatchInIfStatment() {
+		$func = <<<'ENDCODE'
+			function method($one, $two) {
+				if ($one && $two) {
+					try {
+						$three = $two;
+					} catch (Throwable $exception) {
+					}
+				}
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		var_dump($output->renderResults());
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+	}
+	public function testArrayInIf() {
+		$func = <<<'ENDCODE'
+			private function method($array): array {
+				$return = [];
+				if ($array) {
+					foreach ($array as $item) {
+						if (isset($return[$item->id])) {
+							$return[$item->id] = $item->name;
+						}
+					}
+				}
+				return $return;
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+	}
+	public function testLoadList() {
+		$func = <<<'ENDCODE'
+			function testAssignList($one) {
+				list($listOne, $listTwo, $listThree) = $this->loadList($one);
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
 
 	public function testUndefinedVariableFile2() {
