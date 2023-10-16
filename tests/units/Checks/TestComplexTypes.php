@@ -32,7 +32,6 @@ class TestComplexTypes extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_SIGNATURE_TYPE, ["basePath" => "/"]);
-		var_dump($output->renderResults());
 		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
 }
