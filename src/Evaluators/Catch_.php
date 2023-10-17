@@ -38,8 +38,9 @@ class Catch_ implements OnEnterEvaluatorInterface
 					);
 				}
 			}
-			$scope->setVarType($name, TypeComparer::getUniqueTypes($node->types), $node->getLine());
-			$scope->setVarUsed($name);
+			$node->var->setAttribute('assignment',true);
+			$scopeStack->setVarType($name, TypeComparer::getUniqueTypes($node->types), $node->getLine());
+			$scopeStack->setVarUsed($name);
 		}
 	}
 }

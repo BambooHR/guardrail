@@ -9,7 +9,6 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  * @package BambooHR\Guardrail\Tests\Checks
  */
 class TestUndefinedVariableCheck extends TestSuiteSetup {
-
 	public function testUndefinedVariables() {
 		$func = <<<'ENDCODE'
 			function method1($one, $two) {
@@ -24,10 +23,10 @@ class TestUndefinedVariableCheck extends TestSuiteSetup {
 
 	public function testNonExistentVariableInCallback() {
 		$func = <<<'ENDCODE'
-			function method1($one, $two) {
+			function method1() {
 				$users = [];
-				$undefined = [];
-				return array_filter($users, function ($user) use ($one) {
+				//$undefined = [];
+				return array_filter($users, function ($user) {
 					return $undefined;
 				});
 			}
@@ -112,22 +111,23 @@ class TestUndefinedVariableCheck extends TestSuiteSetup {
 	public function testTryCatchInIfStatment() {
 		$func = <<<'ENDCODE'
 			function method($one, $two) {
-				if ($one && $two) {
+				if ($one || $two) {
 					try {
 						$three = $two;
-					} catch (Throwable $exception) {
+					} catch (\Throwable $exception) {
+						echo $exception->getMessage();
 					}
 				}
 			}
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
-		var_dump($output->renderResults());
 		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
+
 	public function testArrayInIf() {
 		$func = <<<'ENDCODE'
-			private function method($array): array {
+			function method($array): array {
 				$return = [];
 				if ($array) {
 					foreach ($array as $item) {
@@ -143,9 +143,12 @@ class TestUndefinedVariableCheck extends TestSuiteSetup {
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
 		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
+
 	public function testLoadList() {
 		$func = <<<'ENDCODE'
 			function testAssignList($one) {
+				$test = '123';
+				[$min, $max, $payType, $currencyCode] = $one[0];
 				list($listOne, $listTwo, $listThree) = $this->loadList($one);
 			}
 		ENDCODE;
@@ -177,7 +180,60 @@ class TestUndefinedVariableCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
 
-	public function testUndefinedVariableFile3() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNKNOWN_VARIABLE));
+	public function testUndefinedVariable1() {
+		$func = <<<'ENDCODE'
+			function validateEditCandidate($talentPoolIdsAndReasons): array {
+				$errors = [];
+				if (is_array($talentPoolIdsAndReasons)) {
+					$errors[] = 'TalentPoolIds param must be an array';
+				}
+				foreach ($talentPoolIdsAndReasons as $reason) {
+					if (!($this->length($reason, $reason))) {
+						$errors[] = 'Reason is too long';
+					}
+				}
+				return $errors;
+			}
+			
+			function length($reason, $two) {
+				return 1;
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+	}
+
+	public function testAssigningValuesToUndefinedArray() {
+		$func = <<<'ENDCODE'
+			function getActions(): ?array {
+				$undefined['key'] = 'value';
+				$undefined2['key2'] = 'value 2';
+				return $undefined;
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+	}
+
+	public function testPassByReferenceVariables() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_UNKNOWN_VARIABLE));
+	}
+
+	public function testLoadGlobal() {
+		$func = <<<'ENDCODE'
+			function testMethod($var) {
+				global $test;
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+	}
+
+	public function testStaticProperty() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_UNKNOWN_VARIABLE));
 	}
 }

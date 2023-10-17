@@ -40,12 +40,10 @@ use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
-use BambooHR\Guardrail\NodePatterns;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\Trait_;
@@ -96,6 +94,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		Ev\Global_::class,
 		Ev\If_::class,
 		Ev\Return_::class,
+		Ev\StaticVar_::class
 	];
 
 

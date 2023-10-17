@@ -15,20 +15,16 @@ class Variable implements ExpressionInterface {
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
-		/** @var Node\Expr\Variable $expr */
 		$expr = $node;
-		if (is_string($expr->name) && !$expr->hasAttribute('assignment')) {
-			$scopeStack->setVarUsed($expr->name);
-		}
-
+		$returnType = null;
 		if (is_string($expr->name)) {
 			$class = $scopeStack->getCurrentClass();
-			$varName = strval($expr->name);
+			$varName = $expr->name;
 			if ($varName == "this" && $class) {
 				$name = strval($class->namespacedName ?: $class->name );
-				return ($name ? TypeComparer::nameFromName($name) : null );
+				$returnType = ($name ? TypeComparer::nameFromName($name) : null );
 			} else if ($varName == "_GET" || $varName == "_POST" || $varName == "_COOKIE" || $varName == "_REQUEST") {
-				return TypeComparer::identifierFromName("array");
+				$returnType = TypeComparer::identifierFromName("array");
 			} else {
 				$parent = $scopeStack->getParent();
 				if (NodePatterns::parentNodeExpectsBool($parent, $expr)) {
@@ -39,10 +35,9 @@ class Variable implements ExpressionInterface {
 						$node->setAttribute('assertsTrue', $varScope);
 					}
 				}
-				return $scopeStack->getCurrentScope()->getVarType($varName);
+				$returnType = $scopeStack->getCurrentScope()->getVarType($varName);
 			}
-		} else {
-			return null;
 		}
+		return $returnType;
 	}
 }

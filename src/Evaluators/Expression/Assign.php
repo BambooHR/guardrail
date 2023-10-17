@@ -4,7 +4,7 @@ namespace BambooHR\Guardrail\Evaluators\Expression;
 
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
-use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\Evaluators\OnEnterEvaluatorInterface;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
@@ -12,18 +12,17 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\Variable;
 
-class Assign implements ExpressionInterface
+class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 {
 
 	function getInstanceType(): array|string
 	{
-		return [Node\Expr\Assign::class, Node\Expr\AssignRef::class, Node\Expr\List_::class];
+		return [Node\Expr\Assign::class, Node\Expr\AssignRef::class, Node\Expr\List_::class, Node\Expr\Array_::class];
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
 	{
-
-		if ($node instanceof List_) {
+		if ($node instanceof List_ || $node instanceof Node\Expr\Array_) {
 			return TypeComparer::identifierFromName("array");
 		}
 
@@ -37,8 +36,6 @@ class Assign implements ExpressionInterface
 	function handleAssignment(Node\Expr $var, ?Node $valueType, ScopeStack $scope) {
 		if ($var instanceof Node\Expr\Variable && gettype($var->name) == "string") {
 			$overrides = Config::shouldUseDocBlockForInlineVars() ? $var->getAttribute('namespacedInlineVar') : [];
-
-
 			$varName = strval($var->name);
 
 			// If it's in overrides, then it was already set by a DocBlock @var
@@ -70,6 +67,22 @@ class Assign implements ExpressionInterface
 			if ($varName !== null) {
 				$scope->setVarType($varName, $valueType, $var->getLine());
 			}
+		} else if ($var instanceof Node\Expr\Assign || $var instanceof Node\Expr\AssignRef) {
+			$subVar = $var;
+			do {
+				$subVar = $subVar->var ?? null;
+			} while (!empty($subVar) && !$subVar instanceof Variable);
+
+			if (!empty($subVar) && gettype($subVar->name) == "string") {
+				$subVar->setAttribute('assignment', true);
+				$scope->setVarWritten($subVar->name, $var->getLine());
+			}
+		}
+	}
+
+	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
+		if ($node instanceof Node\Expr) {
+			$this->handleAssignment($node, null, $scopeStack);
 		}
 	}
 }

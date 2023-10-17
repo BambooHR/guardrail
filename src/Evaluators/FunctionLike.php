@@ -3,24 +3,18 @@
 namespace BambooHR\Guardrail\Evaluators;
 
 use BambooHR\Guardrail\Checks\ErrorConstants;
-use BambooHR\Guardrail\Evaluators\Expression\Variable;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
-use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Function_;
 
-class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface
-{
-
-	function getInstanceType(): array
-	{
+class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
+	function getInstanceType(): array {
 		return [Closure::class, ArrowFunction::class, Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
 	}
 
@@ -28,12 +22,10 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 		self::handleEnterFunctionLike($node, $scopeStack);
 		/** @var Node\FunctionLike $func */
 		$func = $node;
-		$this->updateFunctionEmit($func,  $scopeStack,"push");
+		$this->updateFunctionEmit($func, $scopeStack, "push");
 	}
 
-
-	static function handleEnterFunctionLike(Node $node, ScopeStack $scopeStack): void
-	{
+	static function handleEnterFunctionLike(Node $node, ScopeStack $scopeStack): void {
 		/** @var Node\FunctionLike $func */
 		$func = $node;
 		$isStatic = true;
@@ -61,7 +53,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 		if ($func instanceof Node\Expr\ArrowFunction) {
 			// Scan the arrow function for all variables and auto import them into the scope.
 			$variables = self::getAllReferencedVariables([$func->expr]);
-			foreach($variables as $varName) {
+			foreach ($variables as $varName) {
 				if ($scopeStack->getVarExists($varName)) {
 					$ob = $scopeStack->getVarObject($varName);
 					$scope->setVarType($varName, $ob->type, $ob->modifiedLine);
@@ -72,7 +64,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 			foreach ($func->uses as $variable) {
 				// We don't track variables in global scope, so we'll have to assume those are ok.
 				if (!$scopeStack->getVarExists($variable->var->name) && !$scopeStack->isGlobal()) {
-					$fileName=$scopeStack->getCurrentFile();
+					$fileName = $scopeStack->getCurrentFile();
 					$scopeStack->getOutput()->emitError(__CLASS__, $fileName, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$" . $variable->var->name . " in uses() clause");
 				} else {
 					$type = $scopeStack->getVarType($variable->var->name);
@@ -90,23 +82,21 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 		$scopeStack->pushScope($scope);
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		self::handleUnusedVars($scopeStack);
 		$closureScope = $scopeStack->popScope();
-
-
 		assert($node instanceof \PhpParser\Node\FunctionLike);
-		$this->updateFunctionEmit($node, $scopeStack,"pop");
+		$this->updateFunctionEmit($node, $scopeStack, "pop");
 	}
 
 	static function getAllReferencedVariables(array $nodes) {
 		$variables = [];
-		ForEachNode::run($nodes, function($node) use (&$variables) {
+		ForEachNode::run($nodes, function ($node) use (&$variables) {
 			if ($node instanceof Node\Expr\Variable && is_string($node->name)) {
-				$variables[$node->name]=true;
+				$variables[$node->name] = true;
 			}
 		});
+
 		return array_keys($variables);
 	}
 
@@ -115,7 +105,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 
 		if (count($unusedVars) > 0) {
 			foreach ($unusedVars as $varName => $lineNumber) {
-				if(!str_contains($varName,"-")) {
+				if (!str_contains($varName, "-")) {
 					$scopeStack->getOutput()->emitError(__CLASS__, $scopeStack->getCurrentFile(), $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$' . $varName . " is assigned but never referenced");
 				}
 			}
@@ -126,7 +116,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 	 * updateFunctionEmit
 	 *
 	 * @param \PhpParser\Node\FunctionLike $func      Instance of FunctionLike
-	 * @param string       $pushOrPop Push | Pop
+	 * @param string                       $pushOrPop Push | Pop
 	 *
 	 * @return void
 	 */

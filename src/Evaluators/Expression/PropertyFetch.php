@@ -36,8 +36,7 @@ class PropertyFetch implements ExpressionInterface
 			}
 		}
 
-
-		if ( ($node instanceof Node\Expr\PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) && $node->name instanceof Node\Identifier) {
+		if (($node instanceof Node\Expr\PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) && $node->name instanceof Node\Identifier) {
 			/** @var Node\Expr\PropertyFetch $expr */
 			$expr = $node;
 			$class = $this->getClass($expr, $scopeStack);
