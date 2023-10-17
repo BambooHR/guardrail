@@ -756,6 +756,9 @@ class StaticAnalyzer extends NodeVisitorAbstract {
 					if ($type instanceof Node\NullableType) {
 						$type = $type->type;
 					}
+					if ($type instanceof Node\ComplexType || $type === NULL) {
+						$type = "";
+					}
 					$type = Scope::constFromName(strval($type));
 					$scope->setVarType(strval($param->var->name), $type . "[]", $param->getLine());
 				} else {
