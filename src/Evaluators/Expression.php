@@ -60,14 +60,12 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\BooleanOr) {
-			//TODO: something needs to change here before we can merge (will be handled in SPEED-
-//			$node->left->setAttribute('push-false-scope-on-leave', true);
-//			$node->left->setAttribute('pop-scope-on-enter', true);
-			$node->left->setAttribute('merge-true-assert-on-leave', true);
+			$node->left->setAttribute('push-false-scope-on-leave', true);
+			$node->setAttribute('merge-true-assert-on-leave-or', true);
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\BooleanAnd) {
-			$node->left->setAttribute('merge-true-assert-on-leave', true);
+			$node->left->setAttribute('merge-true-assert-on-leave-and', true);
 		}
 
 		if ($node instanceof Node\Expr\Ternary) {
@@ -93,9 +91,6 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-		if ($node->hasAttribute('pop-scope-on-leave')) {
-			$scopeStack->popScope();
-		}
 		if ($node->hasAttribute('pop-and-scope-on-leave')) {
 			$type=$scopeStack->popScope();
 			$scopeStack->getCurrentScope()->merge($type);
@@ -123,9 +118,13 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			$if= $parents[ array_key_last($parents)];
 			If_::pushIfScope($if, $scopeStack);
 		}
-		if ($node->hasAttribute('merge-true-assert-on-leave') && $node->hasAttribute('assertsTrue') ) {
-			$scopeStack->popScope();
-			$scopeStack->pushScope($node->getAttribute('assertsTrue'));
+
+		if ($node->hasAttribute('merge-true-assert-on-leave-and') && $node->hasAttribute('assertsTrue')) {
+			$scopeStack->getCurrentScope()->merge($node->getAttribute('assertsTrue'));
+		}
+		if ($node->hasAttribute('merge-true-assert-on-leave-or')) {
+			$right = $scopeStack->popScope();
+			$scopeStack->getCurrentScope()->merge($right);
 		}
 	}
 
