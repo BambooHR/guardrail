@@ -20,7 +20,6 @@ class TestComplexTypes extends TestSuiteSetup {
 	}
 
 	public function testWithUntypedDatetime() {
-		//TODO: This test is failing type check thinking that $one is a datetime type even in the else
 		$func = <<<'ENDCODE'
 				function method($one, $two = null) {
 					if ($one instanceof \DateTime || $one instanceof \Date) {
