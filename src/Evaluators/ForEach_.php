@@ -22,12 +22,16 @@ class ForEach_ implements OnEnterEvaluatorInterface
 		$keyVar = $node->keyVar;
 		if ($keyVar instanceof Variable) {
 			if (gettype($keyVar->name) == "string") {
-				$scopeStack->getCurrentScope()->setVarType(strval($keyVar->name), null, $keyVar->getLine());
+				$keyVar->setAttribute('assignment', true);
+				$scopeStack->setVarWritten(strval($keyVar->name), $keyVar->getLine());
+				$scopeStack->setVarType(strval($keyVar->name), null, $keyVar->getLine());
 			}
 		}
 		if ($valueVar instanceof Variable) {
 			if (gettype($valueVar->name) == "string") {
-				$scopeStack->getCurrentScope()->setVarType(strval($valueVar->name), null, $valueVar->getLine());
+				$valueVar->setAttribute('assignment', true);
+				$scopeStack->setVarWritten(strval($valueVar->name), $valueVar->getLine());
+				$scopeStack->setVarType(strval($valueVar->name), null, $valueVar->getLine());
 			}
 		} else {
 			if ($valueVar instanceof List_) {
@@ -35,7 +39,9 @@ class ForEach_ implements OnEnterEvaluatorInterface
 				foreach ($valueVar->items as $var) {
 					if ($var->key == NULL && $var->value instanceof Variable) {
 						if (gettype($var->value->name) == "string") {
-							$scopeStack->getCurrentScope()->setVarType(strval($var->value->name), null, $var->getLine());
+							$var->value->setAttribute('assignment', true);
+							$scopeStack->setVarWritten(strval($var->value->name), $var->getLine());
+							$scopeStack->setVarType(strval($var->value->name), null, $var->getLine());
 						}
 					}
 				}

@@ -436,7 +436,6 @@ class AnalyzingPhase {
 	public function analyzeString(string $name, string $fileData): int
 	{
 		try {
-
 			$stmts = $this->parser->parse($fileData);
 			if ($stmts) {
 				// We could do this with a node visitor, but it would be more complex and add unnecessary cycles when
@@ -450,7 +449,6 @@ class AnalyzingPhase {
 				$this->analyzer->setFile($name);
 				foreach ($this->traversers as $traverser) {
 					$traverser->traverse($stmts);
-
 				}
 				return strlen($fileData);
 			}

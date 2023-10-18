@@ -12,7 +12,6 @@ use PhpParser\Node;
 class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 {
 	const EXPRESSION_CLASSES = [
-		Expr\Array_::class,
 		Expr\ArrayDimFetch::class,
 		Expr\FunctionLike::class,
 		Expr\Assign::class,
@@ -79,15 +78,19 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			$node->else->setAttribute('swap-scope-on-enter',true);
 		}
 
-		if($node instanceof Node\Expr\Assign) {
-			$node->var->setAttribute('assignment',true);
-		}
-
 		if($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction) {
 			FunctionLike::handleEnterFunctionLike($node, $scopeStack);
 		}
-	}
 
+		if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
+			return;
+		}
+
+		$instance = $this->findInstance(get_class($node));
+		if ($instance instanceof OnEnterEvaluatorInterface) {
+			$instance->onEnter($node, $table, $scopeStack);
+		}
+	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node->hasAttribute('pop-scope-on-leave')) {
@@ -119,7 +122,6 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			$parents= $scopeStack->getParentNodes();
 			$if= $parents[ array_key_last($parents)];
 			If_::pushIfScope($if, $scopeStack);
-			//$scopeStack->getCurrentScope()->dump();
 		}
 		if ($node->hasAttribute('merge-true-assert-on-leave') && $node->hasAttribute('assertsTrue') ) {
 			$scopeStack->popScope();

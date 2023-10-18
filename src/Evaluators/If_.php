@@ -83,7 +83,6 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 		}
 		$scopeStack->pushScope($notCondScope);
 		$scopeStack->swapTopTwoScopes();
-		//$scopeStack->getCurrentScope()->dump();
 	}
 
 
