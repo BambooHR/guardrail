@@ -22,25 +22,20 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 		if ($node instanceof Node\Expr\Isset_) {
 			if (count($node->vars)==1) {
 				// isset() removes "null" from the true assertions.
-				$varName = NodePatterns::getVariableOrPropertyName($node->vars[0]);
+				$varName = $this->getVarName($node->vars[0]);
 				if ($varName) {
 					$scope = $scopeStack->getCurrentScope()->getScopeClone();
-					do {
-						$scope->setVarType($varName, TypeComparer::removeNullOption($scope->getVarType($varName)), $node->getLine());
-						$varName = substr($varName, 0, strrpos($varName, "->") ?: 0);
-					} while ($varName);
+					$scope->setVarType($varName, TypeComparer::removeNullOption($scope->getVarType($varName)), $node->getLine());
 					$node->setAttribute('assertsTrue', $scope);
 				}
 			}
 		} else if ($node instanceof Node\Expr\Empty_) {
 			// Empty doesn't mean much when true, but when !empty() it means that null is not an option.
-			$varName = NodePatterns::getVariableOrPropertyName($node->expr);
+			$varName = $this->getVarName($node->expr);
 			if ($varName) {
 				$scope = $scopeStack->getCurrentScope()->getScopeClone();
-				do {
-					$scope->setVarType($varName, TypeComparer::removeNullOption($scope->getVarType($varName)), $node->getLine());
-					$varName = substr($varName, 0, strrpos($varName, "->") ?: 0);
-				} while ($varName);
+
+				$scope->setVarType($varName, TypeComparer::removeNullOption($scope->getVarType($varName)), $node->getLine());
 				$node->setAttribute('assertsFalse', $scope);
 			}
 		} else if ($node instanceof Node\Expr\BooleanNot) {
@@ -52,7 +47,26 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 			if ($not->expr->hasAttribute('assertsFalse')) {
 				$not->setAttribute('assertsTrue', $not->expr->getAttribute('assertsFalse'));
 			}
+			if (
+				!$not->expr->hasAttribute('assertsTrue') &&
+				!$not->expr->hasAttribute('assertsFalse') &&
+				$not->expr instanceof Node\Expr\Variable
+			) {
+				$scope = $scopeStack->getCurrentScope()->getScopeClone();
+				$varName = $this->getVarName($node->expr);
+				$scope->setVarType($varName, TypeComparer::removeNullOption($scope->getVarType($varName)), $node->getLine());
+				$not->setAttribute('assertsFalse', $scope);
+			}
 		}
 		return TypeComparer::identifierFromName("bool");
+	}
+
+	private function getVarName(Node\Expr $var): ?string {
+		$varName = NodePatterns::getVariableOrPropertyName($var);
+		while (str_contains($varName, '->')) {
+			$varName = substr($varName, 0, strrpos($varName, "->") ?: 0);
+		}
+
+		return $varName;
 	}
 }

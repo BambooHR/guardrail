@@ -4,6 +4,7 @@ namespace BambooHR\Guardrail\Evaluators\Expression;
 
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
 use BambooHR\Guardrail\Evaluators\OnEnterEvaluatorInterface;
+use BambooHR\Guardrail\NodePatterns;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -84,7 +85,8 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 				}
 			}
 
-			$this->checkForCastedCall($call, $scopeStack);
+			$this->checkForVariableCastedCall($call, $scopeStack);
+			$this->checkForPropertyCastedCall($call, $scopeStack);
 
 			// Special case for "get_defined_vars()".  Mark everything used.
 			if (strcasecmp(strval($call->name), "get_defined_vars()") == 0) {
@@ -102,42 +104,44 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		return null;
 	}
 
-	function checkForCastedCall(Node\Expr\FuncCall $func, ScopeStack $scope) {
+	function checkForVariableCastedCall(Node\Expr\FuncCall $func, ScopeStack $scope) {
 		if ($func->name instanceof Name &&
 			count($func->args) == 1 &&
 			$func->args[0]->value instanceof Variable &&
 			is_string($func->args[0]->value->name)
 		) {
-			$name = strtolower($func->name);
 			$varName = $func->args[0]->value->name;
-			switch ($name) {
-				case 'is_long':
-				case 'is_integer':
-				case 'is_int':
-					$this->tagScopeAsType($func, $scope, $varName, "int");
-					break;
-
-				// Asserting "object" is an upcast which ends up not being very informational.
-				//case 'is_object': $this->tagScopeAsType($func, $scope, $varName, 'object'); break;
-
-				case 'is_float':
-				case 'is_double':
-				case 'is_real':
-					$this->tagScopeAsType($func, $scope, $varName, 'float');
-					break;
-
-				case 'is_string':
-					$this->tagScopeAsType($func, $scope, $varName, "string");
-					break;
-
-				case 'is_null':
-					$this->tagScopeAsType($func, $scope, $varName, "null");
-					break;
-				case 'is_array':
-					$this->tagScopeAsType($func, $scope, $varName, "array");
-					break;
+			$type = $this->getCastedCallType(strtolower($func->name));
+			if (!is_null($type) && !is_null($varName)) {
+				$this->tagScopeAsType($func, $scope, $varName, $type);
 			}
 		}
+	}
+
+	function checkForPropertyCastedCall(Node\Expr\FuncCall $func, ScopeStack $scope) {
+		if ($func->name instanceof Name &&
+			count($func->args) == 1 &&
+			$func->args[0]->value instanceof Node\Expr\PropertyFetch
+		) {
+			$varName = NodePatterns::getVariableOrPropertyName($func->args[0]->value);
+			$type = $this->getCastedCallType(strtolower($func->name));
+			if (!is_null($type) && !is_null($varName)) {
+				$this->tagScopeAsType($func, $scope, $varName,$type);
+			}
+		}
+	}
+
+	private function getCastedCallType(string $functionName): ?string {
+		return match ($functionName) {
+			'is_long', 'is_integer', 'is_int', => 'int',
+			'is_float', 'is_double', 'is_real' => 'float',
+			'is_string' => 'string',
+			'is_null' => 'null',
+			'is_array' => 'array',
+			default => null,
+			// Asserting "object" is an upcast which ends up not being very informational.
+			//case 'is_object': $this->tagScopeAsType($func, $scope, $varName, 'object'); break;
+		};
 	}
 
 	function tagScopeAsType(Node $node, ScopeStack $parent, string $name, string $type) {
@@ -193,13 +197,21 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 					$type = $scopeStack->getCurrentScope()->getVarType($node->var->name);
 				}
 			}
+			$types = [$type];
+			if ($type instanceof Node\UnionType) {
+				$types = [];
+				foreach ($type->types as $type) {
+					$types[] = $type;
+				}
+			}
+			foreach ($types as $type) {
+				if ($type instanceof Node\Name || $type instanceof Node\Identifier) {
+					$method = $table->getAbstractedMethod(strval($type), strval($node->name));
+					if ($method) {
+						$this->addReferenceParametersToLocalScope($scopeStack, $node->args, $method->getParameters());
 
-			if ($type instanceof Node\Name || $type instanceof Node\Identifier) {
-				$method = $table->getAbstractedMethod(strval($type), strval($node->name));
-				if ($method) {
-					$this->addReferenceParametersToLocalScope($scopeStack, $node->args, $method->getParameters());
-
-					return self::mapReturnType(strval($type), $method->getComplexReturnType());
+						return self::mapReturnType(strval($type), $method->getComplexReturnType());
+					}
 				}
 			}
 		}
@@ -217,6 +229,9 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 				$value = $arg->value;
 				if ($value instanceof Variable) {
 					if (gettype($value->name) == "string") {
+						if ($scope->getVarExists($value->name)) {
+							$scope->setVarUsed($value->name);
+						}
 						$value->setAttribute('assignment', true);
 						$scope->setVarWritten(strval($value->name), $value->getLine());
 						$scope->setVarType($value->name, null, $value->getLine());

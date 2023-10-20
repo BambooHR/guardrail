@@ -12,6 +12,7 @@ use PhpParser\Node;
 class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 {
 	const EXPRESSION_CLASSES = [
+		Expr\Array_::class,
 		Expr\ArrayDimFetch::class,
 		Expr\FunctionLike::class,
 		Expr\Assign::class,
@@ -120,7 +121,9 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 
 		if ($node->hasAttribute('merge-true-assert-on-leave-and') && $node->hasAttribute('assertsTrue')) {
-			$scopeStack->getCurrentScope()->merge($node->getAttribute('assertsTrue'));
+			$scopeStack->popScope();
+			$scopeStack->pushScope($node->getAttribute('assertsTrue'));
+//			$scopeStack->getCurrentScope()->merge($node->getAttribute('assertsTrue'));
 		}
 		if ($node->hasAttribute('merge-true-assert-on-leave-or')) {
 			$right = $scopeStack->popScope();

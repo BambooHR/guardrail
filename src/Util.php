@@ -438,6 +438,17 @@ class Util {
 		}
 		return $hasDefault;
 	}
+
+	/**
+	 * @return string[]
+	 */
+	static function getPhpGlobalNames(): array {
+		return [
+			"GLOBALS", "_GET", "_POST", "_COOKIE",
+			"_REQUEST", "_SERVER", "_SESSION", "_FILES",
+			"http_response_header"
+		];
+	}
 }
 
 

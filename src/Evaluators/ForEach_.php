@@ -23,15 +23,17 @@ class ForEach_ implements OnEnterEvaluatorInterface
 		if ($keyVar instanceof Variable) {
 			if (gettype($keyVar->name) == "string") {
 				$keyVar->setAttribute('assignment', true);
-				$scopeStack->setVarWritten(strval($keyVar->name), $keyVar->getLine());
-				$scopeStack->setVarType(strval($keyVar->name), null, $keyVar->getLine());
+				$scopeStack->setVarWritten($keyVar->name, $keyVar->getLine());
+				$scopeStack->setVarType($keyVar->name, null, $keyVar->getLine());
+				$scopeStack->setVarUsed($keyVar->name);
 			}
 		}
 		if ($valueVar instanceof Variable) {
 			if (gettype($valueVar->name) == "string") {
 				$valueVar->setAttribute('assignment', true);
-				$scopeStack->setVarWritten(strval($valueVar->name), $valueVar->getLine());
-				$scopeStack->setVarType(strval($valueVar->name), null, $valueVar->getLine());
+				$scopeStack->setVarWritten($valueVar->name, $valueVar->getLine());
+				$scopeStack->setVarType($valueVar->name, null, $valueVar->getLine());
+				$scopeStack->setVarUsed($valueVar->name);
 			}
 		} else {
 			if ($valueVar instanceof List_) {

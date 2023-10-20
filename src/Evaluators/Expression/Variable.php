@@ -18,6 +18,9 @@ class Variable implements ExpressionInterface {
 		$expr = $node;
 		$returnType = null;
 		if (is_string($expr->name)) {
+			if (!$expr->hasAttribute('assignment') && $scopeStack->getVarExists($expr->name)) {
+				$scopeStack->setVarUsed($expr->name);
+			}
 			$class = $scopeStack->getCurrentClass();
 			$varName = $expr->name;
 			if ($varName == "this" && $class) {

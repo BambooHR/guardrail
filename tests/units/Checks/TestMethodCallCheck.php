@@ -29,4 +29,8 @@ class TestMethodCallCheck extends TestSuiteSetup {
 	public function testMethodExistsDoesntBreak(): void {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
 	}
+
+	public function testKnownMethodAfterInferringType(): void {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
 }

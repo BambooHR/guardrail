@@ -98,4 +98,8 @@ class TestInterfaceCheck extends TestSuiteSetup {
 	public function testCovarianceOfReturnTypes() {
 		$this->assertEquals(2, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_RETURN));
 	}
+
+	public function testIterableIsRespectedForArrayType() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }

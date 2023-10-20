@@ -33,4 +33,13 @@ class TestComplexTypes extends TestSuiteSetup {
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_SIGNATURE_TYPE, ["basePath" => "/"]);
 		$this->assertEquals(0, $output->getErrorCount(), "Failed");
 	}
+
+	public function testUnionTypesCall() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SIGNATURE_TYPE), "Failed to validate union types" );
+	}
+
+	public function testTypeInferenceChangesWithNullCheck() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed change Type Inference to non null" );
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_NULL_DEREFERENCE), "Failed change Type Inference to non null" );
+	}
 }
