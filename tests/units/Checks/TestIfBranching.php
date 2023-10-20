@@ -200,7 +200,6 @@ ENDCODE;
 		$this->assertEquals(0, $output->getErrorCount(), "Failed expected no errors");
 	}
 
-	// TODO: This test is not matching the break that is happening in PG
 	public function testAndCallWithBooleanNot() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_NULL_DEREFERENCE));
 	}

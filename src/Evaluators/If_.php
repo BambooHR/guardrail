@@ -41,7 +41,6 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 		if ($node instanceof Node\Stmt\If_) {
 			if ($node->else == null &&
 				count($node->elseifs) == 0 &&
-				count($node->stmts) == 1 &&
 				( end($node->stmts) instanceof Node\Stmt\Return_ || end($node->stmts) instanceof Node\Stmt\Throw_ || end($node->stmts) instanceof Node\Stmt\Continue_)
 			) {
 				// Our condition was true and then never returned, that means that

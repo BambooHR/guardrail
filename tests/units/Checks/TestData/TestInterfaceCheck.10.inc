@@ -1,18 +1,9 @@
 <?php
 
-interface ParentClass {
-	public function method1(): int;
-}
-class ChildClass implements parentClass {
-	public function method1(): int {
-		return true;
-	}
-}
 
 class TestClass {
-	public function test(?iterable $iterable) {
-		return;
+	public function execute(?iterable $arr): void {
 	}
 }
 
-(new TestClass())->test([]);
+(new TestClass())->execute([]);

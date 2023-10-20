@@ -1,15 +1,22 @@
 <?php
 
-function validate($params): void {
-	$errors = [];
+class TestClass {
+	private ?array $testArray = null;
+	function method(): array {
+		if (is_null($this->testArray)) {
+			$this->testArray = $this->getInt();
+		}
+		return $this->testArray;
+	}
 
-		$errors[] = 'codeAcaPosition is required and must be a single character';
+	function method2(): array {
+		if (!$this->testArray) {
+			$this->testArray = $this->getInt();
+		}
+		return $this->testArray;
+	}
 
-		$errors[] = 'name is required and must be 20 characters or less';
-
-		$errors[] = 'shortDescription is required and must be 500 characters or less.';
-
-	if (!empty($errors)) {
-		throw new ValidationException('Validation failed', $errors);
+	function getInt(): array {
+		return [];
 	}
 }

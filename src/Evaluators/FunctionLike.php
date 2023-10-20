@@ -72,7 +72,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 					$type = $scopeStack->getVarType($variable->var->name);
 					$scopeStack->setVarUsed($variable->var->name);
 					if ($varExists && $variable->byRef) {
-						// This is kind of fun, it's passed by reference so we literally reference the exact same
+						// This is kind of fun, it's passed by reference, so we literally reference the exact same
 						// scope variable object in the new scope.  If it changes in either scope, it effects the others.
 						$scope->setVarReference($variable->var->name, $scopeStack->getVarObject($variable->var->name));
 					} else {

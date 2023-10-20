@@ -38,13 +38,8 @@ class TestComplexTypes extends TestSuiteSetup {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SIGNATURE_TYPE), "Failed to validate union types" );
 	}
 
-	//TODO THIS TEST IS NOT MATCHING THE FAILURE THAT WE ARE SEEING IN PG
-	public function testArrayAppendGetsRightType() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SIGNATURE_TYPE), "Failed to detect proper type of array" );
-	}
-
 	public function testTypeInferenceChangesWithNullCheck() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed change Type Inference to non null" );
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_NULL_DEREFERENCE), "Failed change Type Inference to non null" );
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed change Type Inference to non null" );
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_NULL_DEREFERENCE), "Failed change Type Inference to non null" );
 	}
 }

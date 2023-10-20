@@ -83,7 +83,7 @@ class TypeComparer
 			}
 		}
 
-		if ($targetName=="countable" && $valueName=="array") {
+		if (in_array($targetName, ["countable", "iterable"]) && $valueName=="array") {
 			return true;
 		}
 

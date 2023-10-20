@@ -28,5 +28,4 @@ class TestUnusedVars extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNUSED_VARIABLE), "");
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_AUTOLOAD_ERROR), "");
 	}
-
 }

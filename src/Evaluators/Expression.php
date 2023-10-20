@@ -86,8 +86,6 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 
 		$instance = $this->findInstance(get_class($node));
-		$type = get_class($instance);
-		echo "EVALUATING NODE FOR TYPE: $type" . PHP_EOL;
 		if ($instance instanceof OnEnterEvaluatorInterface) {
 			$instance->onEnter($node, $table, $scopeStack);
 		}

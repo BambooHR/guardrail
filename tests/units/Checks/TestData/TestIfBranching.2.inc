@@ -7,7 +7,8 @@ class TestObject {
 class TestClass {
 	private ?TestObject $testObj = null;
 
-	function method(?TestObject $testObj): string {
+	function method(): string {
+		$testObj = $this->getTestObj();
 		if (is_null($this->testObj)) {
 			return '';
 		}
@@ -17,4 +18,21 @@ class TestClass {
 		$this->testObj->test = $testObj->test;
 		return $this->testObj->test;
 	}
+
+	function getTestObj(): ?TestObject {
+		return null;
+	}
+
+	public function testThrowWithMultipleExcecutionsInIfNode(?User $user): string {
+		if (!$user) {
+			$userId = $contact['userId'];
+			throw new InvalidDataException('User Trax Login is null');
+		}
+
+		return $user->firstName;
+	}
+}
+
+class User {
+	public string $firstName;
 }

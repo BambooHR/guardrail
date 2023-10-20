@@ -30,7 +30,6 @@ abstract class TestSuiteSetup extends TestCase {
 	 */
 	public function runAnalyzerOnFile($fileName, $emit, array $additionalConfig = []) {
 		$output = $this->analyzeFileToOutput($fileName, $emit, $additionalConfig);
-//var_dump($output->renderResults());
 		return $output->getErrorCount();
 	}
 
