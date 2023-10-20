@@ -98,4 +98,9 @@ class TestInterfaceCheck extends TestSuiteSetup {
 	public function testCovarianceOfReturnTypes() {
 		$this->assertEquals(2, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_RETURN));
 	}
+
+	//TODO: this is not matching the behavior that PG is showing...
+	public function testUnionTypeWithChildTypePassed() {
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_RETURN));
+	}
 }

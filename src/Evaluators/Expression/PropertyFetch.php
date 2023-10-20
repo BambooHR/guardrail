@@ -100,7 +100,11 @@ class PropertyFetch implements ExpressionInterface
 		// assertions: ie: if($foo instanceof) { }
 
 		// Figure out what we know about this particular type
-		$scopeName = TypeComparer::getChainedPropertyFetchName($expr->var);
+		$node = $expr->var;
+		if (isset($expr->var->name) && $expr->var->name == "this") {
+			$node = $expr;
+		}
+		$scopeName = TypeComparer::getChainedPropertyFetchName($node);
 		$scope = $scopeStack->getCurrentScope();
 		if ($scopeName !== null && $scope->getVarExists($scopeName)) {
 			return $scope->getVarType($scopeName);

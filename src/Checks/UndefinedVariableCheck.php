@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
@@ -43,7 +44,7 @@ class UndefinedVariableCheck extends BaseCheck {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_VARIABLE, "Variable variable detected");
 			} else if (gettype($node->name) == 'string' && $scope && !$scope->isGlobal()) {
 				$name = $node->name;
-				if ($name != "GLOBALS" && $name != "_GET" && $name != "_POST" && $name != "_COOKIE" && $name != "_REQUEST" && $name != "this" && $name != "_SERVER" && $name != "_SESSION" && $name != "_FILES" && $name != "http_response_header") {
+				if (!in_array($name, ["this", ...Util::getPhpGlobalNames()])) {
 					if (!$scope->getVarExists($name) && !$node->hasAttribute('assignment')) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Undefined variable: $name");
 					}

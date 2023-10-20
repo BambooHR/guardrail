@@ -148,13 +148,15 @@ class TestUndefinedVariableCheck extends TestSuiteSetup {
 		$func = <<<'ENDCODE'
 			function testAssignList($one) {
 				$test = '123';
-				[$min, $max, $payType, $currencyCode] = $one[0];
-				list($listOne, $listTwo, $listThree) = $this->loadList($one);
+				[,, $payType, $currencyCode] = $one[0];
+				list($listOne, $listTwo, $listThree) = $this->loadList($test);
 			}
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
 		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNUSED_VARIABLE, ["basePath" => "/"]);
+		$this->assertEquals(5, $output->getErrorCount(), "Failed");
 	}
 
 	public function testUndefinedVariableFile2() {
