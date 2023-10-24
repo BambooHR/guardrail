@@ -20,7 +20,7 @@ jobs:
         run: cd tests; ../vendor/bin/phpunit; cd ..
 
       - name: Static Index
-        run: php $TRAVIS_BUILD_DIR/src/bin/guardrail.php -i -s self.json
+        run: php src/bin/guardrail.php -i -s self.json
 
       - name: Static Analyze
-        run: php $TRAVIS_BUILD_DIR/src/bin/guardrail.php -a -s self.json
+        run: php src/bin/guardrail.php -a -s self.json

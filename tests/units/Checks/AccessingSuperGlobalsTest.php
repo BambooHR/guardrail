@@ -18,7 +18,7 @@ class AccessingSuperGlobalsTest extends TestSuiteSetup {
 	 * @rapid-unit Checks:AccessingSuperGlobals:Calling the $GLOBALS array emits an error
 	 */
 	public function testRunAccessingSuperGlobalGlobalExpressions() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
 	}
 
 	/**
