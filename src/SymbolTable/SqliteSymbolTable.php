@@ -78,7 +78,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function init() {
 		$this->con->exec('
-			create table symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data blob not null );
+			create table IF NOT EXISTS symbol_table( name text not null, type integer not null, file text not null, has_trait int not null, data blob not null );
 		');
 
 	}
@@ -127,7 +127,7 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	function indexTable($processCount) {
-		$this->con->exec('create index on symbol_table(type,name)');
+		$this->con->exec('CREATE INDEX symbol_type_name_index ON symbol_table (type,name)');
 		/* @Todo: Check for duplicates
 		$this->con->exec(
 			'SELECT type,name,count(*) c, group_concat(file)
