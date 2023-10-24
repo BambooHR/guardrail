@@ -50,4 +50,22 @@ class TestUnreachableCodeCheck extends TestSuiteSetup {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
 	}
 
+	public function testThatNonEmptyArrayCanBeUsedAfterEmptyCheck() {
+		$func = <<<'ENDCODE'
+			class testClass {
+				public function method() {
+					$array = [];
+					if (empty($array)) {
+						return;
+					}
+					foreach ($array as $item) {
+						$one = $item;
+					}
+				}
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Failed");
+	}
 }

@@ -146,7 +146,14 @@ class AnalyzingPhase {
 	 * @return bool
 	 */
 	static public function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
-		if ($node instanceof Namespace_) {
+		if ($node instanceof Node\Stmt\Declare_ && $node->stmts!==null) {
+			foreach($node->stmts as $child) {
+				if (!self::checkForSafeautoloadNode($file, $child, $output)) {
+					return false;
+				}
+			}
+			return true;
+		} else if ($node instanceof Namespace_) {
 			foreach ($node->stmts as $child) {
 				if (!self::checkForSafeAutoloadNode($file, $child, $output)) {
 					return false;
@@ -155,13 +162,16 @@ class AnalyzingPhase {
 			return true;
 		} else if (
 			$node instanceof Nop ||
-			$node instanceof Include_ ||
 			$node instanceof Class_ ||
 			$node instanceof Interface_ ||
-			$node instanceof  Trait_ ||
+			$node instanceof Trait_ ||
 			$node instanceof Use_ ||
-			$node instanceof Comment
+			$node instanceof Node\Stmt\GroupUse ||
+			$node instanceof Comment ||
+			$node instanceof Node\Stmt\Declare_
 		) {
+			return true;
+		} elseif ($node instanceof Node\Stmt\Expression && $node->expr instanceof Include_) {
 			return true;
 		} else {
 			$output->emitError(__CLASS__, $file, $node->getLine(), BaseCheck::TYPE_AUTOLOAD_ERROR, "File is not safe to autoload.  It contains code other than a class:" . $node->getType());
@@ -175,35 +185,9 @@ class AnalyzingPhase {
 	 * @return int
 	 */
 	function analyzeFile($file, Config $config) {
-		try {
-			$name = Util::removeInitialPath($config->getBasePath(), $file);
-
-			$fileData = file_get_contents($file);
-			$stmts = $this->parser->parse($fileData);
-			if ($stmts) {
-				// We could do this with a node visitor, but it would be more complex and add unnecessary cycles when
-				// it is so easy to inspect at the top level of the file.
-				foreach ($stmts as $stmt) {
-					if ( !self::checkForSafeAutoloadNode($file, $stmt, $this->output)) {
-						break;
-					}
-				}
-
-				$this->analyzer->setFile($name);
-				foreach ($this->traversers as $traverser) {
-					$traverser->traverse($stmts);
-
-				}
-				return strlen($fileData);
-			}
-		} catch (Error $exception) {
-			$msg = preg_replace("/on line [0-9]+$/", "", $exception->getMessage());
-			$this->output->emitError( __CLASS__, $file, $exception->getStartLine(), ErrorConstants::TYPE_PARSE_ERROR, $msg );
-		} catch (UnknownTraitException $exception) {
-			$this->output->emitError( __CLASS__, $file, 0, ErrorConstants::TYPE_UNKNOWN_CLASS, $exception->getMessage() );
-		}
-
-		return 0;
+		$name = Util::removeInitialPath($config->getBasePath(), $file);
+		$fileData = file_get_contents($file);
+		return $this->analyzeString($name,$fileData);
 	}
 
 	/**
@@ -215,12 +199,12 @@ class AnalyzingPhase {
 	 *
 	 * @return int
 	 */
-	public function phase2(Config $config, OutputInterface $output, $toProcess) {
+	public function phase2(Config $config, OutputInterface $output, $toProcess, $totalBytes) {
 		$processingCount = 0;
 
 		$pm = new ProcessManager();
 
-		$start = microtime(true);
+		$start = time();
 
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
@@ -237,8 +221,8 @@ class AnalyzingPhase {
 		$bytes = 0;
 		$this->output->outputExtraVerbose("Parent looking for messages from the children\n");
 		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $start, $pm) {
-				$processComplete = $this->processChildMessage($socket, $msg, $processingCount, $fileNumber, $bytes, $output, $toProcess, $start, $pm);
+			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $totalBytes, $start, $pm) {
+				$processComplete = $this->processChildMessage($socket, $msg, $processingCount, $fileNumber, $bytes, $output, $toProcess, $totalBytes, $start, $pm);
 				if ($processComplete) {
 					return ProcessManager::CLOSE_CONNECTION;
 				}
@@ -247,9 +231,9 @@ class AnalyzingPhase {
 		return ($processDied || $output->getErrorCount() > 0 ? 1 : 0);
 	}
 
-	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, OutputInterface $output, $toProcess, $start, ProcessManager $pm) {
+	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, OutputInterface $output, $toProcess, $totalBytes, $start, ProcessManager $pm) {
 		$childPid = $pm->getPidForSocket($socket);
-		$output->outputExtraVerbose("parent received from $childPid: $msg\n");
+		//$output->outputExtraVerbose("parent received from $childPid: $msg\n");
 		if ($msg === false) {
 			echo "Error: Unexpected error reading from socket\n";
 			return true;
@@ -279,7 +263,7 @@ class AnalyzingPhase {
 				break;
 			case 'ANALYZED':
 				list($size, $name) = explode(' ', $details, 2);
-				$output->output(".", sprintf("%d - %s", ++$processingCount, $name));
+				// $output->output(".", sprintf("%d - %s", ++$processingCount, $name));
 				if ($fileNumber < count($toProcess)) {
 					$bytes += intval($size);
 					$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
@@ -287,11 +271,16 @@ class AnalyzingPhase {
 				} else {
 					$this->socket_write_all($socket, "TIMINGS\n");
 				}
-				if ($fileNumber % 50 == 0) {
-					$output->outputVerbose(
-						sprintf("Processing %.1f KB/second\n", $bytes / 1024 / (microtime(true) - $start))
-					);
-				}
+
+				$kbs=intdiv( intdiv($bytes, 1024), (time()-$start) ?: 1);
+				["total"=>$errors, "displayed"=>$displayCount] =  $output->getErrorCounts();
+				printf("%d/%d, %d/%d MB (%d%%), %d KB/s %d errors, %d suppressed\r",
+					$fileNumber, count($toProcess),
+					intdiv($bytes,1024*1024), intdiv($totalBytes,1024*1024),
+					intdiv(100*$bytes, $totalBytes),
+					$kbs,
+					$displayCount, $errors-$displayCount
+				);
 				break;
 			case 'TIMINGS':
 				$this->timingResults[] = json_decode(base64_decode($details), true);
@@ -435,6 +424,40 @@ class AnalyzingPhase {
 		$output->outputVerbose("Sizes: " . implode(", ", $sizes) . "\n");
 
 		$output->outputVerbose("\nPartition " . ($partitionNumber + 1) . " analyzing " . count($partialList) . " files (" . $sizes[$partitionNumber] . " bytes)\n");
-		return $this->phase2($config, $output, $partialList);
+		return $this->phase2($config, $output, $partialList, $sizes[$partitionNumber]);
+	}
+
+	/**
+	 * @param bool|string $fileData
+	 * @param string $file
+	 * @param bool|string $name
+	 * @return void
+	 */
+	public function analyzeString(string $name, string $fileData): int
+	{
+		try {
+			$stmts = $this->parser->parse($fileData);
+			if ($stmts) {
+				// We could do this with a node visitor, but it would be more complex and add unnecessary cycles when
+				// it is so easy to inspect at the top level of the file.
+				foreach ($stmts as $stmt) {
+					if (!self::checkForSafeAutoloadNode($name, $stmt, $this->output)) {
+						break;
+					}
+				}
+
+				$this->analyzer->setFile($name);
+				foreach ($this->traversers as $traverser) {
+					$traverser->traverse($stmts);
+				}
+				return strlen($fileData);
+			}
+		} catch (Error $exception) {
+			$msg = preg_replace("/on line [0-9]+$/", "", $exception->getMessage());
+			$this->output->emitError(__CLASS__, $name, $exception->getStartLine(), ErrorConstants::TYPE_PARSE_ERROR, $msg);
+		} catch (UnknownTraitException $exception) {
+			$this->output->emitError(__CLASS__, $name, 0, ErrorConstants::TYPE_UNKNOWN_CLASS, $exception->getMessage());
+		}
+		return 0;
 	}
 }

@@ -290,7 +290,7 @@ class Config {
 					break;
 
 				case '--format':
-					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["xunit", "text", "counts"])) {
+					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["csv","xunit", "text", "counts"])) {
 						throw new InvalidConfigException;
 					}
 					$this->format = $argv[$argCount];

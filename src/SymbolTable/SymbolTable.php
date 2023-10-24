@@ -104,6 +104,9 @@ abstract class SymbolTable {
 				}
 			}
 			$child = $child->getParentClassName();
+			if ($child=="" && strcasecmp($potentialParent, "object") == 0) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -370,7 +373,7 @@ abstract class SymbolTable {
 	 */
 	public function ignoreType($name) {
 		$name = strtolower($name);
-		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator' || $name == 'object');
+		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator' || $name == 'object' || $name=='mixed' || $name=='null');
 	}
 
 	/**
@@ -392,13 +395,13 @@ abstract class SymbolTable {
 	/**
 	 * addClass
 	 *
-	 * @param string $name  The name
-	 * @param Class_ $class Instance of ClassAbstraction
-	 * @param string $file  The file
+	 * @param string    $name  The name
+	 * @param ClassLike $class Instance of ClassAbstraction
+	 * @param string    $file  The file
 	 *
 	 * @return mixed
 	 */
-	abstract function addClass($name, Class_ $class, $file);
+	abstract function addClass($name, ClassLike $class, $file);
 
 	/**
 	 * addInterface

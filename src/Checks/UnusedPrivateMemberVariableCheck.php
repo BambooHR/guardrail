@@ -1,6 +1,5 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
-use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\NodeVisitors\PropertyUsageVisitor;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
@@ -10,7 +9,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitorAbstract;
 
 /**
  * Class UnusedPrivateMemberVariableCheck

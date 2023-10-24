@@ -6,11 +6,11 @@
  */
 
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use ReflectionException;
 use ReflectionExtension;
 

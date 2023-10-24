@@ -45,6 +45,9 @@ class XUnitOutput implements OutputInterface {
 	 */
 	private $counts = [];
 
+	protected int $totalErrors = 0;
+	protected int $displayedErrors = 0;
+
 	/**
 	 * @var array
 	 */
@@ -82,6 +85,10 @@ class XUnitOutput implements OutputInterface {
 
 	}
 
+	private function escapeText(string $text):string {
+		return str_replace(["&",'"'], ["&nbsp;", "&#34;"], $text );
+	}
+
 	/**
 	 * incTests
 	 *
@@ -89,6 +96,10 @@ class XUnitOutput implements OutputInterface {
 	 */
 	public function incTests() {
 		//$this->suite->addTestCase();
+	}
+
+	public function getErrorCounts() {
+		return ["total"=>$this->totalErrors, "displayed"=>$this->displayedErrors];
 	}
 
 	/**
@@ -206,9 +217,12 @@ class XUnitOutput implements OutputInterface {
 	 */
 	public function emitError($className, $fileName, $lineNumber, $name, $message="") {
 
+		++$this->totalErrors;
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
 			return;
 		}
+		++$this->displayedErrors;
+
 		$suite = $this->getClass($className);
 		if (!isset($this->files[$className][$fileName])) {
 			$case = $suite->addTestCase();
@@ -223,9 +237,9 @@ class XUnitOutput implements OutputInterface {
 		}
 
 		$message .= " on line " . $lineNumber;
-		$case->addFailure($name . ":" . $message, "error");
+		$case->addFailure( $this->escapeText($name . ":" . $message), "error");
 		if ($this->emitErrors) {
-			echo "E";
+			// echo "E";
 		}
 		if (!isset($this->counts[$name])) {
 			$this->counts[$name] = 1;
@@ -271,7 +285,7 @@ class XUnitOutput implements OutputInterface {
 	 */
 	public function outputVerbose($string) {
 		if ($this->config->getOutputLevel() >= 1) {
-			echo $string;
+			echo "\n".$string."\n";
 			flush();
 		}
 	}

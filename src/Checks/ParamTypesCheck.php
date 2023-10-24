@@ -6,12 +6,13 @@
  */
 
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\UnionType;
@@ -40,28 +41,28 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	protected function isAllowed($name, ClassLike $inside=null) {
-		$nameLower = strtolower($name);
-		if ($nameLower == "self" && $inside instanceof Class_) {
-			return true;
-		}
-		if ($nameLower != "" && !Util::isLegalNonObject($name)) {
-			$class = $this->symbolTable->isDefinedClass($name);
-			if (!$class && !$this->symbolTable->ignoreType($name)) {
-				return false;
+	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name , ClassLike $inside=null) {
+		$return = true;
+		TypeComparer::forEachAnyEveryType($name, function($name2) use ($inside, &$return) {
+			if($name2===null) {
+				return;
 			}
-		}
-		return true;
+			$nameLower = strtolower($name2);
+			if ($nameLower == "self" && $inside instanceof Class_) {
+				return;
+			}
+			if ($nameLower != "" && !Util::isLegalNonObject($nameLower)) {
+				$class = $this->symbolTable->isDefinedClass($nameLower);
+				if (!$class && !$this->symbolTable->ignoreType($nameLower)) {
+					$return=false;
+					return;
+				}
+			}
+			return;
+		});
+		return $return;
 	}
 
-	/**
-	 * @param Node\NullableType|Node\Name $type The name of the parameter
-	 * @return string
-	 */
-	private function getNullableTypeName($type) {
-		$type = $type instanceof Node\NullableType ? $type->type : $type;
-		return $type instanceof UnionType ? 'mixed' : strval($type);
-	}
 
 	/**
 	 * run
@@ -91,16 +92,18 @@ class ParamTypesCheck extends BaseCheck {
 			foreach ($node->getParams() as $index => $param) {
 
 				if ($param->type) {
-					$name = $this->getNullableTypeName($param->type);
+					$name = $param->type;
 					if (!$this->isAllowed($name, $inside)) {
+						$name=TypeComparer::typeToString($name);
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in parameter $index of $displayName");
 					}
 				}
 			}
 
 			if ($node->getReturnType()) {
-				$returnType = $this->getNullableTypeName( $node->getReturnType() );
+				$returnType = $node->getReturnType();
 				if (!$this->isAllowed($returnType, $inside)) {
+					$returnType=TypeComparer::typeToString($returnType);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 				}
 			}

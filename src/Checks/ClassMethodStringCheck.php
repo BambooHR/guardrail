@@ -2,14 +2,13 @@
 
 namespace BambooHR\Guardrail\Checks;
 
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\Util;
+use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Name;
-use BambooHR\Guardrail\Util;
-
-
-use BambooHR\Guardrail\Scope;
-use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
+
 
 class ClassMethodStringCheck extends BaseCheck {
 	/**

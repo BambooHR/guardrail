@@ -6,15 +6,14 @@
  */
 
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 
 /**
  * Class StaticCallCheck
@@ -30,7 +29,6 @@ class StaticCallCheck extends CallCheck {
 	 */
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
-		$this->inferenceEngine = new TypeInferrer($symbolTable);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
 	}
 
@@ -86,9 +84,9 @@ class StaticCallCheck extends CallCheck {
 		} else {
 			if (! $method->isStatic()) {
 				if (! $scope->isStatic() && $possibleDynamic) {
-					//	if ($node->name != "__construct" && $node->class != "parent") {
-					// echo "Static call in $fileName " . $node->getLine() . "\n";
-					//	}
+					//if ($node->name != "__construct" && $node->class != "parent") {
+					//	echo "Static call in $fileName " . $node->getLine() . "\n";
+					//}
 				} else {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to call non-static method: $name::" . $node->name . " statically");
 				}

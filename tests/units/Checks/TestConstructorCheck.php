@@ -19,6 +19,4 @@ class TestConstructorCheck extends TestSuiteSetup {
 	public function testCheckMissingCallToParentConstructor() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_MISSING_CONSTRUCT));
 	}
-
-
 }

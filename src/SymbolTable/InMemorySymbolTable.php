@@ -66,7 +66,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 *
 	 * @return void
 	 */
-	public function addClass($name, Class_ $class, $file) {
+	public function addClass($name, ClassLike $class, $file) {
 		$this->classes[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 

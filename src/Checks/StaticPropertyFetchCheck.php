@@ -6,13 +6,12 @@
  */
 
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 
 /**
  * Class StaticPropertyFetchCheck
@@ -22,11 +21,6 @@ use BambooHR\Guardrail\Util;
 class StaticPropertyFetchCheck extends BaseCheck {
 
 	/**
-	 * @var TypeInferrer
-	 */
-	private $typeInferer;
-
-	/**
 	 * StaticPropertyFetchCheck constructor.
 	 *
 	 * @param SymbolTable     $symbolTable Instance of SymbolTable
@@ -34,7 +28,6 @@ class StaticPropertyFetchCheck extends BaseCheck {
 	 */
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
-		$this->typeInferer = new TypeInferrer($symbolTable);
 	}
 
 	/**

@@ -1,16 +1,12 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
-use BambooHR\Guardrail\Checks\BaseCheck;
-use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\TypeInferrer;
-use BambooHR\Guardrail\Util;
-use PhpParser\Node\Stmt\ClassLike;
+use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\UnionType;
+use PhpParser\Node\Stmt\ClassLike;
 
 abstract class CallCheck extends BaseCheck {
 	/**
@@ -18,10 +14,6 @@ abstract class CallCheck extends BaseCheck {
 	 */
 	protected $callableCheck;
 
-	/**
-	 * @var TypeInferrer
-	 */
-	protected $inferenceEngine;
 
 	/**
 	 * @param string                  $fileName
@@ -56,6 +48,8 @@ abstract class CallCheck extends BaseCheck {
 						$covered[$index2]=1;
 						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $params[$index2]);
 					}
+				} else {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Unable to find named parameter ".$arg->name->name);
 				}
 			}
 		}
@@ -92,83 +86,48 @@ abstract class CallCheck extends BaseCheck {
 	 */
 	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, Node\Arg $arg, FunctionLikeParameter $param) {
 		$variableName = $param->getName();
-		list($type, $attributes) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
+		$type = $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		if ($arg->unpack) {
-			// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
-			$isSplatable = (
-				substr($type, -2) == "[]" ||
-				$type == "array" ||
-				$type == Scope::ARRAY_TYPE ||
-				$type == Scope::UNDEFINED ||
-				$type == Scope::MIXED_TYPE ||
-				$type == "" ||
-				$this->symbolTable->isParentClassOrInterface(\Traversable::class, $type)
-			);
-			if (!$isSplatable) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array or traversable object.  Passing " . Scope::nameFromConst($type) . " from \$$variableName.");
+			$tc=new TypeComparer($this->symbolTable);
+			if (!$tc->isTraversable($type)) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array or traversable object.  Passing " . TypeComparer::typeToString($type) . " from \$$variableName.");
 			}
 			return;// After we unpack an arg, we can't check the remaining parameters.
 		} else {
-			if ($param->getType() != "") {
+			$expectedType = $param->getType();
+			if($expectedType && $param->isNullable()) {
+				$expectedType = TypeComparer::getUniqueTypes($expectedType, TypeComparer::identifierFromName("null"));
+			}
+			if ($expectedType) {
 				// Reference mismatch
 				if ($param->isReference() &&
 					!(
 						$arg->value instanceof Variable ||
 						$arg->value instanceof Expr\ArrayDimFetch ||
-						$arg->value instanceof Expr\PropertyFetch
+						$arg->value instanceof Expr\PropertyFetch ||
+						$arg->value instanceof Expr\StaticPropertyFetch
 					)
 				) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name() parameter \$$variableName must be a reference type not an expression.");
 				}
 
 				// Type mismatch
-				$expectedType = $param->getType();
-				if ($expectedType instanceof UnionType) {
-					$expectedTypes = $expectedType->types;
-				} else {
-					$expectedTypes = [$expectedType];
-				}
-				$this->verifyParamType($fileName, $node, $name, $variableName, $arg, $inside, $scope, $type, $expectedTypes);
+				$checker = new TypeComparer($this->symbolTable);
 
-				// Nulls mismatch
-				if (!$param->isNullable()) {
-					if ($type == Scope::NULL_TYPE) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to $name parameter \$$variableName that does not accept nulls");
-					} /*else if ($maybeNull == Scope::NULL_POSSIBLE) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to $name parameter \$$variableName that does not accept nulls");
-					}*/
+				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope)) {
+					$nullOnlyError = false;
+					$typeStr=TypeComparer::typeToString($type);
+					if ($type instanceof Node\UnionType || $type instanceof Node\NullableType || TypeComparer::isNamedIdentifier($type,"null")) {
+						$typeWithOutNull = TypeComparer::removeNullOption($type);
+						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope);
+					}
+					$this->emitError($fileName, $node,
+						$nullOnlyError ? ErrorConstants::TYPE_SIGNATURE_TYPE_NULL : ErrorConstants::TYPE_SIGNATURE_TYPE,
+						"Incompatible type passed to $name parameter \$$variableName ".
+						"expected ".TypeComparer::typeToString($expectedType). ", passed $typeStr ".($scope->isStrict() ? "STRICT" : "")
+					);
 				}
 			}
 		}
-	}
-
-	protected function verifyParamType($fileName, $node, $name, $variableName, $arg, $inside, $scope, $type, $expectedTypes) {
-		$passedAScalar = in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]);
-		$passedTypeIsKnown = $type != '';
-		if ($passedAScalar || !$passedTypeIsKnown) {
-			return;
-		}
-		foreach ($expectedTypes as $expectedType) {
-			//If the expected type is a string and the given argument is an object with a __toString method, the argument is valid.
-			if (strcasecmp($expectedType, 'string') == 0 && Util::findAbstractedMethod($type, '__toString', $this->symbolTable)) {
-				return;
-			}
-			if (strcasecmp($expectedType, 'countable') == 0 && ($type == Scope::ARRAY_TYPE || substr($type, -2) == "[]")) {
-				return;
-			}
-			if ($this->symbolTable->isParentClassOrInterface($expectedType, $type)) {
-				return;
-			}
-			if ((strcasecmp($expectedType, "callable") == 0 && strcasecmp($type, "closure") == 0) ||
-				(strcasecmp($expectedType, "callable") == 0 && $type == Scope::ARRAY_TYPE) ||
-				(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))
-			) {
-				if (strcasecmp($expectedType, "callable") == 0) {
-					$this->callableCheck->run($fileName, $arg->value, $inside, $scope);
-				}
-				return;
-			}
-		}
-		$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");
 	}
 }

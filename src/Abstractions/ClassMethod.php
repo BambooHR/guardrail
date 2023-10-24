@@ -32,13 +32,8 @@ class ClassMethod implements MethodInterface {
 		$this->method = $method;
 	}
 
-	/**
-	 * getReturnType
-	 *
-	 * @return string
-	 */
-	public function getReturnType() {
-		return $this->method->returnType instanceof NullableType ? strval($this->method->returnType->type) : strval($this->method->returnType);
+	public function getComplexReturnType() {
+		return $this->method->returnType;
 	}
 
 	/**
@@ -94,9 +89,8 @@ class ClassMethod implements MethodInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
-			$type = Util::complexTypeToString($param->type);
 			$ret[] = new FunctionLikeParameter(
-				$type,
+				$param->type,
 				$param->var->name,
 				$param->default != null || $param->variadic,
 				$param->byRef,

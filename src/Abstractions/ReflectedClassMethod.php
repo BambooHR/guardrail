@@ -1,7 +1,9 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use BambooHR\Guardrail\Util;
+
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
@@ -53,19 +55,11 @@ class ReflectedClassMethod implements MethodInterface {
 		return true;
 	}
 
-	/**
-	 * getReturnType
-	 * @guardrail-ignore Standard.Unknown.Class.Method
-	 * @return string
-	 */
-	public function getReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
-			$type = $this->refl->getReturnType();
-			if ($type) {
-				return $type->getName();
-			}
+	public function getComplexReturnType() {
+		if ( method_exists($this->refl,"getReturnType")) {
+			return Util::reflectionTypeToPhpParserType($this->refl->getReturnType());
 		}
-		return "";
+		return null;
 	}
 
 	/**
@@ -133,7 +127,7 @@ class ReflectedClassMethod implements MethodInterface {
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
 		foreach ($params as $param) {
-			$type = $param->getClass() ? $param->getClass()->name : '';
+			$type = Util::reflectionTypeToPhpParserType( $param->getType() );
 			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $param->isPassedByReference(), method_exists($param, "allowsNull") ? $param->allowsNull() : false);
 		}
 		return $ret;

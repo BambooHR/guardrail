@@ -1,20 +1,18 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
 use BambooHR\Guardrail\Abstractions\Property;
-use BambooHR\Guardrail\Attributes;
-use BambooHR\Guardrail\Output\OutputInterface;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\NodePatterns;
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 
 /**
  * Class PropertyFetch
@@ -24,28 +22,12 @@ use BambooHR\Guardrail\Util;
 class PropertyFetchCheck extends BaseCheck {
 
 	/**
-	 * @var TypeInferrer
-	 */
-	private $typeInferer;
-
-	/**
-	 * PropertyFetch constructor.
-	 *
-	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
-	 * @param OutputInterface $doc         Instance of the OutputInterface
-	 */
-	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
-		parent::__construct($symbolTable, $doc);
-		$this->typeInferer = new TypeInferrer($symbolTable);
-	}
-
-	/**
 	 * getCheckNodeTypes
 	 *
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [ PropertyFetch::class];
+		return [ PropertyFetch::class, Node\Expr\NullsafePropertyFetch::class ];
 	}
 
 	/**
@@ -59,32 +41,40 @@ class PropertyFetchCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-		if ($node instanceof PropertyFetch) {
-			list($type, $attributes) = $this->typeInferer->inferType($inside, $node->var, $scope);
-			if ($type && $type[0] != '!' && !$this->symbolTable->ignoreType($type)) {
-				if ($attributes & Attributes::NULL_POSSIBLE) {
+		if ($node instanceof PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) {
+
+			if (!$node->name instanceof Node\Identifier) {
+				// Variable property name.  Yuck!
+				return;
+			}
+
+			$type = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+
+			if (!$node instanceof Node\Expr\NullsafePropertyFetch) {
+				if (TypeComparer::ifAnyTypeIsNull($type) && !NodePatterns::parentIgnoresNulls($scope->getParentNodes(), $node)) {
 					$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $' . $node->var->name : '';
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
 				}
-
-				if (!$node->name instanceof Node\Identifier) {
-					// Variable property name.  Yuck!
-					return;
-				}
-
-				if ($type == "SimpleXMLElement") {
-					// SimpleXMLElement has arbitrary properties based on the XML that was parsed.
-					return;
-				}
-
-				list($property,$declaredIn) = Util::findAbstractedProperty($type, strval($node->name), $this->symbolTable);
-
-				if (!$property) {
-					$this->handleUndeclaredProperty($fileName, $node, $type);
-				} else {
-					$this->handleDeclaredProperty($fileName, $node, $type, $inside, $property, $declaredIn);
-				}
 			}
+
+			TypeComparer::forEachType($type, function($type) use ($node, $fileName, $inside) {
+				if ($type instanceof Node\Identifier || $type instanceof Node\Name) {
+					$typeStr=strval($type);
+					if ($typeStr && !$this->symbolTable->ignoreType($typeStr)) {
+						if ($this->symbolTable->isParentClassOrInterface("SimpleXMLElement",$typeStr )) {
+							// SimpleXMLElement has arbitrary properties based on the XML that was parsed.
+							return;
+						}
+						list($property, $declaredIn) = Util::findAbstractedProperty($typeStr, strval($node->name), $this->symbolTable);
+
+						if (!$property) {
+							$this->handleUndeclaredProperty($fileName, $node, $typeStr);
+						} else {
+							$this->handleDeclaredProperty($fileName, $node, $typeStr, $inside, $property, $declaredIn);
+						}
+					}
+				}
+			});
 		}
 	}
 
@@ -122,13 +112,16 @@ class PropertyFetchCheck extends BaseCheck {
 	 */
 	private function handleDeclaredProperty($fileName, Node $node, $type, ClassLike $inside = null, Property $property, $declaredIn) {
 		$access = $property->getAccess();
+
 		if ($access == "protected" || $access == "private") {
 			// It's ok to access a protected or private property if there is a __get method.
 			$hasGet = Util::findAbstractedMethod($type, "__get", $this->symbolTable);
 			if (!$hasGet) {
 				if ($access == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($declaredIn, $inside->namespacedName) != 0)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property " . $node->name);
+
 				} else if ($access == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($declaredIn, $inside->namespacedName))) {
+
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property " . $node->name);
 				}
 			}

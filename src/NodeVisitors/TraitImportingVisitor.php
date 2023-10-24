@@ -23,10 +23,6 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 	/** @var TraitImporter */
 	private $importer;
 
-	/**
-	 * @var string
-	 */
-	private $file;
 
 	/**
 	 * @var array
@@ -42,16 +38,6 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 		$this->importer  = new TraitImporter($index);
 	}
 
-	/**
-	 * setFile
-	 *
-	 * @param string $name The filename
-	 *
-	 * @return void
-	 */
-	public function setFile($name) {
-		$this->file = $name;
-	}
 
 	/**
 	 * enterNode
@@ -61,7 +47,7 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function enterNode(Node $node) {
-		if ($node instanceof Class_ || $node instanceof Trait_) {
+		if ($node instanceof Class_ || $node instanceof Trait_ || $node instanceof Node\Stmt\Enum_) {
 			array_push($this->classStack, $node);
 		}
 		return null;
@@ -75,7 +61,7 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 	 * @return array|null
 	 */
 	public function leaveNode(Node $node) {
-		if ($node instanceof Class_ || $node instanceof Trait_) {
+		if ($node instanceof Class_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		} else if ($node instanceof Node\Stmt\TraitUse) {
 

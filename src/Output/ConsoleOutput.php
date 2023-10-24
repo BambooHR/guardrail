@@ -18,9 +18,11 @@ class ConsoleOutput extends XUnitOutput {
 	 * @return void
 	 */
 	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+		$this->totalErrors++;
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
 			return;
 		}
+		$this->displayedErrors++;
 		if ($this->emitErrors) {
 			echo "E";
 		}
@@ -39,6 +41,9 @@ class ConsoleOutput extends XUnitOutput {
 				return $cmpa['line'] > $cmpb['line'] ? 1 : ($cmpa['line'] == $cmpb['line'] ? 0 : -1);
 			});
 			foreach ($errors as $error) {
+				if (!is_int($error['line'])) {
+					var_dump($error);
+				}
 				printf("%6d | %s\n", $error['line'], $error['message']);
 			}
 			echo "\n";

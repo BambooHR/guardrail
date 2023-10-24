@@ -5,14 +5,17 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Config;
-use BambooHR\Guardrail\Util;
-use PhpParser\Node\NullableType;
+use BambooHR\Guardrail\NodeVisitors\Grabber;
+use BambooHR\Guardrail\TypeComparer;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
+use PhpParser\Node\Stmt\Case_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\EnumCase;
 use PhpParser\Node\Stmt\Interface_;
-use BambooHR\Guardrail\NodeVisitors\Grabber;
 use PhpParser\Node\Stmt\PropertyProperty;
 
 /**
@@ -136,16 +139,38 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name) {
-		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
-		foreach ($constants as $constList) {
-			foreach ($constList->consts as $const) {
-				if (strcasecmp($const->name, $name) == 0) {
-					return true;
+	public function hasConstant($name):bool {
+		return $this->getConstantExpr($name) ? true : false;
+	}
+
+	public function getConstantExpr($name):null|Expr|Name {
+
+		if ($this->isEnum()) {
+			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
+			foreach($constants as $enumOption) {
+				/** @var EnumCase $enumOption */
+				if (strcasecmp($enumOption->name,$name)==0) {
+					return $numOption->expr ?? $this->class->namespacedName;
 				}
 			}
 		}
-		return false;
+		$constants = Grabber::filterByType($this->class->stmts, [ClassConst::class, EnumCase::class]);
+		foreach ($constants as $constList) {
+			if ($constList instanceof ClassConst) {
+				foreach ($constList->consts as $const) {
+					if (strcasecmp($const->name, $name) == 0) {
+						return $const->value;
+					}
+				}
+			} else {
+				if($constList instanceof EnumCase) {
+					if (strcasecmp($constList->name, $name)==0) {
+						return $this->class->namespacedName;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -187,13 +212,17 @@ class ClassAbstraction implements ClassInterface {
 					} else {
 						$access = "public";
 					}
-					$type = Util::complexTypeToString($prop->type);
-					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
-						$type = $propertyProperty->getAttribute("namespacedType");
-					}
+					$type = $prop->type;
+					//if (Config::shouldUseDocBlockForProperties() && empty($type)) {
+					//	$type = Scope::nameFromName($propertyProperty->namespacedType);
+					//}
 					return new Property($propertyProperty->name, $type, $access, $prop->isStatic());
 				}
 			}
 		}
+	}
+
+	public function isEnum(): bool {
+		return $this->class instanceof Enum_;
 	}
 }

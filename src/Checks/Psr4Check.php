@@ -3,8 +3,8 @@
 namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Output\OutputInterface;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 
 class Psr4Check extends BaseCheck {

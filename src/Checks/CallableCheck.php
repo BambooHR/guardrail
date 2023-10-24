@@ -5,7 +5,7 @@ namespace BambooHR\Guardrail\Checks;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -28,10 +28,6 @@ use PhpParser\Node\Stmt\ClassLike;
  *
  */
 class CallableCheck extends BaseCheck {
-	/**
-	 * @var TypeInferrer
-	 */
-	private $inferenceEngine;
 
 	/**
 	 * CallableCheck constructor.
@@ -40,8 +36,6 @@ class CallableCheck extends BaseCheck {
 	 */
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
-		$this->inferenceEngine = new TypeInferrer($symbolTable);
-
 	}
 
 	/**
@@ -70,32 +64,21 @@ class CallableCheck extends BaseCheck {
 			return;
 		}
 		$object = $callableArray->items[0]->value;
-		$classType = "";
 		if ($object instanceof Node\Scalar\String_) {
 			// TODO: namespace resolution when resolving a callable string. Users should prefer [Foo::class,"Baz"] syntax.
-			$classType = $object->value;
+			$this->checkClassType($object->value, $fileName, $callableArray);
 		} elseif ($object instanceof Node\Expr\StaticPropertyFetch) {
 			if ($object->class instanceof Node\Name && is_string($object->name) && $object->name == "class") {
-				$classType = $object->name;
+				$this->checkClassType($object->name, $fileName, $callableArray);
 			}
 		} else {
-			list($classType) = $this->inferenceEngine->inferType($inside, $object, $scope);
-		}
-		if ($classType && $classType[0] == "\\") {
-			$classType = substr($classType, 1);
-		}
-		if ($classType && $classType[0] != "!") {
-			if (!$this->symbolTable->isDefinedClass($classType)) {
-				$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array class '$classType' is not defined");
-			} else {
-				$method = $callableArray->items[1]->value;
-				if ($method instanceof Node\Scalar\String_) {
-					$methodObj = Util::findAbstractedMethod($classType, $method->value, $this->symbolTable);
-					if (!$methodObj) {
-						$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array method is '[$classType," . $method->value . "]' is not defined");
-					}
+			$classType = $object->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			TypeComparer::forEachType($classType,function($childClassType) use ($fileName, $callableArray) {
+				if ($childClassType && ($childClassType instanceof Node\Identifier || $childClassType instanceof Node\Name)) {
+					$this->checkClassType(strval($childClassType), $fileName, $callableArray);
 				}
-			}
+				;
+			});
 		}
 	}
 
@@ -131,6 +114,29 @@ class CallableCheck extends BaseCheck {
 			}
 		} else if ($node instanceof Expr\Array_) {
 			$this->checkArrayCallable($fileName, $scope, $inside, $node);
+		}
+	}
+
+	/**
+	 * @param mixed $classType
+	 * @param string $fileName
+	 * @param Expr\Array_ $callableArray
+	 * @return void
+	 */
+	public function checkClassType(string $classType, string $fileName, Expr\Array_ $callableArray): void
+	{
+		if ($classType) {
+			if (!$this->symbolTable->isDefinedClass($classType)) {
+				$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array class '$classType' is not defined");
+			} else {
+				$method = $callableArray->items[1]->value;
+				if ($method instanceof Node\Scalar\String_) {
+					$methodObj = Util::findAbstractedMethod($classType, $method->value, $this->symbolTable);
+					if (!$methodObj) {
+						$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array method is '[$classType," . $method->value . "]' is not defined");
+					}
+				}
+			}
 		}
 	}
 }

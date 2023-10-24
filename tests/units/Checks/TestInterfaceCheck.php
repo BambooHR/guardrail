@@ -70,4 +70,36 @@ class TestInterfaceCheck extends TestSuiteSetup {
 	public function testSameSignatureDifferentVisibilityValid() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
+
+	/**
+	 * Test that parameter type can be less specific in a child method, than that of its parent
+	 *
+	 * @return void
+	 */
+	public function testMethodParameterContravariance() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * A class that implements another is ok to have a type not defined when the parent type is mixed and the child class
+	 * is ok to have a mixed type when the parent type is not defined. (mixed and not defined behave the same)
+	 *
+	 * @return void
+	 */
+	public function testMixedAndNoTypeAreTheSame() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * A child method should be able to return a more specific type than the return type of its parent method.
+	 *
+	 * @return void
+	 */
+	public function testCovarianceOfReturnTypes() {
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_RETURN));
+	}
+
+	public function testIterableIsRespectedForArrayType() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }

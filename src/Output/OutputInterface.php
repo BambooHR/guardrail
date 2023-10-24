@@ -83,4 +83,6 @@ interface OutputInterface {
 	 * @return mixed
 	 */
 	function resumeType($name);
+
+	function getErrorCounts();
 }

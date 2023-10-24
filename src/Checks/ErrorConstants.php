@@ -25,10 +25,13 @@ class ErrorConstants {
 	const TYPE_DOC_BLOCK_TYPE = 'Standard.DocBlock.Type';
 	const TYPE_DOC_BLOCK_VAR = 'Standard.DocBlock.Variable';
 	const TYPE_EXCEPTION_BASE = 'Standard.Exception.Base';
+
+	const TYPE_EXCEPTION_DUPLICATE_VARIABLE = "Standard.Exception.DuplicateVariable";
 	const TYPE_FUNCTION_INSIDE_FUNCTION = 'Standard.Function.InsideFunction';
 	const TYPE_GLOBAL_EXPRESSION_ACCESSED = 'Standard.Global.Expression';
 	const TYPE_GLOBAL_STRING_ACCESSED = 'Standard.Global.String';
 	const TYPE_GOTO = 'Standard.Goto';
+	const TYPE_ILLEGAL_ENUM = 'Standard.Illegal.Enum';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';
 	const TYPE_INCORRECT_STATIC_CALL = 'Standard.Incorrect.Static';
 	const TYPE_INCORRECT_REGEX = 'Standard.Incorrect.Regex';
@@ -36,6 +39,8 @@ class ErrorConstants {
 	const TYPE_MISSING_BREAK = 'Standard.Switch.Break';
 	const TYPE_MISSING_CONSTRUCT = 'Standard.Constructor.MissingCall';
 	const TYPE_NULL_DEREFERENCE = "Standard.Null.Dereference";
+
+	const TYPE_NULL_METHOD_CALL = "Standard.Null.MethodCall";
 	const TYPE_PARSE_ERROR = 'Standard.Parse.Error';
 	const TYPE_SCOPE_ERROR = 'Standard.Scope';
 	const TYPE_SPLAT_MISMATCH = "Standard.Splat.Type";
@@ -45,6 +50,7 @@ class ErrorConstants {
 	const TYPE_SIGNATURE_COUNT_EXCESS = 'Standard.Param.Count.Excess';
 	const TYPE_SIGNATURE_RETURN = 'Standard.Return.Type';
 	const TYPE_SIGNATURE_TYPE = 'Standard.Param.Type';
+	const TYPE_SIGNATURE_TYPE_NULL = "Standard.Null.Param";
 	const TYPE_UNIMPLEMENTED_METHOD = 'Standard.Inheritance.Unimplemented';
 	const TYPE_UNKNOWN_CLASS = 'Standard.Unknown.Class';
 	const TYPE_UNKNOWN_CLASS_CONSTANT = 'Standard.Unknown.Class.Constant';
@@ -64,6 +70,8 @@ class ErrorConstants {
 	const TYPE_USE_CASE_SENSITIVE = 'Standard.Use.CaseSensitive';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
+
+
 
 	/**
 	 * @return string[]

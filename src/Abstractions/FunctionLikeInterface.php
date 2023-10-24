@@ -26,12 +26,7 @@ interface FunctionLikeInterface {
 	 */
 	public function getMinimumRequiredParameters();
 
-	/**
-	 * getReturnType
-	 *
-	 * @return string
-	 */
-	public function getReturnType();
+	public function getComplexReturnType();
 
 	/**
 	 * hasNulllableReturnType

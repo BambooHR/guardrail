@@ -1,7 +1,10 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use PhpParser\Node;
+use PhpParser\Node\ComplexType;
+
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
@@ -13,7 +16,7 @@
 class FunctionLikeParameter {
 
 	/**
-	 * @var string
+	 * @var Node
 	 */
 	private $type;
 
@@ -40,13 +43,13 @@ class FunctionLikeParameter {
 	/**
 	 * FunctionLikeParameter constructor.
 	 *
-	 * @param string $type      The type
+	 * @param Node $type      The type
 	 * @param string $name      The name
 	 * @param bool   $optional  Is it optional
 	 * @param bool   $reference Is it a reference
 	 * @param bool   $nullable  Is it nullable
 	 */
-	public function __construct($type, $name, $optional, $reference, $nullable) {
+	public function __construct(?Node $type, $name, $optional, $reference, $nullable) {
 		$this->type = $type;
 		$this->name = $name;
 		$this->optional = $optional;
@@ -57,7 +60,6 @@ class FunctionLikeParameter {
 	/**
 	 * getType
 	 *
-	 * @return string
 	 */
 	public function getType() {
 		return $this->type;

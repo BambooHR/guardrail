@@ -1,5 +1,9 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
+
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
@@ -54,20 +58,12 @@ class ReflectedFunction implements FunctionLikeInterface {
 		return true;
 	}
 
-	/**
-	 * getReturnType
-	 * @guardrail-ignore Standard.Unknown.Class.Method
-	 * @return string
-	 */
-	public function getReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
+	public function getComplexReturnType() {
+		if(method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
-			// Other possibility is ReflectionUnionType, which we don't currently handle.
-			if ($type instanceof \ReflectionNamedType) {
-				return $type->getName();
-			}
+			return Util::reflectionTypeToPhpParserType($type);
 		}
-		return "";
+		return null;
 	}
 
 	/**
@@ -152,8 +148,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
 		foreach ($params as $index => $param) {
-			$class = $param->getClass();
-			$type = ($class ? $class->getName() : "");
+			$type = Util::reflectionTypeToPhpParserType($param->getType());
 			$isPassedByReference = $param->isPassedByReference();
 			$isNullable = (method_exists($param, "allowsNull") ? $param->allowsNull() : false);
 			$name = $this->getName();
@@ -163,13 +158,13 @@ class ReflectedFunction implements FunctionLikeInterface {
 						$name == "call_user_func" || $name == "call_user_func_array" ||
 						$name == "forward_static_call" || $name == "forward_static_call_array"
 					) {
-						$type = "callable";
+						$type = TypeComparer::identifierFromName("callable");
 					}
 					break;
 				case 1:
 
 					if ($name == "usort" || $name == "uksort" || $name == "uasort") {
-						$type = "callable";
+						$type = TypeComparer::identifierFromName("callable");
 					}
 					if ($name=='exec') {
 						$isPassedByReference = true;

@@ -82,13 +82,12 @@ where: -p #/#                 = Define the number of partitions and the current 
 			exit(1);
 		}
 
-		if ($config->getOutputFormat() == "text") {
-			$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);
-		} else if ($config->getOutputFormat() == "counts") {
-			$output = new \BambooHR\Guardrail\Output\CountsOutput($config);
-		} else {
-			$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
-		}
+		$output = match($config->getOutputFormat()) {
+			'text'   => new \BambooHR\Guardrail\Output\ConsoleOutput($config),
+			'counts' => new \BambooHR\Guardrail\Output\CountsOutput($config),
+			'csv'    => new \BambooHR\Guardrail\Output\CsvOutput($config),
+			default  => new \BambooHR\Guardrail\Output\XUnitOutput($config)
+		};
 
 		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
@@ -119,7 +118,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 				foreach ($analyzer->getTimingResults() as $class => $values) {
 					$time = $values['time'];
 					$count = $values['count'];
-					printf("%-60s %4.1f s %4.1f%% %7s calls %4.1f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );
+					printf("%-60s %4.1f s %4.1f%% %10s calls %5.2f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );
 				}
 
 				printf("Total = %d:%04.1f CPU time\n", intval($totalTime / 60), $totalTime - floor($totalTime / 60) * 60);
