@@ -220,10 +220,10 @@ class Scope implements PluginScopeInterface {
 
 	/**
 	 * getScopeClone
-	 * @param Scope $previous The previous scope
+	 *
 	 * @return Scope
 	 */
-	public function getScopeClone(): PluginScopeInterface {
+	public function getScopeClone(): self {
 		$newVars = [];
 		foreach ($this->vars as $var) {
 			$newVar = clone $var;

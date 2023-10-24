@@ -25,9 +25,9 @@ class BinaryOperator implements ExpressionInterface {
 		$right=$expr->right->getAttribute( TypeComparer::INFERRED_TYPE_ATTR);
 		$sigil = $expr->getOperatorSigil();
 
-		if ($sigil == "&&") {
+		if ($sigil == "&&" && $expr instanceof BinaryOp\BooleanAnd) {
 			$this->mergeAndScope($expr, $scopeStack);
-		} else if ($sigil == "||") {
+		} else if ($sigil == "||"&& $expr instanceof BinaryOp\BooleanOr) {
 			$this->mergeOrScope($expr);
 		}
 

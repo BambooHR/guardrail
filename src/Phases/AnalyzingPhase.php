@@ -208,7 +208,7 @@ class AnalyzingPhase {
 
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
 			$socket = $pm->createChild(
-				function ($socket) use ($fileNumber, $config) {
+				function ($socket) use ($config) {
 					$this->runChildAnalyzer($socket, $config);
 				});
 			$childPid = $pm->getPidForSocket($socket);
@@ -233,7 +233,8 @@ class AnalyzingPhase {
 
 	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, OutputInterface $output, $toProcess, $totalBytes, $start, ProcessManager $pm) {
 		$childPid = $pm->getPidForSocket($socket);
-		//$output->outputExtraVerbose("parent received from $childPid: $msg\n");
+		$output->outputExtraVerbose("parent received from $childPid: $msg\n");
+
 		if ($msg === false) {
 			echo "Error: Unexpected error reading from socket\n";
 			return true;
@@ -262,8 +263,7 @@ class AnalyzingPhase {
 				);
 				break;
 			case 'ANALYZED':
-				list($size, $name) = explode(' ', $details, 2);
-				// $output->output(".", sprintf("%d - %s", ++$processingCount, $name));
+				list($size,) = explode(' ', $details, 2);
 				if ($fileNumber < count($toProcess)) {
 					$bytes += intval($size);
 					$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
@@ -307,7 +307,6 @@ class AnalyzingPhase {
 		$this->initChildThread($socket, $config);
 		$buffer = new SocketBuffer();
 		$pid = getmypid();
-		$iterations = 0;
 		while (1) {
 			$buffer->read($socket);
 			foreach ($buffer->getMessages() as $receive) {
@@ -319,15 +318,21 @@ class AnalyzingPhase {
 					$this->socket_write_all($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
 					return 0;
 				} else {
-					list($command, $file) = explode(' ', $receive, 2);
+					list(, $file) = explode(' ', $receive, 2);
 					$size = $this->analyzeFile($file, $config);
 					$this->socket_write_all($socket, "ANALYZED $size $file\n");
 				}
 			}
-			$iterations++;
 		}
 	}
 
+	/**
+	 * @param $callable
+	 * @param $retries
+	 *
+	 * @return false|mixed
+	 * @guardrail-ignore Standard.VariableFunctionCall:Variable
+	 */
 	protected function retryOnFalse($callable, $retries) {
 		$succeeded = false;
 		$tries = 0;

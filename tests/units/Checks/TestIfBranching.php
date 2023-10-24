@@ -200,6 +200,30 @@ ENDCODE;
 		$this->assertEquals(0, $output->getErrorCount(), "Failed expected no errors");
 	}
 
+	public function testChildrenOfNodeInElseIf() {
+		$func = <<<'ENDCODE'
+			function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
+				/** @var Node\Expr\CallLike $call */
+				$call = $node;
+		
+				if ($call instanceof Node\Expr\StaticCall) {
+					return $this->onStaticCall($call, $table, $scopeStack);
+				} else if ($call instanceof Node\Expr\FuncCall) {
+					return $this->onFunctionCall($call, $table, $scopeStack);
+				} else if ($call instanceof Node\Expr\New_) {
+					return $this->onNew($call, $table, $scopeStack);
+				} else if ($call instanceof Node\Expr\MethodCall || $call instanceof Node\Expr\NullsafeMethodCall) {
+					return $this->onMethodCall($call, $table, $scopeStack);
+				} else if ($call instanceof Node\Expr\Closure) {
+					return TypeComparer::identifierFromName("Closure");
+				}
+				throw new \InvalidArgumentException("Unknown call type " . get_class($call));
+			}
+		ENDCODE;
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_SIGNATURE_TYPE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Failed expected no errors");
+	}
+
 	public function testAndCallWithBooleanNot() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_NULL_DEREFERENCE));
 	}

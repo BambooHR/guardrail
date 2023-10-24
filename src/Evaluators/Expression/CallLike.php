@@ -173,7 +173,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		} else if ($complexType instanceof Node\UnionType) {
 			$types = [];
 			TypeComparer::forEachType($complexType, function ($type) use (&$types, $selfClass) {
-				$types[] = (TypeComparer::isNamedIdentifier($type, "self") || TypeComparer::isNamedIdentifier($type, "static")) ? Scope::nameFromName($selfClass) : $type;
+				$types[] = (TypeComparer::isNamedIdentifier($type, "self") || TypeComparer::isNamedIdentifier($type, "static")) ? TypeComparer::nameFromName($selfClass) : $type;
 			});
 
 			return TypeComparer::getUniqueTypes($types);

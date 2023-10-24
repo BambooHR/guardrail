@@ -155,7 +155,7 @@ class ScopeStack implements ScopeInterface {
 		return $this->getInsideFunction()?->getAttribute('function-scope')?->getVarObject($name);
 	}
 
-	function getScopeClone(): PluginScopeInterface
+	function getScopeClone(): Scope
 	{
 		return $this->getCurrentScope()->getScopeClone();
 	}

@@ -70,7 +70,7 @@ class MethodCall extends CallCheck {
 			}
 			$methodName = strval($node->name);
 
-			$className = "";
+			$className = null;
 			$var = $node->var;
 			if ($var instanceof Variable) {
 				if ($var->name == "this" && !$inside) {

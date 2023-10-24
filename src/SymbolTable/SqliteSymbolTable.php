@@ -128,14 +128,6 @@ class SqliteSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	function indexTable($processCount) {
 		$this->con->exec('CREATE INDEX symbol_type_name_index ON symbol_table (type,name)');
-		/* @Todo: Check for duplicates
-		$this->con->exec(
-			'SELECT type,name,count(*) c, group_concat(file)
-			FROM symbol_table
-			GROUP BY 1,2
-			HAVING count(*)>1'
-		);
-		*/
 	}
 
 	/**
