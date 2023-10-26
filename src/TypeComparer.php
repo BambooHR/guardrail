@@ -302,7 +302,7 @@ class TypeComparer
 						if (!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
 							return true;
 						}
-						if (!$this->symbolTable->isParentClassOrInterface(\Iterable::class, $typeStr)) {
+						if (!$this->symbolTable->isParentClassOrInterface('iterable', $typeStr)) {
 							return true;
 						}
 					}
