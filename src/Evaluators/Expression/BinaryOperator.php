@@ -21,17 +21,17 @@ class BinaryOperator implements ExpressionInterface {
 	{
 		/** @var Node\Expr\BinaryOp $expr */
 		$expr = $node;
-		$left=$expr->left->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-		$right=$expr->right->getAttribute( TypeComparer::INFERRED_TYPE_ATTR);
+		$left = $expr->left->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		$right = $expr->right->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		$sigil = $expr->getOperatorSigil();
 
-		if ($sigil == "&&") {
+		if ($sigil == "&&" && $expr instanceof BinaryOp\BooleanAnd) {
 			$this->mergeAndScope($expr, $scopeStack);
-		} else if ($sigil == "||") {
+		} else if ($sigil == "||" && $expr instanceof BinaryOp\BooleanOr) {
 			$this->mergeOrScope($expr);
 		}
 
-		if ($sigil=="===" || $sigil=="==" || $sigil=="!=" || $sigil=="!==") {
+		if (in_array($sigil, ["===", "==", "!=", "!=="])) {
 			$this->checkNullEquality($expr, $sigil, $scopeStack);
 		}
 
@@ -73,7 +73,7 @@ class BinaryOperator implements ExpressionInterface {
 				if ($node->right instanceof Node\Expr\ConstFetch && strcasecmp($node->right->name,"null")===0) {
 					$trueScope = $scope->getCurrentScope()->getScopeClone();
 					$falseScope = $scope->getScopeClone();
-					$this->handleNullEquivalency($sigil,  $varName, $node, $trueScope,$falseScope);
+					$this->handleNullEquivalency($sigil, $varName, $node, $trueScope, $falseScope);
 				}
 			}
 		}
@@ -132,9 +132,9 @@ class BinaryOperator implements ExpressionInterface {
 
 	function mergeOrScope(BinaryOp\BooleanOr $or) {
 		if  ($or->left->getAttribute('assertsTrue') && $or->right->getAttribute('assertsTrue')) {
-			/** @var Scope $left */
+			/** @var Scope\Scope $left */
 			$left = $or->left->getAttribute('assertsTrue');
-			/** @var Scope $right */
+			/** @var Scope\Scope $right */
 			$right = $or->right->getAttribute('assertsTrue');
 
 			$new = $left->getScopeClone();
@@ -142,7 +142,7 @@ class BinaryOperator implements ExpressionInterface {
 			$leftChanged = $left->getTypeChangedVars();
 			$rightChanged = $right->getTypeChangedVars();
 			foreach ($leftChanged as $name => $var) {
-				if(isset($rightChanged[$name])) {
+				if (isset($rightChanged[$name])) {
 					$newType = TypeComparer::getUniqueTypes($var->type, $rightChanged[$name]->type);
 					$new->setVarType($name, $newType, $rightChanged[$name]->modifiedLine);
 				}

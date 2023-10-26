@@ -327,7 +327,7 @@ class Config {
 						throw new InvalidConfigException;
 					}
 					++$argCount;
-					list($wholeMatch, $this->partitionNumber, $this->partitions) = $params;
+					list(, $this->partitionNumber, $this->partitions) = $params;
 					if ($this->partitionNumber < 1 || $this->partitionNumber > $this->partitions) {
 						throw new InvalidConfigException;
 					}

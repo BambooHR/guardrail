@@ -200,6 +200,10 @@ ENDCODE;
 		$this->assertEquals(0, $output->getErrorCount(), "Failed expected no errors");
 	}
 
+	public function testChildrenOfNodeInElseIf() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
 	public function testAndCallWithBooleanNot() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_NULL_DEREFERENCE));
 	}

@@ -45,16 +45,16 @@ class TypeComparer
 		}
 		if ($a instanceof IntersectionType && $b instanceof IntersectionType) {
 			self::ifEveryType($a, fn($aType) =>
-				self::ifAnyType($b, fn($bType) =>
-					self::isExactMatch($aType, $bType)
-				)
+			self::ifAnyType($b, fn($bType) =>
+			self::isExactMatch($aType, $bType)
+			)
 			);
 		}
 		if ($a instanceof UnionType && $b instanceof UnionType) {
 			self::ifEveryType($a, fn($aType) =>
-				self::ifAnyType($b, fn($bType) =>
-					self::isExactMatch($aType, $bType)
-				)
+			self::ifAnyType($b, fn($bType) =>
+			self::isExactMatch($aType, $bType)
+			)
 			);
 			return true;
 		}
@@ -96,7 +96,7 @@ class TypeComparer
 			}
 		}
 
-		if($targetName=="callable" && ($valueName=="closure" || $valueName=="array" || $valueName="string")) {
+		if($targetName=="callable" && ($valueName=="closure" || $valueName=="array" || $valueName=="string")) {
 			return true;
 		}
 
@@ -129,6 +129,9 @@ class TypeComparer
 		if ($rootNode instanceof Node\Expr\PropertyFetch && $rootNode->name instanceof Identifier) {
 			$left = self::getChainedPropertyFetchName($rootNode->var);
 			return $left ? ($left."->".$rootNode->name) : null;
+		} else if ($rootNode instanceof Node\Expr\ArrayDimFetch) {
+			$left = self::getChainedPropertyFetchName($rootNode->var);
+			return $left;
 		} else if ($rootNode instanceof Node\Expr\Variable && is_string($rootNode->name)) {
 			return strval($rootNode->name);
 		} else {
@@ -180,28 +183,28 @@ class TypeComparer
 
 		// Many target options, many values.  Every value option must match at least one target.
 		$ret = self::ifEveryType($value, fn($valueType) =>
-			self::ifAnyType($target, function($targetType) use ($scope, $valueType) {
+		self::ifAnyType($target, function($targetType) use ($scope, $valueType) {
 
-				if($targetType instanceof IntersectionType) {
-					$types = $targetType->types;
+			if($targetType instanceof IntersectionType) {
+				$types = $targetType->types;
+			} else {
+				$types = [$targetType];
+			}
+
+
+			foreach ($types as $targetComponentType) {
+				if ($valueType instanceof IntersectionType) {
+					if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType, $scope->isStrict())) {
+						return false;
+					}
 				} else {
-					$types = [$targetType];
-				}
-
-
-				foreach ($types as $targetComponentType) {
-					if ($valueType instanceof IntersectionType) {
-						if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType, $scope->isStrict())) {
-							return false;
-						}
-					} else {
-						if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $scope->isStrict())) {
-							return false;
-						}
+					if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $scope->isStrict())) {
+						return false;
 					}
 				}
-				return true;
-			})
+			}
+			return true;
+		})
 		);
 		return $ret;
 	}
@@ -287,29 +290,29 @@ class TypeComparer
 
 	function isTraversable(ComplexType|Identifier|Name|null $type):bool {
 		return $type === null || TypeComparer::ifEveryType($type, function($subType) {
-			if ($subType) {
-				if($subType instanceof Node\Name or $subType instanceof Node\Identifier) {
-					$typeStr=strval($subType);
-					if (str_ends_with($typeStr,"[]")) {
-						return true;
+				if ($subType) {
+					if($subType instanceof Node\Name or $subType instanceof Node\Identifier) {
+						$typeStr=strval($subType);
+						if (str_ends_with($typeStr,"[]")) {
+							return true;
+						}
+						if (strcasecmp($typeStr,"array") == 0) {
+							return true;
+						}
+						if (!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
+							return true;
+						}
+						if (!$this->symbolTable->isParentClassOrInterface('iterable', $typeStr)) {
+							return true;
+						}
 					}
-					if (strcasecmp($typeStr,"array") == 0) {
-						return true;
-					}
-					if (!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
-						return true;
-					}
-					if (!$this->symbolTable->isParentClassOrInterface(\Iterable::class, $typeStr)) {
-						return true;
-					}
+					return false;
+				} else {
+					// Unknown, type we have to assume it is safe.
+					return true;
 				}
-				return false;
-			} else {
-				// Unknown, type we have to assume it is safe.
-				return true;
-			}
-		});
-}
+			});
+	}
 
 	static function getUniqueTypes(...$types) {
 		$used = [];

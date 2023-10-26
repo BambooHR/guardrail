@@ -18,22 +18,21 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
 	{
 		if ($node instanceof Node\Stmt\If_) {
-			$branch = $scopeStack->getCurrentScope()->getScopeClone();
-			$scopeStack->pushScope($branch);
+			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
+			$scopeStack->pushScope($thenBranch);
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
-		} elseif($node instanceof Node\Stmt\ElseIf_) {
+		} elseif ( $node instanceof Node\Stmt\ElseIf_) {
 			$scopeStack->swapTopTwoScopes();
 
-			$branch = $scopeStack->getCurrentScope()->getScopeClone();
-			$scopeStack->pushScope($branch);
+			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
+			$scopeStack->pushScope($thenBranch);
 
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
-		} elseif($node instanceof Node\Stmt\Else_) {
+		} elseif ( $node instanceof Node\Stmt\Else_) {
 			$scopeStack->swapTopTwoScopes();
 		}
-
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
@@ -54,7 +53,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$cond = $scopeStack->popScope();
 				$scopeStack->getCurrentScope()->merge($cond);
 
-				for($count=0; $count<count($node->elseifs);++$count) {
+				for($count=0; $count<count($node->elseifs); ++$count) {
 					$scopeStack->getCurrentScope()->merge($scopeStack->popScope());
 				}
 			}
@@ -71,7 +70,6 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$condScope = $cond->getAttribute('assertsTrue');
 			$scopeStack->pushScope($condScope);
 		}
-
 		$scopeStack->swapTopTwoScopes();
 
 		if ($cond->hasAttribute('assertsFalse')) {
@@ -83,7 +81,6 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 		$scopeStack->pushScope($notCondScope);
 		$scopeStack->swapTopTwoScopes();
 	}
-
 
 	static public function getIfCond(Node $node) {
 		if ($node instanceof Node\Expr\Ternary) {

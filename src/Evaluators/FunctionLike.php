@@ -86,8 +86,9 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		self::handleUnusedVars($scopeStack);
-		$closureScope = $scopeStack->popScope();
-		assert($node instanceof \PhpParser\Node\FunctionLike);
+		// Pop Closure Scope
+		$scopeStack->popScope();
+		assert($node instanceof Node\FunctionLike);
 		$this->updateFunctionEmit($node, $scopeStack, "pop");
 	}
 
@@ -117,8 +118,8 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 	/**
 	 * updateFunctionEmit
 	 *
-	 * @param \PhpParser\Node\FunctionLike $func      Instance of FunctionLike
-	 * @param string                       $pushOrPop Push | Pop
+	 * @param Node\FunctionLike $func      Instance of FunctionLike
+	 * @param string            $pushOrPop Push | Pop
 	 *
 	 * @return void
 	 */

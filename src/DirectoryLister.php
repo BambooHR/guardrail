@@ -3,6 +3,12 @@
 namespace BambooHR\Guardrail;
 
 class DirectoryLister {
+	/**
+	 * @param string ...$dirs
+	 *
+	 * @return \Generator
+	 * @guardrail-ignore Standard.ConditionalAssignment
+	 */
 	static function getGenerator(string ...$dirs) {
 		while (NULL !== ($dir = array_shift($dirs))) {
 			if ($dh = opendir($dir)) {

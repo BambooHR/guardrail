@@ -46,7 +46,7 @@ class UseStatementCaseCheck extends BaseCheck {
 			$classNames[$type] = $className;
 		}
 		if ($className && $type !== $className) {
-			$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type->toString() . ' !== ' . $class->getName());
+			$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type . ' !== ' . $class->getName());
 		}
 	}
 }

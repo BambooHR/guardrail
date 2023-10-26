@@ -37,12 +37,12 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 			$overrides = Config::shouldUseDocBlockForInlineVars() ? $var->getAttribute('namespacedInlineVar') : [];
 			// If it's in overrides, then it was already set by a DocBlock @var
 			if (!isset($overrides[$var->name])) {
-				$scope->setVarType($var->name, $valueType, $var->getLine());
+				$scope->setVarType($var->name, TypeComparer::getUniqueTypes($valueType), $var->getLine());
 			}
 		} else if ($var instanceof Node\Expr\PropertyFetch) {
 			$varName = TypeComparer::getChainedPropertyFetchName($var);
 			if ($varName !== null) {
-				$scope->setVarType($varName, $valueType, $var->getLine());
+				$scope->setVarType($varName, TypeComparer::getUniqueTypes($valueType), $var->getLine());
 			}
 		}
 	}

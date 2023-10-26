@@ -6,12 +6,7 @@
  */
 
 use BambooHR\Guardrail\Scope\PluginScopeInterface;
-use BambooHR\Guardrail\Scope\ScopeVar;
 use PhpParser\Node;
-use PhpParser\Node\ComplexType;
-use PhpParser\Node\FunctionLike;
-use PhpParser\Node\Identifier;
-use PhpParser\Node\Name;
 
 /**
  * Class Scope

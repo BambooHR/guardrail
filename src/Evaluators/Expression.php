@@ -53,20 +53,17 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
 	{
-		if ($node->hasAttribute('push-scope-on-enter')) {
-			$scopeStack->pushScope( $scopeStack->getCurrentScope()->getScopeClone());
-		}
 		if ($node->hasAttribute('swap-scope-on-enter')) {
 			$scopeStack->swapTopTwoScopes();
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\BooleanOr) {
-			$node->left->setAttribute('push-false-scope-on-leave', true);
-			$node->setAttribute('merge-true-assert-on-leave-or', true);
+			$node->setAttribute('merge-true-assert-on-leave', true);
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\BooleanAnd) {
-			$node->left->setAttribute('merge-true-assert-on-leave-and', true);
+			$node->left->setAttribute('merge-true-assert-on-leave-left-and-statement', true);
+			$node->setAttribute('merge-true-assert-on-leave', true);
 		}
 
 		if ($node instanceof Node\Expr\Ternary) {
@@ -75,6 +72,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			$cond = If_::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
 			$node->else->setAttribute('swap-scope-on-enter',true);
+			$node->setAttribute('pop-scope-on-leave',true);
 		}
 
 		if($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction) {
@@ -92,42 +90,48 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-		if ($node->hasAttribute('pop-and-scope-on-leave')) {
+		if ($node->hasAttribute('pop-scope-on-leave')) {
 			$type=$scopeStack->popScope();
 			$scopeStack->getCurrentScope()->merge($type);
-		}
-
-		if ($node instanceof Node\Expr\Ternary) {
-			$scope = $scopeStack->popScope();
-			$scopeStack->getCurrentScope()->merge($scope);
 		}
 
 		if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
 			return;
 		}
-		$inferredType = $this->findInstance(get_class($node))->onExit($node, $table, $scopeStack);
+
+		$instance = $this->findInstance(get_class($node));
+		$inferredType = $instance->onExit($node, $table, $scopeStack);
 		$node->setAttribute(TypeComparer::INFERRED_TYPE_ATTR, $inferredType);
-		if($node->hasAttribute('push-false-scope-on-leave')) {
+		if ($node->hasAttribute('push-false-scope-on-leave')) {
 			if ($node->hasAttribute('assertsFalse')) {
 				$scopeStack->pushScope($node->getAttribute('assertsFalse'));
 			} else {
-				$scopeStack->pushScope( $scopeStack->getCurrentScope()->getScopeClone() );
+				$scopeStack->pushScope($scopeStack->getCurrentScope()->getScopeClone());
 			}
 		}
-		if($node->hasAttribute('grab-if-cond-scope-on-leave')) {
+		if ($node->hasAttribute('grab-if-cond-scope-on-leave')) {
 			$parents= $scopeStack->getParentNodes();
 			$if= $parents[ array_key_last($parents)];
 			If_::pushIfScope($if, $scopeStack);
 		}
 
-		if ($node->hasAttribute('merge-true-assert-on-leave-and') && $node->hasAttribute('assertsTrue')) {
+		if ($node->hasAttribute('merge-true-assert-on-leave-left-and-statement') && $node->hasAttribute('assertsTrue')) {
 			$scopeStack->popScope();
 			$scopeStack->pushScope($node->getAttribute('assertsTrue'));
-//			$scopeStack->getCurrentScope()->merge($node->getAttribute('assertsTrue'));
 		}
-		if ($node->hasAttribute('merge-true-assert-on-leave-or')) {
-			$right = $scopeStack->popScope();
-			$scopeStack->getCurrentScope()->merge($right);
+
+		if ($node->hasAttribute('merge-true-assert-on-leave')) {
+			$neither = $scopeStack->popScope();
+			if ($node->left->hasAttribute('assertsTrue')) {
+				$left = $node->left->getAttribute('assertsTrue');
+			}
+			if ($node->right->hasAttribute('assertsTrue')) {
+				$right = $node->right->getAttribute('assertsTrue');
+			}
+			if (isset($left, $right)) {
+				$left->merge($right);
+			}
+			$scopeStack->pushScope($left ?? $right ?? $neither);
 		}
 	}
 

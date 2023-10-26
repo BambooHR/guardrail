@@ -22,6 +22,7 @@ use BambooHR\Guardrail\NodeVisitors\SymbolTableIndexer;
 use BambooHR\Guardrail\Util;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Output\OutputInterface;
+use Throwable;
 
 /**
  * Class IndexingPhase
@@ -117,12 +118,10 @@ class IndexingPhase {
 	 */
 	public function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
 		$output->outputVerbose("Importing traits");
-		$count = 0;
 		$symbolTable->begin();
 		foreach ($symbolTable->getClassesThatUseAnyTrait() as $className) {
 			$class = $symbolTable->getClass($className);
 			$symbolTable->updateClass( $class );
-			//$output->output(".", " - " . (++$count) . ": " . $className);
 		}
 		$symbolTable->commit();
 	}
@@ -192,10 +191,9 @@ class IndexingPhase {
 				}
 				list($message, $details) = explode(' ', $msg, 2);
 
-				//echo "RECEIVED:$msg from index: $index\n";
 				if ($message == 'INDEXED') {
 					if ($itr->valid()) {
-						list($size, $name) = explode(' ', $details);
+						list($size,) = explode(' ', $details);
 						$bytes += $size;
 						$output->output(".", sprintf("%d - %s", ++$fileNumber, $itr->current()));
 						socket_write($socket, "INDEX " . $itr->current() . "\n");
@@ -267,7 +265,7 @@ class IndexingPhase {
 				$this->traverser1->traverse($statements);
 				$this->traverser2->traverse($statements);
 			}
-		} catch (\Exception $exc) {
+		} catch (Throwable $exc) {
 			echo "\n[$name] ERROR " . $exc->getMessage() . "\n";
 		}
 		return strlen($fileData);

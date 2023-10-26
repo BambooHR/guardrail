@@ -97,7 +97,7 @@ class ScopeStack implements ScopeInterface {
 
 	public function setVarType($name, Name|Identifier|ComplexType|null $type, $line): void
 	{
-		$this->getCurrentScope()->setVarType($name,$type, $line);
+		$this->getCurrentScope()->setVarType($name, $type, $line);
 	}
 
 	public function setVarReference($name, ScopeVar $ref): void
@@ -155,7 +155,7 @@ class ScopeStack implements ScopeInterface {
 		return $this->getInsideFunction()?->getAttribute('function-scope')?->getVarObject($name);
 	}
 
-	function getScopeClone(): PluginScopeInterface
+	function getScopeClone(): Scope
 	{
 		return $this->getCurrentScope()->getScopeClone();
 	}
