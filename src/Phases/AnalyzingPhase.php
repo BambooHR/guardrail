@@ -26,6 +26,7 @@ use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Use_;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
@@ -168,6 +169,7 @@ class AnalyzingPhase {
 			$node instanceof Use_ ||
 			$node instanceof Node\Stmt\GroupUse ||
 			$node instanceof Comment ||
+			$node instanceof Enum_ ||
 			$node instanceof Node\Stmt\Declare_
 		) {
 			return true;
