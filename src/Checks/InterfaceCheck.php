@@ -232,11 +232,10 @@ class InterfaceCheck extends BaseCheck {
 		$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 		if (! $parentClass) {
 			$this->emitError($fileName, $node->extends, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent " . $node->extends);
-		}
-
-		if ($parentClass->isEnum()) {
+		} else if ($parentClass->isEnum()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ILLEGAL_ENUM, "Enums can not be extended");
 		}
+
 		foreach ($class->getMethodNames() as $methodName) {
 			if ($methodName != "__construct") {
 				$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
