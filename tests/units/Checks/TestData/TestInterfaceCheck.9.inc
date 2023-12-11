@@ -1,5 +1,9 @@
 <?php
 
+
+class dataObject {
+	public $test;
+}
 interface parentClass {
 	public function method1(): bool;
 	public function method2(): mixed;
@@ -9,7 +13,9 @@ interface parentClass {
 	public function method6(): string|int|null;
 	public function method7(): ?int;
 	public function method8(): string|int|null;
+	public function method9() : ?dataObject;
 }
+
 class childClass implements parentClass {
 	/** This should not work because int is different than bool */
 	public function method1(): int {
@@ -36,5 +42,8 @@ class childClass implements parentClass {
 	/** This should not work because bool is not one of the parent types */
 	public function method8(): ?bool {
 		return null;
+	}
+	public function method9(): dataObject {
+		return new dataObject();
 	}
 }
