@@ -140,6 +140,10 @@ class InterfaceCheck extends BaseCheck {
 	private function getReturnTypesForMethod(MethodInterface $method) {
 		$returnTypes = [];
 		TypeComparer::forEachType($method->getComplexReturnType(), function($type) use (&$returnTypes) {
+			if ($type instanceof Node\Name) {
+				$type = TypeComparer::identifierFromName($type->toCodeString());
+			}
+
 			$returnTypes[] = $type;
 		});
 		$returnTypes = array_column($returnTypes, 'name');
