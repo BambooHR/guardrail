@@ -19,5 +19,7 @@ class TestPropertyFetchCheck extends TestSuiteSetup {
 	 */
 	public function testAccessingDeclaredPrivateAndProtectedMemberNo__get() {
 		$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_ACCESS_VIOLATION));
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_UNKNOWN_PROPERTY));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
 	}
 }

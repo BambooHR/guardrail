@@ -1,8 +1,11 @@
 <?php
 
 
-class dataObject {
+class parentDataObject {
 	public $test;
+}
+class childDataObject extends parentDataObject {
+	public $string;
 }
 interface parentClass {
 	public function method1(): bool;
@@ -13,7 +16,9 @@ interface parentClass {
 	public function method6(): string|int|null;
 	public function method7(): ?int;
 	public function method8(): string|int|null;
-	public function method9() : ?dataObject;
+	public function method9() : ?parentDataObject;
+	public function method10() : parentDataObject;
+	public function method11(): parentDataObject|int|null;
 }
 
 class childClass implements parentClass {
@@ -43,7 +48,17 @@ class childClass implements parentClass {
 	public function method8(): ?bool {
 		return null;
 	}
-	public function method9(): dataObject {
-		return new dataObject();
+
+	public function method9(): parentDataObject {
+		return new parentDataObject();
+	}
+
+	public function method10(): childDataObject {
+		return new childDataObject();
+	}
+
+	/** This should not work because bool is not one of the parent types */
+	public function method11(): bool|childDataObject {
+		return true;
 	}
 }
