@@ -10,15 +10,10 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  * @package BambooHR\Guardrail\Tests
  */
 class TestConfig extends Config {
-
 	public $basePath;
-
-	public $config;
-
+	protected $config;
 	public $symbolTable;
-
 	public $emitList;
-
 	public $forceIndex;
 
 	/**
@@ -31,9 +26,16 @@ class TestConfig extends Config {
 	public function __construct($file, $emit, array $additionalConfig = []) {
 		$this->basePath = $additionalConfig['basePath'] ?? dirname(realpath($file)) . "/";
 		$this->config = array_merge([
+			'options' => [
+				"DocBlockReturns" => true,
+				"DocBlockParams" => true,
+				"DocBlockInlineVars" => true,
+				"DocBlockProperties" => true,
+			],
 			'test' => [$file],
 			'index' => [dirname($file)],
 		], $additionalConfig);
+		$this->loadConfigVars();
 		$this->forceIndex = true;
 		$this->symbolTable = new InMemorySymbolTable($this->basePath);
 		if (!is_array($emit)) {
@@ -86,6 +88,7 @@ class TestConfig extends Config {
 		if (isset($this->config) && array_key_exists('psr-roots', $this->config) && is_array($this->config['psr-roots'])) {
 			return $this->config['psr-roots'];
 		}
+
 		return [];
 	}
 }

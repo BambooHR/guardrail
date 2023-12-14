@@ -36,7 +36,7 @@ class Config {
 	private $reindex = false;
 
 	/** @var array nested array with the settings for what files to import */
-	private $config = [];
+	protected $config = [];
 
 	/** @var string */
 	private $symbolTableFile = "symbol_table";
@@ -100,7 +100,7 @@ class Config {
 	/**
 	 * @return void
 	 */
-	private function loadConfigVars() {
+	protected function loadConfigVars() {
 		if (isset($this->config) && array_key_exists('options', $this->config) && is_array($this->config['options'])) {
 			foreach ($this->config['options'] as $key => $value) {
 				if ($value === true) {
