@@ -67,15 +67,20 @@ class IndexingPhase {
 	 *
 	 * @return \Generator
 	 */
-	private function getFileList(Config $config, \Iterator $it2, $stubs = false) {
+	private function getFileList(Config $config, array $paths, $stubs = false) {
 		$baseDir = $config->getBasePath();
 		$configArr = $config->getConfigArray();
-		foreach ($it2 as $filePath) {
-			if (preg_match('/\\.(php|inc)$/', $filePath) && is_file($filePath)) {
-				if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $filePath, $configArr['ignore'])) {
-					continue;
+
+		foreach($paths as $path) {
+			$tmpDirectory = Util::fullDirectoryPath($baseDir, $path);
+			$generator = DirectoryLister::getGenerator($tmpDirectory);
+			foreach ($generator as $filePath) {
+				if (preg_match('/\\.(php|inc)$/', $filePath) && is_file($filePath)) {
+					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $filePath, $configArr['ignore'])) {
+						continue;
+					}
+					yield $filePath;
 				}
-				yield $filePath;
 			}
 		}
 	}
@@ -128,18 +133,18 @@ class IndexingPhase {
 
 
 	/**
-	 * @param int    $fileNumber -
+	 * @param int    $processNumber -
 	 * @param Config $config     -
 	 * @return resource The client socket that the server should communicate with.
 	 */
-	function createIndexingChild($fileNumber, Config $config) {
+	function createIndexingChild($processNumber, Config $config) {
 		return $this->processManager->createChild(
 			// This closure represents the child process.  The value it returns
 			// will be the exit code of the child process.
-			function($socket) use($config, $fileNumber) {
+			function($socket) use($config, $processNumber) {
 				$table = $config->getSymbolTable();
 				if ($table instanceof PersistantSymbolTable) {
-					$table->connect( $fileNumber + 1 );
+					$table->connect($processNumber + 1 );
 				}
 				$buffer = new SocketBuffer();
 				while (1) {
@@ -154,7 +159,7 @@ class IndexingPhase {
 						} else {
 							list(, $file) = explode(' ', trim($receive));
 							$size = $this->indexFile($config, $file);
-							socket_write($socket, "INDEXED $size $file\n");
+							socket_write($socket, "INDEXED $size $file ".($processNumber+1)."\n");
 						}
 					}
 				}
@@ -178,7 +183,8 @@ class IndexingPhase {
 		$bytes = 0.0;
 		// Fire up our child processes and give them each a file to index.
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $itr->valid(); ++$fileNumber, $itr->next()) {
-			$child = $this->createIndexingChild($fileNumber, $config);
+			$processNumber = $fileNumber;
+			$child = $this->createIndexingChild($processNumber, $config);
 			socket_write($child, "INDEX " . $itr->current() . "\n");
 			$output->output(".", sprintf("%d - %s", $fileNumber, $itr->current()));
 		}
@@ -192,11 +198,12 @@ class IndexingPhase {
 				list($message, $details) = explode(' ', $msg, 2);
 
 				if ($message == 'INDEXED') {
+					[$size, $fileName, $childProcessNumber] = explode(' ', $details);
+					$bytes += $size;
+					$output->output(".", sprintf("%d - %s ($childProcessNumber)", ++$fileNumber, $fileName));
+
 					if ($itr->valid()) {
-						list($size,) = explode(' ', $details);
-						$bytes += $size;
-						$output->output(".", sprintf("%d - %s", ++$fileNumber, $itr->current()));
-						socket_write($socket, "INDEX " . $itr->current() . "\n");
+						socket_write($socket, "INDEX " . $itr->current() ."\n");
 						$itr->next();
 					} else {
 						socket_write($socket, "DONE\n");
@@ -233,12 +240,7 @@ class IndexingPhase {
 		}
 		$output->outputVerbose("Index directories are valid: Indexing starting.");
 
-		foreach ($indexPaths as $path) {
-			$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
-			$output->outputVerbose("Indexing Directory: " . $tmpDirectory);
-			$generator = DirectoryLister::getGenerator($tmpDirectory);
-			$this->indexList($config, $output, $this->getFileList($config, $generator) );
-		}
+		$this->indexList($config, $output, $this->getFileList($config, $indexPaths) );
 
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
