@@ -30,7 +30,13 @@ use ReflectionException;
 class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 	/** @var array [$type][$name] = ['has_trait'=>,'data'=>,'file'=>] */
-	private $index = [];
+	private $index = [
+		SymbolTable::TYPE_CLASS => [],
+		SymbolTable::TYPE_FUNCTION => [],
+		SymbolTable::TYPE_INTERFACE => [],
+		SymbolTable::TYPE_TRAIT => [],
+		SymbolTable::TYPE_DEFINE => []
+	];
 
 	private $processNumber = 0;
 
@@ -55,7 +61,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function disconnect() {
 		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
-		file_put_contents($fileName, json_encode($this->index));
+		$str=json_encode($this->index,JSON_THROW_ON_ERROR|JSON_INVALID_UTF8_SUBSTITUTE);
+		file_put_contents($fileName, $str) ;
 	}
 
 	/**
@@ -110,7 +117,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	function indexTable($processCount) {
 		for ($index = 1; $index <= $processCount; ++$index) {
 			$fileName = $this->fileName . '.' . $index;
-			$arr = json_decode(file_get_contents($fileName), true);
+			$content = file_get_contents($fileName);
+			$arr = json_decode($content, true);
 			foreach ($arr as $type => $arr2) {
 				if (!isset($this->index[$type])) {
 					$this->index[$type] = [];

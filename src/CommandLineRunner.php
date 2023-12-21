@@ -36,11 +36,9 @@ where: -p #/#                 = Define the number of partitions and the current 
        -a                     = run the \"analyze\" operation
 
        -i                     = run the \"index\" operation.
-                                Defaults to yes if using in memory index.
-
-       -s                     = prefer sqlite index
+                                Defaults to yes if using in memory index.       
         
-       -j                     = prefer json index (new)
+       -j                     = prefer json index
 
        -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
 

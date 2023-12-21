@@ -153,10 +153,10 @@ class Config {
 		}
 
 		if ($this->processes > 1 && $this->preferredTable == self::MEMORY_SYMBOL_TABLE) {
-			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
+			$this->preferredTable = self::JSON_SYMBOL_TABLE;
 		}
 
-		if ($this->preferredTable == self::SQLITE_SYMBOL_TABLE || $this->preferredTable == self::JSON_SYMBOL_TABLE) {
+		if ($this->preferredTable == self::JSON_SYMBOL_TABLE) {
 			if (!file_exists($this->getSymbolTableFile())) {
 				$this->forceIndex = true;
 			}
@@ -164,11 +164,7 @@ class Config {
 				unlink($this->getSymbolTableFile());
 			}
 
-			if ($this->preferredTable == self::JSON_SYMBOL_TABLE) {
-				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\JsonSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
-			} else {
-				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
-			}
+			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\JsonSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
 		} else {
 			$this->forceIndex = true;
 			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable($this->getBasePath());
@@ -307,13 +303,6 @@ class Config {
 					break;
 				case '-i':
 					$this->forceIndex = true;
-					break;
-				case '-s':
-					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
-					if (!extension_loaded("pdo_sqlite") || !extension_loaded("sqlite3")) {
-						echo "Guardrail requires the PDO Sqlite extension, which is not loaded.\n";
-						throw new InvalidConfigException();
-					}
 					break;
 				case '-m':
 					$this->preferredTable = self::MEMORY_SYMBOL_TABLE;
@@ -502,8 +491,7 @@ class Config {
 	 * @return string
 	 */
 	private function getSymbolTableFile() {
-		return $this->basePath . "/" . $this->symbolTableFile .
-			($this->preferredTable == self::SQLITE_SYMBOL_TABLE ? ".sqlite3" : ".json");
+		return $this->basePath . "/" . $this->symbolTableFile . ".json";
 	}
 
 	/**
