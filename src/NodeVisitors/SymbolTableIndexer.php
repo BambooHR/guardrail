@@ -9,6 +9,7 @@ use BambooHR\Guardrail\Output\OutputInterface;
 use PhpParser\Builder\ClassConst;
 use PhpParser\Builder\Enum_;
 use PhpParser\Builder\EnumCase;
+use PhpParser\Builder\Param;
 use PhpParser\Builder\Property;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -135,8 +136,9 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			$enum->stmts[]=$property->getNode();
 
 			$enumName = $enum->namespacedName->toString();
-			$enum->stmts[]=new Node\Stmt\ClassMethod("tryFrom",["returnType" => $enumName]);
-			$enum->stmts[]=new Node\Stmt\ClassMethod("from", ["returnType" => $enumName]);
+			$param = (new Param("fromValue"))->setType($enum->scalarType);
+			$enum->stmts[]=new Node\Stmt\ClassMethod("tryFrom",["returnType" => $enumName, "flags"=>Class_::MODIFIER_STATIC, 'params'=>[$param->getNode()]]);
+			$enum->stmts[]=new Node\Stmt\ClassMethod("from", ["returnType" => $enumName, "flags"=>Class_::MODIFIER_STATIC, 'param'=>[$param->getNode()]]);
 		}
 	}
 
