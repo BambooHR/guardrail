@@ -59,6 +59,28 @@ class PropertyStoreCheck extends BaseCheck {
 
 			$targetType = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			$valueType = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			$nodeVarName=strval($node->var->name);
+
+			//echo "Checking safety of assigning ".TypeComparer::typeToString($valueType). " into a  ".TypeComparer::typeToString($targetType)."\n";
+
+			$insideConstructor=$this->insideConstructor($scope);
+
+			TypeComparer::forEachType($targetType, function($individualType) use ($nodeVarName, $fileName, $node, $inside, $insideConstructor) {
+				if ($individualType instanceof Node\Identifier || $individualType instanceof Node\Name) {
+					$typeStr = strval($individualType);
+					if ($this->symbolTable->isDefinedClass($typeStr)) {
+						$property = Util::findAbstractedProperty($typeStr, $nodeVarName, $this->symbolTable);
+						if ($property &&
+							!$insideConstructor &&
+							($property->isReadOnly() || $property->getClass()->isReadOnly())
+						) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to set read only variable " . $typeStr . "->" . $nodeVarName);
+						}
+					}
+				}
+			});
+
+
 			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope)) {
 				if($targetType instanceof Node\Identifier && util::isScalarType(strval($targetType))) {
 					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR;
@@ -68,5 +90,18 @@ class PropertyStoreCheck extends BaseCheck {
 				$this->emitError($fileName, $node, $errorType, "Type mismatch can not assign " . TypeComparer::typeToString($valueType) . " into a " . TypeComparer::typeToString($targetType));
 			}
 		}
+	}
+
+	function insideConstructor(?Scope $scope) {
+		if (!$scope) {
+			return false;
+		}
+		foreach(array_reverse($scope->getParentNodes()) as $parentNode) {
+			if ($parentNode instanceof Node\FunctionLike || $parentNode instanceof Node\Stmt\Class_) {
+				return ($parentNode instanceof Node\Stmt\ClassMethod &&
+					strcasecmp($parentNode->name,"__construct")==0);
+			}
+		}
+		return false;
 	}
 }

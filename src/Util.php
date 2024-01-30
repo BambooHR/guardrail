@@ -6,6 +6,7 @@
  */
 
 
+use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\MethodCall;
@@ -230,20 +231,21 @@ class Util {
 	 *
 	 * @return array First param is the abstracted method, second param is the class it was declared in.
 	 */
-	static public function findAbstractedProperty($className, $name, SymbolTable $symbolTable) {
+	static public function findAbstractedProperty(string $className, string $name, SymbolTable $symbolTable):?Property {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
-				return [null,""];
+				return null;
 			}
 
-			$prop = $class->getProperty($name);
+			$prop = $symbolTable->getAbstractedProperty($class, $name);
 			if ($prop) {
-				return [$prop, $className];
+				return $prop;
 			}
-			$className = $class->getParentClassName();
+
+			$className=$class->getParentClassName();
 		}
-		return [null,""];
+		return null;
 	}
 
 	/**

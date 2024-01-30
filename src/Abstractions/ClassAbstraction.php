@@ -63,6 +63,10 @@ class ClassAbstraction implements ClassInterface {
 		}
 	}
 
+	public function isReadOnly(): bool {
+		return ($this->class instanceof Class_ ? $this->class->isReadonly() : false);
+	}
+
 	/**
 	 * getMethodNames
 	 *
@@ -199,27 +203,31 @@ class ClassAbstraction implements ClassInterface {
 	 * @return Property
 	 */
 	public function getProperty($name) {
-		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
-		foreach ($properties as $prop) {
-			/** @var \PhpParser\Node\Stmt\Property $prop */
-			foreach ($prop->props as $propertyProperty) {
-				/** @var PropertyProperty $propertyProperty */
-				if ($propertyProperty->name == $name) {
-					if ($prop->isPrivate()) {
-						$access = "private";
-					} else if ($prop->isProtected()) {
-						$access = "protected";
-					} else {
-						$access = "public";
+		foreach ($this->class->stmts as $prop) {
+			if ($prop instanceof \PhpParser\Node\Stmt\Property) {
+				/** @var \PhpParser\Node\Stmt\Property $prop */
+				foreach ($prop->props as $propertyProperty) {
+					/** @var PropertyProperty $propertyProperty */
+					if ($propertyProperty->name == $name) {
+						if ($prop->isPrivate()) {
+							$access = "private";
+						} else {
+							if ($prop->isProtected()) {
+								$access = "protected";
+							} else {
+								$access = "public";
+							}
+						}
+						$type = $prop->type;
+						//if (Config::shouldUseDocBlockForProperties() && empty($type)) {
+						//	$type = Scope::nameFromName($propertyProperty->namespacedType);
+						//}
+						return new Property($this,$propertyProperty->name, $type, $access, $prop->isStatic(), $prop->isReadOnly());
 					}
-					$type = $prop->type;
-					//if (Config::shouldUseDocBlockForProperties() && empty($type)) {
-					//	$type = Scope::nameFromName($propertyProperty->namespacedType);
-					//}
-					return new Property($propertyProperty->name, $type, $access, $prop->isStatic());
 				}
 			}
 		}
+		return null;
 	}
 
 	public function isEnum(): bool {

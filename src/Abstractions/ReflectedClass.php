@@ -163,10 +163,10 @@ class ReflectedClass implements ClassInterface {
 					$access = "public";
 				}
 				$type = Util::reflectionTypeToPhpParserType($prop->getType());
-				return new Property($prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC );
+				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY );
 			}
 			return null;
-		} catch (\ReflectionException $exception) {
+		} catch (\ReflectionException) {
 			return null;
 		}
 	}
@@ -187,5 +187,13 @@ class ReflectedClass implements ClassInterface {
 
 	public function isEnum(): bool {
 		return $this->refl instanceof \ReflectionEnum;
+	}
+
+	public function isReadOnly(): bool {
+		/*
+		if (method_exists($this->refl,"isReadOnly")) {
+			return $this->refl->isReadOnly();
+		}*/
+		return false;
 	}
 }

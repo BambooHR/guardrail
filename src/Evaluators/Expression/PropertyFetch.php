@@ -70,7 +70,7 @@ class PropertyFetch implements ExpressionInterface
 				function ($class) use ($propName, &$types, &$unknown, $table) {
 					$classDef = $table->getAbstractedClass($class);
 					if ($classDef) {
-						list($prop) = Util::findAbstractedProperty($class, $propName, $table);
+						$prop= Util::findAbstractedProperty($class, $propName, $table);
 						if ($prop) {
 							$types[] = $prop->getType();
 						} else {
