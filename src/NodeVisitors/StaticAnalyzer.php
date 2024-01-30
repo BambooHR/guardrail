@@ -28,6 +28,7 @@ use BambooHR\Guardrail\Checks\ParamTypesCheck;
 use BambooHR\Guardrail\Checks\PropertyFetchCheck;
 use BambooHR\Guardrail\Checks\PropertyStoreCheck;
 use BambooHR\Guardrail\Checks\Psr4Check;
+use BambooHR\Guardrail\Checks\ReadOnlyPropertyCheck;
 use BambooHR\Guardrail\Checks\ReturnCheck;
 use BambooHR\Guardrail\Checks\SplatCheck;
 use BambooHR\Guardrail\Checks\StaticCallCheck;
@@ -147,6 +148,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new ImagickCheck($this->index, $output),
 			new UnsafeSuperGlobalCheck($this->index, $output),
 			new UseStatementCaseCheck($this->index, $output),
+			new ReadOnlyPropertyCheck($this->index, $output),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
