@@ -65,7 +65,7 @@ class PropertyStoreCheck extends BaseCheck {
 
 			$insideConstructor=$this->insideConstructor($scope);
 
-			TypeComparer::forEachType($targetType, function($individualType) use ($nodeVarName, $fileName, $node, $inside, $insideConstructor) {
+			TypeComparer::forEachType($targetType, function($individualType) use ($nodeVarName, $fileName, $node, $insideConstructor) {
 				if ($individualType instanceof Node\Identifier || $individualType instanceof Node\Name) {
 					$typeStr = strval($individualType);
 					if ($this->symbolTable->isDefinedClass($typeStr)) {
