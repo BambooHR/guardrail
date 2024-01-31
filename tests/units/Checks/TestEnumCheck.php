@@ -69,10 +69,12 @@ class TestEnumCheck extends TestSuiteSetup {
 		$this->assertEquals(2, $output->getErrorCount(), "Failed to detect declaring a property in an enum");
 	}
 
+	public function testBackedCallToFrom() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNKNOWN_METHOD), "Failed to find enum::from()" );
+	}
 
 	public function testLegalEnumUsage() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_ILLEGAL_ENUM), "Failed to detect traits with properties" );
 	}
-
 
 }
