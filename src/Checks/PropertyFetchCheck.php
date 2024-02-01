@@ -65,12 +65,12 @@ class PropertyFetchCheck extends BaseCheck {
 							// SimpleXMLElement has arbitrary properties based on the XML that was parsed.
 							return;
 						}
-						list($property, $declaredIn) = Util::findAbstractedProperty($typeStr, strval($node->name), $this->symbolTable);
+						$property= Util::findAbstractedProperty($typeStr, strval($node->name), $this->symbolTable);
 
 						if (!$property) {
 							$this->handleUndeclaredProperty($fileName, $node, $typeStr);
 						} else {
-							$this->handleDeclaredProperty($fileName, $node, $typeStr, $inside, $property, $declaredIn);
+							$this->handleDeclaredProperty($fileName, $node, $typeStr, $inside, $property, $property->getClass()->getName());
 						}
 					}
 				}

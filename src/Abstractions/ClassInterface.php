@@ -94,4 +94,6 @@ interface ClassInterface {
 	public function isInterface();
 
 	public function isEnum():bool;
+
+	public function isReadOnly():bool;
 }

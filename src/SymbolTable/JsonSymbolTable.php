@@ -94,10 +94,13 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @throws Exception
 	 */
 	private function addType($name, $file, $type, $hasTrait = 0, $data = "") {
-		if (!isset($this->index[$type])) {
+		$name=strtolower($name);
+		if (!array_key_exists($type, $this->index)) {
 			$this->index[$type] = [];
 		}
-		$this->index[$type][strtolower($name)] = ['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
+		if (!array_key_exists($name, $this->index[$type])) {
+			$this->index[$type][$name] = ['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
+		}
 	}
 
 	/**

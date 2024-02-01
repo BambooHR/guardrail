@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\ClassInterface;
 use BambooHR\Guardrail\Abstractions\FunctionAbstraction as AbstractionFunction;
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractionClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
@@ -165,6 +166,20 @@ abstract class SymbolTable {
 			if ($ob) {
 				$this->cache->add("AClass:" . $cacheName, $ob);
 			}
+		}
+		return $ob;
+	}
+
+	function getAbstractedProperty(ClassInterface $class, $propertyName) {
+
+		$cacheName= $propertyName."@".$class->getName();
+		$ob = $this->cache->get("AProp:" . $cacheName);
+		if ($ob) {
+			return $ob;
+		}
+		$ob = $class->getProperty($propertyName);
+		if($ob) {
+			$this->cache->add("AProp:" . $cacheName, $ob);
 		}
 		return $ob;
 	}

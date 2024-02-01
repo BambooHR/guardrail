@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\EnumCodeAugmenter;
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -181,6 +182,7 @@ class Grabber extends NodeVisitorAbstract {
 					$traverser = new NodeTraverser;
 					$traverser->addVisitor(new TraitImportingVisitor($table));
 					$stmts = $traverser->traverse($stmts);
+
 				} catch (UnknownTraitException $exception) {
 					echo "[$className] Unknown trait! " . $exception->getMessage() . "\n";
 					// Ignore these for now.
@@ -192,7 +194,11 @@ class Grabber extends NodeVisitorAbstract {
 		}
 
 		if ($stmts) {
-			return self::getClassFromStmts($table, $stmts, $className, $classType);
+			$cls = self::getClassFromStmts($table, $stmts, $className, $classType);
+			if ($cls instanceof Node\Stmt\Enum_) {
+				EnumCodeAugmenter::addEnumPropsAndMethods($cls);
+			}
+			return $cls;
 		}
 		return null;
 	}
