@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: guardrail
+  description: BambooHR tool to run Static Analysis
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: library
+  owner: speed-demons
+  system: software-platform
+  lifecycle: production
