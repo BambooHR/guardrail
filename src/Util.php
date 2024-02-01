@@ -8,6 +8,8 @@
 
 use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use PhpParser\Node\Attribute;
+use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\IntersectionType;
@@ -61,6 +63,18 @@ class Util {
 		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float' || $name=="false" || $name =="true";
 	}
 
+
+	static function getPhpAttribute(string $name, array $attrGroups):?Attribute {
+		foreach($attrGroups as $attrGroup) {
+			/** @var AttributeGroup $attrGroup */
+			foreach($attrGroup->attrs as $attribute) {
+				if (strcasecmp($name, $attribute->name)==0) {
+					return $attribute;
+				}
+			}
+		}
+		return null;
+	}
 	/**
 	 * isLegalNonObject
 	 *
@@ -105,6 +119,7 @@ class Util {
 			return "protected";
 		}
 		trigger_error("Impossible");
+		return "";
 	}
 
 	/**
@@ -112,7 +127,7 @@ class Util {
 	 *
 	 * @param string $basePath The base path
 	 * @param string $path     The path
-	 * @param string $globArr  The rest
+	 * @param array  $globArr  The rest
 	 *
 	 * @return bool
 	 */
