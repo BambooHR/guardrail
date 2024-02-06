@@ -15,7 +15,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\Node\UnionType;
 
 /**
  * Class ParamTypesCheck
@@ -80,12 +79,18 @@ class ParamTypesCheck extends BaseCheck {
 			$this->checkForNestedFunction($fileName, $node, $inside, $scope);
 		}
 
+		if ($node instanceof ClassMethod) {
+			$this->checkForBadOverride($node, $inside, $fileName);
+		}
+
 		if ($node instanceof Function_) {
 			$displayName = $node->name;
-		} else if ($node instanceof ClassMethod) {
-			$displayName = $node->name;
 		} else {
-			$displayName = "closure function";
+			if ($node instanceof ClassMethod) {
+				$displayName = $node->name;
+			} else {
+				$displayName = "closure function";
+			}
 		}
 
 		if ($node instanceof Node\FunctionLike) {
@@ -94,7 +99,7 @@ class ParamTypesCheck extends BaseCheck {
 				if ($param->type) {
 					$name = $param->type;
 					if (!$this->isAllowed($name, $inside)) {
-						$name=TypeComparer::typeToString($name);
+						$name = TypeComparer::typeToString($name);
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in parameter $index of $displayName");
 					}
 				}
@@ -103,8 +108,22 @@ class ParamTypesCheck extends BaseCheck {
 			if ($node->getReturnType()) {
 				$returnType = $node->getReturnType();
 				if (!$this->isAllowed($returnType, $inside)) {
-					$returnType=TypeComparer::typeToString($returnType);
+					$returnType = TypeComparer::typeToString($returnType);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
+				}
+			}
+		}
+	}
+	function checkForBadOverride(ClassMethod $node, ClassLike $inside, string $fileName) {
+		$isOverload = Util::getPhpAttribute("Override", $node->attrGroups);
+		if ($isOverload) {
+			if ($inside instanceof Class_) {
+				if (!$inside->extends) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_OVERRIDE_BASE_CLASS, "Attempt to override a method in a base class");
+				} else {
+					if (!Util::findAbstractedMethod($inside->extends,$node->name,$this->symbolTable)) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Impossible #[Override].  No method named ".$node->name."() found in ".$inside->extends." or any parent class.");
+					}
 				}
 			}
 		}

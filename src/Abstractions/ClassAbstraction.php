@@ -154,7 +154,7 @@ class ClassAbstraction implements ClassInterface {
 			foreach($constants as $enumOption) {
 				/** @var EnumCase $enumOption */
 				if (strcasecmp($enumOption->name,$name)==0) {
-					return $enumOption->expr ?? $this->class->namespacedName;
+					return $this->class->namespacedName;
 				}
 			}
 		}

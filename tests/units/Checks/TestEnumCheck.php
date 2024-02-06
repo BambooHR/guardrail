@@ -77,4 +77,7 @@ class TestEnumCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_ILLEGAL_ENUM), "Failed to detect traits with properties" );
 	}
 
+	public function testValuesTypeFetch() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_UNKNOWN_PROPERTY), "Failed retrieve the name of a specific enum case");
+	}
 }
