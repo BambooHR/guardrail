@@ -213,15 +213,15 @@ class AnalyzingPhase {
 				function ($socket) use ($config) {
 					$this->runChildAnalyzer($socket, $config);
 				});
-			$childPid = $pm->getPidForSocket($socket);
-			$this->output->outputExtraVerbose("Starting child $childPid with first file\n");
+			if (!$output->isTTY()) {
+				$output->outputExtraVerbose(sprintf("%d - %s\n", $fileNumber, $toProcess[$fileNumber]));
+			}
 			$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
 		}
 
 		// Server process reports the errors and serves up new files to the list.
 		$processDied = false;
 		$bytes = 0;
-		$this->output->outputExtraVerbose("Parent looking for messages from the children\n");
 		$pm->loopWhileConnections(
 			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $totalBytes, $start, $pm) {
 				$processComplete = $this->processChildMessage($socket, $msg, $processingCount, $fileNumber, $bytes, $output, $toProcess, $totalBytes, $start, $pm);
@@ -235,7 +235,7 @@ class AnalyzingPhase {
 
 	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, OutputInterface $output, $toProcess, $totalBytes, $start, ProcessManager $pm) {
 		$childPid = $pm->getPidForSocket($socket);
-		$output->outputExtraVerbose("parent received from $childPid: $msg\n");
+		//$output->outputExtraVerbose("parent received from $childPid: $msg\n");
 
 		if ($msg === false) {
 			echo "Error: Unexpected error reading from socket\n";
@@ -256,6 +256,7 @@ class AnalyzingPhase {
 				break;
 			case 'ERROR' :
 				$vars = unserialize(base64_decode($details));
+
 				$this->output->emitError(
 					$vars['className'],
 					$vars['file'],
@@ -265,7 +266,7 @@ class AnalyzingPhase {
 				);
 				break;
 			case 'ANALYZED':
-				list($size,) = explode(' ', $details, 2);
+				list($size,$analyzedFileName) = explode(' ', $details, 2);
 				if ($fileNumber < count($toProcess)) {
 					$bytes += intval($size);
 					$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
@@ -276,13 +277,17 @@ class AnalyzingPhase {
 
 				$kbs=intdiv( intdiv($bytes, 1024), (time()-$start) ?: 1);
 				["total"=>$errors, "displayed"=>$displayCount] =  $output->getErrorCounts();
-				printf("%d/%d, %d/%d MB (%d%%), %d KB/s %d errors, %d suppressed\r",
-					$fileNumber, count($toProcess),
-					intdiv($bytes,1024*1024), intdiv($totalBytes,1024*1024),
-					intdiv(100*$bytes, $totalBytes),
-					$kbs,
-					$displayCount, $errors-$displayCount
-				);
+				if ($output->isTTY()) {
+					printf("%d/%d, %d/%d MB (%d%%), %d KB/s %d errors, %d suppressed   \r",
+						   $fileNumber, count($toProcess),
+						   intdiv($bytes, 1024 * 1024), intdiv($totalBytes, 1024 * 1024),
+						   intval(round(100 * $bytes / $totalBytes)),
+						   $kbs,
+						   $displayCount, $errors - $displayCount
+					);
+				} else {
+					$output->output(".", sprintf("%d - %s", $fileNumber-1, $analyzedFileName));
+				}
 				break;
 			case 'TIMINGS':
 				$this->timingResults[] = json_decode(base64_decode($details), true);
@@ -312,9 +317,6 @@ class AnalyzingPhase {
 		while (1) {
 			$buffer->read($socket);
 			foreach ($buffer->getMessages() as $receive) {
-				if ($config->getOutputLevel() >= 2) {
-					echo "Child $pid recieved $receive\n";
-				}
 				$receive = trim($receive);
 				if ($receive == "TIMINGS") {
 					$this->socket_write_all($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
@@ -391,7 +393,7 @@ class AnalyzingPhase {
 			}
 		}
 
-		$output->outputVerbose("\nAllotting work for " . $config->getPartitions() . " partitions\n");
+		$output->outputVerbose("Allotting work for " . $config->getPartitions() . " partitions\n");
 
 		// Sort all the files first by size and second by name.
 		// Once we have a list that is roughly even, then we can split
@@ -428,9 +430,9 @@ class AnalyzingPhase {
 			}
 		}
 
-		$output->outputVerbose("Sizes: " . implode(", ", $sizes) . "\n");
+		$output->outputVerbose("Sizes: " . implode(", ", $sizes)."\n");
 
-		$output->outputVerbose("\nPartition " . ($partitionNumber + 1) . " analyzing " . count($partialList) . " files (" . $sizes[$partitionNumber] . " bytes)\n");
+		$output->outputVerbose("Partition " . ($partitionNumber + 1) . " analyzing " . number_format(count($partialList) ). " files (" . number_format($sizes[$partitionNumber] ). " bytes)\n");
 		return $this->phase2($config, $output, $partialList, $sizes[$partitionNumber]);
 	}
 

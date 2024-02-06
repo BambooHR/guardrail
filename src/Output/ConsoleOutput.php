@@ -23,7 +23,7 @@ class ConsoleOutput extends XUnitOutput {
 			return;
 		}
 		$this->displayedErrors++;
-		if ($this->emitErrors) {
+		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}
 		$this->errors[$fileName][] = ["line" => $lineNumber, "message" => $message];

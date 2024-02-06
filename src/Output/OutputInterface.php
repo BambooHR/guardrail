@@ -85,4 +85,6 @@ interface OutputInterface {
 	function resumeType($name);
 
 	function getErrorCounts();
+
+	function isTTY(): bool;
 }

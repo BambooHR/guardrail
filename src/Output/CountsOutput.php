@@ -23,7 +23,7 @@ class CountsOutput extends XUnitOutput {
 			return;
 		}
 		$this->displayedErrors++;
-		if ($this->emitErrors) {
+		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}
 		if (!isset($this->errors[$name])) {

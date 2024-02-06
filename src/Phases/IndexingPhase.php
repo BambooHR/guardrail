@@ -122,7 +122,7 @@ class IndexingPhase {
 	 * @return void
 	 */
 	public function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
-		$output->outputVerbose("Importing traits");
+		$output->outputVerbose("\n\nImporting traits\n");
 		$symbolTable->begin();
 		foreach ($symbolTable->getClassesThatUseAnyTrait() as $className) {
 			$class = $symbolTable->getClass($className);
@@ -186,11 +186,18 @@ class IndexingPhase {
 			$processNumber = $fileNumber;
 			$child = $this->createIndexingChild($processNumber, $config);
 			socket_write($child, "INDEX " . $itr->current() . "\n");
-			$output->output(".", sprintf("%d - %s", $fileNumber, $itr->current()));
+
+			if (!$output->isTTY() && $config->getOutputLevel()==1) {
+				$output->outputVerbose(".");
+			}
+			if ($config->getOutputLevel()==2) {
+				$output->outputExtraVerbose( sprintf("%d - %s\n", $fileNumber, $itr->current()) );
+			}
+
 		}
 
 		$this->processManager->loopWhileConnections(
-			function ($socket, $msg) use (&$itr, &$fileNumber, &$bytes, $output, $start) {
+			function ($socket, $msg) use (&$itr, &$fileNumber, &$bytes, $output, $start, $config) {
 				if ($msg === false) {
 					echo "Error: Unexpected error reading from socket\n";
 					return ProcessManager::CLOSE_CONNECTION;
@@ -200,7 +207,7 @@ class IndexingPhase {
 				if ($message == 'INDEXED') {
 					[$size, $fileName, $childProcessNumber] = explode(' ', $details);
 					$bytes += $size;
-					$output->output(".", sprintf("%d - %s ($childProcessNumber)", ++$fileNumber, $fileName));
+					$output->outputExtraVerbose(sprintf("%d - %s ($childProcessNumber)\n", ++$fileNumber, $fileName));
 
 					if ($itr->valid()) {
 						socket_write($socket, "INDEX " . $itr->current() ."\n");
@@ -210,7 +217,18 @@ class IndexingPhase {
 						return ProcessManager::CLOSE_CONNECTION;
 					}
 					if ($fileNumber % 50 == 0) {
-						$output->output("", sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start)));
+						$process= sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start));
+						if ($config->getOutputLevel()==1) {
+							if (!$output->isTTY()) {
+								$output->outputVerbose(".");
+							} else {
+								$output->outputVerbose($process."   \r");
+							}
+						} else {
+							if ($config->getOutputLevel()==2) {
+								$output->outputExtraVerbose("\n".$process . "\n");
+							}
+						}
 					}
 				} else {
 					$output->outputVerbose($message . " D:" . $details . "\n");
@@ -238,7 +256,7 @@ class IndexingPhase {
 				"Invalid or missing paths in your index config section.");
 			exit;
 		}
-		$output->outputVerbose("Index directories are valid: Indexing starting.");
+		$output->outputVerbose("Index directories are valid: Indexing starting.\n");
 
 		$this->indexList($config, $output, $this->getFileList($config, $indexPaths) );
 
