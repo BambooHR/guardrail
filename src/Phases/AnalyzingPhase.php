@@ -234,8 +234,6 @@ class AnalyzingPhase {
 	}
 
 	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, OutputInterface $output, $toProcess, $totalBytes, $start, ProcessManager $pm) {
-		$childPid = $pm->getPidForSocket($socket);
-		//$output->outputExtraVerbose("parent received from $childPid: $msg\n");
 
 		if ($msg === false) {
 			echo "Error: Unexpected error reading from socket\n";
@@ -316,7 +314,6 @@ class AnalyzingPhase {
 		}
 		$this->initChildThread($socket, $config);
 		$buffer = new SocketBuffer();
-		$pid = getmypid();
 		while (1) {
 			$buffer->read($socket);
 			foreach ($buffer->getMessages() as $receive) {
