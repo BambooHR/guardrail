@@ -34,8 +34,10 @@ class ConsoleOutput extends XUnitOutput {
 	 */
 	public function renderResults() {
 		echo "\n";
+		$white=$this->ttyContent("\33[97m");
+		$reset=$this->ttyContent("\33[0m");
 		foreach ($this->errors as $fileName => $errors) {
-			echo " Line  | $fileName\n";
+			echo " ${white}Line${reset}  | ${white}$fileName${reset}\n";
 			echo "-------+----------------------------------------------------------------\n";
 			usort($errors, function ($cmpa, $cmpb) {
 				return $cmpa['line'] > $cmpb['line'] ? 1 : ($cmpa['line'] == $cmpb['line'] ? 0 : -1);
@@ -44,6 +46,7 @@ class ConsoleOutput extends XUnitOutput {
 				if (!is_int($error['line'])) {
 					var_dump($error);
 				}
+
 				printf("%6d | %s\n", $error['line'], $error['message']);
 			}
 			echo "\n";

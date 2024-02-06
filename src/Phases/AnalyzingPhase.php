@@ -278,12 +278,15 @@ class AnalyzingPhase {
 				$kbs=intdiv( intdiv($bytes, 1024), (time()-$start) ?: 1);
 				["total"=>$errors, "displayed"=>$displayCount] =  $output->getErrorCounts();
 				if ($output->isTTY()) {
-					printf("%d/%d, %d/%d MB (%d%%), %d KB/s %d errors, %d suppressed   \r",
+					$white=$output->ttyContent("\33[97m");
+					$red=$output->ttyContent("\33[31m");
+					$reset=$output->ttyContent("\33[0m");
+					printf("$white%d$reset/$white%d$reset, $white%d$reset/$white%d$reset MB ($white%d$reset%%), $white%d$reset KB/s $red%d$reset errors   \r",
 						   $fileNumber, count($toProcess),
 						   intdiv($bytes, 1024 * 1024), intdiv($totalBytes, 1024 * 1024),
 						   intval(round(100 * $bytes / $totalBytes)),
 						   $kbs,
-						   $displayCount, $errors - $displayCount
+						   $displayCount
 					);
 				} else {
 					$output->output(".", sprintf("%d - %s", $fileNumber-1, $analyzedFileName));
@@ -320,7 +323,7 @@ class AnalyzingPhase {
 				$receive = trim($receive);
 				if ($receive == "TIMINGS") {
 					$this->socket_write_all($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
-					return 0;
+					return;
 				} else {
 					list(, $file) = explode(' ', $receive, 2);
 					$size = $this->analyzeFile($file, $config);
@@ -378,6 +381,9 @@ class AnalyzingPhase {
 			$output->output("Invalid or missing paths in your test config section.\n", "Invalid or missing paths in your test config section.\n");
 			exit;
 		}
+
+		$white=$output->ttyContent("\33[97m");
+		$reset=$output->ttyContent("\33[0m");
 		$output->outputVerbose("Test directories are valid: Starting Analysis\n");
 		$toProcess = [];
 		if ($config->hasFileList()) {
@@ -387,13 +393,20 @@ class AnalyzingPhase {
 		} else {
 			foreach ($indexPaths as $path) {
 				$tmpDirectory = Util::fullDirectoryPath($baseDirectory, $path);
-				$output->outputVerbose("Directory: $path\n");
+				$output->outputVerbose(
+					"Directory: " .
+					$white .
+					$path .
+					$reset .
+					$output->ttyContent("\33[0m") .
+					"\n"
+				);
 				$it2 = DirectoryLister::getGenerator($tmpDirectory);
 				$this->getPhase2Files($config, $it2, $toProcess);
 			}
 		}
 
-		$output->outputVerbose("Allotting work for " . $config->getPartitions() . " partitions\n");
+		$output->outputVerbose("Allotting work for " . $white . $config->getPartitions() . $reset . " partitions\n");
 
 		// Sort all the files first by size and second by name.
 		// Once we have a list that is roughly even, then we can split
@@ -430,9 +443,9 @@ class AnalyzingPhase {
 			}
 		}
 
-		$output->outputVerbose("Sizes: " . implode(", ", $sizes)."\n");
+		$output->outputVerbose("Partition sizes: " . $white . implode("$reset,$white ", $sizes)."$reset\n");
 
-		$output->outputVerbose("Partition " . ($partitionNumber + 1) . " analyzing " . number_format(count($partialList) ). " files (" . number_format($sizes[$partitionNumber] ). " bytes)\n");
+		$output->outputVerbose("Partition " . $white.($partitionNumber + 1).$reset . " analyzing " . $white.number_format(count($partialList) ). $reset." files (" . $white.number_format($sizes[$partitionNumber] ).$reset. " bytes)\n");
 		return $this->phase2($config, $output, $partialList, $sizes[$partitionNumber]);
 	}
 

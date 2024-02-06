@@ -217,7 +217,12 @@ class IndexingPhase {
 						return ProcessManager::CLOSE_CONNECTION;
 					}
 					if ($fileNumber % 50 == 0) {
-						$process= sprintf("Processing %.1f KB/second", $bytes / 1024 / (microtime(true) - $start));
+						$process= sprintf(
+							"Processing %s%.1f%s KB/second",
+							$output->ttyContent("\33[97m"),
+							$bytes / 1024 / (microtime(true) - $start),
+							$output->ttyContent("\33[0m")
+						);
 						if ($config->getOutputLevel()==1) {
 							if (!$output->isTTY()) {
 								$output->outputVerbose(".");

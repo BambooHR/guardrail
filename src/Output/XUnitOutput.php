@@ -256,6 +256,11 @@ class XUnitOutput implements OutputInterface {
 		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $name: $message\n");
 	}
 
+	public function ttyContent($content):string {
+		return $this->isTTY ? $content : "";
+	}
+
+
 	/**
 	 * output
 	 *
