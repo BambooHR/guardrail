@@ -41,5 +41,5 @@ interface MethodInterface extends FunctionLikeInterface {
 
 	public function getComplexReturnType();
 
-	public function getAttributes(string $name, bool $exactTypeOnly=true):array;
+	public function getAttributes(string $name):array;
 }

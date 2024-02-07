@@ -54,6 +54,7 @@ class ClassMethod implements MethodInterface {
 		if (strpos($docBlock, "@deprecated") !== false) {
 			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -172,7 +173,7 @@ class ClassMethod implements MethodInterface {
 		return false;
 	}
 
-	public function getAttributes(string $name, bool $exactTypeOnly=true): array {
+	public function getAttributes(string $name): array {
 		$ret=[];
 		foreach($this->method->attrGroups as $group) {
 			foreach($group->attrs as $attr) {

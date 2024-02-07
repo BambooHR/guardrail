@@ -92,12 +92,10 @@ class ReflectedClassMethod implements MethodInterface {
 		if ($this->refl->isPrivate()) {
 			return "private";
 		}
-		if ($this->refl->isPublic()) {
-			return "public";
-		}
 		if ($this->refl->isProtected()) {
 			return "protected";
 		}
+		return "public";
 	}
 
 	/**
@@ -182,8 +180,8 @@ class ReflectedClassMethod implements MethodInterface {
 		}
 	}
 
-	public function getAttributes(string $name, bool $exactTypeOnly=true):array {
-		$attributes=$this->refl->getAttributes($name, $exactTypeOnly ? 0 : \ReflectionAttribute::IS_INSTANCEOF );
+	public function getAttributes(string $name):array {
+		$attributes=$this->refl->getAttributes($name);
 		return array_map( function($attr) {
 			return new Attribute(new Name($attr->getName()));
 		}, $attributes);
