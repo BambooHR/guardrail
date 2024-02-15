@@ -27,11 +27,11 @@ class ClassConstCheck extends BaseCheck {
 				/** @var Node\Const_ $const */
 				$constValue = $const->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR );
 				if ($node->type && $constValue) {
-					if (!$this->comparer->isCompatibleWithTarget($node->type, $constValue, $scope)) {
+					if (!$this->comparer->isCompatibleWithTarget($node->type, $constValue, forceStrict: true)) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_CONST_TYPE,
-							 "Type mismatch between declared type and constant value " .
-							 TypeComparer::typeToString($node->type) . " vs " .
-							 TypeComparer::typeToString($constValue)
+							 "Type mismatch between declared type (".
+							 TypeComparer::typeToString($node->type) . ") and constant value (" .
+							 TypeComparer::typeToString($constValue) . ")"
 						);
 					}
 				}

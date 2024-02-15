@@ -185,7 +185,7 @@ class TypeComparer
 	 * @return bool
 	 *
 	 */
-	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, Scope $scope ) : bool {
+	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false ) : bool {
 
 		if ($target === NULL || $value === null) {
 			return true;
@@ -193,7 +193,7 @@ class TypeComparer
 
 		// Many target options, many values.  Every value option must match at least one target.
 		$ret = self::ifEveryType($value, fn($valueType) =>
-		self::ifAnyType($target, function($targetType) use ($scope, $valueType) {
+		self::ifAnyType($target, function($targetType) use ($forceStrict, $valueType) {
 
 			if($targetType instanceof IntersectionType) {
 				$types = $targetType->types;
@@ -204,11 +204,11 @@ class TypeComparer
 
 			foreach ($types as $targetComponentType) {
 				if ($valueType instanceof IntersectionType) {
-					if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType, $scope->isStrict())) {
+					if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType,$forceStrict)) {
 						return false;
 					}
 				} else {
-					if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $scope->isStrict())) {
+					if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $forceStrict)) {
 						return false;
 					}
 				}

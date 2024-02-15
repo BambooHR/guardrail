@@ -114,12 +114,12 @@ abstract class CallCheck extends BaseCheck {
 				// Type mismatch
 				$checker = new TypeComparer($this->symbolTable);
 
-				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope)) {
+				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope->isStrict())) {
 					$nullOnlyError = false;
 					$typeStr=TypeComparer::typeToString($type);
 					if ($type instanceof Node\UnionType || $type instanceof Node\NullableType || TypeComparer::isNamedIdentifier($type,"null")) {
 						$typeWithOutNull = TypeComparer::removeNullOption($type);
-						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope);
+						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope->isStrict());
 					}
 					$this->emitError($fileName, $node,
 						$nullOnlyError ? ErrorConstants::TYPE_SIGNATURE_TYPE_NULL : ErrorConstants::TYPE_SIGNATURE_TYPE,

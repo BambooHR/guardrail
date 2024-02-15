@@ -85,7 +85,7 @@ class ReturnCheck extends BaseCheck {
 				$returnType = TypeComparer::nameFromName( $inside->namespacedName );
 			}
 
-			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope)) {
+			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope->isStrict())) {
 				$functionName = $this->getFunctionName($inside, $insideFunc);
 				$msg = "Value returned from $functionName()" .
 					" must be a " . TypeComparer::typeToString($returnType) .
