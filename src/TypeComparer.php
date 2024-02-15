@@ -109,6 +109,13 @@ class TypeComparer
 			return true;
 		}
 
+		if (
+			($targetName=="false" || $targetName=="true" || $targetName=="null") &&
+			$valueName!=$targetName
+		) {
+			return false;
+		}
+
 		if (!$strict) {
 			if ($targetName=="mixed" || $valueName=="mixed") {
 				return true;
@@ -126,7 +133,9 @@ class TypeComparer
 	 *
 	 */
 	static function getChainedPropertyFetchName(Node $rootNode):?string {
-		if ($rootNode instanceof Node\Expr\PropertyFetch && $rootNode->name instanceof Identifier) {
+		if (($rootNode instanceof Node\Expr\PropertyFetch  || $rootNode instanceof Node\Expr\NullsafePropertyFetch)
+			&& $rootNode->name instanceof Identifier
+		) {
 			$left = self::getChainedPropertyFetchName($rootNode->var);
 			return $left ? ($left."->".$rootNode->name) : null;
 		} else if ($rootNode instanceof Node\Expr\ArrayDimFetch) {

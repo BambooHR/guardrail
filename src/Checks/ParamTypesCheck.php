@@ -42,6 +42,10 @@ class ParamTypesCheck extends BaseCheck {
 	 */
 	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name , ClassLike $inside=null) {
 		$return = true;
+
+		if ($name instanceof Node\NullableType && TypeComparer::isNamedIdentifier($name->type,"null")) {
+			return false;
+		}
 		TypeComparer::forEachAnyEveryType($name, function($name2) use ($inside, &$return) {
 			if($name2===null) {
 				return;
@@ -107,7 +111,7 @@ class ParamTypesCheck extends BaseCheck {
 
 			if ($node->getReturnType()) {
 				$returnType = $node->getReturnType();
-				if (!$this->isAllowed($returnType, $inside)) {
+				if (!TypeComparer::isNamedIdentifier($returnType,"never") && !$this->isAllowed($returnType, $inside)) {
 					$returnType = TypeComparer::typeToString($returnType);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 				}

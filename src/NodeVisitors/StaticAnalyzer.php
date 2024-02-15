@@ -10,6 +10,7 @@ use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
 use BambooHR\Guardrail\Checks\ClassConstantCheck;
+use BambooHR\Guardrail\Checks\ClassConstCheck;
 use BambooHR\Guardrail\Checks\ClassMethodStringCheck;
 use BambooHR\Guardrail\Checks\ConditionalAssignmentCheck;
 use BambooHR\Guardrail\Checks\ConstructorCheck;
@@ -149,6 +150,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new UnsafeSuperGlobalCheck($this->index, $output),
 			new UseStatementCaseCheck($this->index, $output),
 			new ReadOnlyPropertyCheck($this->index, $output),
+			new ClassConstCheck($this->index, $output),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 

@@ -1,6 +1,7 @@
 <?php namespace BambooHR\Guardrail\Tests;
 
 use BambooHR\Guardrail\Checks\BaseCheck;
+use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\XUnitOutput;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
@@ -60,6 +61,19 @@ abstract class TestSuiteSetup extends TestCase {
 
 		$analyzer->analyzeFile($fileName, $config);
 		return $output;
+	}
+
+	public function getStringErrorCount($fileData, $additionalConfig=[]):int {
+		$counts = $this->analyzeString($fileData,$additionalConfig)->getCounts();
+		return array_sum($counts);
+	}
+
+	public function analyzeString($fileData, $additionalConfig=[]) {
+		$fileName = "test.php";
+		$emit = ErrorConstants::getConstants();
+		unset( $emit[array_search(ErrorConstants::TYPE_AUTOLOAD_ERROR, $emit)] );
+		$additionalConfig = array_merge(["basePath" => "/"], $additionalConfig);
+		return $this->analyzeStringToOutput($fileName, $fileData, $emit, $additionalConfig);
 	}
 
 	public function analyzeStringToOutput(string $fileName, string $fileData, $emit, array $additionalConfig = []) {

@@ -51,6 +51,7 @@ class ErrorConstants {
 	const TYPE_SIGNATURE_COUNT_EXCESS = 'Standard.Param.Count.Excess';
 	const TYPE_SIGNATURE_RETURN = 'Standard.Return.Type';
 	const TYPE_SIGNATURE_TYPE = 'Standard.Param.Type';
+	const TYPE_CONST_TYPE = 'Standard.Const.Type';
 	const TYPE_SIGNATURE_TYPE_NULL = "Standard.Null.Param";
 	const TYPE_UNIMPLEMENTED_METHOD = 'Standard.Inheritance.Unimplemented';
 	const TYPE_UNKNOWN_CLASS = 'Standard.Unknown.Class';
@@ -79,13 +80,9 @@ class ErrorConstants {
 	 * @return string[]
 	 */
 	static function getConstants() {
-		$ret = [];
 		$selfReflection = new \ReflectionClass(self::class);
 		$constants = $selfReflection->getConstants();
 		sort($constants);
-		foreach ($constants as $name => $value) {
-			$ret[] = $value;
-		}
-		return $ret;
+		return array_values($constants);
 	}
 }
