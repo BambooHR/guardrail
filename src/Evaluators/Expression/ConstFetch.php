@@ -28,7 +28,7 @@ class ConstFetch implements ExpressionInterface
 			return TypeComparer::identifierFromName("null");
 		}
 		if (strcasecmp($expr->name, "false") == 0 || strcasecmp($expr->name, "true") == 0) {
-			return TypeComparer::identifierFromName("bool");
+			return TypeComparer::identifierFromName($expr->name);
 		}
 		if (defined($expr->name)) {
 			// Guardrail doesn't declare any global constants.  Any that exist are from the runtime.

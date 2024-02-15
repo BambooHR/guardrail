@@ -53,6 +53,8 @@ class XUnitOutput implements OutputInterface {
 	 */
 	private $silenced = [];
 
+	private $isTTY = false;
+
 	/**
 	 * XUnitOutput constructor.
 	 *
@@ -66,6 +68,11 @@ class XUnitOutput implements OutputInterface {
 		$this->emitErrors = $config->getOutputLevel() == 1;
 		$this->emitList = $config->getEmitList();
 
+		$this->isTTY = posix_isatty(STDOUT );
+	}
+
+	public function isTTY():bool {
+		return $this->isTTY;
 	}
 
 	/**
@@ -238,8 +245,8 @@ class XUnitOutput implements OutputInterface {
 
 		$message .= " on line " . $lineNumber;
 		$case->addFailure( $this->escapeText($name . ":" . $message), "error");
-		if ($this->emitErrors) {
-			// echo "E";
+		if ($this->emitErrors && !$this->isTTY()) {
+			echo "E";
 		}
 		if (!isset($this->counts[$name])) {
 			$this->counts[$name] = 1;
@@ -248,6 +255,11 @@ class XUnitOutput implements OutputInterface {
 		}
 		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $name: $message\n");
 	}
+
+	public function ttyContent($content):string {
+		return $this->isTTY ? $content : "";
+	}
+
 
 	/**
 	 * output
@@ -285,7 +297,7 @@ class XUnitOutput implements OutputInterface {
 	 */
 	public function outputVerbose($string) {
 		if ($this->config->getOutputLevel() >= 1) {
-			echo "\n".$string."\n";
+			echo $string;
 			flush();
 		}
 	}

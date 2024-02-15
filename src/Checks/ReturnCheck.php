@@ -63,9 +63,10 @@ class ReturnCheck extends BaseCheck {
 			$returnType = $insideFunc->getReturnType();
 
 			$returnIsVoid = TypeComparer::isNamedIdentifier($returnType,"void");
-			if ($returnIsVoid) {
+			$returnIsNever = TypeComparer::isNamedIdentifier($returnType,"never");
+			if ($returnIsVoid || $returnIsNever) {
 				if ($node->expr != null) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a void function $functionName");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a ".TypeComparer::typeToString($returnType)." function $functionName");
 					return;
 				}
 			} else if ($returnType && $node->expr == null) {
@@ -84,7 +85,7 @@ class ReturnCheck extends BaseCheck {
 				$returnType = TypeComparer::nameFromName( $inside->namespacedName );
 			}
 
-			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope)) {
+			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope->isStrict())) {
 				$functionName = $this->getFunctionName($inside, $insideFunc);
 				$msg = "Value returned from $functionName()" .
 					" must be a " . TypeComparer::typeToString($returnType) .

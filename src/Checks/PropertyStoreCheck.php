@@ -81,7 +81,7 @@ class PropertyStoreCheck extends BaseCheck {
 			});
 
 
-			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope)) {
+			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope->isStrict())) {
 				if($targetType instanceof Node\Identifier && util::isScalarType(strval($targetType))) {
 					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR;
 				} else {

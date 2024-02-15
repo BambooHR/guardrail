@@ -69,4 +69,33 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	public function testAccessingUnknownClass() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
 	}
+
+	public function testClassConstantType() {
+		$code = <<<'ENDCODE'
+			class Foo {
+				const string Bar = "Bar";
+				const int Bad = 5;
+				const float Baz = 5.5;
+				const bool TRU = true;
+				const bool FALS = false;
+				const true TERU = true;
+			}
+		ENDCODE;
+
+		$this->assertEquals(0, $this->getStringErrorCount($code), "Error with valid class constant.");
+	}
+
+	public function testBadClassConstantType() {
+		$code = <<<'ENDCODE'
+			class Foo {
+				const string Bar = 5;
+				const int Bad = "Bad";
+				const float Baz = false;
+				const bool TRU = 0;
+				const bool FALS = "Strike";
+				const true TERU = 1.2;
+			}
+		ENDCODE;
+		$this->assertEquals(6, $this->getStringErrorCount($code), "Error with valid class constant.");
+	}
 }

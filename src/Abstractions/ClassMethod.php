@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\Attribute;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\NullableType;
@@ -53,6 +54,7 @@ class ClassMethod implements MethodInterface {
 		if (strpos($docBlock, "@deprecated") !== false) {
 			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -169,5 +171,18 @@ class ClassMethod implements MethodInterface {
 			return true;
 		}
 		return false;
+	}
+
+	public function getAttributes(string $name): array {
+		$ret=[];
+		foreach($this->method->attrGroups as $group) {
+			foreach($group->attrs as $attr) {
+				/** @var Attribute $attr */
+				if (strcasecmp($attr->name, $name)==0) {
+					$ret[]=$attr;
+				}
+			}
+		}
+		return $ret;
 	}
 }

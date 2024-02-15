@@ -69,6 +69,7 @@ class TypeComparer
 		$valueName = strtolower($value->getAttribute('namespacedName') ?: strval($value));
 
 
+		//echo "Checking compatibility of $targetName and $valueName\n";
 		if ($targetName==$valueName || $targetName=="mixed") {
 			return true;
 		}
@@ -109,6 +110,13 @@ class TypeComparer
 			return true;
 		}
 
+		if (
+			($targetName=="false" || $targetName=="true" || $targetName=="null") &&
+			$valueName!=$targetName
+		) {
+			return false;
+		}
+
 		if (!$strict) {
 			if ($targetName=="mixed" || $valueName=="mixed") {
 				return true;
@@ -126,7 +134,9 @@ class TypeComparer
 	 *
 	 */
 	static function getChainedPropertyFetchName(Node $rootNode):?string {
-		if ($rootNode instanceof Node\Expr\PropertyFetch && $rootNode->name instanceof Identifier) {
+		if (($rootNode instanceof Node\Expr\PropertyFetch  || $rootNode instanceof Node\Expr\NullsafePropertyFetch)
+			&& $rootNode->name instanceof Identifier
+		) {
 			$left = self::getChainedPropertyFetchName($rootNode->var);
 			return $left ? ($left."->".$rootNode->name) : null;
 		} else if ($rootNode instanceof Node\Expr\ArrayDimFetch) {
@@ -175,7 +185,7 @@ class TypeComparer
 	 * @return bool
 	 *
 	 */
-	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, Scope $scope ) : bool {
+	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false ) : bool {
 
 		if ($target === NULL || $value === null) {
 			return true;
@@ -183,7 +193,7 @@ class TypeComparer
 
 		// Many target options, many values.  Every value option must match at least one target.
 		$ret = self::ifEveryType($value, fn($valueType) =>
-		self::ifAnyType($target, function($targetType) use ($scope, $valueType) {
+		self::ifAnyType($target, function($targetType) use ($forceStrict, $valueType) {
 
 			if($targetType instanceof IntersectionType) {
 				$types = $targetType->types;
@@ -194,11 +204,11 @@ class TypeComparer
 
 			foreach ($types as $targetComponentType) {
 				if ($valueType instanceof IntersectionType) {
-					if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType, $scope->isStrict())) {
+					if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType,$forceStrict)) {
 						return false;
 					}
 				} else {
-					if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $scope->isStrict())) {
+					if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $forceStrict)) {
 						return false;
 					}
 				}

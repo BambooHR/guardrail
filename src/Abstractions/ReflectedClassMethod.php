@@ -1,6 +1,9 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\Attribute;
+use PhpParser\Node\AttributeGroup;
+use PhpParser\Node\Name;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -89,12 +92,10 @@ class ReflectedClassMethod implements MethodInterface {
 		if ($this->refl->isPrivate()) {
 			return "private";
 		}
-		if ($this->refl->isPublic()) {
-			return "public";
-		}
 		if ($this->refl->isProtected()) {
 			return "protected";
 		}
+		return "public";
 	}
 
 	/**
@@ -177,5 +178,12 @@ class ReflectedClassMethod implements MethodInterface {
 		} else {
 			return true; // We assume internal functions are variadic so that we don't get bombarded with warnings.
 		}
+	}
+
+	public function getAttributes(string $name):array {
+		$attributes=$this->refl->getAttributes($name);
+		return array_map( function($attr) {
+			return new Attribute(new Name($attr->getName()));
+		}, $attributes);
 	}
 }

@@ -125,8 +125,16 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		) {
 			$varName = NodePatterns::getVariableOrPropertyName($func->args[0]->value);
 			$type = $this->getCastedCallType(strtolower($func->name));
+
 			if (!is_null($type) && !is_null($varName)) {
-				$this->tagScopeAsType($func, $scope, $varName,$type);
+
+				if ($func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch) {
+					// TODO: confirm all elements are non-null or null-safe, then set all
+					// different lengths of chains as non-null
+					//$list = explode("->", $varName);
+				} else {
+					$this->tagScopeAsType($func, $scope, $varName, $type);
+				}
 			}
 		}
 	}

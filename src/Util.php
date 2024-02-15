@@ -306,6 +306,16 @@ class Util {
 
 	}
 
+	static public function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren):array {
+		$ret=[];
+		foreach($potentialChildren as $potentialChild) {
+			if ($table->isParentClassOrInterface($parent, $potentialChild)) {
+				$ret[] = $potentialChild;
+			}
+		}
+		return $ret;
+	}
+
 	/**
 	 * configDirectoriesAreValid
 	 *
