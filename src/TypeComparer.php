@@ -69,6 +69,7 @@ class TypeComparer
 		$valueName = strtolower($value->getAttribute('namespacedName') ?: strval($value));
 
 
+		//echo "Checking compatibility of $targetName and $valueName\n";
 		if ($targetName==$valueName || $targetName=="mixed") {
 			return true;
 		}
