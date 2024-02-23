@@ -168,9 +168,8 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	private function processDockBlockThrows(Node $node, string $str) {
 		if ($str && preg_match_all('/@throws +([A-Z0-9_|\\\\]+)/i', $str, $matchArray, PREG_SET_ORDER)) {
 			$list = [];
-			foreach($matchArray as [,$exceptionName]) {
-				$exceptionName = $this->resolveTypeName($exceptionName);
-				$list[] = strval($exceptionName);
+			foreach($matchArray as $matches) {
+				$list[] = $this->resolveTypeName($matches[1]);
 			}
 			$node->setAttribute("throws", $list);
 		}
