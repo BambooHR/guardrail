@@ -76,4 +76,6 @@ interface FunctionLikeInterface {
 	 * @return bool
 	 */
 	public function isVariadic();
+
+	public function getThrowsList():array;
 }

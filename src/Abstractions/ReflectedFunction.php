@@ -212,4 +212,8 @@ class ReflectedFunction implements FunctionLikeInterface {
 			return true; // We assume internal functions are variadic so that we don't get bombarded with warnings.
 		}
 	}
+
+	public function getThrowsList(): array {
+		return [];
+	}
 }

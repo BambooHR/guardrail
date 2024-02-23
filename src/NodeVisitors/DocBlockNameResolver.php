@@ -39,7 +39,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	public function enterNode(Node $node) {
 		parent::enterNode($node);
 		if ($node instanceof Function_ || $node instanceof \PhpParser\Node\Stmt\ClassMethod) {
-			$this->importReturnValue($node);
+			$this->importFunctionValues($node);
 		}
 		if ($node instanceof Property) {
 			$this->importVarType($node);
@@ -91,12 +91,13 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	private function importReturnValue($node) {
+	private function importFunctionValues($node) {
 		$comment = $node->getDocComment();
 		if ($comment) {
 			$str = $comment->getText();
 			try {
 				$this->processDocBlockReturn($node, $str);
+				$this->processDockBlockThrows($node, $str);
 			} catch (\InvalidArgumentException $exception) {
 				// Skip it.
 			}
@@ -161,6 +162,17 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 				$returnType = $this->resolveTypeName($returnType);
 				$node->setAttribute("namespacedReturn", strval($returnType));
 			}
+		}
+	}
+
+	private function processDockBlockThrows(Node $node, string $str) {
+		if ($str && preg_match_all('/@throws +([A-Z0-9_|\\\\]+)/i', $str, $matchArray, PREG_SET_ORDER)) {
+			$list = [];
+			foreach($matchArray as [,$exceptionName]) {
+				$exceptionName = $this->resolveTypeName($exceptionName);
+				$list[] = strval($exceptionName);
+			}
+			$node->setAttribute("throws", $list);
 		}
 	}
 

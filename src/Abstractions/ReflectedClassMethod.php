@@ -186,4 +186,8 @@ class ReflectedClassMethod implements MethodInterface {
 			return new Attribute(new Name($attr->getName()));
 		}, $attributes);
 	}
+
+	function getThrowsList():array {
+		return [];
+	}
 }
