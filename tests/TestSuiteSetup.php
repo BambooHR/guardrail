@@ -2,6 +2,7 @@
 
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\XUnitOutput;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
@@ -53,11 +54,11 @@ abstract class TestSuiteSetup extends TestCase {
 		$config = new TestConfig($fileName, $emit, $additionalConfig);
 		$output = new XUnitOutput($config);
 
-		$indexer = new IndexingPhase($config);
+		$indexer = new IndexingPhase($config, $output);
 		$indexer->indexFile($config, $fileName);
 
-		$analyzer = new AnalyzingPhase($output);
-		$analyzer->initParser($config, $output);
+		$analyzer = new AnalyzingPhase(new StaticAnalyzer($config->getSymbolTable(), $output, $config), $output);
+		$analyzer->initParser($config);
 
 		$analyzer->analyzeFile($fileName, $config);
 		return $output;
@@ -83,11 +84,11 @@ abstract class TestSuiteSetup extends TestCase {
 		$config = new TestConfig($fileName, $emit, $additionalConfig);
 		$output = new XUnitOutput($config);
 
-		$indexer = new IndexingPhase($config);
+		$indexer = new IndexingPhase($config, $output);
 		$indexer->indexString($fileName, $fileData);
 
-		$analyzer = new AnalyzingPhase($output);
-		$analyzer->initParser($config, $output);
+		$analyzer = new AnalyzingPhase();
+		$analyzer->initParser($config, );
 		$analyzer->analyzeString($fileName, $fileData);
 		return $output;
 	}

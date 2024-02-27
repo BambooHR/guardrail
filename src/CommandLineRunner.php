@@ -5,6 +5,8 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
+use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Phases\IndexingPhase;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
@@ -89,7 +91,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
-			$indexer = new IndexingPhase($config);
+			$indexer = new IndexingPhase($config, $output);
 			$indexer->run($config, $output);
 			$output->outputExtraVerbose("\nDone\n\n");
 			//$output->renderResults();
@@ -97,7 +99,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 		}
 
 		if ($config->shouldAnalyze()) {
-			$analyzer = new AnalyzingPhase($output);
+			$analyzer = new AnalyzingPhase();
 			$output->outputExtraVerbose("Analyzing\n");
 
 			$exitCode = $analyzer->run($config, $output);
@@ -107,13 +109,8 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 			if ($config->shouldOutputTimings()) {
 				$timings = $analyzer->getTimingResults();
-				$totalTime = array_sum( array_map(
-					function($element) {
-						return $element['time'];
-					},
-					$timings)
-				);
-				foreach ($analyzer->getTimingResults() as $class => $values) {
+				$totalTime = array_sum( array_column($timings,'time'));
+				foreach ($timings as $class => $values) {
 					$time = $values['time'];
 					$count = $values['count'];
 					printf("%-60s %4.1f s %4.1f%% %10s calls %5.2f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );

@@ -1,43 +1,39 @@
 <?php namespace BambooHR\Guardrail\Phases;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2024, BambooHR.
  * Apache 2.0 License
  */
 
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\NodeVisitors\PromotedPropertyVisitor;
+use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
+use BambooHR\Guardrail\NodeVisitors\TraitImportingVisitor;
+use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\SocketOutput;
-use BambooHR\Guardrail\ProcessManager;
-use BambooHR\Guardrail\SocketBuffer;
-use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
-use FilesystemIterator;
+use BambooHR\Guardrail\Phases\Processes\Child\AnalyzingChildProcess;
+use BambooHR\Guardrail\Phases\Processes\Parent\AnalyzingParentProcess;
+use BambooHR\Guardrail\Socket;
+use BambooHR\Guardrail\Util;
 use PhpParser\Comment;
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Use_;
-use PhpParser\Node\Stmt\Enum_;
+use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
-use PhpParser\NodeTraverser;
-use BambooHR\Guardrail\Config;
-use BambooHR\Guardrail\Exceptions\SocketException;
-use BambooHR\Guardrail\NodeVisitors\TraitImportingVisitor;
-use BambooHR\Guardrail\Util;
-use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
-use BambooHR\Guardrail\Output\OutputInterface;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 
 /**
  * Class AnalyzingPhase
@@ -47,39 +43,25 @@ use RecursiveIteratorIterator;
 class AnalyzingPhase {
 	private $traversers = [];
 	private $parser = null;
-	/**
-	 * @var StaticAnalyzer
-	 */
-	private $analyzer;
-	private $timingResults = [];
 
-	/** @var OutputInterface Child processes will overwrite this in order to send data over the socket. */
-	private $output = null;
+	private StaticAnalyzer $analyzer;
+
+	private SocketOutput $output;
+
+	private array $timingResults = [[],[]];
 
 	/**
 	 * AnalyzingPhase constructor.
-	 * @param OutputInterface $output Where to send output
 	 */
-	function __construct(OutputInterface $output) {
-		$this->output = $output;
+	function __construct() { }
+
+
+	function getTimingResults():array {
+		return $this->timingResults;
 	}
 
-	/**
-	 * @param resource $socket The pipe to read/write from
-	 * @param Config   $config The application config
-	 * @return void
-	 */
-	function initChildThread($socket, Config $config) {
-		$this->output = new SocketOutput($config, $socket);
-		$this->initParser($config, $this->output);
-	}
 
-	/**
-	 * @param Config          $config -
-	 * @param OutputInterface $output -
-	 * @return void
-	 */
-	function initParser(Config $config, OutputInterface $output) {
+	function initParser(Config $config, SocketOutput $output) {
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor($resolver = new NameResolver());
 		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
@@ -88,32 +70,33 @@ class AnalyzingPhase {
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
 
-		$this->analyzer = new StaticAnalyzer($config->getBasePath(), $config->getSymbolTable(), $output, $config);
 		$traverser3 = new NodeTraverser;
-		$traverser3->addVisitor($this->analyzer);
+		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $config ));
+
+		$this->output = $output;
 
 		$this->traversers = [$traverser1, $traverser2, $traverser3];
 		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 	}
 
+	function getAnalyzer() {
+		return $this->analyzer;
+	}
+
 	/**
 	 * @return array
 	 */
-	function getTimingResults() {
+	function setTimingResults($timingResults) {
 		$ret = [];
-		foreach ($this->timingResults as $timingArr) {
-			list($timings, $counts) = $timingArr;
-			foreach ($timings as $class => $time) {
-				$ret[$class]['time'] = (isset($ret[$class]['time']) ? $ret[$class]['time'] : 0) + $time;
-				$ret[$class]['count'] = (isset($ret[$class]['count']) ? $ret[$class]['count'] : 0) + $counts[$class];
 
-			}
+		list($timings, $counts) = $timingResults;
+		foreach ($timings as $class => $time) {
+			$ret[$class]['time'] = ($ret[$class]['time'] ?? 0) + $time;
+			$ret[$class]['count'] = ($ret[$class]['count'] ?? 0) + $counts[$class];
 		}
-		uasort( $ret, function($first, $second) {
-			return ($first['time'] > $second['time'] ? -1 : ($first['time'] < $second['time'] ? 1 : 0));
-		});
 
-		return $ret;
+		uasort( $ret, fn($first, $second) => $second['time'] <=> $first['time'] );
+		$this->timingResults  = $ret;
 	}
 
 	/**
@@ -202,165 +185,15 @@ class AnalyzingPhase {
 	 * @return int
 	 */
 	public function phase2(Config $config, OutputInterface $output, $toProcess, $totalBytes) {
-		$processingCount = 0;
 
-		$pm = new ProcessManager();
+		$config->getSymbolTable()->connect(0);
 
-		$start = time();
-
-		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $fileNumber < count($toProcess); ++$fileNumber) {
-			$socket = $pm->createChild(
-				function ($socket) use ($config) {
-					$this->runChildAnalyzer($socket, $config);
-				});
-			if (!$output->isTTY()) {
-				$output->outputExtraVerbose(sprintf("%d - %s\n", $fileNumber, $toProcess[$fileNumber]));
-			}
-			$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
-		}
-
-		// Server process reports the errors and serves up new files to the list.
-		$processDied = false;
-		$bytes = 0;
-		$pm->loopWhileConnections(
-			function ($socket, $msg) use (&$processingCount, &$fileNumber, &$bytes, $output, $toProcess, $totalBytes, $start, $pm) {
-				$processComplete = $this->processChildMessage($socket, $msg, $processingCount, $fileNumber, $bytes, $output, $toProcess, $totalBytes, $start, $pm);
-				if ($processComplete) {
-					return ProcessManager::CLOSE_CONNECTION;
-				}
-				return ProcessManager::READ_CONNECTION;
-		});
-		return ($processDied || $output->getErrorCount() > 0 ? 1 : 0);
+		$pm = new AnalyzingParentProcess($toProcess, $totalBytes, $output);
+		$pm->run($this, $config);
+		$this->setTimingResults($pm->getTimings());
+		return ($output->getErrorCount() > 0 ? 1 : 0);
 	}
 
-	protected function processChildMessage($socket, $msg, &$processingCount, &$fileNumber, &$bytes, OutputInterface $output, $toProcess, $totalBytes, $start, ProcessManager $pm) {
-
-		if ($msg === false) {
-			echo "Error: Unexpected error reading from socket\n";
-			return true;
-		}
-		$msg = trim($msg);
-		list($message, $details) = explode(' ', $msg, 2);
-		switch ($message) {
-			case 'VERBOSE':
-				$this->output->outputVerbose(base64_decode($details));
-				break;
-			case 'EXTRAVERBOSE':
-				$this->output->outputExtraVerbose(base64_decode($details));
-				break;
-			case 'OUTPUT':
-				$vars = unserialize(base64_decode($details));
-				$this->output->output($vars['v'], $vars['ev']);
-				break;
-			case 'ERROR' :
-				$vars = unserialize(base64_decode($details));
-
-				$this->output->emitError(
-					$vars['className'],
-					$vars['file'],
-					$vars['line'],
-					$vars['type'],
-					$vars['message']
-				);
-				break;
-			case 'ANALYZED':
-				list($size,$analyzedFileName) = explode(' ', $details, 2);
-				if ($fileNumber < count($toProcess)) {
-					$bytes += intval($size);
-					$this->socket_write_all($socket, "ANALYZE " . $toProcess[$fileNumber] . "\n");
-					$fileNumber++;
-				} else {
-					$this->socket_write_all($socket, "TIMINGS\n");
-				}
-
-				$kbs=intdiv( intdiv($bytes, 1024), (time()-$start) ?: 1);
-				["total"=>$errors, "displayed"=>$displayCount] =  $output->getErrorCounts();
-				if ($output->isTTY()) {
-					$white=$output->ttyContent("\33[97m");
-					$red=$output->ttyContent("\33[31m");
-					$reset=$output->ttyContent("\33[0m");
-					printf("$white%d$reset/$white%d$reset, $white%d$reset/$white%d$reset MB ($white%d$reset%%), $white%d$reset KB/s $red%d$reset errors   \r",
-						   $fileNumber, count($toProcess),
-						   intdiv($bytes, 1024 * 1024), intdiv($totalBytes, 1024 * 1024),
-						   intval(round(100 * $bytes / $totalBytes)),
-						   $kbs,
-						   $displayCount
-					);
-				} else {
-					$output->output(".", sprintf("%d - %s", $fileNumber-1, $analyzedFileName));
-				}
-				break;
-			case 'TIMINGS':
-				$this->timingResults[] = json_decode(base64_decode($details), true);
-				return true;
-			default:
-				$output->outputVerbose("Internal protocol Error.  Unknown message($message)\n");
-				return true;
-		}
-		return false;
-	}
-
-	/**
-	 * runChildAnalyzer
-	 *
-	 * @param  resource $socket
-	 * @param  Config $config
-	 * @return void
-	 */
-	protected function runChildAnalyzer($socket, Config $config) {
-		$table = $config->getSymbolTable();
-		if ($table instanceof PersistantSymbolTable) {
-			$table->connect(0);
-		}
-		$this->initChildThread($socket, $config);
-		$buffer = new SocketBuffer();
-		while (1) {
-			$buffer->read($socket);
-			foreach ($buffer->getMessages() as $receive) {
-				$receive = trim($receive);
-				if ($receive == "TIMINGS") {
-					$this->socket_write_all($socket, "TIMINGS " . base64_encode(json_encode($this->analyzer->getTimingsAndCounts()) ). "\n");
-					return;
-				} else {
-					list(, $file) = explode(' ', $receive, 2);
-					$size = $this->analyzeFile($file, $config);
-					$this->socket_write_all($socket, "ANALYZED $size $file\n");
-				}
-			}
-		}
-	}
-
-	/**
-	 * @param $callable
-	 * @param $retries
-	 *
-	 * @return false|mixed
-	 * @guardrail-ignore Standard.VariableFunctionCall:Variable
-	 */
-	protected function retryOnFalse($callable, $retries) {
-		$succeeded = false;
-		$tries = 0;
-		while ($succeeded === false && $tries < $retries) {
-			$succeeded = $callable();
-			$tries++;
-		}
-		return $succeeded;
-	}
-
-	/* This function adapted from the PHP documentation on php.net */
-	protected function socket_write_all($fp, $string) {
-		$length = strlen($string);
-		$fwrite=0;
-		for ($written = 0; $written < $length; $written += $fwrite) {
-			$fwrite = $this->retryOnFalse(function () use ($fp, $string, $written) {
-				return @socket_write($fp, substr($string, $written));
-			}, 3);
-			if ($fwrite === false) {
-				throw new SocketException(socket_strerror(socket_last_error($fp)));
-			}
-		}
-		return $written;
-	}
 
 	/**
 	 * run
@@ -417,33 +250,28 @@ class AnalyzingPhase {
 			}
 		});
 
-		$partialList = [];
-
-		// Attempt to evenly balance all partitions.
-		// 1. Start with a sorted list, biggest file first
-		// 2. For each file put it in the emptiest partition.
-		// 3. If we are the emptiest partition, then make sure to add it to our file list, otherwise just increment a total.
-		$partitionNumber = $config->getPartitionNumber() - 1;
-		$sizes = array_fill(0, $config->getPartitions(), 0); // Initialize an array of 0 sizes.
-		foreach ($toProcess as $file) {
-			$minIndex = 0;
-			$minSize = $sizes[0];
-			foreach ($sizes as $index => $size) {
-				if ($size < $minSize) {
-					$minIndex = $index;
-					$minSize = $size;
-				}
-			}
-			$sizes[$minIndex] += $file[1];
-			if ($minIndex == $partitionNumber) {
-				$partialList[] = $file[0];
-			}
-		}
+		list($partialList, $partitionNumber, $sizes) = $this->partition($config, $toProcess);
+		//$partialList = $this->reshuffle($partialList);
 
 		$output->outputVerbose("Partition sizes: " . $white . implode("$reset,$white ", $sizes)."$reset\n");
 
 		$output->outputVerbose("Partition " . $white.($partitionNumber + 1).$reset . " analyzing " . $white.number_format(count($partialList) ). $reset." files (" . $white.number_format($sizes[$partitionNumber] ).$reset. " bytes)\n");
 		return $this->phase2($config, $output, $partialList, $sizes[$partitionNumber]);
+	}
+
+	/**
+	 *
+	 * Swaps every other entry from the start of the list with every other entry from the end of the list.
+	 * The intention is to even out I/O not doing all the big files at once.
+	 */
+	function reshuffle(array $partialList):array {
+		$last=count($partialList)-1;
+		for($i=0;$i < $last >> 1; $i+=2) {
+			$tmp=$partialList[$i];
+			$partialList[$i]=$partialList[$last-$i];
+			$partialList[$last-$i] = $tmp;
+		}
+		return $partialList;
 	}
 
 	/**
@@ -478,5 +306,36 @@ class AnalyzingPhase {
 			$this->output->emitError(__CLASS__, $name, 0, ErrorConstants::TYPE_UNKNOWN_CLASS, $exception->getMessage());
 		}
 		return 0;
+	}
+
+	/**
+	 * @param Config $config
+	 * @param array $toProcess
+	 * @return array
+	 */
+	public function partition(Config $config, array $toProcess): array {
+		$partialList = [];
+
+		// Attempt to evenly balance all partitions.
+		// 1. Start with a sorted list, biggest file first
+		// 2. For each file put it in the emptiest partition.
+		// 3. If we are the emptiest partition, then make sure to add it to our file list, otherwise just increment a total.
+		$partitionNumber = $config->getPartitionNumber() - 1 ;
+		$sizes = array_fill(0, $config->getPartitions(), 0); // Initialize an array of 0 sizes.
+		foreach ($toProcess as $file) {
+			$minIndex = 0;
+			$minSize = $sizes[0];
+			foreach ($sizes as $index => $size) {
+				if ($size < $minSize) {
+					$minIndex = $index;
+					$minSize = $size;
+				}
+			}
+			$sizes[$minIndex] += $file[1];
+			if ($minIndex == $partitionNumber) {
+				$partialList[] = $file[0];
+			}
+		}
+		return array($partialList, $partitionNumber, $sizes);
 	}
 }

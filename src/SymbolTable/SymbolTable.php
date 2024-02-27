@@ -72,7 +72,7 @@ abstract class SymbolTable {
 		}
 		$ob = $this->cache->get("Class:" . $cacheName);
 		if (!$ob) {
-			$ob = Grabber::getClassFromFile($this, $file, $name, Class_::class);
+			$ob = Grabber::getClassFromFile($this, $file, $name);
 			if ($ob) {
 				$this->cache->add("Class:" . $cacheName, $ob);
 			}
