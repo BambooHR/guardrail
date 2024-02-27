@@ -28,6 +28,9 @@ class SocketOutput extends XUnitOutput {
 	 * @return void
 	 */
 	function emitError($className, $file, $line, $type, $message = "") {
+		if (($this->silenced[$type]??0) > 0) {
+			return;
+		}
 		$arr = [
 			"file" => $file,
 			"line" => $line,

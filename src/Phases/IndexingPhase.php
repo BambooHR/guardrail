@@ -142,6 +142,8 @@ class IndexingPhase {
 			}
 		}
 		$this->processManager->loopWhileConnections();
+		$this->processManager->displayStatusUpdate();
+		$output->outputVerbose("\n");
 	}
 
 	/**
@@ -165,6 +167,8 @@ class IndexingPhase {
 
 		$this->indexList($config, $output, $this->getFileList($indexPaths) );
 
+
+		$output->outputVerbose("Merging indexes\n");
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
 			$table->connect(0);
@@ -177,7 +181,6 @@ class IndexingPhase {
 	function indexTraitClasses(SymbolTable $table, OutputInterface $output): void {
 		$table->connect(0);
 		$classes = $table->getClassesThatUseAnyTrait();
-		$output->outputVerbose("\n\nIndexing ".count($classes)." trait classes\n");
 		$manager = new TraitIndexingParent($classes, $this->config, $table, $output);
 		$manager->run();
 		$table->disconnect();
