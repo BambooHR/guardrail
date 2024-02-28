@@ -179,11 +179,15 @@ class IndexingPhase {
 	}
 
 	function indexTraitClasses(SymbolTable $table, OutputInterface $output): void {
-		$table->connect(0);
+		if ($table instanceof PersistantSymbolTable) {
+			$table->connect(0);
+		}
 		$classes = $table->getClassesThatUseAnyTrait();
 		$manager = new TraitIndexingParent($classes, $this->config, $table, $output);
 		$manager->run();
-		$table->disconnect();
+		if ($table instanceof PersistantSymbolTable) {
+			$table->disconnect();
+		}
 	}
 
 	/**
