@@ -109,7 +109,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 * @param OutputInterface $output Instance if OutputInterface
 	 * @param Config $config The config
 	 */
-	function __construct(SymbolTable $index, SocketOutput $output, Config $config)
+	function __construct(SymbolTable $index, OutputInterface $output, Config $config)
 	{
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output);

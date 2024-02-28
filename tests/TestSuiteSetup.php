@@ -55,10 +55,10 @@ abstract class TestSuiteSetup extends TestCase {
 		$output = new XUnitOutput($config);
 
 		$indexer = new IndexingPhase($config, $output);
-		$indexer->indexFile($config, $fileName);
+		$indexer->indexFile($fileName);
 
 		$analyzer = new AnalyzingPhase(new StaticAnalyzer($config->getSymbolTable(), $output, $config), $output);
-		$analyzer->initParser($config);
+		$analyzer->initParser($config, $output);
 
 		$analyzer->analyzeFile($fileName, $config);
 		return $output;
@@ -88,7 +88,7 @@ abstract class TestSuiteSetup extends TestCase {
 		$indexer->indexString($fileName, $fileData);
 
 		$analyzer = new AnalyzingPhase();
-		$analyzer->initParser($config, );
+		$analyzer->initParser($config, $output );
 		$analyzer->analyzeString($fileName, $fileData);
 		return $output;
 	}

@@ -46,7 +46,7 @@ class AnalyzingPhase {
 
 	private StaticAnalyzer $analyzer;
 
-	private SocketOutput $output;
+	private OutputInterface $output;
 
 	private array $timingResults = [[],[]];
 
@@ -61,7 +61,7 @@ class AnalyzingPhase {
 	}
 
 
-	function initParser(Config $config, SocketOutput $output) {
+	function initParser(Config $config, OutputInterface $output) {
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor($resolver = new NameResolver());
 		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
