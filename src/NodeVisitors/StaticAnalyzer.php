@@ -35,6 +35,7 @@ use BambooHR\Guardrail\Checks\SplatCheck;
 use BambooHR\Guardrail\Checks\StaticCallCheck;
 use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
 use BambooHR\Guardrail\Checks\SwitchCheck;
+use BambooHR\Guardrail\Checks\ThrowsCheck;
 use BambooHR\Guardrail\Checks\UndefinedVariableCheck;
 use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
 use BambooHR\Guardrail\Checks\UnsafeSuperGlobalCheck;
@@ -151,6 +152,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new UseStatementCaseCheck($this->index, $output),
 			new ReadOnlyPropertyCheck($this->index, $output),
 			new ClassConstCheck($this->index, $output),
+			new ThrowsCheck($this->index, $output),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 

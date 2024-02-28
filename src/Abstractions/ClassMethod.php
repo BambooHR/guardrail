@@ -44,6 +44,10 @@ class ClassMethod implements MethodInterface {
 		return $this->method->returnType && $this->method->returnType instanceof NullableType;
 	}
 
+	public function getThrowsList():array {
+		return $this->method->getAttribute('throws',[]);
+	}
+
 	/**
 	 * isDeprecated
 	 *

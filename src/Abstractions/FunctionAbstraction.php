@@ -144,4 +144,8 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		}
 		return false;
 	}
+
+	public function getThrowsList():array {
+		return $this->function->getAttribute('throws', []);
+	}
 }
