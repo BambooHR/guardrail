@@ -38,6 +38,7 @@ class SwitchCheck extends BaseCheck {
 		$lastStatement = Util::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
+			$lastStatement instanceof \PhpParser\Node\Stmt\Throw_  ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Return_ ||
 				(
