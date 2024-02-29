@@ -65,6 +65,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
+		error_reporting(E_WARNING | E_ERROR);
 
 		if (!extension_loaded("pcntl")) {
 			echo "Guardrail requires the pcntl extension, which is not loaded.\n";

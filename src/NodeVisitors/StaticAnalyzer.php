@@ -14,6 +14,7 @@ use BambooHR\Guardrail\Checks\ClassConstCheck;
 use BambooHR\Guardrail\Checks\ClassMethodStringCheck;
 use BambooHR\Guardrail\Checks\ConditionalAssignmentCheck;
 use BambooHR\Guardrail\Checks\ConstructorCheck;
+use BambooHR\Guardrail\Checks\CountableEmptinessCheck;
 use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
 use BambooHR\Guardrail\Checks\DefinedConstantCheck;
 use BambooHR\Guardrail\Checks\DocBlockTypesCheck;
@@ -153,6 +154,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new ReadOnlyPropertyCheck($this->index, $output),
 			new ClassConstCheck($this->index, $output),
 			new ThrowsCheck($this->index, $output),
+			new CountableEmptinessCheck($this->index, $output),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
