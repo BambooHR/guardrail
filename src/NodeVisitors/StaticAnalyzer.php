@@ -248,12 +248,12 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			}
 		}
 
+		if ($node instanceof FunctionLike) {
+			$this->updateFunctionEmit($node, $this->scopeStack, "push");
+		}
 		$evaluator = $this->getEvaluator($node);
 		if ($evaluator instanceof Ev\OnEnterEvaluatorInterface) {
 			$evaluator->onEnter($node, $this->index, $this->scopeStack);
-		}
-		if ($node instanceof FunctionLike) {
-			$this->updateFunctionEmit($node, $this->scopeStack, "push");
 		}
 		return null;
 	}
