@@ -248,6 +248,9 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			}
 		}
 
+		if ($node instanceof FunctionLike) {
+			$this->updateFunctionEmit($node, $this->scopeStack, "push");
+		}
 		$evaluator = $this->getEvaluator($node);
 		if ($evaluator instanceof Ev\OnEnterEvaluatorInterface) {
 			$evaluator->onEnter($node, $this->index, $this->scopeStack);
@@ -288,6 +291,42 @@ class StaticAnalyzer extends NodeVisitorAbstract
 				$name = get_class($check);
 				$this->timings[$name] = (isset($this->timings[$name]) ? $this->timings[$name] : 0) + ($last - $start);
 				$this->counts[$name] = (isset($this->counts[$name]) ? $this->counts[$name] : 0) + 1;
+			}
+		}
+
+		if ($node instanceof FunctionLike) {
+			$this->updateFunctionEmit($node, $this->scopeStack, "pop");
+		}
+	}
+
+	/**
+	 * updateFunctionEmit
+	 *
+	 * @param Node\FunctionLike $func      Instance of FunctionLike
+	 * @param string            $pushOrPop Push | Pop
+	 *
+	 * @return void
+	 */
+	public function updateFunctionEmit(Node\FunctionLike $func, ScopeStack $scopeStack, $pushOrPop) {
+		$docBlock = $func->getDocComment();
+		if (!empty($docBlock)) {
+			$docBlock = trim($docBlock);
+			$ignoreList = [];
+
+			if (preg_match_all("/@guardrail-ignore ([A-Za-z. ,]*)/", $docBlock, $ignoreList)) {
+				foreach ($ignoreList[1] as $ignoreListEntry) {
+					$toIgnore = explode(",", $ignoreListEntry);
+					foreach ($toIgnore as $type) {
+						$type = trim($type);
+						if (!empty($type)) {
+							if ($pushOrPop == "push") {
+								$scopeStack->getOutput()->silenceType($type);
+							} else {
+								$scopeStack->getOutput()->resumeType($type);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
