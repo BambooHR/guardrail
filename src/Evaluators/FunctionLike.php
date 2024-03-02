@@ -21,9 +21,6 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		self::handleEnterFunctionLike($node, $scopeStack);
-		/** @var Node\FunctionLike $func */
-		$func = $node;
-		$this->updateFunctionEmit($func, $scopeStack, "push");
 	}
 
 	static function handleEnterFunctionLike(Node $node, ScopeStack $scopeStack): void {
@@ -86,10 +83,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		self::handleUnusedVars($scopeStack);
-		// Pop Closure Scope
 		$scopeStack->popScope();
-		assert($node instanceof Node\FunctionLike);
-		$this->updateFunctionEmit($node, $scopeStack, "pop");
 	}
 
 	static function getAllReferencedVariables(array $nodes) {
@@ -110,38 +104,6 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 			foreach ($unusedVars as $varName => $lineNumber) {
 				if (!str_contains($varName, "-") && !in_array($varName, ["this", ...Util::getPhpGlobalNames()])) {
 					$scopeStack->getOutput()->emitError(__CLASS__, $scopeStack->getCurrentFile(), $lineNumber, ErrorConstants::TYPE_UNUSED_VARIABLE, '$' . $varName . " is assigned but never referenced");
-				}
-			}
-		}
-	}
-
-	/**
-	 * updateFunctionEmit
-	 *
-	 * @param Node\FunctionLike $func      Instance of FunctionLike
-	 * @param string            $pushOrPop Push | Pop
-	 *
-	 * @return void
-	 */
-	public function updateFunctionEmit(Node\FunctionLike $func, ScopeStack $scopeStack, $pushOrPop) {
-		$docBlock = $func->getDocComment();
-		if (!empty($docBlock)) {
-			$docBlock = trim($docBlock);
-			$ignoreList = [];
-
-			if (preg_match_all("/@guardrail-ignore ([A-Za-z. ,]*)/", $docBlock, $ignoreList)) {
-				foreach ($ignoreList[1] as $ignoreListEntry) {
-					$toIgnore = explode(",", $ignoreListEntry);
-					foreach ($toIgnore as $type) {
-						$type = trim($type);
-						if (!empty($type)) {
-							if ($pushOrPop == "push") {
-								$scopeStack->getOutput()->silenceType($type);
-							} else {
-								$scopeStack->getOutput()->resumeType($type);
-							}
-						}
-					}
 				}
 			}
 		}
