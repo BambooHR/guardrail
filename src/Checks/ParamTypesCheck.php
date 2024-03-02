@@ -51,7 +51,7 @@ class ParamTypesCheck extends BaseCheck {
 				return;
 			}
 			$nameLower = strtolower($name2);
-			if ($nameLower == "self" && $inside instanceof Class_) {
+			if (($nameLower == "self" || $nameLower == "static") && $inside instanceof Class_) {
 				return;
 			}
 			if ($nameLower != "" && !Util::isLegalNonObject($nameLower)) {
