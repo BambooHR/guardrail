@@ -31,7 +31,7 @@ class CountableEmptinessCheck extends BaseCheck {
 				$fileName,
 				$node,
 				ErrorConstants::TYPE_COUNTABLE_EMPTINESS_CHECK,
-				"Attempt to call empty() on a countable, will yield unexpected result. Use `isEmpty()` instead."
+				"Attempt to call empty() on a countable, will yield unexpected result. Use `isEmpty()`, `isNotEmpty()` or `count()` instead."
 			);
 		}
 	}
