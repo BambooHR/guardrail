@@ -60,13 +60,15 @@ class TraitIndexingParent extends ProcessManager {
 	}
 	function showStatus() {
 		if ($this->output->isTTY()) {
-			$this->output->outputVerbose(
-				sprintf("Indexing used traits %d/%d %d%%\r",
-						$this->processedFiles,
-						count($this->children),
-						round(100 * $this->processedFiles / count($this->children))
-				)
-			);
+			if (count($this->children)>0) {
+				$this->output->outputVerbose(
+					sprintf("Indexing used traits %d/%d %d%%\r",
+							$this->processedFiles,
+							count($this->children),
+							round(100 * $this->processedFiles / count($this->children))
+					)
+				);
+			}
 		}
 	}
 

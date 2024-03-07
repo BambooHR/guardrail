@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node\Attribute;
 use PhpParser\Node\ComplexType;
@@ -95,8 +96,22 @@ class ClassMethod implements MethodInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
+			$type = null;
+			if (Config::shouldUseDocBlockForParameters()) {
+				$type=$param->getAttribute('DocBlockName');
+				if ($type && !$type->getAttribute('templates',false)) {
+					$type = null;
+				}
+			}
+			if (!$type) {
+				$type = $param->type;
+				if (!$type && Config::shouldUseDocBlockForParameters()) {
+					$type = $param->getAttribute('DocBlockName');
+				}
+			}
+
 			$ret[] = new FunctionLikeParameter(
-				$param->type,
+				$type,
 				$param->var->name,
 				$param->default != null || $param->variadic,
 				$param->byRef,

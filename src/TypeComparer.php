@@ -152,7 +152,14 @@ class TypeComparer
 	static function typeToString(ComplexType|Name|Identifier|null $type):string {
 		if ($type === null) {
 			return "mixed";
-		} else if($type instanceof Name || $type instanceof  Identifier) {
+		} else if ($type instanceof Name) {
+			$vars = $type->getAttribute('templates', []);
+			if (count($vars)>0) {
+				return $type."<".implode(",",$vars).">";
+			} else {
+				return strval($type);
+			}
+		} else if ($type instanceof  Identifier) {
 			return strval($type);
 		} else if($type instanceof Node\NullableType) {
 			return "(null|".strval($type->type).")";

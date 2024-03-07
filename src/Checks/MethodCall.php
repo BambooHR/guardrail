@@ -86,6 +86,7 @@ class MethodCall extends CallCheck {
 				$className = TypeComparer::removeNullOption($className);
 			}
 
+			//echo "TYPE:".TypeComparer::typeToString($className)."\n";
 			TypeComparer::forEachType($className, function($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
 				$isNull = TypeComparer::isNamedIdentifier($classNameOb,"null");
 				if($classNameOb instanceof Node\Name || $isNull) {
@@ -93,11 +94,25 @@ class MethodCall extends CallCheck {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
 						return;
 					} else {
+						/*
+
+						if ($classNameOb instanceof Node\Name &&
+							$classNameOb=="T" &&
+							$classNameOb->getAttribute('templates') &&
+							$classNameOb->getAttribute('templates')[0]
+						) {
+							print_r($classNameOb);
+							$classNameOb = $classNameOb->getAttribute('templates')[0];
+						}
+ */
 						$typeClassName = strval($classNameOb);
-						if (!$this->symbolTable->isDefinedClass($typeClassName)) {
+						$class= $this->symbolTable->getAbstractedClass($typeClassName);
+
+						if (!$class) {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
 							return;
 						}
+						$templates= ["T"]; //$class->getTemplates()''
 					}
 					$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
 					if ($method) {
@@ -160,7 +175,8 @@ class MethodCall extends CallCheck {
 		}
 
 		$name = $className . "->" . $methodName;
-		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
+		$templates["T"]=true;
+		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params, $templates);
 	}
 
 	/**

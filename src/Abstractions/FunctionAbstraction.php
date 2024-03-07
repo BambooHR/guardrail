@@ -5,8 +5,10 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Function_ as AstFunction;
 
@@ -90,8 +92,18 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->function->params as $param) {
+			$docBlockType= $param->getAttribute('DocBlockName');
+			if (Config::shouldUseDocBlockForParameters() &&
+				$docBlockType &&
+				$docBlockType instanceof Name &&
+				strcasecmp($docBlockType,"T") === 0
+			) {
+				$type = $docBlockType;
+			} else {
+				$type = $param->type ?? (Config::shouldUseDocBlockForParameters() ? $docBlockType : null);
+			}
 			$ret[] = new FunctionLikeParameter(
-				$param->type,
+				$type,
 				$param->var->name,
 				$param->default != null,
 				$param->byRef,

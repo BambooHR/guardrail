@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\FunctionLikeInterface;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
@@ -80,16 +81,7 @@ class FunctionCallCheck extends CallCheck {
 				$namespacedName = $node->name->hasAttribute('namespacedName') ? $node->name->getAttribute('namespacedName')->toString() : "";
 				$name = $node->name->toString();
 
-				$func = null;
-				if ($namespacedName) {
-					$func = $this->symbolTable->getAbstractedFunction($namespacedName);
-					if ($func) {
-						$name = $namespacedName;
-					}
-				}
-				if (!$func && $namespacedName != $name) {
-					$func = $this->symbolTable->getAbstractedFunction($name);
-				}
+				$func = $this->findNamespacedOrGlobalFunction($namespacedName, $name);
 
 				$toLower = strtolower($name);
 				if (array_key_exists($toLower, self::$dangerous)) {
@@ -108,7 +100,6 @@ class FunctionCallCheck extends CallCheck {
 						$errorType = $func->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 						$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name");
 					}
-
 					$params = $func->getParameters();
 					$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
 				} else if (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
@@ -228,5 +219,19 @@ class FunctionCallCheck extends CallCheck {
 			$cond->args[0]->value instanceof Node\Scalar\String_ &&
 			strcasecmp($cond->args[0]->value->value, $name) == 0
 		);
+	}
+
+	public function findNamespacedOrGlobalFunction(string $namespacedName, string &$name): ?FunctionLikeInterface {
+		$func = null;
+		if ($namespacedName) {
+			$func = $this->symbolTable->getAbstractedFunction($namespacedName);
+			if ($func) {
+				$name = $namespacedName;
+			}
+		}
+		if (!$func && $namespacedName != $name) {
+			$func = $this->symbolTable->getAbstractedFunction($name);
+		}
+		return $func;
 	}
 }

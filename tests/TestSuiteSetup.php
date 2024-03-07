@@ -32,7 +32,11 @@ abstract class TestSuiteSetup extends TestCase {
 	 */
 	public function runAnalyzerOnFile($fileName, $emit, array $additionalConfig = []) {
 		$output = $this->analyzeFileToOutput($fileName, $emit, $additionalConfig);
-		return $output->getErrorCount();
+		$counts=$output->getCounts();
+		foreach($additionalConfig['ignore-errors']??[] as $error) {
+			unset($counts[$error]);
+		}
+		return array_sum($counts);
 	}
 
 	/**
@@ -57,7 +61,7 @@ abstract class TestSuiteSetup extends TestCase {
 		$indexer = new IndexingPhase($config, $output);
 		$indexer->indexFile($fileName);
 
-		$analyzer = new AnalyzingPhase(new StaticAnalyzer($config->getSymbolTable(), $output, $config), $output);
+		$analyzer = new AnalyzingPhase();
 		$analyzer->initParser($config, $output);
 
 		$analyzer->analyzeFile($fileName, $config);

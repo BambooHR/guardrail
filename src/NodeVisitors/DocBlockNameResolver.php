@@ -1,14 +1,13 @@
 <?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2024, BambooHR
  * Apache 2.0 License
  */
 
 use BambooHR\Guardrail\Abstractions\ClassMethod;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\TypeComparer;
-use BambooHR\Guardrail\Util;
+use BambooHR\Guardrail\Exceptions\DocBlockParserException;
+use BambooHR\Guardrail\TypeParser;
 use PhpParser\NameContext;
 use PhpParser\Node;
 use PhpParser\Node\Name;
@@ -26,8 +25,11 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	/** @var NameContext */
 	private $context;
 
+	private TypeParser $parser;
+
 	function __construct($context) {
 		$this->context = $context;
+		$this->parser=new TypeParser(fn($fn)=>$this->resolveTypeName($fn));
 	}
 	/**
 	 * enterNode
@@ -54,11 +56,36 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 */
 	private function importInlineVarType(Node $node) {
 		$comment = $node->getDocComment();
-		if ($comment && preg_match_all('/@var +([-A-Z0-9_|\\\\]+(?:\[\])*)( +\\$([A-Z0-9_]+))?/i', $comment->getText(), $matchArray, PREG_SET_ORDER)) {
-			$vars = $this->buildVarsFromTag($matchArray);
+		if ($comment && preg_match_all('/@var +([-A-Z0-9_|\\\\<>]+(?:\[])*)( +\\$([A-Z0-9_]+))?/i', $comment->getText(), $matchArray, PREG_SET_ORDER)) {
+			$node->setAttribute("namespacedInlineVar",$this->buildVarsFromTag($matchArray));
+		}
+	}
 
-			if (count($vars) > 0) {
-				$node->setAttribute("namespacedInlineVar", $vars);
+	private function processDocBlockParams(Node\FunctionLike $node, string $comment) {
+		if ($comment && preg_match_all('/@param +([-A-Z0-9_|\\\\<>[\\]])+( +\\$([A-Z0-9_]+))?/i', $comment, $matchArray, PREG_SET_ORDER)) {
+			$params = [];
+
+			foreach ($matchArray as $tag) {
+				if (isset($tag[3])) {
+					$str = strval($tag[1]);
+					try {
+						$params[$tag[3]] = $this->parser->parse($str);
+						//echo "Set docblock : ".$tag[3]." ".$str."\n";
+					}
+					catch(DocBlockParserException) {
+						//Ignore
+					}
+				}
+			}
+
+			foreach($node->getParams() as $param) {
+				if (is_string($param->var->name)) {
+					$name=$param->var->name;
+					if (isset($params[$name])) {
+						//echo "Set param $name = ".print_r($params[$name],true);
+						$param->setAttribute('DocBlockName', $params[$name]);
+					}
+				}
 			}
 		}
 	}
@@ -73,15 +100,13 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 */
 	private function importVarType(Property $prop) {
 		$comment = $prop->getDocComment();
-		if ($comment && preg_match_all('/@var +([-A-Z0-9_|\\\\]+(?:\[\])*)( +(\\$[A-Z0-9_]+))?/i', $comment, $matchArray, PREG_SET_ORDER)) {
-			if (count($prop->props) >= 1) {
+		if ($comment && preg_match('/@var +([-A-Z0-9_|\\\\()]+)/i', $comment, $matchArray)) {
 				try {
-					$this->setDocBlockAttributes($prop, $matchArray);
-				} catch (\InvalidArgumentException $exception) {
+					$prop->props[0]->setAttribute("namespacedType", $this->parser->parse($matchArray[1]));
+				} catch (DocBlockParserException $exception) {
 					// Skip it.
 				}
 			}
-		}
 	}
 
 	/**
@@ -96,6 +121,8 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		if ($comment) {
 			$str = $comment->getText();
 			try {
+				$this->processDocBlockParams($node, $str);
+				$this->processDocBlockTemplates($node, $str);
 				$this->processDocBlockReturn($node, $str);
 				$this->processDockBlockThrows($node, $str);
 			} catch (\InvalidArgumentException $exception) {
@@ -104,46 +131,29 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		}
 	}
 
+	private function resolveTypeName($type) {
+		return $this->context->getResolvedClassName(new Name($type));
+	}
+
 	/**
-	 * getDocBlockAttributes
+	 * processDockBlockReturn
 	 *
-	 * @param Property $prop Instance of Property
-	 * @param string   $str  The comment
+	 * @param Function_|ClassMethod $node Instance of FunctionAbstraction ClassMethod
+	 * @param string                $str  The docBlock text
 	 *
 	 * @return void
 	 */
-	private function setDocBlockAttributes(Property $prop, $matches) {
-		if (count($matches) > 0) {
-			$type = strval($matches[0][1]);
-			if (!empty($type)) {
-				$prop->props[0]->setAttribute("namespacedType", $this->resolveTypeName($type));
+	private function processDocBlockTemplates($node, $str) {
+		/*
+		if ($str && preg_match_all('/@template +([A-Z]+)\w*\$/i', $str, $matchArray, PREG_SET_ORDER)) {
+
+			$returnType = strval($matchArray[0][1]);
+			list($returnType) = explode(" ", $returnType, 2);
+			if ($returnType != "" && strpos($returnType, "|") === false) {
+				$returnType = $this->resolveTypeName($returnType);
+				$node->setAttribute("namespacedReturn", strval($returnType));
 			}
-		}
-	}
-
-	private function resolveTypeName($type) {
-		if ($type=='mixed' || strpos($type,'|') !== false) {
-			$type = '';
-		}
-
-		if (preg_match("/^([^\[]*)((?:\[\])+)\$/", $type, $matches)) {
-			list(, $type,$parens)=$matches;
-		} else {
-			$parens = "";
-		}
-
-		// Ignore union types.
-		if ($type && strval($type) != "" && strpos($type,'\\') !== 0 && !Util::isLegalNonObject($type)) {
-			$resolvedName = $this->context->getResolvedClassName( new Name($type) );
-			if ($resolvedName) {
-				$type = strval($resolvedName);
-			}
-		}
-		$type .= $parens;
-		if ($type && $type[0] == '\\') {
-			$type = substr($type, 1);
-		}
-		return $type;
+		}*/
 	}
 
 	/**
@@ -155,21 +165,29 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 * @return void
 	 */
 	private function processDocBlockReturn($node, $str) {
-		if ($str && preg_match_all('/@return +([A-Z0-9_|\\\\]+(?:\[\])*)/i', $str, $matchArray, PREG_SET_ORDER)) {
-			$returnType = strval($matchArray[0][1]);
-			list($returnType) = explode(" ", $returnType, 2);
-			if ($returnType != "" && strpos($returnType, "|") === false) {
-				$returnType = $this->resolveTypeName($returnType);
-				$node->setAttribute("namespacedReturn", strval($returnType));
+		if ($str && preg_match('/@return +([-A-Z0-9_|\\\\<>,]+(\[])*)( +\\$([A-Z0-9_]+))?/i', $str, $matchArray)) {
+
+			$returnType = $matchArray[1];
+			try {
+				$v=$this->parser->parse($returnType);
+				$node->setAttribute("namespacedReturn",$v);
+			}
+			catch(DocBlockParserException) {
+				// Ignore it.
 			}
 		}
 	}
 
 	private function processDockBlockThrows(Node $node, string $str) {
-		if ($str && preg_match_all('/@throws +([A-Z0-9_|\\\\]+)/i', $str, $matchArray, PREG_SET_ORDER)) {
+		if ($str && preg_match_all('/@throws +([A-Z0-9_\\\\]+)/i', $str, $matchArray, PREG_SET_ORDER)) {
 			$list = [];
 			foreach($matchArray as $matches) {
-				$list[] = $this->resolveTypeName($matches[1]);
+				try {
+					$list[] = $this->parser->parse($matches[0]);
+				}
+				catch(DocBlockParserException) {
+					// Ignore
+				}
 			}
 			$node->setAttribute("throws", $list);
 		}
@@ -184,19 +202,16 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		foreach ($tags as $tag) {
 			if (isset($tag[3])) {
 				$str = strval($tag[1]);
-				if(str_contains($str,'|')) {
-					$vars[$tag[3]] = new Node\UnionType(array_map(
-						fn($term)=>TypeComparer::nameFromName($this->resolveTypeName($term)),
-						explode('|', $str)
-					));
-				} else {
-					$type = $this->resolveTypeName($str);
-					if ($type != "type") {
-						$vars[$tag[3]] = TypeComparer::nameFromName($type);
-					}
+				try {
+					$vars[$tag[3]] = $this->parser->parse($str);
+				}
+				catch(DocBlockParserException) {
+					//Ignore
 				}
 			}
 		}
 		return $vars;
 	}
+
+
 }

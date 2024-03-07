@@ -19,6 +19,7 @@ use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Phases\Processes\Child\AnalyzingChildProcess;
 use BambooHR\Guardrail\Phases\Processes\Parent\AnalyzingParentProcess;
 use BambooHR\Guardrail\Socket;
+use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use BambooHR\Guardrail\Util;
 use PhpParser\Comment;
 use PhpParser\Error;
@@ -186,7 +187,11 @@ class AnalyzingPhase {
 	 */
 	public function phase2(Config $config, OutputInterface $output, $toProcess, $totalBytes) {
 
-		$config->getSymbolTable()->connect(0);
+		$table = $config->getSymbolTable();
+		if ($table instanceof PersistantSymbolTable) {
+			$table->connect(0);
+		}
+
 
 		$pm = new AnalyzingParentProcess($toProcess, $totalBytes, $output);
 		$pm->run($this, $config);
