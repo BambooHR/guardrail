@@ -112,7 +112,7 @@ class MethodCall extends CallCheck {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
 							return;
 						}
-						$templates= ["T"]; //$class->getTemplates()''
+						//$templates= ["T"]; //$class->getTemplates()''
 					}
 					$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
 					if ($method) {

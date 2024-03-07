@@ -92,7 +92,7 @@ class FunctionCallCheck extends CallCheck {
 				$this->checkForRegularExpression($fileName, $node, $name);
 
 				if ($func) {
-					$minimumArgs = $func->getMinimumRequiredParameters($name);
+					$minimumArgs = $func->getMinimumRequiredParameters();
 					if (count($node->args) < $minimumArgs) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
 					}

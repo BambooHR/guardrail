@@ -32,9 +32,9 @@ class ArrayDimFetch implements ExpressionInterface
 				return $type->getAttribute('templates')[0];
 			}
 			if ($type instanceof Node\Name) {
-				$specificTypes =$type->getAttribute('templates');
+				//$specificTypes =$type->getAttribute('templates');
 				if ($table->isParentClassOrInterface("ArrayAccess", $type)) {
-					$class= $table->getClass($type);
+					//$class= $table->getClass($type);
 					$method = Util::findAbstractedMethod($type, "offsetGet", $table);
 					if ($type->getAttribute('templates') && count($type->getAttribute('templates'))>0) {
 						$arrayType = $type->getAttribute('templates')[0];
