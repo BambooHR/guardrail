@@ -67,7 +67,8 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
-		error_reporting(E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING );
+		$errorMask = E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING;
+		error_reporting( $errorMask );
 
 		set_exception_handler( function(\Throwable $exception) {
 			echo "Uncaught exception : ".$exception->getMessage()."\n";
@@ -82,7 +83,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 		){
 			echo "ERROR: $errno: $errstr in $errfile line $errline\n";
 			exit(1);
-		});
+		},  $errorMask);
 
 
 		if (!extension_loaded("pcntl")) {
