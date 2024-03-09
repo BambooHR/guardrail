@@ -59,20 +59,21 @@ abstract class ProcessManager {
 
 	function loopWhileConnections() {
 		while (count($this->connections) > 0) {
-			$read = $this->connections;
+
 			$none = null;
-			$childPid = 0;
-			$closeSockets = [];
 			do {
 				$childPid = pcntl_wait($status, WNOHANG);
 				if ($childPid > 0) {
-					$closeSockets[] = $childPid;
+					unset($this->connections[$childPid]);
+					unset($this->buffers[$childPid]);
 					if ($status != 0) {
 						echo "Child died with non-zero status!\n";
 						exit($status);
 					}
 				}
 			} while ($childPid > 0);
+
+			$read = $this->connections;
 
 			if (socket_select($read, $none, $none, null)) {
 				foreach ($read as $index => $socket) {
@@ -83,16 +84,13 @@ abstract class ProcessManager {
 						echo "Socket error: ".$socketException->getMessage(). "\n";
 						unset($this->connections[$index]);
 						unset($this->buffers[$index]);
+						exit(1);
 					}
 				}
 			}
 			foreach ($this->buffers as $index => $buffer) {
 				$messages = $buffer->getMessages();
 				$this->dispatchClientMessages( $index, $messages);
-			}
-			foreach ($closeSockets as $childPid) {
-				unset($this->connections[$childPid]);
-				unset($this->buffers[$childPid]);
 			}
 		}
 	}

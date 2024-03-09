@@ -67,6 +67,23 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
+		error_reporting(E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING );
+
+		set_exception_handler( function(\Throwable $exception) {
+			echo "Uncaught exception : ".$exception->getMessage()."\n";
+			echo $exception->getTraceAsString()."\n";
+			exit(1);
+		});
+		set_error_handler( function(
+			int $errno,
+    		string $errstr,
+    		string $errfile,
+			int $errline,
+		){
+			echo "ERROR: $errno: $errstr in $errfile line $errline\n";
+			exit(1);
+		});
+
 
 		if (!extension_loaded("pcntl")) {
 			echo "Guardrail requires the pcntl extension, which is not loaded.\n";

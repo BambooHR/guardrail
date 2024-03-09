@@ -63,7 +63,7 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 
 	private function getVarName(Node\Expr $var): ?string {
 		$varName = NodePatterns::getVariableOrPropertyName($var);
-		while (str_contains($varName, '->')) {
+		while (!is_null($varName) && str_contains($varName, '->')) {
 			$varName = substr($varName, 0, strrpos($varName, "->") ?: 0);
 		}
 

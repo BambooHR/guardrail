@@ -55,7 +55,7 @@ class ClassMethod implements MethodInterface {
 	 */
 	public function isDeprecated() {
 		$docBlock = $this->method->getDocComment();
-		if (strpos($docBlock, "@deprecated") !== false) {
+		if ($docBlock && strpos($docBlock, "@deprecated") !== false) {
 			return true;
 		}
 		return false;
