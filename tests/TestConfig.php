@@ -31,6 +31,8 @@ class TestConfig extends Config {
 				"DocBlockParams" => true,
 				"DocBlockInlineVars" => true,
 				"DocBlockProperties" => true,
+				"DocBlockTypedArrays" => true,
+				"DocBlockGenerics" => true
 			],
 			'test' => [$file],
 			'index' => [dirname($file)],
