@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Class ErrorConstants
@@ -76,7 +78,7 @@ class ErrorConstants {
 	const TYPE_USE_CASE_SENSITIVE = 'Standard.Use.CaseSensitive';
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
-
+	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
 
 
 	/**

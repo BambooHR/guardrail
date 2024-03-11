@@ -56,7 +56,7 @@ class ThrowsCheck extends BaseCheck {
 		if ($node) {
 			$documentedThrows = $node->getAttribute('throws', []);
 			foreach ($documentedThrows as $documentedThrow) {
-				if (strcasecmp($documentedThrow, $throw) == 0) {
+				if ($this->symbolTable->isParentClassOrInterface($documentedThrow, $throw)) {
 					return true;
 				}
 			}

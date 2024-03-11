@@ -65,7 +65,7 @@ class TraitIndexingParent extends ProcessManager {
 					sprintf("Indexing used traits %d/%d %d%%\r",
 							$this->processedFiles,
 							count($this->children),
-							round(100 * $this->processedFiles / count($this->children))
+						round(100 * $this->processedFiles / max(1,count($this->children)))
 					)
 				);
 			}
