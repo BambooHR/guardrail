@@ -120,10 +120,13 @@ class Config {
 							break;
 						case "DocBlockInlineVars":
 							self::$useDocBlockForInlineVars = true;
+							break;
 						case "DocBlockTypedArrays":
 							self::$useDocBlockTypedArrays = false;
+							break;
 						case "DocBlockGenerics":
 							self::$useDocBlockGenerics = false;
+							break;
 					}
 				}
 			}
