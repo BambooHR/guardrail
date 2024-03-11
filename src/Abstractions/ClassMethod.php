@@ -97,7 +97,7 @@ class ClassMethod implements MethodInterface {
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->method->params as $param) {
 			$type = null;
-			if (Config::shouldUseDocBlockForParameters()) {
+			if (Config::shouldUseDocBlockGenerics()) {
 				$type=$param->getAttribute('DocBlockName');
 				if ($type && !$type->getAttribute('templates',false)) {
 					$type = null;

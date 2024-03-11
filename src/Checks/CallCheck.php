@@ -1,7 +1,7 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
-use BambooHR\Guardrail\Evaluators\Expression\ClassConstFetch;
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
@@ -91,7 +91,6 @@ abstract class CallCheck extends BaseCheck {
 	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, Node\Arg $arg, FunctionLikeParameter $param, array $templates) {
 		$variableName = $param->getName();
 		$type = $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-
 		if ($arg->unpack) {
 			$tc=new TypeComparer($this->symbolTable);
 			if (!$tc->isTraversable($type)) {
@@ -100,10 +99,13 @@ abstract class CallCheck extends BaseCheck {
 			return;// After we unpack an arg, we can't check the remaining parameters.
 		} else {
 			$expectedType = $param->getType();
+			//echo "Initial expected ".TypeComparer::typeToString($expectedType)."\n";
 			if ($expectedType instanceof Node\Name && isset($templates[strtolower($expectedType)])) {
 				$expectedType = $type;
 			}
-			if (TypeComparer::isNamedIdentifier($param->getType(),"class-string") &&
+			if (
+				Config::shouldUseDocBlockGenerics() &&
+				TypeComparer::isNamedIdentifier($param->getType(),"class-string") &&
 				$param->getType()->getAttribute('templates')[0] instanceof Node\Name &&
 				isset($templates[strtolower($param->getType()->getAttribute('templates')[0])]) &&
 				$arg->value instanceof Expr\ClassConstFetch &&
@@ -131,6 +133,7 @@ abstract class CallCheck extends BaseCheck {
 				// Type mismatch
 				$checker = new TypeComparer($this->symbolTable);
 
+				//echo "Type ".TypeComparer::typeToString($type)." vs ".TypeComparer::typeToString($expectedType)."\n";
 				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope->isStrict())) {
 					$nullOnlyError = false;
 					$typeStr=TypeComparer::typeToString($type);

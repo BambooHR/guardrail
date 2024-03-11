@@ -97,6 +97,10 @@ class Config {
 	/** @var bool */
 	static private $useDocBlockForInlineVars = false;
 
+	static private $useDocBlockTypedArrays = false;
+
+	static private $useDocBlockGenerics = false;
+
 	/**
 	 * @return void
 	 */
@@ -116,6 +120,10 @@ class Config {
 							break;
 						case "DocBlockInlineVars":
 							self::$useDocBlockForInlineVars = true;
+						case "DocBlockTypedArrays":
+							self::$useDocBlockTypedArrays = false;
+						case "DocBlockGenerics":
+							self::$useDocBlockGenerics = false;
 					}
 				}
 			}
@@ -208,6 +216,14 @@ class Config {
 	 */
 	static function shouldUseDocBlockForInlineVars() {
 		return self::$useDocBlockForInlineVars;
+	}
+
+	static function shouldUseDocBlockTypedArrays() {
+		return self::$useDocBlockTypedArrays;
+	}
+
+	static function shouldUseDocBlockGenerics() {
+		return self::$useDocBlockGenerics;
 	}
 
 	/**

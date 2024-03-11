@@ -33,7 +33,7 @@ class TypeParser {
 		if ($type && strval($type) != "") {
 			if (Util::isLegalNonObject($type)) {
 				return new Node\Identifier($type);
-			} else if (str_starts_with($type,"\\" )) {
+			} else if (str_starts_with($type,"\\" ) || $type=="T" || $type=="class-string") {
 				return new Name\FullyQualified(substr($type,1), ["templates"=>$templateVars]);
 			} else {
 				$var=call_user_func($this->resolver,new Name($type));
@@ -60,6 +60,9 @@ class TypeParser {
 			$i+=strlen($matches[0]);
 			$name=$this->adjustTypeString($matches[1]);
 			if (!empty($matches[2])) {
+				if (!Config::shouldUseDocBlockTypedArrays()) {
+					return null;
+				}
 				$depth = substr_count($matches[2],"[]");
 				$leafType = new Identifier("array",["templates"=>[$this->generateNameOrIdentifier($name)]]);
 				if ($depth==1) {

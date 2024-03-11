@@ -92,14 +92,19 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		$ret = [];
 		/** @var \PhpParser\Node\Param $param */
 		foreach ($this->function->params as $param) {
-			$docBlockType= $param->getAttribute('DocBlockName');
-			if (Config::shouldUseDocBlockForParameters() &&
-				$docBlockType &&
-				$docBlockType instanceof Name &&
-				strcasecmp($docBlockType,"T") === 0
-			) {
-				$type = $docBlockType;
-			} else {
+			$type = null;
+			$docBlockType = $param->getAttribute('DocBlockName');
+			if (Config::shouldUseDocBlockGenerics()) {
+				if (
+					$docBlockType &&
+					$docBlockType instanceof Name &&
+					(strcasecmp($docBlockType, "T") === 0 || strcasecmp($docBlockType, "class-string") == 0)
+				) {
+					$type = $docBlockType;
+				}
+			}
+
+			if (!$type) {
 				$type = $param->type ?? (Config::shouldUseDocBlockForParameters() ? $docBlockType : null);
 			}
 			$ret[] = new FunctionLikeParameter(

@@ -62,14 +62,16 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	}
 
 	private function processDocBlockParams(Node\FunctionLike $node, string $comment) {
-		if ($comment && preg_match_all('/@param +([-A-Z0-9_|\\\\<>[\\]])+( +\\$([A-Z0-9_]+))?/i', $comment, $matchArray, PREG_SET_ORDER)) {
+		if ($comment && preg_match_all('/@param +([-A-Z0-9_|\\\\<>[\\]]+)( +\\$([A-Z0-9_]+))?/i', $comment, $matchArray, PREG_SET_ORDER)) {
 			$params = [];
 
 			foreach ($matchArray as $tag) {
 				if (isset($tag[3])) {
 					$str = strval($tag[1]);
 					try {
-						$params[$tag[3]] = $this->parser->parse($str);
+						if ($str!="type") {
+							$params[$tag[3]] = $this->parser->parse($str);
+						}
 						//echo "Set docblock : ".$tag[3]." ".$str."\n";
 					}
 					catch(DocBlockParserException) {
