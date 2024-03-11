@@ -62,6 +62,7 @@ Guardrail classifies checks by name.  Here is the standard list of errors.  Note
 | Standard.Autoload.Unsafe            | Code that executes any statements other than a class declaration.                                            |
 | Standard.ConditionalAssignment      | Assigning a variable in conditional expression of an if() statement.                                         |
 | Standard.Constructor.MissingCall    | Overriding a constructor without calling the parent constructor                                              |
+| Standard.Countable.Emptiness        | Use of `empty()` to check if a countable is empty or not                                                     |
 | Standard.Debug                      | Typical debug statements such as var_dump() or print_r()                                                     |
 | Standard.Deprecated.Internal        | Call to an internal PHP function that is deprecated                                                          |
 | Standard.Deprecated.User            | Call to a user function that has @deprecated in the docblock.                                                |

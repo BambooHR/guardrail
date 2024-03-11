@@ -5,8 +5,6 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
-use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Phases\IndexingPhase;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
 use BambooHR\Guardrail\Exceptions\InvalidConfigException;
