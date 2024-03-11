@@ -1,9 +1,7 @@
 <?php namespace BambooHR\Guardrail\Tests;
 
 use BambooHR\Guardrail\Exceptions\DocBlockParserException;
-use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\TypeParser;
-use BambooHR\Guardrail\Util;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
@@ -11,6 +9,11 @@ use PhpParser\Node\UnionType;
 use PHPUnit\Framework\TestCase;
 
 class TypeParserTest extends TestCase {
+
+	function setUp(): void {
+		// This sets up some static variables we need.
+		new TestConfig("TestParserTest", "Standard.*");
+	}
 
 	function testSimpleType() {
 		$parser = new TypeParser(fn($foo) => $foo);

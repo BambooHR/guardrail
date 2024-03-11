@@ -11,7 +11,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  */
 class TestConfig extends Config {
 	public $basePath;
-	protected $config;
 	public $symbolTable;
 	public $emitList;
 	public $forceIndex;
