@@ -272,7 +272,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function updateClass(ClassLike $class) {
 		$name = strtolower($class->namespacedName);
 
-		$clone = $this->stripMethodContents($class);
+		$clone = static::stripMethodContents($class);
 		$serializedString = self::serializeObject($clone);
 		$type = $class instanceof Trait_ ? self::TYPE_TRAIT : self::TYPE_CLASS;
 
@@ -303,7 +303,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return mixed
 	 */
-	public function stripMethodContents(ClassLike $class) {
+	public static function stripMethodContents(ClassLike $class) {
 		// Make a deep copy and then remove implementation code (to save space).
 		$clone = unserialize(serialize($class));
 		foreach ($clone->stmts as $index => &$stmt) {
@@ -366,7 +366,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$usesTrait = 1;
 			}
 		}
-		$clone = $this->stripMethodContents($class);
+		$clone = static::stripMethodContents($class);
 		$this->addType($name, $file, self::TYPE_CLASS, $usesTrait, self::serializeObject($clone));
 	}
 

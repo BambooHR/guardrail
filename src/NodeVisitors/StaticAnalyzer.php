@@ -45,6 +45,7 @@ use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Scope\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -105,12 +106,11 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	/**
 	 * StaticAnalyzer constructor.
 	 *
-	 * @param string $basePath The base path
 	 * @param SymbolTable $index The index
 	 * @param OutputInterface $output Instance if OutputInterface
 	 * @param Config $config The config
 	 */
-	function __construct($basePath, $index, OutputInterface $output, $config)
+	function __construct(SymbolTable $index, OutputInterface $output, Config $config)
 	{
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output);
@@ -291,8 +291,8 @@ class StaticAnalyzer extends NodeVisitorAbstract
 				$check->run($this->file, $node, $this->scopeStack->getCurrentClass(), $this->scopeStack);
 				$last = microtime(true);
 				$name = get_class($check);
-				$this->timings[$name] = (isset($this->timings[$name]) ? $this->timings[$name] : 0) + ($last - $start);
-				$this->counts[$name] = (isset($this->counts[$name]) ? $this->counts[$name] : 0) + 1;
+				$this->timings[$name] = ($this->timings[$name] ?? 0) + ($last - $start);
+				$this->counts[$name] = ($this->counts[$name] ?? 0) + 1;
 			}
 		}
 

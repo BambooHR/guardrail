@@ -65,7 +65,24 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
-		error_reporting(E_WARNING | E_ERROR);
+		$errorMask = E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING;
+		error_reporting( $errorMask );
+
+		set_exception_handler( function(\Throwable $exception) {
+			echo "Uncaught exception : ".$exception->getMessage()."\n";
+			echo $exception->getTraceAsString()."\n";
+			exit(1);
+		});
+		set_error_handler( function(
+			int $errno,
+    		string $errstr,
+    		string $errfile,
+			int $errline,
+		){
+			echo "ERROR: $errno: $errstr in $errfile line $errline\n";
+			exit(1);
+		},  $errorMask);
+
 
 		if (!extension_loaded("pcntl")) {
 			echo "Guardrail requires the pcntl extension, which is not loaded.\n";
@@ -90,7 +107,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
-			$indexer = new IndexingPhase($config);
+			$indexer = new IndexingPhase($config, $output);
 			$indexer->run($config, $output);
 			$output->outputExtraVerbose("\nDone\n\n");
 			//$output->renderResults();
@@ -98,7 +115,7 @@ where: -p #/#                 = Define the number of partitions and the current 
 		}
 
 		if ($config->shouldAnalyze()) {
-			$analyzer = new AnalyzingPhase($output);
+			$analyzer = new AnalyzingPhase();
 			$output->outputExtraVerbose("Analyzing\n");
 
 			$exitCode = $analyzer->run($config, $output);
@@ -108,13 +125,8 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 			if ($config->shouldOutputTimings()) {
 				$timings = $analyzer->getTimingResults();
-				$totalTime = array_sum( array_map(
-					function($element) {
-						return $element['time'];
-					},
-					$timings)
-				);
-				foreach ($analyzer->getTimingResults() as $class => $values) {
+				$totalTime = array_sum( array_column($timings,'time'));
+				foreach ($timings as $class => $values) {
 					$time = $values['time'];
 					$count = $values['count'];
 					printf("%-60s %4.1f s %4.1f%% %10s calls %5.2f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );

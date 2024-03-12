@@ -51,7 +51,7 @@ class XUnitOutput implements OutputInterface {
 	/**
 	 * @var array
 	 */
-	private $silenced = [];
+	protected $silenced = [];
 
 	private $isTTY = false;
 

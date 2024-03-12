@@ -1,27 +1,32 @@
 <?php
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2024, BambooHR
  * Apache 2.0 License
  */
 
 namespace BambooHR\Guardrail\Phases;
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\NodeVisitors\PromotedPropertyVisitor;
-use BambooHR\Guardrail\ProcessManager;
-use BambooHR\Guardrail\SocketBuffer;
+use BambooHR\Guardrail\NodeVisitors\SymbolTableIndexer;
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Phases\Processes\Child\IndexChildProcess;
+use BambooHR\Guardrail\Phases\Processes\Child\TraitIndexChildProcess;
+use BambooHR\Guardrail\Phases\Processes\Parent\AnalyzingParentProcess;
+use BambooHR\Guardrail\Phases\Processes\Parent\IndexParentProcess;
+use BambooHR\Guardrail\Phases\Processes\Parent\ProcessManager;
+use BambooHR\Guardrail\Phases\Processes\Parent\TraitIndexingParent;
+use BambooHR\Guardrail\Socket;
 use BambooHR\Guardrail\SymbolTable\PersistantSymbolTable;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\Util;
 use Phar;
+use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
-use PhpParser\NodeTraverser;
-use BambooHR\Guardrail\NodeVisitors\SymbolTableIndexer;
-use BambooHR\Guardrail\Util;
-use BambooHR\Guardrail\Config;
-use BambooHR\Guardrail\Output\OutputInterface;
 use Throwable;
 
 /**
@@ -31,7 +36,7 @@ use Throwable;
  */
 class IndexingPhase {
 
-	private $processManager;
+	private IndexParentProcess $processManager;
 
 	private $parser = null;
 	private $traverser1 = null;
@@ -42,8 +47,8 @@ class IndexingPhase {
 	 * IndexingPhase constructor.
 	 * @param Config $config -
 	 */
-	function __construct(Config $config) {
-		$this->processManager = new ProcessManager();
+	function __construct(private Config $config, OutputInterface $output) {
+		$this->processManager = new IndexParentProcess($config, $output);
 		$this->traverser1 = new NodeTraverser;
 		$this->traverser1->addVisitor($resolver = new NameResolver());
 		$this->traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
@@ -57,22 +62,21 @@ class IndexingPhase {
 	/**
 	 * Generator function that yields the next file to scan.
 	 *
-	 * @param Config                     $config Instance of Config
 	 * @param \RecursiveIteratorIterator $it2    Instance of RecursiveIteratorIterator
 	 * @param bool                       $stubs  Check the stubs
 	 *
 	 * @return \Generator
 	 */
-	private function getFileList(Config $config, array $paths, $stubs = false) {
-		$baseDir = $config->getBasePath();
-		$configArr = $config->getConfigArray();
+	private function getFileList(array $paths) {
+		$baseDir = $this->config->getBasePath();
+		$configArr = $this->config->getConfigArray();
 
 		foreach($paths as $path) {
 			$tmpDirectory = Util::fullDirectoryPath($baseDir, $path);
 			$generator = DirectoryLister::getGenerator($tmpDirectory);
 			foreach ($generator as $filePath) {
 				if (preg_match('/\\.(php|inc)$/', $filePath) && is_file($filePath)) {
-					if (!$stubs && isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $filePath, $configArr['ignore'])) {
+					if (isset($configArr['ignore']) && is_array($configArr['ignore']) && Util::matchesGlobs($baseDir, $filePath, $configArr['ignore'])) {
 						continue;
 					}
 					yield $filePath;
@@ -82,13 +86,12 @@ class IndexingPhase {
 	}
 
 	/**
-	 * @param Config $config   -
 	 * @param string $pathName -
 	 * @return int The length in bytes of the file that was indexed.
 	 * @guardrail-ignore Standard.Exception.Base
 	 */
-	function indexFile(Config $config, $pathName) {
-		$baseDir = $config->getBasePath();
+	function indexFile($pathName) {
+		$baseDir = $this->config->getBasePath();
 		$name = Util::removeInitialPath($baseDir, $pathName);
 		// If the $fileName is in our phar then make it a relative path so that files that we index don't
 		// depend on the phar file existing in a particular directory.
@@ -100,8 +103,8 @@ class IndexingPhase {
 			$name = "phar://" . $name;
 		}
 
-		if ($config->shouldReindex()) {
-			$config->getSymbolTable()->removeFileFromIndex($pathName);
+		if ($this->config->shouldReindex()) {
+			$this->config->getSymbolTable()->removeFileFromIndex($pathName);
 		}
 
 		$fileData = file_get_contents($pathName);
@@ -109,59 +112,6 @@ class IndexingPhase {
 		return $this->indexString($name, $fileData);
 	}
 
-	/**
-	 * indexTraitClasses
-	 *
-	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
-	 * @param OutputInterface $output      Instance of the OutputInterface
-	 *
-	 * @return void
-	 */
-	public function indexTraitClasses(SymbolTable $symbolTable, OutputInterface $output) {
-		$output->outputVerbose("\n\nImporting traits\n");
-		$symbolTable->begin();
-		foreach ($symbolTable->getClassesThatUseAnyTrait() as $className) {
-			$class = $symbolTable->getClass($className);
-			$symbolTable->updateClass( $class );
-		}
-		$symbolTable->commit();
-	}
-
-
-	/**
-	 * @param int    $processNumber -
-	 * @param Config $config     -
-	 * @return resource The client socket that the server should communicate with.
-	 */
-	function createIndexingChild($processNumber, Config $config) {
-		return $this->processManager->createChild(
-			// This closure represents the child process.  The value it returns
-			// will be the exit code of the child process.
-			function($socket) use($config, $processNumber) {
-				$table = $config->getSymbolTable();
-				if ($table instanceof PersistantSymbolTable) {
-					$table->connect($processNumber + 1 );
-				}
-				$buffer = new SocketBuffer();
-				while (1) {
-					$buffer->read($socket);
-					foreach ($buffer->getMessages() as $receive) {
-						if ($receive == "DONE") {
-							if ($table instanceof PersistantSymbolTable) {
-								$table->flushInserts();
-								$table->disconnect();
-							}
-							return 0;
-						} else {
-							list(, $file) = explode(' ', trim($receive));
-							$size = $this->indexFile($config, $file);
-							socket_write($socket, "INDEXED $size $file ".($processNumber+1)."\n");
-						}
-					}
-				}
-			}
-		);
-	}
 
 	/**
 	 * @param Config          $config The config
@@ -175,13 +125,14 @@ class IndexingPhase {
 			//$table->disconnect();
 		}
 
-		$start = microtime(true);
-		$bytes = 0.0;
+		$this->processManager->init($itr);
+
 		// Fire up our child processes and give them each a file to index.
 		for ($fileNumber = 0; $fileNumber < $config->getProcessCount() && $itr->valid(); ++$fileNumber, $itr->next()) {
 			$processNumber = $fileNumber;
-			$child = $this->createIndexingChild($processNumber, $config);
-			socket_write($child, "INDEX " . $itr->current() . "\n");
+			$child = $this->processManager->createChild(new IndexChildProcess($processNumber, $config->getSymbolTable(), $this));
+
+			Socket::writeComplete($child, "INDEX " . $itr->current() . "\n");
 
 			if (!$output->isTTY() && $config->getOutputLevel()==1) {
 				$output->outputVerbose(".");
@@ -189,55 +140,10 @@ class IndexingPhase {
 			if ($config->getOutputLevel()==2) {
 				$output->outputExtraVerbose( sprintf("%d - %s\n", $fileNumber, $itr->current()) );
 			}
-
 		}
-
-		$this->processManager->loopWhileConnections(
-			function ($socket, $msg) use (&$itr, &$fileNumber, &$bytes, $output, $start, $config) {
-				if ($msg === false) {
-					echo "Error: Unexpected error reading from socket\n";
-					return ProcessManager::CLOSE_CONNECTION;
-				}
-				list($message, $details) = explode(' ', $msg, 2);
-
-				if ($message == 'INDEXED') {
-					[$size, $fileName, $childProcessNumber] = explode(' ', $details);
-					$bytes += $size;
-					$output->outputExtraVerbose(sprintf("%d - %s ($childProcessNumber)\n", ++$fileNumber, $fileName));
-
-					if ($itr->valid()) {
-						socket_write($socket, "INDEX " . $itr->current() ."\n");
-						$itr->next();
-					} else {
-						socket_write($socket, "DONE\n");
-						return ProcessManager::CLOSE_CONNECTION;
-					}
-					if ($fileNumber % 50 == 0) {
-						$process= sprintf(
-							"Processing %s%.1f%s KB/second",
-							$output->ttyContent("\33[97m"),
-							$bytes / 1024 / (microtime(true) - $start),
-							$output->ttyContent("\33[0m")
-						);
-						if ($config->getOutputLevel()==1) {
-							if (!$output->isTTY()) {
-								$output->outputVerbose(".");
-							} else {
-								$output->outputVerbose($process."   \r");
-							}
-						} else {
-							if ($config->getOutputLevel()==2) {
-								$output->outputExtraVerbose("\n".$process . "\n");
-							}
-						}
-					}
-				} else {
-					$output->outputVerbose($message . " D:" . $details . "\n");
-				}
-				return ProcessManager::READ_CONNECTION;
-			}
-		);
-
+		$this->processManager->loopWhileConnections();
+		$this->processManager->displayStatusUpdate();
+		$output->outputVerbose("\n");
 	}
 
 	/**
@@ -259,16 +165,29 @@ class IndexingPhase {
 		}
 		$output->outputVerbose("Index directories are valid: Indexing starting.\n");
 
-		$this->indexList($config, $output, $this->getFileList($config, $indexPaths) );
+		$this->indexList($config, $output, $this->getFileList($indexPaths) );
 
+
+		$output->outputVerbose("Merging indexes\n");
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
 			$table->connect(0);
 			$table->indexTable($config->getProcessCount());
 		}
-		$table->connect(0);
+
 		$this->indexTraitClasses($table, $output);
-		$table->disconnect();
+	}
+
+	function indexTraitClasses(SymbolTable $table, OutputInterface $output): void {
+		if ($table instanceof PersistantSymbolTable) {
+			$table->connect(0);
+		}
+		$classes = $table->getClassesThatUseAnyTrait();
+		$manager = new TraitIndexingParent($classes, $this->config, $table, $output);
+		$manager->run();
+		if ($table instanceof PersistantSymbolTable) {
+			$table->disconnect();
+		}
 	}
 
 	/**

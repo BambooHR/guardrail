@@ -17,11 +17,9 @@ class CsvOutput extends XUnitOutput
 	}
 
 	public function renderResults() {
-		$f=fopen("/dev/stdout", "w");
+		$f=fopen("php://stdout", "w");
 		foreach($this->errors as $fileName=>$errors) {
-			usort($errors, function ($cmpa, $cmpb) {
-				return $cmpa['line'] > $cmpb['line'] ? 1 : ($cmpa['line'] == $cmpb['line'] ? 0 : -1);
-			});
+			usort($errors, fn($cmpa, $cmpb) => $cmpa['line'] <=> $cmpb['line'] );
 			foreach($errors as $error) {
 				fputcsv($f, [$fileName, $error['line'],$error['name'], $error['message']]);
 			}
