@@ -196,7 +196,7 @@ class Config {
 	/**
 	 * @return bool
 	 */
-	static function shouldUseDocBlockForProperties() {
+	static function shouldUseDocBlockForProperties():bool {
 		return self::$useDocBlockForProperties;
 	}
 
@@ -207,32 +207,24 @@ class Config {
 		return self::$useDocBlockForParameters;
 	}
 
-	/**
-	 * @return bool
-	 */
-	static function shouldUseDocBlockForReturnValues() {
+
+	static function shouldUseDocBlockForReturnValues():bool {
 		return self::$useDocBlockForReturnValue;
 	}
 
-	/**
-	 * @return bool
-	 */
-	static function shouldUseDocBlockForInlineVars() {
+	static function shouldUseDocBlockForInlineVars():bool{
 		return self::$useDocBlockForInlineVars;
 	}
 
-	static function shouldUseDocBlockTypedArrays() {
+	static function shouldUseDocBlockTypedArrays():bool {
 		return self::$useDocBlockTypedArrays;
 	}
 
-	static function shouldUseDocBlockGenerics() {
+	static function shouldUseDocBlockGenerics():bool {
 		return self::$useDocBlockGenerics;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function shouldOutputTimings() {
+	public function shouldOutputTimings():bool {
 		return $this->timings;
 	}
 

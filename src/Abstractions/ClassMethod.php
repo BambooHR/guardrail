@@ -88,39 +88,26 @@ class ClassMethod implements MethodInterface {
 	}
 
 	/**
-	 * getParameters
-	 *
 	 * @return FunctionLikeParameter[]
 	 */
 	public function getParameters() {
-		$ret = [];
-		/** @var \PhpParser\Node\Param $param */
-		foreach ($this->method->params as $param) {
-			$type = null;
-			if (Config::shouldUseDocBlockGenerics()) {
-				$type=$param->getAttribute('DocBlockName');
-				if ($type && !$type->getAttribute('templates',false)) {
-					$type = null;
-				}
-			}
-			if (!$type) {
-				$type = $param->type;
-				if (!$type && Config::shouldUseDocBlockForParameters()) {
-					$type = $param->getAttribute('DocBlockName');
-				}
-			}
-
-			$ret[] = new FunctionLikeParameter(
-				$type,
+		return array_map(
+			fn($param) => new FunctionLikeParameter(
+				FunctionAbstraction::resolveDeclaredParamTypes($param),
 				$param->var->name,
-				$param->default != null || $param->variadic,
+				$param->variadic || $param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name, "null") == 0)
-			);
-		}
-		return $ret;
+				(
+					$param->type instanceof NullableType ||
+					(
+						$param->default instanceof ConstFetch &&
+						strcasecmp($param->default->name, "null") == 0
+					)
+				)
+			),
+			$this->method->params
+		);
 	}
-
 	/**
 	 * getAccessLevel
 	 *

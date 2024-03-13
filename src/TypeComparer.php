@@ -151,7 +151,7 @@ class TypeComparer
 
 	static function typeToString(ComplexType|Name|Identifier|null $type):string {
 		if ($type === null) {
-			return "mixed";
+			return "(unknown)";
 		} else if ($type instanceof Name) {
 			$vars = $type->getAttribute('templates', []);
 			if (count($vars)>0) {
@@ -162,9 +162,9 @@ class TypeComparer
 		} else if ($type instanceof  Identifier) {
 			return strval($type);
 		} else if($type instanceof Node\NullableType) {
-			return "(null|".strval($type->type).")";
+			return "null|".strval($type->type);
 		} else if($type instanceof UnionType) {
-			return "(".implode("|", array_map(fn($type)=>self::typeToString($type), $type->types)).")";
+			return implode("|", array_map(fn($type)=>self::typeToString($type), $type->types));
 
 		} else if ($type instanceof IntersectionType) {
 			return "(".implode("&", array_map(fn($type)=>self::typeToString($type), $type->types )).")";

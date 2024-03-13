@@ -58,7 +58,7 @@ class TypeParser {
 	 */
 	private function parseString(string $type, int &$i): Name|Node\Identifier|null {
 		$this->skipWs($type,$i);
-		if (preg_match("/^([A-Z0-9_\\\\]+)(?:((?:\[])+)|<([\\\\A-Z0-9_]+(,[\\\\A-Z0-9_]+)*)>)?/i", substr($type,$i), $matches, 0)) {
+		if (preg_match("/^([-A-Z0-9_\\\\]+)(?:((?:\[])+)|<([\\\\A-Z0-9_]+(,[\\\\A-Z0-9_]+)*)>)?/i", substr($type,$i), $matches, 0)) {
 			$i+=strlen($matches[0]);
 			$name=$this->adjustTypeString($matches[1]);
 			if (!empty($matches[2])) {
@@ -84,7 +84,7 @@ class TypeParser {
 			$ret=$this->generateNameOrIdentifier($name, $templateVars);
 			return $ret;
 		}
-		throw new DocBlockParserException("Invalid type name: $type");
+		throw new DocBlockParserException("Invalid type name: \"$type\"");
 	}
 
 	private function skipWs(string $type, int &$i): void {
@@ -103,7 +103,7 @@ class TypeParser {
 				while ($i < strlen($type)) {
 					$this->skipWs($type, $i);
 					if ($type[$i] !== "&") {
-						throw new DocBlockParserException();
+						throw new DocBlockParserException("Expected \"&\" parsing \"$type\"");
 					}
 					++$i;
 					$intersection[] = $this->parseString($type, $i);
@@ -117,7 +117,7 @@ class TypeParser {
 				return $this->parseString($type, $i);
 			}
 		}
-		throw new DocBlockParserException("Invalid type name");
+		throw new DocBlockParserException("Invalid type name: \"$type\"");
 	}
 
 	function parse(string $type):Name|Identifier|Node\ComplexType|null {
@@ -129,7 +129,7 @@ class TypeParser {
 		if ($i >= strlen($type)) {
 			return $intType;
 		} else if ($type[$i]!="|") {
-			throw new DocBlockParserException("Invalid type name");
+			throw new DocBlockParserException("Expected \"|\" in type name in \"$type\"");
 		}
 		$types = [ $intType ];
 		while ($i < strlen($type) && $type[$i] == "|") {

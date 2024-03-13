@@ -7,6 +7,7 @@
 
 use BambooHR\Guardrail\Abstractions\ClassMethod;
 use BambooHR\Guardrail\Exceptions\DocBlockParserException;
+use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\TypeParser;
 use PhpParser\NameContext;
 use PhpParser\Node;
@@ -62,19 +63,20 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	}
 
 	private function processDocBlockParams(Node\FunctionLike $node, string $comment) {
-		if ($comment && preg_match_all('/@param +([-A-Z0-9_|\\\\<>[\\]]+)( +\\$([A-Z0-9_]+))?/i', $comment, $matchArray, PREG_SET_ORDER)) {
+		if ($comment && preg_match_all('/@param +([-A-Z0-9_|\\\\<>[\\]]+)(?: +\\$([A-Z0-9_]+))?/i', $comment, $matchArray, PREG_SET_ORDER)) {
 			$params = [];
 
 			foreach ($matchArray as $tag) {
-				if (isset($tag[3])) {
+				if (isset($tag[2])) {
 					$str = strval($tag[1]);
 					try {
-						if ($str!="type") {
-							$params[$tag[3]] = $this->parser->parse($str);
+						if ($str!="type" && $str!="name") {
+							$params[$tag[2]] = $this->parser->parse($str);
 						}
-						//echo "Set docblock : ".$tag[3]." ".$str."\n";
+						//echo "Set docblock : ".$tag[2]." ".$str."\n";
 					}
-					catch(DocBlockParserException) {
+					catch(DocBlockParserException)
+					{
 						//Ignore
 					}
 				}
@@ -84,7 +86,6 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 				if (is_string($param->var->name)) {
 					$name=$param->var->name;
 					if (isset($params[$name])) {
-						//echo "Set param $name = ".print_r($params[$name],true);
 						$param->setAttribute('DocBlockName', $params[$name]);
 					}
 				}

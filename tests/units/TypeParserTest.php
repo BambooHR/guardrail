@@ -82,10 +82,10 @@ class TypeParserTest extends TestCase {
 
 	function testCollectionTemplate() {
 		$parser = new TypeParser(fn($foo) => $foo);
-		$parsed = $parser->parse("Stack<int>");
+		$parsed = $parser->parse("class-string<T>");
 		$this->assertInstanceOf(Name::class, $parsed);
-		$this->assertEquals("Stack", strval($parsed));
-		$this->assertInstanceOf( Identifier::class, $parsed->getAttribute("templates")[0]);
-		$this->assertEquals('int', strval($parsed->getAttribute('templates')[0]));
+		$this->assertEquals("class-string", strval($parsed));
+		$this->assertInstanceOf( Name::class, $parsed->getAttribute("templates")[0]);
+		$this->assertEquals('T', strval($parsed->getAttribute('templates')[0]));
 	}
 }

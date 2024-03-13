@@ -110,7 +110,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 				 if ($pass==1) {
 					 $this->addReferenceParametersToLocalScope($scopeStack, $call->args, $function->getParameters());
 				 } else {
-					 return $this->resolveReturnType($function, $call->args[0] ?? null);
+					 return $this->resolveReturnType($function, $call->args);
 				 }
 			}
 		}
@@ -118,43 +118,42 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		return null;
 	}
 
-	function resolveReturnType(FunctionLikeInterface $function, ?Node\Arg $arg) {
-		//echo "Resolve return type ".$function->getName()."\n";
+	function resolveReturnType(FunctionLikeInterface $function, array $args) {
 		$docRet = $function->getDocBlockReturnType();
 		if (
+			Config::shouldUseDocBlockGenerics() &&
 			$docRet instanceof Name &&
 			strcasecmp($docRet,"T")==0
 		) {
-			//echo "Returns T\n";
-			if ($arg && $arg->value instanceof Node\Expr\ClassConstFetch) {
-				$fetch=$arg->value;
-				if (
-					$fetch->name instanceof Node\Identifier &&
-					strcasecmp($fetch->name, "class") == 0 &&
-					$fetch->class instanceof Name
-				) {
-					//echo "Return via class-string<" . $fetch->class . "> \n";
-					return $fetch->class;
-				}
-			}
+			//echo "Returns ".$function->getName()."() returns T\n";
 			$params = $function->getParameters();
-			foreach($params as $param) {
-				if ($param->getType() instanceof Name &&
-					strcasecmp($param->getType(),"T")  === 0
-				) {
-					//echo "Return via param type T ".$param->getName()."\n";
-					return $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			foreach ($params as $index=>$param) {
+			//	echo " Index: $index ".TypeComparer::typeToString($param->getType())."\n";
+				if ($param->getType() instanceof Name) {
+					$type = $param->getType();
+					if (strcasecmp($type, "T") === 0) {
+			//			echo "Return via param type T " . $type . "\n";
+						return $args[$index]->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+					}
+
+					if (strcasecmp($type, "class-string") === 0) {
+			//			echo "Looking for class-string at index $index\n";
+						if (isset($args[$index]) && $args[$index]->value instanceof Node\Expr\ClassConstFetch) {
+							$fetch = $args[$index]->value;
+							if (
+								TypeComparer::isNamedIdentifier($fetch->name, "class") &&
+								$fetch->class instanceof Name
+							) {
+			//					echo "Return via class-string<" . $fetch->class . "> \n";
+								return $fetch->class;
+							}
+						}
+					}
 				}
 			}
+			return null;
 		}
 
-
-		if (Config::shouldUseDocBlockForReturnValues()) {
-			$type = $function->getDocBlockReturnType();
-			if ($type && $type->getAttribute('templates')) {
-				return $type;
-			}
-		}
 		$type = $function->getComplexReturnType();
 		if (!$type && Config::shouldUseDocBlockForReturnValues()) {
 			return $function->getDocBlockReturnType();
@@ -227,7 +226,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 					$params = $method->getParameters();
 					$this->addReferenceParametersToLocalScope($scopeStack, $call->getArgs(), $params);
 	 			} else {
-					$returnType = $this->resolveReturnType($method, $call->args[0] ?? null);
+					$returnType = $this->resolveReturnType($method, $call->args);
 					return self::mapReturnType(strval($call->class), $returnType);
 				}
 			}
@@ -279,7 +278,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 						if ($pass==1) {
 							$this->addReferenceParametersToLocalScope($scopeStack, $node->args, $method->getParameters());
 						} else {
-							$returnType = $this->resolveReturnType($method, $node->args[0] ?? null);
+							$returnType = $this->resolveReturnType($method, $node->args);
 							return self::mapReturnType(strval($type), $returnType);
 						}
 					}

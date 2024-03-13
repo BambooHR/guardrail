@@ -24,5 +24,5 @@ function newIntStack() {
 }
 
 $a = newIntStack();
-$a->push(5);
+$a->push(new stdclass);
 
