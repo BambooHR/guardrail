@@ -227,25 +227,23 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 					$this->addReferenceParametersToLocalScope($scopeStack, $call->getArgs(), $params);
 	 			} else {
 					$returnType = $this->resolveReturnType($method, $call->args);
-					return self::mapReturnType(strval($call->class), $returnType);
+					return self::mapReturnType($call->class, $returnType);
 				}
 			}
 		}
 		return null;
 	}
 
-	static function mapReturnType(string $selfClass, ?Node $complexType): ?Node {
+	static function mapReturnType(Node $selfClass, ?Node $complexType): ?Node {
 		if (TypeComparer::isNamedIdentifier($complexType, "self") || TypeComparer::isNamedIdentifier($complexType, "static")) {
-			return TypeComparer::nameFromName($selfClass);
+			return $selfClass;
 		} else if ($complexType instanceof Node\UnionType) {
 			$types = [];
 			TypeComparer::forEachType($complexType, function ($type) use (&$types, $selfClass) {
-				$types[] = (TypeComparer::isNamedIdentifier($type, "self") || TypeComparer::isNamedIdentifier($type, "static")) ? TypeComparer::nameFromName($selfClass) : $type;
+				$types[] = (TypeComparer::isNamedIdentifier($type, "self") || TypeComparer::isNamedIdentifier($type, "static")) ? $selfClass : $type;
 			});
-
 			return TypeComparer::getUniqueTypes($types);
 		}
-
 		return $complexType;
 	}
 
@@ -264,28 +262,43 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 					$type = $scopeStack->getCurrentScope()->getVarType($node->var->name);
 				}
 			}
-			$types = [$type];
-			if ($type instanceof Node\UnionType) {
-				$types = [];
-				foreach ($type->types as $type) {
-					$types[] = $type;
-				}
-			}
+
+			$types = ($type instanceof Node\UnionType ? $type->types : [$type]);
+
+			$retTypes = [];
 			foreach ($types as $type) {
-				if ($type instanceof Node\Name || $type instanceof Node\Identifier) {
-					$method = $table->getAbstractedMethod(strval($type), strval($node->name));
+				if ($type instanceof Node\IntersectionType) {
+					// 1. Intersections are only meaningful for classes and interfaces.
+					// 2. You can't simultaneously be an instanceof 2 classes unless on is the parent of the other.
+					// 3. Therefore, determine which type is the class and use it to get the return value.
+					$useType = null;
+					foreach($type->types as $iType) {
+						if ($iType instanceof Name && $table->isDefinedClass(strval($iType))) {
+							$useType = $iType;
+						}
+					}
+					if(is_null($useType)) {
+						$useType=$type->types[0];
+					}
+				} else {
+					$useType = $type;
+				}
+				if ($useType instanceof Node\Name || $useType instanceof Node\Identifier) {
+					$method = $table->getAbstractedMethod(strval($useType), strval($node->name));
 					if ($method) {
 						if ($pass==1) {
 							$this->addReferenceParametersToLocalScope($scopeStack, $node->args, $method->getParameters());
 						} else {
 							$returnType = $this->resolveReturnType($method, $node->args);
-							return self::mapReturnType(strval($type), $returnType);
+							$retTypes[]=self::mapReturnType($useType, $returnType);
 						}
 					}
 				}
 			}
+			if ($pass==2) {
+				return TypeComparer::getUniqueTypes(...$retTypes);
+			}
 		}
-
 		return null;
 	}
 
