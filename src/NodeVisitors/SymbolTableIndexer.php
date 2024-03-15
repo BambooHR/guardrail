@@ -46,8 +46,6 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 */
 	private $filename = "";
 
-	/** @var OutputInterface  */
-	private $output;
 
 	/**
 	 * SymbolTableIndexer constructor.

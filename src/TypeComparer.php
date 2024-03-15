@@ -62,7 +62,10 @@ class TypeComparer
 	}
 
 	function areSimpleTypesCompatible(Name|Identifier|null $target, Name|Identifier|UnionType|null $value, bool $strict): bool {
-		if($target == null || $value == null) {
+		if($target == null){
+			return true;
+		}
+		if ($value== null) {
 			return true;
 		}
 		$targetName = strtolower($target->getAttribute('namespacedName') ?: strval($target));
@@ -190,7 +193,7 @@ class TypeComparer
 			}
 			return self::isNamedIdentifier($value,"mixed");
 		}
-		return $this->isCompatibleWithTarget($target, $value, $forceStrict);
+		return $this->isCompatibleWithTarget($value, $target, $forceStrict);
 	}
 
 	function isCovariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false) {
@@ -201,7 +204,7 @@ class TypeComparer
 			return self::isNamedIdentifier($target,"mixed");
 		}
 
-		$ret = $this->isCompatibleWithTarget($value, $target, $forceStrict);
+		$ret = $this->isCompatibleWithTarget($target, $value, $forceStrict);
 		return $ret;
 	}
 
@@ -216,34 +219,34 @@ class TypeComparer
 	 */
 	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false ) : bool {
 
-		if ($target === NULL || $value === null) {
+		if (is_null($target)) {
+			return true;
+		}
+		if (is_null($value)) {
 			return true;
 		}
 
 		// Many target options, many values.  Every value option must match at least one target.
 		$ret = self::ifEveryType($value, fn($valueType) =>
-		self::ifAnyType($target, function($targetType) use ($forceStrict, $valueType) {
-
-			if($targetType instanceof IntersectionType) {
-				$types = $targetType->types;
-			} else {
-				$types = [$targetType];
-			}
-
-
-			foreach ($types as $targetComponentType) {
-				if ($valueType instanceof IntersectionType) {
-					if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType,$forceStrict)) {
-						return false;
-					}
+			self::ifAnyType($target, function($targetType) use ($forceStrict, $valueType) {
+				if($targetType instanceof IntersectionType) {
+					$types = $targetType->types;
 				} else {
-					if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $forceStrict)) {
-						return false;
+					$types = [$targetType];
+				}
+				foreach ($types as $targetComponentType) {
+					if ($valueType instanceof IntersectionType) {
+						if (!$this->simpleTypeIsCompatibleWithIntersectionType($targetComponentType, $valueType,$forceStrict)) {
+							return false;
+						}
+					} else {
+						if (!$this->areSimpleTypesCompatible($targetComponentType, $valueType, $forceStrict)) {
+							return false;
+						}
 					}
 				}
-			}
-			return true;
-		})
+				return true;
+			})
 		);
 		return $ret;
 	}
@@ -328,29 +331,32 @@ class TypeComparer
 	}
 
 	function isTraversable(ComplexType|Identifier|Name|null $type):bool {
-		return $type === null || TypeComparer::ifEveryType($type, function($subType) {
-				if ($subType) {
-					if($subType instanceof Node\Name or $subType instanceof Node\Identifier) {
-						$typeStr=strval($subType);
-						if (str_ends_with($typeStr,"[]")) {
-							return true;
-						}
-						if (strcasecmp($typeStr,"array") == 0) {
-							return true;
-						}
-						if (!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
-							return true;
-						}
-						if (!$this->symbolTable->isParentClassOrInterface('iterable', $typeStr)) {
-							return true;
-						}
+		if (is_null($type)) {
+			return true;
+		}
+		return TypeComparer::ifEveryType($type, function($subType) {
+			if ($subType) {
+				if($subType instanceof Node\Name or $subType instanceof Node\Identifier) {
+					$typeStr=strval($subType);
+					if (str_ends_with($typeStr,"[]")) {
+						return true;
 					}
-					return false;
-				} else {
-					// Unknown, type we have to assume it is safe.
-					return true;
+					if (strcasecmp($typeStr,"array") == 0) {
+						return true;
+					}
+					if (!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
+						return true;
+					}
+					if (!$this->symbolTable->isParentClassOrInterface('iterable', $typeStr)) {
+						return true;
+					}
 				}
-			});
+				return false;
+			} else {
+				// Unknown, type we have to assume it is safe.
+				return true;
+			}
+		});
 	}
 
 	static function getUniqueTypes(...$types) {

@@ -91,7 +91,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	public function getParameters() {
 		$ret = array_map(
 			fn($param) => new FunctionLikeParameter(
-				$this->resolveDeclaredParamTypes($param),
+				self::resolveDeclaredParamTypes($param),
 				$param->var->name,
 				$param->variadic || $param->default != null,
 				$param->byRef,

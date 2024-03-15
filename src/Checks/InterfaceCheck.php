@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractedClass_;
+use BambooHR\Guardrail\Abstractions\ClassInterface;
 use BambooHR\Guardrail\Abstractions\ClassMethod;
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Abstractions\MethodInterface;
@@ -64,7 +65,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, Class_ $class, MethodInterface $method, MethodInterface $parentMethod) {
+	protected function checkMethod($fileName, Class_ $class, Node\FunctionLike $astNode, MethodInterface $method, MethodInterface $parentMethod) {
 
 		$visibility = $method->getAccessLevel();
 		$oldVisibility = $parentMethod->getAccessLevel();
@@ -99,9 +100,9 @@ class InterfaceCheck extends BaseCheck {
 						}
 					}
 					if ($childParam->getName() != $parentParam->getName()) {
-						$this->emitErrorOnLine(
+						$this->emitError(
 							$fileName,
-							$method->getStartingLine(),
+							$astNode,
 							ErrorConstants::TYPE_SIGNATURE_NAME,
 							"Child method renames parameter " . $className . "::" . $method->getName() . " \$" . $parentParam->getName() . " becomes \$" . $childParam->getName()
 						);
@@ -109,7 +110,7 @@ class InterfaceCheck extends BaseCheck {
 					if ($childParam->isReference() != $parentParam->isReference()) {
 						$this->emitError(
 							$fileName,
-							$method->getStartingLine(),
+							$astNode,
 							self::TYPE_SIGNATURE_TYPE,
 							"Child method " . $className . "::" . $method->getName() . " add or removes & in \$" . $childParam->getName()
 						);
@@ -117,16 +118,16 @@ class InterfaceCheck extends BaseCheck {
 					if (!$childParam->isOptional() && $parentParam->isOptional()) {
 						$this->emitError(
 							$fileName,
-							$method->getStartingLine(),
+							$astNode,
 							self::TYPE_SIGNATURE_TYPE,
 							"Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $childParam->getName() . " to be required."
 						);
 					}
 				} else {
 					if (!$childParam->isOptional()) {
-						$this->emitErrorOnLine(
+						$this->emitError(
 							$fileName,
-							$method->getStartingLine(),
+							$astNode,
 							self::TYPE_SIGNATURE_TYPE,
 							"Child method " . $method->getName() . " adds parameter \$" . $childParam->getName() . " that doesn't have a default value"
 						);
@@ -250,26 +251,17 @@ class InterfaceCheck extends BaseCheck {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ILLEGAL_ENUM, "Enums can not be extended");
 		}
 
-		foreach ($class->getMethodNames() as $methodName) {
-			if ($methodName != "__construct") {
-				$method = Util::findAbstractedMethod($node->extends, $methodName, $this->symbolTable);
+		foreach($node->stmts as $stmt) {
+			if ($stmt instanceof Node\Stmt\ClassMethod && $stmt->name!="__construct") {
+				$method = Util::findAbstractedMethod($node->extends, $stmt->name, $this->symbolTable);
 				if ($method) {
-					$this->checkMethod($fileName, $node, $class->getMethod($methodName), $method);
+					$this->checkMethod($fileName, $node, $stmt, $class->getMethod($stmt->name), $method);
 				}
 			}
 		}
 	}
 
-	/**
-	 * processNodeImplementsNotAbstract
-	 *
-	 * @param string $fileName  The file name
-	 * @param Node   $node      Instance of Node
-	 * @param string $interface The interface
-	 *
-	 * @return void
-	 */
-	private function processNodeImplementsNotAbstract($fileName, Class_ $node, $interface) {
+	private function processNodeImplementsNotAbstract($fileName, Class_ $node, ClassInterface $interface) {
 		// Don't force abstract classes to implement all methods.
 		if (!$node->isAbstract()) {
 			foreach ($interface->getMethodNames() as $interfaceMethod) {
@@ -279,7 +271,12 @@ class InterfaceCheck extends BaseCheck {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
 					}
 				} else {
-					$this->checkMethod($fileName, $node, $classMethod, $interface->getMethod($interfaceMethod));
+					foreach($node->stmts as $stmt) {
+						if ($stmt instanceof Node\Stmt\ClassMethod && strcasecmp($stmt->name, $interfaceMethod)==0) {
+							$this->checkMethod($fileName, $node, $stmt, $classMethod, $interface->getMethod($interfaceMethod));
+							break;
+						}
+					}
 				}
 			}
 		}

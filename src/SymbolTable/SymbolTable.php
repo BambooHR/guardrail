@@ -87,6 +87,9 @@ abstract class SymbolTable {
 	 *
 	 */
 	public function isParentClassOrInterface(string $potentialParent, string $child):bool {
+		if (strcasecmp($potentialParent,"object")==0) {
+			return true;
+		}
 		while ($child) {
 			if (strcasecmp($potentialParent, $child) == 0) {
 				return true;
@@ -101,9 +104,6 @@ abstract class SymbolTable {
 				}
 			}
 			$child = $child->getParentClassName();
-			if ($child=="" && strcasecmp($potentialParent, "object") == 0) {
-				return true;
-			}
 		}
 		return false;
 	}
