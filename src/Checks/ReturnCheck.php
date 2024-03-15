@@ -82,7 +82,7 @@ class ReturnCheck extends BaseCheck {
 			}
 
 			if (TypeComparer::isNamedIdentifier($returnType,"self") && $inside) {
-				$returnType = TypeComparer::nameFromName( $inside->namespacedName );
+				$returnType = $inside->namespacedName;
 			}
 
 			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope->isStrict())) {

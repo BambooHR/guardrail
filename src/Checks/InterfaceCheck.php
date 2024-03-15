@@ -9,12 +9,15 @@ use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractedClass_;
 use BambooHR\Guardrail\Abstractions\ClassMethod;
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Abstractions\MethodInterface;
+use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use PHPUnit\Util\Type;
 
 /**
  * Class InterfaceCheck
@@ -32,6 +35,13 @@ class InterfaceCheck extends BaseCheck {
 		'protected' => 1,
 		'public' => 2,
 	];
+
+	private TypeComparer $typeComparer;
+
+	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+		parent::__construct($symbolTable, $doc);
+		$this->typeComparer = new TypeComparer(($symbolTable));
+	}
 
 	/**
 	 * getCheckNodeTypes
@@ -80,27 +90,46 @@ class InterfaceCheck extends BaseCheck {
 				// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
 				if ($index < $parentParameterCount) {
 					$parentParam = $parentMethodParams[$index];
-					$childParamType = TypeComparer::typeToString($childParam->getType());
-					$parentParamType = TypeComparer::typeToString($parentParam->getType());
-
-					if ($oldVisibility !== 'private' && (strcasecmp($childParamType, $parentParamType) !== 0 && $childParamType !== 'mixed')) {
-						$childParamType = empty($childParamType) ? '(unspecified)' : $childParamType;
-						$parentParamType = empty($parentParamType) ? '(unspecified)' : $parentParamType;
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method parameter #$index type mismatch " . $className . "::" . $method->getName() . " : $childParamType vs $parentParamType");
-						break;
+					if ($oldVisibility !== 'private') {
+						$isContravariant = $this->typeComparer->isContravariant($parentParam->getType(), $childParam->getType());
+						if (!$isContravariant) {
+							$childParamType = TypeComparer::typeToString($childParam->getType());
+							$parentParamType = TypeComparer::typeToString($parentParam->getType());
+							$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method parameter " . $childParam->getName() . " type mismatch " . $className . "::" . $method->getName() . " : $parentParamType -> $childParamType");
+						}
+					}
+					if ($childParam->getName() != $parentParam->getName()) {
+						$this->emitErrorOnLine(
+							$fileName,
+							$method->getStartingLine(),
+							ErrorConstants::TYPE_SIGNATURE_NAME,
+							"Child method renames parameter " . $className . "::" . $method->getName() . " \$" . $parentParam->getName() . " becomes \$" . $childParam->getName()
+						);
 					}
 					if ($childParam->isReference() != $parentParam->isReference()) {
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " add or removes & in \$" . $childParam->getName());
-						break;
+						$this->emitError(
+							$fileName,
+							$method->getStartingLine(),
+							self::TYPE_SIGNATURE_TYPE,
+							"Child method " . $className . "::" . $method->getName() . " add or removes & in \$" . $childParam->getName()
+						);
 					}
 					if (!$childParam->isOptional() && $parentParam->isOptional()) {
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $childParam->getName() . " to be required.");
-						break;
+						$this->emitError(
+							$fileName,
+							$method->getStartingLine(),
+							self::TYPE_SIGNATURE_TYPE,
+							"Child method " . $className . "::" . $method->getName() . " changes parameter \$" . $childParam->getName() . " to be required."
+						);
 					}
 				} else {
 					if (!$childParam->isOptional()) {
-						$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method " . $method->getName() . " adds parameter \$" . $childParam->getName() . " that doesn't have a default value");
-						break;
+						$this->emitErrorOnLine(
+							$fileName,
+							$method->getStartingLine(),
+							self::TYPE_SIGNATURE_TYPE,
+							"Child method " . $method->getName() . " adds parameter \$" . $childParam->getName() . " that doesn't have a default value"
+						);
 					}
 				}
 			}
@@ -121,58 +150,15 @@ class InterfaceCheck extends BaseCheck {
 		string          $fileName,
 		string          $className
 	) {
-		$parentReturnTypes = $this->getReturnTypesForMethod($parentMethod);
-		$childReturnTypes = $this->getReturnTypesForMethod($childMethod);
-		$childReturnTypes = $this->updateChildReturnTypesToAccountForCovariance($childReturnTypes, $parentReturnTypes);
-
-		$differentChildReturnTypes = array_diff($childReturnTypes, $parentReturnTypes);
-		if (!empty($differentChildReturnTypes) && !in_array("mixed", $parentReturnTypes)) {
-			$diffTypesStr = implode(", and", $differentChildReturnTypes);
+		$parentType = $parentMethod->getComplexReturnType();
+		$childType = $childMethod->getComplexReturnType();
+		if (!$this->typeComparer->isCovariant( $parentType, $childType )) {
 			$this->emitErrorOnLine($fileName, $childMethod->getStartingLine(), self::TYPE_SIGNATURE_RETURN,
-				"Child method return types do not match parent return types" . $className . "::" .
-				$childMethod->getName() . " : Child can return $diffTypesStr and parent cannot."
+				"Child method return types do not match parent return types " . $className . "::" .
+				$childMethod->getName() . " : " . TypeComparer::typeToString($parentMethod->getComplexReturnType())
+					." to ". TypeComparer::typeToString($childMethod->getComplexReturnType())
 			);
 		}
-	}
-
-	/**
-	 * @param array $childReturnTypes
-	 * @param array $parentReturnTypes
-	 *
-	 * @return array
-	 */
-	private function updateChildReturnTypesToAccountForCovariance(array $childReturnTypes, array $parentReturnTypes) {
-		foreach ($childReturnTypes as $key => $childReturnType) {
-			if ($this->symbolTable->isDefinedClass($childReturnType)) {
-				foreach ($parentReturnTypes as $parentReturnType) {
-					if ($this->symbolTable->isDefinedClass($parentReturnType) && $this->symbolTable->isParentClassOrInterface($parentReturnType, $childReturnType)) {
-						$childReturnTypes[$key] = $parentReturnType;
-					}
-				}
-			}
-		}
-
-		return $childReturnTypes;
-	}
-
-	/**
-	 * @param MethodInterface $method
-	 *
-	 * @return string[]
-	 */
-	private function getReturnTypesForMethod(MethodInterface $method) {
-		$returnTypes = [];
-		TypeComparer::forEachType($method->getComplexReturnType(), function ($type) use (&$returnTypes) {
-			if ($type instanceof Node\Name) {
-				$type = TypeComparer::identifierFromName($type->toString());
-			}
-
-			$returnTypes[] = $type;
-		});
-		$returnTypes = array_column($returnTypes, 'name');
-		$returnTypes = !empty($returnTypes) ? $returnTypes : ["mixed"];
-
-		return $returnTypes;
 	}
 
 	/**
@@ -299,3 +285,4 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 }
+

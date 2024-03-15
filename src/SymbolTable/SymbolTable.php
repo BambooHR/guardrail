@@ -85,12 +85,8 @@ abstract class SymbolTable {
 	 *
 	 * Checks all parent classes and parent interfaces to see if $child is can be used in their place.
 	 *
-	 * @param string $potentialParent The potential parent
-	 * @param string $child           The child
-	 *
-	 * @return bool
 	 */
-	public function isParentClassOrInterface($potentialParent, $child) {
+	public function isParentClassOrInterface(string $potentialParent, string $child):bool {
 		while ($child) {
 			if (strcasecmp($potentialParent, $child) == 0) {
 				return true;

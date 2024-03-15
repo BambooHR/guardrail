@@ -183,6 +183,28 @@ class TypeComparer
 		return false;
 	}
 
+	function isContravariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false) {
+		if (is_null($target)) {
+			if(is_null($value)) {
+				return true;
+			}
+			return self::isNamedIdentifier($value,"mixed");
+		}
+		return $this->isCompatibleWithTarget($target, $value, $forceStrict);
+	}
+
+	function isCovariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false) {
+		if (is_null($value)) {
+			if (is_null($target)) {
+				return true;
+			}
+			return self::isNamedIdentifier($target,"mixed");
+		}
+
+		$ret = $this->isCompatibleWithTarget($value, $target, $forceStrict);
+		return $ret;
+	}
+
 	/**
 	 * Null values indicate an unknown type.  Unknown types are always considerable compatible.  Mixed *targets* can
 	 * accept any target.  Specific *targets* are too narrow to accept mixed *values*.

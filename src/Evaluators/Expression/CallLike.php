@@ -58,24 +58,27 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 
 		if ($expr->class instanceof Name) {
 
-			$className = strval($expr->class);
+			$className = $expr->class;
 
 			if (strcasecmp($className, "self") == 0) {
-				$className = $inside ? strval($inside->namespacedName) : TypeComparer::identifierFromName("mixed");
+				$className = $inside ? $inside->namespacedName : TypeComparer::identifierFromName("mixed");
 			} else {
 				if (strcasecmp($className, "static") == 0) {
 					// Todo: track static scope to figure out which child class to invoke.
-					$className = $inside ? strval($inside->namespacedName) : TypeComparer::identifierFromName("mixed");
+					$className = $inside ? $inside->namespacedName : TypeComparer::identifierFromName("mixed");
 				}
 			}
 
-			return TypeComparer::nameFromName($className);
+			return $className;
 		} else {
 			return null;
 		}
 	}
 
 	function onFunctionCall(Node\Expr\FuncCall $call, SymbolTable $table, ScopeStack $scopeStack,$pass): ?Node {
+		if (count($call->args)==1 && $call->args[0] instanceof Node\VariadicPlaceholder) {
+			return TypeComparer::identifierFromName("callable");
+		}
 		if ($call->name instanceof Node\Name) {
 			if ($pass==1) {
 				if (strcasecmp($call->name, "assert") == 0 &&
@@ -87,9 +90,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 						if ($expr instanceof Variable) {
 							$class = $var->class;
 							if ($class instanceof Node\Name) {
-								if (gettype($expr->name) == "string") {
-									$scopeStack->getCurrentScope()->setVarType($expr->name, TypeComparer::nameFromName(strval($class)), $var->getLine());
-								}
+								$scopeStack->getCurrentScope()->setVarType($expr->name, $class, $var->getLine());
 							}
 						}
 					}
@@ -219,6 +220,9 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	}
 
 	function onStaticCall(Node\Expr\StaticCall $call, SymbolTable $table, ScopeStack $scopeStack, $pass): ?Node {
+		if (count($call->args)==1 && $call->args[0] instanceof Node\VariadicPlaceholder) {
+			return TypeComparer::identifierFromName("callable");
+		}
 		if ($call->class instanceof Node\Name && gettype($call->name) == "string") {
 			$method = $table->getAbstractedMethod(strval($call->class), strval($call->name));
 			if ($method) {
@@ -248,6 +252,9 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	}
 
 	function onMethodCall(Node\Expr\MethodCall | Node\Expr\NullsafeMethodCall $node, SymbolTable $table, ScopeStack $scopeStack, $pass): ?Node {
+		if (count($node->args)==1 && $node->args[0] instanceof Node\VariadicPlaceholder) {
+			return TypeComparer::identifierFromName("callable");
+		}
 		if ($node->name instanceof Node\Identifier) {
 			$type = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if (empty($type)) {
@@ -255,8 +262,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 					$type = $this->onNew($node->var, $table, $scopeStack,2);
 				} else if (!empty($node->var->name) && $node->var->name == "this") {
 					$class = $scopeStack->getCurrentClass();
-					$name = strval($class?->namespacedName ?: $class?->name ?? null);
-					$type = ($name ? TypeComparer::nameFromName($name) : null);
+					$type = $class?->namespacedName ?: $class?->name;
 				}
 				else if ($node->var instanceof Variable) {
 					$type = $scopeStack->getCurrentScope()->getVarType($node->var->name);
