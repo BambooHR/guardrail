@@ -91,15 +91,6 @@ class TypeComparer
 			return true;
 		}
 
-		if ($targetName=="array" && str_ends_with($valueName,"[]")) {
-			$valueArrayType=substr($valueName,0,-2);
-			if (Util::isScalarType($valueArrayType)) {
-				return true;
-			} else if ($this->symbolTable->isDefinedClass($valueArrayType)) {
-				return true;
-			}
-		}
-
 		if($targetName=="callable" && ($valueName=="closure" || $valueName=="array" || $valueName=="string")) {
 			return true;
 		}
@@ -121,14 +112,17 @@ class TypeComparer
 		}
 
 		if (!$strict) {
-			if ($targetName=="mixed" || $valueName=="mixed") {
+			if ($targetName=="mixed") {
+				return true;
+			}
+			if ($valueName=="mixed") {
 				return true;
 			}
 			if (Util::isScalarType($targetName) && (Util::isScalarType($valueName) || $valueName=="null")) {
 				return true;
 			}
 		}
-		return false;
+		return $valueName==$targetName;
 	}
 
 	/**
@@ -186,25 +180,27 @@ class TypeComparer
 		return false;
 	}
 
-	function isContravariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false) {
-		if (is_null($target)) {
-			if(is_null($value)) {
+	function isContravariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value) {
+		if (is_null($target) || TypeComparer::isNamedIdentifier($target,"mixed")) {
+			if (is_null($value) || TypeComparer::isNamedIdentifier($value,"mixed")) {
 				return true;
 			}
-			return self::isNamedIdentifier($value,"mixed");
+			return false;
 		}
-		return $this->isCompatibleWithTarget($value, $target, $forceStrict);
+		return $this->isCompatibleWithTarget($value, $target, true);
 	}
 
-	function isCovariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false) {
-		if (is_null($value)) {
+	function isCovariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value) {
+			if (is_null($value)) {
 			if (is_null($target)) {
 				return true;
 			}
+		}
+		if (self::isNamedIdentifier($value,"mixed")) {
 			return self::isNamedIdentifier($target,"mixed");
 		}
 
-		$ret = $this->isCompatibleWithTarget($target, $value, $forceStrict);
+		$ret = $this->isCompatibleWithTarget($target, $value, true);
 		return $ret;
 	}
 
@@ -217,11 +213,13 @@ class TypeComparer
 	 * @return bool
 	 *
 	 */
-	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false ) : bool {
-
-		if (is_null($target)) {
-			return true;
+	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false, $nullChecks=true ) : bool {
+		if ($nullChecks) {
+			if (is_null($target)) {
+				return true;
+			}
 		}
+
 		if (is_null($value)) {
 			return true;
 		}

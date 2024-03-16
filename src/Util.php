@@ -162,13 +162,13 @@ class Util {
 				$subtypes[]=TypeComparer::identifierFromName("null");
 			}
 			return TypeComparer::getUniqueTypes($subtypes);
-		} /* else if ($type instanceof \ReflectionIntersectionType) {
+		} else if ($type instanceof \ReflectionIntersectionType) {
 			$subtypes = array_map(
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
 			);
 			return new IntersectionType( [$subtypes] );
-		} */ else if ($type==null) {
+		} else if ($type==null) {
 			return null;
 		} else {
 			throw new \InvalidArgumentException();

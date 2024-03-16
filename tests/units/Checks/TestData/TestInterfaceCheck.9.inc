@@ -8,6 +8,7 @@ class childDataObject extends parentDataObject {
 	public $string;
 }
 interface parentClass {
+
 	public function method1(): bool;
 	public function method2(): mixed;
 	public function method3();
@@ -23,8 +24,9 @@ interface parentClass {
 
 class childClass implements parentClass {
 	/** This should not work because int is different than bool */
+
 	public function method1(): int {
-		return true;
+		return 0;
 	}
 	public function method2(): string {
 		return "";
@@ -44,10 +46,12 @@ class childClass implements parentClass {
 	public function method7(): ?int {
 		return null;
 	}
+
 	/** This should not work because bool is not one of the parent types */
 	public function method8(): ?bool {
 		return null;
 	}
+
 
 	public function method9(): parentDataObject {
 		return new parentDataObject();

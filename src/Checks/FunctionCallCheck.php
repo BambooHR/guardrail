@@ -172,7 +172,7 @@ class FunctionCallCheck extends CallCheck {
 	 * @param string   $fileName The file being scanned.
 	 * @param FuncCall $node     The FuncCall node being inspected
 	 * @param string   $name     The function being called.
-	 *
+	 * @guardrail-ignore Standard.Param.Type
 	 * @return void
 	 */
 	protected function checkForRegularExpression($fileName, FuncCall $node, $name) {
