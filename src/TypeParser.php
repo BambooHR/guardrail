@@ -31,7 +31,7 @@ class TypeParser {
 
 	private function generateNameOrIdentifier($type, array $templateVars=[]) {
 		if ($type && strval($type) != "") {
-			if (Util::isLegalNonObject($type)) {
+			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type)) {
 				return new Node\Identifier($type);
 			} else if (str_starts_with($type,"\\" )) {
 				return new Name\FullyQualified(substr($type, 1), ["templates" => $templateVars]);

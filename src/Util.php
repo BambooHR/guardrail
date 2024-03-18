@@ -86,6 +86,10 @@ class Util {
 		return self::isScalarType($name) || strcasecmp($name,"mixed") == 0 || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name,"resource") == 0 || strcasecmp($name,"object")==0;
 	}
 
+	static public function isSelfOrStaticType(string $name):bool {
+		return strcasecmp($name, "self")== 0 || strcasecmp($name,"static") ==0;
+	}
+
 	/**
 	 * methodSignatureString
 	 *
