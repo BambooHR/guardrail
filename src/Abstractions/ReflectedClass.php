@@ -1,7 +1,9 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\LNumber;
@@ -74,17 +76,18 @@ class ReflectedClass implements ClassInterface {
 		return $this->refl->isAbstract();
 	}
 
-	public function getConstantExpr($name):?Expr {
+	public function getConstantExpr($name):null|Name|Identifier {
 		if($this->refl->hasConstant($name)) {
-			$value = $this->refl->getConstant($name);
-			return match(gettype($value)) {
-				"null" => new Expr\ConstFetch(new Name("null")),
-				"int" => new LNumber($value),
-				"string" => new String_($value),
-				"bool" => new Expr\ConstFetch( new Name($value ? "true" : "false")),
-				"float" => new DNumber($value),
-				default => null
-			};
+			$constant = $this->refl->getConstant($name);
+			if (is_int($constant)) {
+				return TypeComparer::identifierFromName("int");
+			} else if (is_bool($constant)) {
+				return TypeComparer::identifierFromName("bool");
+			} else if (is_string($constant)) {
+				return TypeComparer::identifierFromName("string");
+			} else {
+				return TypeComparer::identifierFromName("mixed");
+			}
 		}
 		return null;
 	}

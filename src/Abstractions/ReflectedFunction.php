@@ -92,10 +92,10 @@ class ReflectedFunction implements FunctionLikeInterface {
 	/**
 	 * getDocBlockReturnType
 	 *
-	 * @return string
+	 * @return null
 	 */
 	public function getDocBlockReturnType() {
-		return "";
+		return null;
 	}
 
 	/**

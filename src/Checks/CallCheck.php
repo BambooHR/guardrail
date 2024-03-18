@@ -1,6 +1,7 @@
 <?php namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
@@ -25,15 +26,18 @@ abstract class CallCheck extends BaseCheck {
 	 * @param FunctionLikeParameter[] $params
 	 * @return void
 	 */
-	protected function checkParams($fileName, $node, $name, Scope $scope, ClassLike $inside = null, array $args, array $params) {
+	protected function checkParams($fileName, $node, $name, Scope $scope, ClassLike $inside = null, array $args, array $params, array $templates=[]) {
 		$named = false;
 		$covered = array_fill(0, count($params), 0);
 		foreach($args as $index=>$arg) {
+			if ($arg instanceof Node\VariadicPlaceholder) {
+				return;
+			}
 			if ($arg->name === null) {
 				if(!$named) {
 					$covered[$index] = 1;
 					if($index<count($params)) {
-						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $params[$index]);
+						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $params[$index], $templates);
 					}
 				} else {
 					$this->emitError($fileName, $arg, ErrorConstants::TYPE_SIGNATURE_TYPE,"Attempt to pass positional param after named param");
@@ -46,7 +50,7 @@ abstract class CallCheck extends BaseCheck {
 						$this->emitError($fileName, $arg, ErrorConstants::TYPE_SIGNATURE_TYPE, "Attempt to pass param \"" . $arg->name->name . "\" twice");
 					} else {
 						$covered[$index2]=1;
-						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $params[$index2]);
+						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $params[$index2], $templates);
 					}
 				} else {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Unable to find named parameter ".$arg->name->name);
@@ -84,7 +88,7 @@ abstract class CallCheck extends BaseCheck {
 	 * @param FunctionLikeParameter $param    -
 	 * @return void
 	 */
-	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, Node\Arg $arg, FunctionLikeParameter $param) {
+	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, Node\Arg $arg, FunctionLikeParameter $param, array $templates) {
 		$variableName = $param->getName();
 		$type = $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		if ($arg->unpack) {
@@ -95,10 +99,20 @@ abstract class CallCheck extends BaseCheck {
 			return;// After we unpack an arg, we can't check the remaining parameters.
 		} else {
 			$expectedType = $param->getType();
+			//echo "Initial expected ".TypeComparer::typeToString($expectedType)."\n";
+			if ($expectedType instanceof Node\Name && isset($templates[strtolower($expectedType)])) {
+				$expectedType = $type;
+			} else if (
+				Config::shouldUseDocBlockGenerics() &&
+				$expectedType instanceof Node\Name &&
+				strcasecmp($expectedType,"class-string") === 0
+			) {
+				$expectedType = TypeComparer::identifierFromName("string");
+			}
 			if($expectedType && $param->isNullable()) {
 				$expectedType = TypeComparer::getUniqueTypes($expectedType, TypeComparer::identifierFromName("null"));
 			}
-			if ($expectedType) {
+			if ($expectedType && (!($expectedType instanceof Node\Name) || strcasecmp($expectedType, "T")!=0)) {
 				// Reference mismatch
 				if ($param->isReference() &&
 					!(
@@ -114,6 +128,7 @@ abstract class CallCheck extends BaseCheck {
 				// Type mismatch
 				$checker = new TypeComparer($this->symbolTable);
 
+				//echo "Type ".TypeComparer::typeToString($type)." vs ".TypeComparer::typeToString($expectedType)."\n";
 				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope->isStrict())) {
 					$nullOnlyError = false;
 					$typeStr=TypeComparer::typeToString($type);

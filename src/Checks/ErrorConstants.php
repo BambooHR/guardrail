@@ -53,6 +53,7 @@ class ErrorConstants {
 	const TYPE_SIGNATURE_COUNT_EXCESS = 'Standard.Param.Count.Excess';
 	const TYPE_SIGNATURE_RETURN = 'Standard.Return.Type';
 	const TYPE_SIGNATURE_TYPE = 'Standard.Param.Type';
+	const TYPE_SIGNATURE_NAME = 'Standard.Param.Name';
 	const TYPE_CONST_TYPE = 'Standard.Const.Type';
 	const TYPE_SIGNATURE_TYPE_NULL = "Standard.Null.Param";
 	const TYPE_UNIMPLEMENTED_METHOD = 'Standard.Inheritance.Unimplemented';

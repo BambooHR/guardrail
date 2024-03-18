@@ -6,6 +6,7 @@ use BambooHR\Guardrail\Evaluators\ExpressionInterface;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 
 class InstanceOf_ implements ExpressionInterface {
@@ -23,12 +24,19 @@ class InstanceOf_ implements ExpressionInterface {
 			) &&
 			$instanceOf->class instanceof Node\Name
 		) {
+			$className = $instanceOf->class;
+
+			if (Util::isSelfOrStaticType($instanceOf->class)) {
+				$class = $scopeStack->getCurrentClass();
+				if ($class) {
+					$className = $class->namespacedName ?? $class->name;
+				}
+			}
 			$varName = TypeComparer::getChainedPropertyFetchName($instanceOf->expr);
-			$className = strval($instanceOf->class);
 			$trueScope = $scopeStack->getCurrentScope()->getScopeClone();
 			$falseScope = $trueScope->getScopeClone();
-			$trueScope->setVarType($varName, TypeComparer::nameFromName($instanceOf->class), $node->getLine());
-			$falseScope->setVarType($varName, TypeComparer::removeNamedOption($falseScope->getVarType($varName), $className), $node->getLine());
+			$trueScope->setVarType($varName, $className, $node->getLine());
+			$falseScope->setVarType($varName, TypeComparer::removeNamedOption($falseScope->getVarType($varName), strval($className)), $node->getLine());
 			$node->setAttribute('assertsTrue', $trueScope);
 			$node->setAttribute('assertsFalse', $falseScope);
 		}

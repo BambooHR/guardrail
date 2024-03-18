@@ -9,6 +9,9 @@ use BambooHR\Guardrail\NodeVisitors\Grabber;
 use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Case_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
@@ -147,7 +150,7 @@ class ClassAbstraction implements ClassInterface {
 		return $this->getConstantExpr($name) ? true : false;
 	}
 
-	public function getConstantExpr($name):null|Expr|Name {
+	public function getConstantExpr($name):null|Expr|Name|Identifier {
 
 		if ($this->isEnum()) {
 			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
@@ -163,6 +166,19 @@ class ClassAbstraction implements ClassInterface {
 			if ($constList instanceof ClassConst) {
 				foreach ($constList->consts as $const) {
 					if (strcasecmp($const->name, $name) == 0) {
+						if($const->value instanceof LNumber) {
+							return TypeComparer::identifierFromName("int");
+						} else if ($const->value instanceof String_) {
+							return TypeComparer::identifierFromName("string");
+						} else if (
+							$const->value instanceof Expr\ConstFetch &&
+							(
+								strcasecmp($const->value->name,"true")==0 ||
+								strcasecmp($const->value->name,"false")==0
+							)
+						) {
+							return TypeComparer::identifierFromName("bool");
+						}
 						return $const->value;
 					}
 				}

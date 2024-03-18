@@ -53,6 +53,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 			$variables = self::getAllReferencedVariables([$func->expr]);
 			foreach ($variables as $varName) {
 				if ($scopeStack->getVarExists($varName)) {
+					/** @var Scope\ScopeVar $ob */
 					$ob = $scopeStack->getVarObject($varName);
 					$scope->setVarType($varName, $ob->type, $ob->modifiedLine);
 				}
@@ -71,7 +72,9 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 					if ($varExists && $variable->byRef) {
 						// This is kind of fun, it's passed by reference, so we literally reference the exact same
 						// scope variable object in the new scope.  If it changes in either scope, it effects the others.
-						$scope->setVarReference($variable->var->name, $scopeStack->getVarObject($variable->var->name));
+						/** @var Scope\ScopeVar $scopeVar */
+						$scopeVar = $scopeStack->getVarObject($variable->var->name);
+						$scope->setVarReference($variable->var->name, $scopeVar);
 					} else {
 						$scope->setVarType($variable->var->name, $type, $variable->var->getLine());
 					}

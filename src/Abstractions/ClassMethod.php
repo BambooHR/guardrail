@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node\Attribute;
 use PhpParser\Node\ComplexType;
@@ -87,25 +88,26 @@ class ClassMethod implements MethodInterface {
 	}
 
 	/**
-	 * getParameters
-	 *
 	 * @return FunctionLikeParameter[]
 	 */
 	public function getParameters() {
-		$ret = [];
-		/** @var \PhpParser\Node\Param $param */
-		foreach ($this->method->params as $param) {
-			$ret[] = new FunctionLikeParameter(
-				$param->type,
+		return array_map(
+			fn($param) => new FunctionLikeParameter(
+				FunctionAbstraction::resolveDeclaredParamTypes($param),
 				$param->var->name,
-				$param->default != null || $param->variadic,
+				$param->variadic || $param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name, "null") == 0)
-			);
-		}
-		return $ret;
+				(
+					$param->type instanceof NullableType ||
+					(
+						$param->default instanceof ConstFetch &&
+						strcasecmp($param->default->name, "null") == 0
+					)
+				)
+			),
+			$this->method->params
+		);
 	}
-
 	/**
 	 * getAccessLevel
 	 *

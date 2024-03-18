@@ -5,9 +5,13 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
+use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
+use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Function_ as AstFunction;
 
 /**
@@ -82,22 +86,25 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	}
 
 	/**
-	 * getParameters
-	 *
 	 * @return FunctionLikeParameter[]
 	 */
 	public function getParameters() {
-		$ret = [];
-		/** @var \PhpParser\Node\Param $param */
-		foreach ($this->function->params as $param) {
-			$ret[] = new FunctionLikeParameter(
-				$param->type,
+		$ret = array_map(
+			fn($param) => new FunctionLikeParameter(
+				self::resolveDeclaredParamTypes($param),
 				$param->var->name,
-				$param->default != null,
+				$param->variadic || $param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name, "null") == 0)
-			);
-		}
+				(
+					$param->type instanceof NullableType ||
+					(
+						$param->default instanceof ConstFetch &&
+						strcasecmp($param->default->name, "null") == 0
+					)
+				)
+			),
+			$this->function->params
+		);
 		return $ret;
 	}
 
@@ -147,5 +154,33 @@ class FunctionAbstraction implements FunctionLikeInterface {
 
 	public function getThrowsList():array {
 		return $this->function->getAttribute('throws', []);
+	}
+
+	/**
+	 * @param mixed $param
+	 * @return mixed|Name
+	 */
+	static function resolveDeclaredParamTypes(Param $param): mixed {
+		$docBlockType = $param->getAttribute('DocBlockName');
+		if (
+			Config::shouldUseDocBlockGenerics() &&
+			$docBlockType instanceof Name &&
+			(
+				strcasecmp($docBlockType, "T") == 0 ||
+				strcasecmp($docBlockType, "class-string") == 0
+			)
+		) {
+			return $docBlockType;
+		} else if (Config::shouldUseDocBlockForParameters()) {
+			$type = $param->type;
+			if (!$type) {
+				// A parameter can not be only null.  So disregard these.
+				if ($docBlockType && !TypeComparer::isNamedIdentifier($docBlockType,"null")) {
+					return $docBlockType;
+				}
+			}
+			return $type;
+		}
+		return $param->type;
 	}
 }

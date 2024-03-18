@@ -86,6 +86,10 @@ class Util {
 		return self::isScalarType($name) || strcasecmp($name,"mixed") == 0 || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name,"resource") == 0 || strcasecmp($name,"object")==0;
 	}
 
+	static public function isSelfOrStaticType(string $name):bool {
+		return strcasecmp($name, "self")== 0 || strcasecmp($name,"static") ==0;
+	}
+
 	/**
 	 * methodSignatureString
 	 *
@@ -162,13 +166,13 @@ class Util {
 				$subtypes[]=TypeComparer::identifierFromName("null");
 			}
 			return TypeComparer::getUniqueTypes($subtypes);
-		} /* else if ($type instanceof \ReflectionIntersectionType) {
+		} else if ($type instanceof \ReflectionIntersectionType) {
 			$subtypes = array_map(
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
 			);
 			return new IntersectionType( [$subtypes] );
-		} */ else if ($type==null) {
+		} else if ($type==null) {
 			return null;
 		} else {
 			throw new \InvalidArgumentException();

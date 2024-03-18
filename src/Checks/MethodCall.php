@@ -86,6 +86,7 @@ class MethodCall extends CallCheck {
 				$className = TypeComparer::removeNullOption($className);
 			}
 
+			//echo "TYPE:".TypeComparer::typeToString($className)."\n";
 			TypeComparer::forEachType($className, function($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
 				$isNull = TypeComparer::isNamedIdentifier($classNameOb,"null");
 				if($classNameOb instanceof Node\Name || $isNull) {
@@ -93,11 +94,24 @@ class MethodCall extends CallCheck {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
 						return;
 					} else {
+
+						if ($classNameOb instanceof Node\Name &&
+							$classNameOb=="T" &&
+							$classNameOb->getAttribute('templates') &&
+							$classNameOb->getAttribute('templates')[0]
+						) {
+
+							$classNameOb = $classNameOb->getAttribute('templates')[0];
+						}
+
 						$typeClassName = strval($classNameOb);
-						if (!$this->symbolTable->isDefinedClass($typeClassName)) {
+						$class= $this->symbolTable->getAbstractedClass($typeClassName);
+
+						if (!$class) {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
 							return;
 						}
+						//$templates= ["T"]; //$class->getTemplates()''
 					}
 					$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
 					if ($method) {
@@ -160,7 +174,8 @@ class MethodCall extends CallCheck {
 		}
 
 		$name = $className . "->" . $methodName;
-		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
+		$templates["T"]=true;
+		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params, $templates);
 	}
 
 	/**
@@ -170,7 +185,7 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return bool
 	 */
-	private function wrappedByMethodExistsCheck(Expr\MethodCall $node, Scope $scope = null): bool {
+	private function wrappedByMethodExistsCheck(Expr\MethodCall|Expr\NullsafeMethodCall $node, Scope $scope = null): bool {
 		if ($scope && $scope->getInsideFunction()) {
 			$stmts = $scope->getInsideFunction()->getStmts();
 			return $this->checkForMethodExists($node, $stmts);
@@ -187,7 +202,7 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return bool
 	 */
-	private function checkForMethodExists(Expr\MethodCall $node, array $stmts): bool {
+	private function checkForMethodExists(Expr\MethodCall|Expr\NullsafeMethodCall $node, array $stmts): bool {
 		$match = false;
 		ForEachNode::run( $stmts, function($candidate) use (&$match, $node) {
 			if (
@@ -205,7 +220,7 @@ class MethodCall extends CallCheck {
 		return $match;
 	}
 
-	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall $node):bool {
+	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall|Expr\NullsafeMethodCall $node):bool {
 		$match = false;
 		if ($cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&

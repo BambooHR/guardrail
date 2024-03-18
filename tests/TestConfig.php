@@ -11,7 +11,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  */
 class TestConfig extends Config {
 	public $basePath;
-	protected $config;
 	public $symbolTable;
 	public $emitList;
 	public $forceIndex;
@@ -31,6 +30,8 @@ class TestConfig extends Config {
 				"DocBlockParams" => true,
 				"DocBlockInlineVars" => true,
 				"DocBlockProperties" => true,
+				"DocBlockTypedArrays" => true,
+				"DocBlockGenerics" => true
 			],
 			'test' => [$file],
 			'index' => [dirname($file)],

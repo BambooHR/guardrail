@@ -1,6 +1,7 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 
 /**
@@ -84,7 +85,7 @@ interface ClassInterface {
 	 */
 	public function hasConstant($name);
 
-	public function getConstantExpr($name):null|Expr|Name;
+	public function getConstantExpr($name):null|Expr|Identifier|Name;
 
 	/**
 	 * isInterface

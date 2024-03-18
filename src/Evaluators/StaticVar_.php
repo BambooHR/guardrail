@@ -16,9 +16,11 @@ class StaticVar_ implements OnEnterEvaluatorInterface
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
 	{
-		// Static variables are evaluated before their assignment. We should ignore undefined checks on these variables.
-		$node->var->setAttribute('assignment', true);
-		$scopeStack->setVarWritten(strval($node->var->name), $node->var->getLine());
-		$scopeStack->setVarType(strval($node->var->name), null, $node->var->getLine());
+		if ($node instanceof Node\Stmt\StaticVar) {
+			// Static variables are evaluated before their assignment. We should ignore undefined checks on these variables.
+			$node->var->setAttribute('assignment', true);
+			$scopeStack->setVarWritten(strval($node->var->name), $node->var->getLine());
+			$scopeStack->setVarType(strval($node->var->name), null, $node->var->getLine());
+		}
 	}
 }

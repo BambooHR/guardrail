@@ -97,6 +97,10 @@ class Config {
 	/** @var bool */
 	static private $useDocBlockForInlineVars = false;
 
+	static private $useDocBlockTypedArrays = false;
+
+	static private $useDocBlockGenerics = false;
+
 	/**
 	 * @return void
 	 */
@@ -116,6 +120,13 @@ class Config {
 							break;
 						case "DocBlockInlineVars":
 							self::$useDocBlockForInlineVars = true;
+							break;
+						case "DocBlockTypedArrays":
+							self::$useDocBlockTypedArrays = true;
+							break;
+						case "DocBlockGenerics":
+							self::$useDocBlockGenerics = true;
+							break;
 					}
 				}
 			}
@@ -185,7 +196,7 @@ class Config {
 	/**
 	 * @return bool
 	 */
-	static function shouldUseDocBlockForProperties() {
+	static function shouldUseDocBlockForProperties():bool {
 		return self::$useDocBlockForProperties;
 	}
 
@@ -196,24 +207,24 @@ class Config {
 		return self::$useDocBlockForParameters;
 	}
 
-	/**
-	 * @return bool
-	 */
-	static function shouldUseDocBlockForReturnValues() {
+
+	static function shouldUseDocBlockForReturnValues():bool {
 		return self::$useDocBlockForReturnValue;
 	}
 
-	/**
-	 * @return bool
-	 */
-	static function shouldUseDocBlockForInlineVars() {
+	static function shouldUseDocBlockForInlineVars():bool{
 		return self::$useDocBlockForInlineVars;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function shouldOutputTimings() {
+	static function shouldUseDocBlockTypedArrays():bool {
+		return self::$useDocBlockTypedArrays;
+	}
+
+	static function shouldUseDocBlockGenerics():bool {
+		return self::$useDocBlockGenerics;
+	}
+
+	public function shouldOutputTimings():bool {
 		return $this->timings;
 	}
 

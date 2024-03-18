@@ -68,10 +68,10 @@ class ReflectedClassMethod implements MethodInterface {
 	/**
 	 * getDocBlockReturnType
 	 *
-	 * @return string
+	 * @return null
 	 */
 	public function getDocBlockReturnType() {
-		return "";
+		return null;
 	}
 
 	/**
