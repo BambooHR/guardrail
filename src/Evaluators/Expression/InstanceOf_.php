@@ -25,8 +25,12 @@ class InstanceOf_ implements ExpressionInterface {
 			$instanceOf->class instanceof Node\Name
 		) {
 			$className = $instanceOf->class;
-			if (Util::isSelfOrStaticType($instanceOf->class) && $scopeStack->getCurrentClass()) {
-				 $className = $scopeStack->getCurrentClass()->namespacedName;
+
+			if (Util::isSelfOrStaticType($instanceOf->class)) {
+				$class = $scopeStack->getCurrentClass();
+				if ($class) {
+					$className = $class->namespacedName ?? $class->name;
+				}
 			}
 			$varName = TypeComparer::getChainedPropertyFetchName($instanceOf->expr);
 			$trueScope = $scopeStack->getCurrentScope()->getScopeClone();
