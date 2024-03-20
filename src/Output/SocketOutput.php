@@ -44,7 +44,7 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 	}
 
 	public function emitMetric(MetricInterface $metric)	{
-		socket_write($this->socket, "METRIC " . base64_encode(serialize($metric)) . "\n");
+		Socket::writeComplete($this->socket, "METRIC " . base64_encode(serialize($metric)) . "\n");
 	}
 
 	/**

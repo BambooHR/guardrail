@@ -44,6 +44,7 @@ use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Scope\Scope;
@@ -112,12 +113,12 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 * @param OutputInterface $output Instance if OutputInterface
 	 * @param Config $config The config
 	 */
-	function __construct(SymbolTable $index, OutputInterface $output, Config $config)
+	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config)
 	{
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
-		$this->metricOutput = $output;
+		$this->metricOutput = $metricOutput;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [

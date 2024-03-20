@@ -1,5 +1,5 @@
 <?php namespace BambooHR\Guardrail\Metrics;
 
-Interface MetricOutputInterface {
+interface MetricOutputInterface {
     function emitMetric(MetricInterface $metric);
 }

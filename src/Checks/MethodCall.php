@@ -6,11 +6,14 @@
  */
 
 use BambooHR\Guardrail\Abstractions\MethodInterface;
+use BambooHR\Guardrail\Metrics\Metric;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
-use BambooHR\Guardrail\Attributes;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Variable;
@@ -30,7 +33,7 @@ class MethodCall extends CallCheck {
 	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
 	 * @param OutputInterface $doc         Instance of OutputInterface
 	 */
-	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc, private MetricOutputInterface $metricOutput) {
 		parent::__construct($symbolTable, $doc);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
 	}
@@ -170,7 +173,14 @@ class MethodCall extends CallCheck {
 		if ($method->isDeprecated()) {
 			$errorType = $method->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 			$this->emitError($fileName, $node, $errorType, "Call to deprecated function " . $method->getName());
-			$this->emitMetric($fileName, $node, $errorType, ['class' => $className, 'method' => $methodName, 'line' => $method->getStartingLine()]);
+			$this->metricOutput->emitMetric(
+				new Metric(
+					$fileName,
+					$node->getLine(),
+					$errorType,
+					['class' => $className, 'method' => $methodName, 'line' => $method->getStartingLine()]
+				)
+			);
 		}
 
 		$name = $className . "->" . $methodName;

@@ -10,6 +10,8 @@ use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\DirectoryLister;
 use BambooHR\Guardrail\Exceptions\UnknownTraitException;
+use BambooHR\Guardrail\Metrics\JsonMetricOutput;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\NodeVisitors\DocBlockNameResolver;
 use BambooHR\Guardrail\NodeVisitors\PromotedPropertyVisitor;
 use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
@@ -47,7 +49,7 @@ class AnalyzingPhase {
 
 	private StaticAnalyzer $analyzer;
 
-	private OutputInterface $output;
+	private SocketOutput $output;
 
 	private array $timingResults = [[],[]];
 
@@ -62,7 +64,7 @@ class AnalyzingPhase {
 	}
 
 
-	function initParser(Config $config, OutputInterface $output) {
+	function initParser(Config $config, SocketOutput $output) {
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor($resolver = new NameResolver());
 		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
@@ -72,7 +74,7 @@ class AnalyzingPhase {
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
 
 		$traverser3 = new NodeTraverser;
-		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $config ));
+		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config ));
 
 		$this->output = $output;
 
@@ -192,8 +194,9 @@ class AnalyzingPhase {
 			$table->connect(0);
 		}
 
+		$metricOutput=new JsonMetricOutput($config->getMetricOutputFile());
 
-		$pm = new AnalyzingParentProcess($toProcess, $totalBytes, $output);
+		$pm = new AnalyzingParentProcess($toProcess, $totalBytes, $output, $metricOutput);
 		$pm->run($this, $config);
 		$this->setTimingResults($pm->getTimings());
 		return ($output->getErrorCount() > 0 ? 1 : 0);

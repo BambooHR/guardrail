@@ -2,11 +2,20 @@
 
 namespace BambooHR\Guardrail\Checks;
 
+use BambooHR\Guardrail\Metrics\Metric;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
+use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 
 class CyclomaticComplexityCheck extends BaseCheck {
+
+	function __construct(SymbolTable $symbolTable, OutputInterface $doc, private MetricOutputInterface $metricOutput) {
+		parent::__construct($symbolTable, $doc);
+	}
+
 	/**
 	 * @return string[]
 	 */
@@ -56,6 +65,14 @@ class CyclomaticComplexityCheck extends BaseCheck {
 				++$complexity;
 			}
 		});
+		$this->metricOutput->emitMetric(
+			new Metric(
+				$fileName,
+				$node->getLine(),
+				ErrorConstants::TYPE_METRICS_COMPLEXITY,
+				[$complexity]
+			)
+		);
 		if ($complexity > 10) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_METRICS_COMPLEXITY, "Method " . $name . " has a complexity of $complexity");
 		}
