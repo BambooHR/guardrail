@@ -146,7 +146,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new AccessingSuperGlobalsCheck($this->index, $output),
 			new UnreachableCodeCheck($this->index, $output),
 			new Psr4Check($this->index, $output, $config->getPsrRoots()),
-			new CyclomaticComplexityCheck($this->index, $output),
+			new CyclomaticComplexityCheck($this->index, $output, $metricOutput),
 			new ConditionalAssignmentCheck($this->index, $output),
 			new ClassMethodStringCheck($this->index, $output),
 			new UnusedPrivateMemberVariableCheck($this->index, $output),
