@@ -86,4 +86,19 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	public function testNamespaces() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_UNKNOWN_FUNCTION));
 	}
+
+	/**
+	 * @return void
+	 */
+	public function testUnionTypeHints() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:FunctionCallCheck:Ensures that passing an object with a __toString method is allowed as a valid argument to a method or function with a string requirement
+	 */
+	public function testObjectWith__toStringMethod() {
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }

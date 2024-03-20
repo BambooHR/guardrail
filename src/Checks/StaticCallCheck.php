@@ -5,20 +5,32 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 
 /**
  * Class StaticCallCheck
  *
  * @package BambooHR\Guardrail\Checks
  */
-class StaticCallCheck extends BaseCheck {
+class StaticCallCheck extends CallCheck {
+	/**
+	 * MethodCall constructor.
+	 *
+	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
+	 * @param OutputInterface $doc         Instance of OutputInterface
+	 */
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
+		parent::__construct($symbolTable, $doc);
+		$this->callableCheck = new CallableCheck($symbolTable, $doc);
+	}
 
 	/**
 	 * getCheckNodeTypes
@@ -56,8 +68,9 @@ class StaticCallCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkAbstractClassMethod($fileName, StaticCall $node, Scope $scope = null, $name, $possibleDynamic) {
+	protected function checkAbstractClassMethod($fileName, StaticCall $node, ClassLike $inside = null, Scope $scope = null, $name, $possibleDynamic) {
 		$method = Util::findAbstractedMethod($name, $node->name, $this->symbolTable);
+
 		if ($node->name == "__construct" && ! $method) {
 			// Find a PHP 4 style constructor (function name == class name)
 			$method = Util::findAbstractedMethod($name, $name, $this->symbolTable);
@@ -71,9 +84,9 @@ class StaticCallCheck extends BaseCheck {
 		} else {
 			if (! $method->isStatic()) {
 				if (! $scope->isStatic() && $possibleDynamic) {
-					//	if ($node->name != "__construct" && $node->class != "parent") {
-					// echo "Static call in $fileName " . $node->getLine() . "\n";
-					//	}
+					//if ($node->name != "__construct" && $node->class != "parent") {
+					//	echo "Static call in $fileName " . $node->getLine() . "\n";
+					//}
 				} else {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to call non-static method: $name::" . $node->name . " statically");
 				}
@@ -82,7 +95,10 @@ class StaticCallCheck extends BaseCheck {
 			if (count($node->args) < $minimumParams) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Static call to method $name::" . $node->name . " does not pass enough parameters (" . count($node->args) . " passed $minimumParams required)");
 			}
+
+			$this->checkParams($fileName, $node, $method->getName(), $scope, $inside, $node->args, $method->getParameters());
 		}
+
 }
 
 	/**
@@ -115,7 +131,7 @@ class StaticCallCheck extends BaseCheck {
 	 * @return void
 	 */
 	protected function checkStaticCall($fileName, StaticCall $node, ClassLike $inside = null, Scope $scope = null) {
-		if ($node->class instanceof Name && gettype($node->name) == "string") {
+		if ($node->class instanceof Name && $node->name instanceof Node\Identifier) {
 			$name = $node->class->toString();
 			if ($this->symbolTable->ignoreType($name)) {
 				return;
@@ -158,7 +174,7 @@ class StaticCallCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Static call to unknown class $name::" . $node->name);
 				}
 			} else {
-				$this->checkAbstractClassMethod($fileName, $node, $scope, $name, $possibleDynamic);
+				$this->checkAbstractClassMethod($fileName, $node, $inside, $scope, $name, $possibleDynamic);
 			}
 		}
 }

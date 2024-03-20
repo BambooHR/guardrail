@@ -5,11 +5,11 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Switch_;
-use BambooHR\Guardrail\Scope;
 
 /**
  * Class SwitchCheck
@@ -38,6 +38,7 @@ class SwitchCheck extends BaseCheck {
 		$lastStatement = Util::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
+			$lastStatement instanceof \PhpParser\Node\Stmt\Throw_  ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Break_ ||
 			$lastStatement instanceof \PhpParser\Node\Stmt\Return_ ||
 				(

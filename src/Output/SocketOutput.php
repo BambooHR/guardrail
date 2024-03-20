@@ -6,14 +6,15 @@ namespace BambooHR\Guardrail\Output;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Metrics\MetricInterface;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;
+use BambooHR\Guardrail\Socket;
 
 class SocketOutput extends XUnitOutput implements MetricOutputInterface {
-	private $socket;
+	private \Socket $socket;
 
 	/**
 	 * SocketOutput constructor.
 	 * @param Config   $config The application config
-	 * @param resource $socket A connection to a pipe
+	 * @param \Socket  $socket A connection to a pipe
 	 */
 	function __construct(Config $config, $socket) {
 		parent::__construct($config);
@@ -29,16 +30,17 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 	 * @return void
 	 */
 	function emitError($className, $file, $line, $type, $message = "") {
-		if ($this->shouldEmit($file, $type, $line)) {
-			$arr = [
-				"file" => $file,
-				"line" => $line,
-				"type" => $type,
-				"message" => $message,
-				"className" => $className
-			];
-			socket_write($this->socket, "ERROR " . base64_encode(serialize($arr)) . "\n");
+		if (($this->silenced[$type]??0) > 0) {
+			return;
 		}
+		$arr = [
+			"file" => $file,
+			"line" => $line,
+			"type" => $type,
+			"message" => $message,
+			"className" => $className
+		];
+		Socket::writeComplete($this->socket, "ERROR " . base64_encode(serialize($arr)) . "\n");
 	}
 
 	public function emitMetric(MetricInterface $metric)	{
@@ -51,8 +53,7 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 	 * @return void
 	 */
 	function output($verbose, $extraVerbose) {
-		// TODO: Implement output() method.
-		socket_write($this->socket, "OUTPUT " . base64_encode( serialize(["v" => $verbose,"ev" => $extraVerbose]) . "\n"));
+		Socket::writeComplete($this->socket, "OUTPUT " . base64_encode(serialize(["v" => $verbose,"ev" => $extraVerbose]) . "\n"));
 	}
 
 	/**
@@ -60,7 +61,7 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 	 * @return void
 	 */
 	function outputVerbose($string) {
-		socket_write($this->socket, "VERBOSE " . base64_encode($string) . "\n");
+		Socket::writeComplete($this->socket, "VERBOSE " . base64_encode($string) . "\n");
 	}
 
 	/**
@@ -68,6 +69,6 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 	 * @return void
 	 */
 	function outputExtraVerbose($string) {
-		socket_write($this->socket, "EXTRAVERBOSE " . base64_encode($string) . "\n");
+		Socket::writeComplete($this->socket, "EXTRAVERBOSE " . base64_encode($string) . "\n");
 	}
 }

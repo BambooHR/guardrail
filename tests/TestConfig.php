@@ -10,28 +10,33 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  * @package BambooHR\Guardrail\Tests
  */
 class TestConfig extends Config {
-
 	public $basePath;
-
-	public $config;
-
 	public $symbolTable;
-
 	public $emitList;
-
 	public $forceIndex;
 
 	/**
 	 * TestConfig constructor.
 	 *
 	 * @param string $file
+	 * @param mixed  $emit
+	 * @param array  $additionalConfig
 	 */
-	public function __construct($file, $emit) {
-		$this->basePath = dirname(realpath($file)) . "/";
-		$this->config = [
+	public function __construct($file, $emit, array $additionalConfig = []) {
+		$this->basePath = $additionalConfig['basePath'] ?? dirname(realpath($file)) . "/";
+		$this->config = array_merge([
+			'options' => [
+				"DocBlockReturns" => true,
+				"DocBlockParams" => true,
+				"DocBlockInlineVars" => true,
+				"DocBlockProperties" => true,
+				"DocBlockTypedArrays" => true,
+				"DocBlockGenerics" => true
+			],
 			'test' => [$file],
 			'index' => [dirname($file)],
-		];
+		], $additionalConfig);
+		$this->loadConfigVars();
 		$this->forceIndex = true;
 		$this->symbolTable = new InMemorySymbolTable($this->basePath);
 		if (!is_array($emit)) {
@@ -76,4 +81,15 @@ class TestConfig extends Config {
 		return $this->emitList;
 	}
 
+	/**
+	 * @return array
+	 */
+	public function getPsrRoots() {
+		// Method has to be overridden by $config is private in the parent class.
+		if (isset($this->config) && array_key_exists('psr-roots', $this->config) && is_array($this->config['psr-roots'])) {
+			return $this->config['psr-roots'];
+		}
+
+		return [];
+	}
 }

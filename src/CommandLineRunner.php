@@ -36,11 +36,9 @@ where: -p #/#                 = Define the number of partitions and the current 
        -a                     = run the \"analyze\" operation
 
        -i                     = run the \"index\" operation.
-                                Defaults to yes if using in memory index.
-
-       -s                     = prefer sqlite index
+                                Defaults to yes if using in memory index.       
         
-       -j                     = prefer json index (new)
+       -j                     = prefer json index
 
        -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
 
@@ -67,16 +65,31 @@ where: -p #/#                 = Define the number of partitions and the current 
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
+		$errorMask = E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING;
+		error_reporting( $errorMask );
+
+		set_exception_handler( function(\Throwable $exception) {
+			echo "Uncaught exception : ".$exception->getMessage()."\n";
+			echo $exception->getTraceAsString()."\n";
+			exit(1);
+		});
+		set_error_handler( function(
+			int $errno,
+    		string $errstr,
+    		string $errfile,
+			int $errline,
+		){
+			echo "ERROR: $errno: $errstr in $errfile line $errline\n";
+			exit(1);
+		},  $errorMask);
+
 
 		if (!extension_loaded("pcntl")) {
 			echo "Guardrail requires the pcntl extension, which is not loaded.\n";
 			exit(1);
 		}
 
-		if (!extension_loaded("pdo_sqlite") || !extension_loaded("sqlite3")) {
-			echo "Guardrail requires the PDO Sqlite extension, which is not loaded.\n";
-			exit(1);
-		}
+
 
 		try {
 			$config = new Config($argv);
@@ -85,17 +98,16 @@ where: -p #/#                 = Define the number of partitions and the current 
 			exit(1);
 		}
 
-		if ($config->getOutputFormat() == "text") {
-			$output = new \BambooHR\Guardrail\Output\ConsoleOutput($config);
-		} else if ($config->getOutputFormat() == "counts") {
-			$output = new \BambooHR\Guardrail\Output\CountsOutput($config);
-		} else {
-			$output = new \BambooHR\Guardrail\Output\XUnitOutput($config);
-		}
+		$output = match($config->getOutputFormat()) {
+			'text'   => new \BambooHR\Guardrail\Output\ConsoleOutput($config),
+			'counts' => new \BambooHR\Guardrail\Output\CountsOutput($config),
+			'csv'    => new \BambooHR\Guardrail\Output\CsvOutput($config),
+			default  => new \BambooHR\Guardrail\Output\XUnitOutput($config)
+		};
 
 		if ($config->shouldIndex()) {
 			$output->outputExtraVerbose("Indexing\n");
-			$indexer = new IndexingPhase($config);
+			$indexer = new IndexingPhase($config, $output);
 			$indexer->run($config, $output);
 			$output->outputExtraVerbose("\nDone\n\n");
 			//$output->renderResults();
@@ -103,26 +115,21 @@ where: -p #/#                 = Define the number of partitions and the current 
 		}
 
 		if ($config->shouldAnalyze()) {
-			$analyzer = new AnalyzingPhase($output);
+			$analyzer = new AnalyzingPhase();
 			$output->outputExtraVerbose("Analyzing\n");
 
 			$exitCode = $analyzer->run($config, $output);
-
-			$output->outputExtraVerbose("\nDone\n\n");
+			$output->outputVerbose("\n");
+			$output->outputExtraVerbose("Done\n\n");
 			$output->renderResults();
 
 			if ($config->shouldOutputTimings()) {
 				$timings = $analyzer->getTimingResults();
-				$totalTime = array_sum( array_map(
-					function($element) {
-						return $element['time'];
-					},
-					$timings)
-				);
-				foreach ($analyzer->getTimingResults() as $class => $values) {
+				$totalTime = array_sum( array_column($timings,'time'));
+				foreach ($timings as $class => $values) {
 					$time = $values['time'];
 					$count = $values['count'];
-					printf("%-60s %4.1f s %4.1f%% %7s calls %4.1f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );
+					printf("%-60s %4.1f s %4.1f%% %10s calls %5.2f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );
 				}
 
 				printf("Total = %d:%04.1f CPU time\n", intval($totalTime / 60), $totalTime - floor($totalTime / 60) * 60);

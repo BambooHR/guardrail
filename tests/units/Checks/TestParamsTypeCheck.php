@@ -19,5 +19,4 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	public function testFunctionInFunctionCallEmitsError() {
 		$this->assertEquals(4, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION));
 	}
-
 }

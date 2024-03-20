@@ -1,14 +1,18 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, JBambooHR.
  * Apache 2.0 License
  */
 
-use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\NullableType;
-use PhpParser\Node\Stmt\Function_ as AstFunction;
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
+use BambooHR\Guardrail\TypeComparer;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
+use PhpParser\Node\Param;
+use PhpParser\Node\Stmt\Function_ as AstFunction;
 
 /**
  * Class FunctionAbstraction
@@ -31,13 +35,8 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		$this->function = $method;
 	}
 
-	/**
-	 * getReturnType
-	 *
-	 * @return string
-	 */
-	public function getReturnType() {
-		return $this->function->returnType instanceof NullableType ? strval($this->function->returnType->type) : strval($this->function->returnType);
+	public function getComplexReturnType() {
+		return $this->function->returnType;
 	}
 
 	/**
@@ -54,9 +53,9 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 * @return bool
 	 */
 	public function isDeprecated() {
-		$docBlock = $this->function->getDocComment();
-		if (strpos($docBlock, "@deprecated") !== false) {
-			return true;
+		$comment = $this->function->getDocComment();
+		if ($comment) {
+			return str_contains($comment->getText(), "@deprecated");
 		}
 		return false;
 	}
@@ -87,22 +86,25 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	}
 
 	/**
-	 * getParameters
-	 *
 	 * @return FunctionLikeParameter[]
 	 */
 	public function getParameters() {
-		$ret = [];
-		/** @var \PhpParser\Node\Param $param */
-		foreach ($this->function->params as $param) {
-			$ret[] = new FunctionLikeParameter(
-				$param->type instanceof NullableType ? strval($param->type->type) : $param->type,
+		$ret = array_map(
+			fn($param) => new FunctionLikeParameter(
+				self::resolveDeclaredParamTypes($param),
 				$param->var->name,
-				$param->default != null,
+				$param->variadic || $param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name, "null") == 0)
-			);
-		}
+				(
+					$param->type instanceof NullableType ||
+					(
+						$param->default instanceof ConstFetch &&
+						strcasecmp($param->default->name, "null") == 0
+					)
+				)
+			),
+			$this->function->params
+		);
 		return $ret;
 	}
 
@@ -148,5 +150,37 @@ class FunctionAbstraction implements FunctionLikeInterface {
 			return VariadicCheckVisitor::isVariadic($this->function->getStmts());
 		}
 		return false;
+	}
+
+	public function getThrowsList():array {
+		return $this->function->getAttribute('throws', []);
+	}
+
+	/**
+	 * @param mixed $param
+	 * @return mixed|Name
+	 */
+	static function resolveDeclaredParamTypes(Param $param): mixed {
+		$docBlockType = $param->getAttribute('DocBlockName');
+		if (
+			Config::shouldUseDocBlockGenerics() &&
+			$docBlockType instanceof Name &&
+			(
+				strcasecmp($docBlockType, "T") == 0 ||
+				strcasecmp($docBlockType, "class-string") == 0
+			)
+		) {
+			return $docBlockType;
+		} else if (Config::shouldUseDocBlockForParameters()) {
+			$type = $param->type;
+			if (!$type) {
+				// A parameter can not be only null.  So disregard these.
+				if ($docBlockType && !TypeComparer::isNamedIdentifier($docBlockType,"null")) {
+					return $docBlockType;
+				}
+			}
+			return $type;
+		}
+		return $param->type;
 	}
 }

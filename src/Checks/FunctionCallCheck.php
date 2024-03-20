@@ -5,26 +5,19 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\FunctionLikeInterface;
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
 
-class FunctionCallCheck extends BaseCheck {
-
-	/**
-	 * @var CallableCheck
-	 */
-	private $callableCheck;
-
-	/**
-	 * @var TypeInferrer
-	 */
-	private $inferenceEngine;
+class FunctionCallCheck extends CallCheck {
 
 	/**
 	 * FunctionCallCheck constructor.
@@ -34,7 +27,6 @@ class FunctionCallCheck extends BaseCheck {
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
-		$this->inferenceEngine = new TypeInferrer($symbolTable);
 	}
 
 
@@ -89,16 +81,7 @@ class FunctionCallCheck extends BaseCheck {
 				$namespacedName = $node->name->hasAttribute('namespacedName') ? $node->name->getAttribute('namespacedName')->toString() : "";
 				$name = $node->name->toString();
 
-				$func = null;
-				if ($namespacedName) {
-					$func = $this->symbolTable->getAbstractedFunction($namespacedName);
-					if ($func) {
-						$name = $namespacedName;
-					}
-				}
-				if (!$func && $namespacedName != $name) {
-					$func = $this->symbolTable->getAbstractedFunction($name);
-				}
+				$func = $this->findNamespacedOrGlobalFunction($namespacedName, $name);
 
 				$toLower = strtolower($name);
 				if (array_key_exists($toLower, self::$dangerous)) {
@@ -109,7 +92,7 @@ class FunctionCallCheck extends BaseCheck {
 				$this->checkForRegularExpression($fileName, $node, $name);
 
 				if ($func) {
-					$minimumArgs = $func->getMinimumRequiredParameters($name);
+					$minimumArgs = $func->getMinimumRequiredParameters();
 					if (count($node->args) < $minimumArgs) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to function $name (passed " . count($node->args) . " requires $minimumArgs)");
 					}
@@ -117,20 +100,17 @@ class FunctionCallCheck extends BaseCheck {
 						$errorType = $func->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 						$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name");
 					}
-
 					$params = $func->getParameters();
-					foreach ($node->args as $index => $arg) {
-						$this->checkParam($fileName, $node, $name, $scope, $inside, $arg, $index, $params);
-					}
-				} else {
+					$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
+				} else if (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}
 			} else {
-				$inferer = new TypeInferrer($this->symbolTable);
-				list($type) = $inferer->inferType($inside, $node->name, $scope);
+				$type = $node->name->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 				// If it isn't known to be "callable" or "closure" then it may just be a string.
-				if (strcasecmp($type, "callable") != 0 && strcasecmp($type, "closure") != 0) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable ($type) function name detected");
+				$typeStr = TypeComparer::typeToString($type);
+				if (strcasecmp($typeStr, "callable") != 0 && strcasecmp($typeStr, "closure") != 0) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_FUNCTION_NAME, "Variable ($typeStr) function name detected");
 				}
 			}
 		}
@@ -192,7 +172,7 @@ class FunctionCallCheck extends BaseCheck {
 	 * @param string   $fileName The file being scanned.
 	 * @param FuncCall $node     The FuncCall node being inspected
 	 * @param string   $name     The function being called.
-	 *
+	 * @guardrail-ignore Standard.Param.Type
 	 * @return void
 	 */
 	protected function checkForRegularExpression($fileName, FuncCall $node, $name) {
@@ -208,76 +188,50 @@ class FunctionCallCheck extends BaseCheck {
 		}
 	}
 
+
 	/**
-	 * @param string    $fileName -
-	 * @param Node      $node     -
-	 * @param string    $name     -
-	 * @param Scope     $scope    -
-	 * @param ClassLike $inside   -
-	 * @param Node\Arg  $arg      -
-	 * @param int       $index    -
-	 * @param array     $params   -
-	 * @return void
+	 * Is the method being called preceded by a logical check to see if the function_exists()?
+	 *
+	 * @param Node $node
+	 *
+	 * @return bool
 	 */
-	protected function checkParam($fileName, $node, $name, Scope $scope, ClassLike $inside = null, $arg, $index, $params) {
-		if ($scope && $arg->value instanceof Node\Expr && $index < count($params)) {
-			$variableName = $params[$index]->getName();
-			list($type, $attributes) = $this->inferenceEngine->inferType($inside, $arg->value, $scope);
-			if ($arg->unpack) {
-				// Check if they called with ...$array.  If so, make sure $array is of type undefined or array
-				$isSplatable = (
-					substr($type, -2) == "[]" ||
-					$type == "array" ||
-					$type == Scope::ARRAY_TYPE ||
-					$type == Scope::UNDEFINED ||
-					$type == Scope::MIXED_TYPE ||
-					$this->symbolTable->isParentClassOrInterface(\Traversable::class, $type)
-				);
-				if (!$isSplatable) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array or traversable object.  Passing " . Scope::nameFromConst($type) . " from \$$variableName.");
-				}
-				return;// After we unpack an arg, we can't check the remaining parameters.
-			} else {
-				if ($params[$index]->getType() != "") {
-					// Reference mismatch
-					if ($params[$index]->isReference() &&
-						!(
-							$arg->value instanceof Node\Expr\Variable ||
-							$arg->value instanceof Node\Expr\ArrayDimFetch ||
-							$arg->value instanceof Node\Expr\PropertyFetch
-						)
-					) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name() parameter \$$variableName must be a reference type not an expression.");
-					}
-
-					// Type mismatch
-					$expectedType = $params[$index]->getType();
-					if (!in_array($type, [Scope::SCALAR_TYPE, Scope::MIXED_TYPE, Scope::UNDEFINED, Scope::STRING_TYPE, Scope::BOOL_TYPE, Scope::NULL_TYPE, Scope::INT_TYPE, Scope::FLOAT_TYPE]) &&
-						$type != "" &&
-						!$this->symbolTable->isParentClassOrInterface($expectedType, $type) &&
-						!(strcasecmp($expectedType, "callable") == 0 && strcasecmp($type, "closure") == 0) &&
-						!(strcasecmp($expectedType, "callable") == 0 && $type == Scope::ARRAY_TYPE) &&
-						!(strcasecmp($expectedType, 'array') == 0 && (substr($type, -2) == "[]" || $type == Scope::ARRAY_TYPE))
-					) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Value passed to $name parameter \$$variableName must be a $expectedType, passing $type");
-					}
-
-					if (strcasecmp($expectedType, "callable") == 0) {
-						$this->callableCheck->run($fileName, $arg->value, $inside, $scope);
-					}
-
-					/*
-					// Nulls mismatch
-					if (!$params[$index]->isOptional()) {
-						if ($type == Scope::NULL_TYPE) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "NULL passed to method " . $className . "->" . $methodName. "() parameter \$$variableName that does not accept nulls");
-						} else if ($maybeNull == Scope::NULL_POSSIBLE) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Potentially NULL value passed to method " . $className . "->" . $methodName . "() parameter \$$variableName that does not accept nulls");
-						}
-					}
-					*/
-				}
+	private function wrappedByFunctionsExistsCheck(Expr\FuncCall $node, string $name, Scope $scopeStack = null): bool {
+		$parents=$scopeStack->getParentNodes();
+		foreach($parents as $parentNode) {
+			if ($parentNode instanceof Node\Stmt\If_ && self::isMatchingFunctionExistsCond($parentNode->cond, $name)) {
+				return true;
 			}
 		}
+		return false;
+	}
+
+
+	private function isMatchingFunctionExistsCond(Expr $cond, string $name):bool {
+		if ($cond instanceof Expr\BinaryOp\BooleanAnd || $cond instanceof Expr\BinaryOp\BooleanOr) {
+			return $this->isMatchingFunctionExistsCond($cond->left, $name) || $this->isMatchingFunctionExistsCond($cond->right, $name);
+		}
+		return (
+			$cond instanceof Expr\FuncCall &&
+			$cond->name instanceof Node\Name &&
+			$cond->name->toString()=="function_exists" &&
+			count($cond->args) >= 1 &&
+			$cond->args[0]->value instanceof Node\Scalar\String_ &&
+			strcasecmp($cond->args[0]->value->value, $name) == 0
+		);
+	}
+
+	public function findNamespacedOrGlobalFunction(string $namespacedName, string &$name): ?FunctionLikeInterface {
+		$func = null;
+		if ($namespacedName) {
+			$func = $this->symbolTable->getAbstractedFunction($namespacedName);
+			if ($func) {
+				$name = $namespacedName;
+			}
+		}
+		if (!$func && $namespacedName != $name) {
+			$func = $this->symbolTable->getAbstractedFunction($name);
+		}
+		return $func;
 	}
 }

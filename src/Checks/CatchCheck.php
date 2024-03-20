@@ -6,10 +6,10 @@
  */
 
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
+use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Catch_;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
 use PhpParser\NodeTraverser;
 
 /**
@@ -54,6 +54,10 @@ class CatchCheck extends BaseCheck {
 					}
 				} else if (!$this->symbolTable->isDefinedClass($name)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
+				} else {
+					if (!$this->symbolTable->isParentClassOrInterface("throwable", $name)) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to catch exception $name that doesn't derive from \Throwable");
+					}
 				}
 			}
 		}

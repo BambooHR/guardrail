@@ -109,14 +109,14 @@ class TraitImporter {
 	 * use adaptations to reduce duplicates down to a single method for each name.
 	 *
 	 * @param TraitUse $use        Instance of TraitUse
-	 * @param array    $methods    The array of methods
-	 * @param array    $properties The array of properties
 	 *
-	 * @return void
+	 * @return array
 	 *
 	 * @throws UnknownTraitException
 	 */
-	private function indexTrait(TraitUse $use, array &$methods, array &$properties) {
+	private function indexTrait(TraitUse $use) {
+		$methods = [];
+		$properties = [];
 		foreach ($use->traits as $useTrait) {
 			$traitName = strval($useTrait);
 			$trait = $this->index->getTrait($traitName);
@@ -161,6 +161,7 @@ class TraitImporter {
 				}
 			}
 		}
+		return [$methods, $properties];
 	}
 
 	/**
@@ -177,12 +178,8 @@ class TraitImporter {
 	 * @throws UnknownTraitException
 	 */
 	public function resolveTraits(TraitUse $use, ClassLike $class) {
-		$methods = [];
-		$properties = [];
-
-		$this->indexTrait($use, $methods, $properties);
+		[$methods, $properties] = $this->indexTrait($use);
 		$this->resolveAdaptations($use->adaptations, $methods );
-
 		return array_merge( array_values($properties), $this->importMethods($class, $methods));
 	}
 }

@@ -6,13 +6,12 @@
  */
 
 use BambooHR\Guardrail\Abstractions\ClassInterface;
-use BambooHR\Guardrail\Util;
+use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Name;
-use BambooHR\Guardrail\Scope;
 use PhpParser\Node\Stmt\Interface_;
 
 /**
@@ -112,7 +111,10 @@ class ClassConstantCheck extends BaseCheck {
 
 				$class = $this->symbolTable->getAbstractedClass($name);
 				if (!$class) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface $name");
+					$class = $this->symbolTable->getAbstractedTrait($name);
+				}
+				if (!$class) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "That's not a thing.  Can't find class/interface/trait $name");
 					return;
 				}
 

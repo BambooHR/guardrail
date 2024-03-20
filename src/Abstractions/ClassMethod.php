@@ -1,11 +1,14 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\Attribute;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
@@ -31,13 +34,8 @@ class ClassMethod implements MethodInterface {
 		$this->method = $method;
 	}
 
-	/**
-	 * getReturnType
-	 *
-	 * @return string
-	 */
-	public function getReturnType() {
-		return $this->method->returnType instanceof NullableType ? strval($this->method->returnType->type) : strval($this->method->returnType);
+	public function getComplexReturnType() {
+		return $this->method->returnType;
 	}
 
 	/**
@@ -47,6 +45,10 @@ class ClassMethod implements MethodInterface {
 		return $this->method->returnType && $this->method->returnType instanceof NullableType;
 	}
 
+	public function getThrowsList():array {
+		return $this->method->getAttribute('throws',[]);
+	}
+
 	/**
 	 * isDeprecated
 	 *
@@ -54,9 +56,10 @@ class ClassMethod implements MethodInterface {
 	 */
 	public function isDeprecated() {
 		$docBlock = $this->method->getDocComment();
-		if (strpos($docBlock, "@deprecated") !== false) {
+		if ($docBlock && strpos($docBlock, "@deprecated") !== false) {
 			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -85,25 +88,26 @@ class ClassMethod implements MethodInterface {
 	}
 
 	/**
-	 * getParameters
-	 *
 	 * @return FunctionLikeParameter[]
 	 */
 	public function getParameters() {
-		$ret = [];
-		/** @var \PhpParser\Node\Param $param */
-		foreach ($this->method->params as $param) {
-			$ret[] = new FunctionLikeParameter(
-				$param->type instanceof NullableType ? $param->type->type : $param->type,
+		return array_map(
+			fn($param) => new FunctionLikeParameter(
+				FunctionAbstraction::resolveDeclaredParamTypes($param),
 				$param->var->name,
-				$param->default != null,
+				$param->variadic || $param->default != null,
 				$param->byRef,
-				$param->type instanceof NullableType || ($param->default instanceof ConstFetch && strcasecmp($param->default->name, "null") == 0)
-			);
-		}
-		return $ret;
+				(
+					$param->type instanceof NullableType ||
+					(
+						$param->default instanceof ConstFetch &&
+						strcasecmp($param->default->name, "null") == 0
+					)
+				)
+			),
+			$this->method->params
+		);
 	}
-
 	/**
 	 * getAccessLevel
 	 *
@@ -173,5 +177,18 @@ class ClassMethod implements MethodInterface {
 			return true;
 		}
 		return false;
+	}
+
+	public function getAttributes(string $name): array {
+		$ret=[];
+		foreach($this->method->attrGroups as $group) {
+			foreach($group->attrs as $attr) {
+				/** @var Attribute $attr */
+				if (strcasecmp($attr->name, $name)==0) {
+					$ret[]=$attr;
+				}
+			}
+		}
+		return $ret;
 	}
 }

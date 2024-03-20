@@ -18,10 +18,12 @@ class CountsOutput extends XUnitOutput {
 	 * @return void
 	 */
 	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+		$this->totalErrors++;
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
 			return;
 		}
-		if ($this->emitErrors) {
+		$this->displayedErrors++;
+		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}
 		if (!isset($this->errors[$name])) {

@@ -1,7 +1,16 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\DNumber;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
+
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
@@ -65,6 +74,22 @@ class ReflectedClass implements ClassInterface {
 	 */
 	public function isDeclaredAbstract() {
 		return $this->refl->isAbstract();
+	}
+
+	public function getConstantExpr($name):null|Name|Identifier {
+		if($this->refl->hasConstant($name)) {
+			$constant = $this->refl->getConstant($name);
+			if (is_int($constant)) {
+				return TypeComparer::identifierFromName("int");
+			} else if (is_bool($constant)) {
+				return TypeComparer::identifierFromName("bool");
+			} else if (is_string($constant)) {
+				return TypeComparer::identifierFromName("string");
+			} else {
+				return TypeComparer::identifierFromName("mixed");
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -140,10 +165,11 @@ class ReflectedClass implements ClassInterface {
 				} else {
 					$access = "public";
 				}
-				return new Property($prop->getName(), $access, "", $modifiers & \ReflectionProperty::IS_STATIC );
+				$type = Util::reflectionTypeToPhpParserType($prop->getType());
+				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY );
 			}
 			return null;
-		} catch (\ReflectionException $exception) {
+		} catch (\ReflectionException) {
 			return null;
 		}
 	}
@@ -160,5 +186,16 @@ class ReflectedClass implements ClassInterface {
 			$ret[] = $prop->getName();
 		}
 		return $ret;
+	}
+
+	public function isEnum(): bool {
+		return $this->refl instanceof \ReflectionEnum;
+	}
+
+	public function isReadOnly(): bool {
+		if (method_exists($this->refl,"isReadOnly")) {
+			return $this->refl->isReadOnly();
+		}
+		return false;
 	}
 }

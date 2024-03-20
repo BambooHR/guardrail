@@ -1,11 +1,17 @@
 <?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\EnumCodeAugmenter;
 use BambooHR\Guardrail\Output\OutputInterface;
+use PhpParser\Builder\ClassConst;
+use PhpParser\Builder\Enum_;
+use PhpParser\Builder\EnumCase;
+use PhpParser\Builder\Param;
+use PhpParser\Builder\Property;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
@@ -40,8 +46,6 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 */
 	private $filename = "";
 
-	/** @var OutputInterface  */
-	private $output;
 
 	/**
 	 * SymbolTableIndexer constructor.
@@ -72,7 +76,12 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return int|null
 	 */
 	public function enterNode(Node $node) {
-		if ($node instanceof Class_) {
+		if ($node instanceof Node\Stmt\Enum_) {
+			$name=strval($node->namespacedName);
+			EnumCodeAugmenter::addEnumPropsAndMethods($node);
+			$this->index->addClass($name, $node, $this->filename);
+			array_push($this->classStack, $node);
+		} elseif ($node instanceof Class_) {
 			$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "anonymous class";
 			if ($name) {
 				$this->index->addClass($name, $node, $this->filename);
@@ -87,7 +96,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			$this->index->addFunction($name, $node, $this->filename);
 		} elseif ($node instanceof Node\Const_) {
 			if (count($this->classStack) == 0) {
-				$defineName = strval($node->name);
+				$defineName = strval($node->namespacedName);
 				$this->index->addDefine($defineName, $node, $this->filename);
 			}
 		} elseif ($node instanceof FuncCall) {
@@ -105,7 +114,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			$name = $node->namespacedName->toString();
 			$this->index->addTrait($name, $node, $this->filename);
 			array_push($this->classStack, $node);
-		} elseif ($node instanceof Node\Expr) {
+		} else if ($node instanceof Node\Expr) {
 			// Expressions don't contain anything we would index.
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
@@ -120,7 +129,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
-		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_) {
+		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		}
 		return null;

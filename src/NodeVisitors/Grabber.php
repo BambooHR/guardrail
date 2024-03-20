@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\EnumCodeAugmenter;
 use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -87,18 +88,21 @@ class Grabber extends NodeVisitorAbstract {
 	 * enterNode
 	 *
 	 * @param Node $node Instance of Node
-	 * @guardrail-ignore Standard.Unknown.Property
-	 * @return void
+	 * @guardrail-ignore Standard.Unknown.Property\
 	 */
 	public function enterNode(Node $node) {
-		if (strcasecmp(get_class($node), $this->classType) == 0) {
+		$class=$node::class;
+		if (strcasecmp($class, $this->classType) == 0 ||
+			(strcasecmp($class,Node\Stmt\Enum_::class) == 0 && strcasecmp($this->classType, Class_::class)==0)
+		) {
 
 			$var = ($this->fromVar == self::FROM_FQN ? strval($node->namespacedName) : strval($node->name));
 			if (strcasecmp($var, $this->searchingForName) == 0) {
 				$this->foundClass = $node;
-
+				return NodeTraverser::STOP_TRAVERSAL;
 			}
 		}
+		return null;
 	}
 
 	/**
@@ -109,10 +113,13 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return array
 	 */
-	static public function filterByType($stmts, $type) {
+	static public function filterByType($stmts, string|array $type) {
 		$ret = [];
+		if (is_string($type)) {
+			$type= [$type];
+		}
 		foreach ($stmts as $stmt) {
-			if (get_class($stmt) == $type) {
+			if (in_array(get_class($stmt), $type)) {
 				$ret[] = $stmt;
 			}
 		}
@@ -167,6 +174,7 @@ class Grabber extends NodeVisitorAbstract {
 			$traverser = new NodeTraverser;
 			$traverser->addVisitor($resolver = new NameResolver());
 			$traverser->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
+			$traverser->addVisitor(new PromotedPropertyVisitor());
 			$stmts = $traverser->traverse( $stmts );
 
 			if ($classType == Class_::class) {
@@ -174,6 +182,7 @@ class Grabber extends NodeVisitorAbstract {
 					$traverser = new NodeTraverser;
 					$traverser->addVisitor(new TraitImportingVisitor($table));
 					$stmts = $traverser->traverse($stmts);
+
 				} catch (UnknownTraitException $exception) {
 					echo "[$className] Unknown trait! " . $exception->getMessage() . "\n";
 					// Ignore these for now.
@@ -185,7 +194,11 @@ class Grabber extends NodeVisitorAbstract {
 		}
 
 		if ($stmts) {
-			return self::getClassFromStmts($table, $stmts, $className, $classType);
+			$cls = self::getClassFromStmts($table, $stmts, $className, $classType);
+			if ($cls instanceof Node\Stmt\Enum_) {
+				EnumCodeAugmenter::addEnumPropsAndMethods($cls);
+			}
+			return $cls;
 		}
 		return null;
 	}

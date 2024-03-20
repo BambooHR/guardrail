@@ -34,6 +34,8 @@ interface OutputInterface {
 	 */
 	function output($verbose, $extraVerbose);
 
+	function ttyContent(string $content):string;
+
 	/**
 	 * outputVerbose
 	 *
@@ -83,4 +85,8 @@ interface OutputInterface {
 	 * @return mixed
 	 */
 	function resumeType($name);
+
+	function getErrorCounts();
+
+	function isTTY(): bool;
 }

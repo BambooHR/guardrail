@@ -1,15 +1,20 @@
 <?php namespace BambooHR\Guardrail;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
+
+use BambooHR\Guardrail\Abstractions\Property;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use PhpParser\Node\Attribute;
+use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\Exit_;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Expr\MethodCall;
-use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
@@ -30,10 +35,20 @@ class Util {
 	 *
 	 * @param Object $parts The class we are checking
 	 *
-	 * @return mixed
+	 * @return "mixed"
 	 */
 	static public function finalPart( $parts ) {
 		return property_exists($parts, "parts") && is_array($parts->parts) ? $parts->parts[count($parts->parts) - 1] : $parts;
+	}
+
+	static function mapClassName(string $name, string $selfName, string $staticName):string {
+		if(strcasecmp($name,'static')==0) {
+			return $staticName;
+		} else if(strcasecmp($name,'self')==0) {
+			return $selfName;
+		} else {
+			return $name;
+		}
 	}
 
 	/**
@@ -45,9 +60,21 @@ class Util {
 	 */
 	static public function isScalarType($name) {
 		$name = strtolower($name);
-		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float';
+		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float' || $name=="false" || $name =="true";
 	}
 
+
+	static function getPhpAttribute(string $name, array $attrGroups):?Attribute {
+		foreach($attrGroups as $attrGroup) {
+			/** @var AttributeGroup $attrGroup */
+			foreach($attrGroup->attrs as $attribute) {
+				if (strcasecmp($name, $attribute->name)==0) {
+					return $attribute;
+				}
+			}
+		}
+		return null;
+	}
 	/**
 	 * isLegalNonObject
 	 *
@@ -56,7 +83,11 @@ class Util {
 	 * @return bool
 	 */
 	static public function isLegalNonObject($name) {
-		return self::isScalarType($name) || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name,"resource") == 0 || strcasecmp($name,"object")==0;
+		return self::isScalarType($name) || strcasecmp($name,"mixed") == 0 || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name,"resource") == 0 || strcasecmp($name,"object")==0;
+	}
+
+	static public function isSelfOrStaticType(string $name):bool {
+		return strcasecmp($name, "self")== 0 || strcasecmp($name,"static") ==0;
 	}
 
 	/**
@@ -92,6 +123,7 @@ class Util {
 			return "protected";
 		}
 		trigger_error("Impossible");
+		return "";
 	}
 
 	/**
@@ -99,7 +131,7 @@ class Util {
 	 *
 	 * @param string $basePath The base path
 	 * @param string $path     The path
-	 * @param string $globArr  The rest
+	 * @param array  $globArr  The rest
 	 *
 	 * @return bool
 	 */
@@ -116,6 +148,35 @@ class Util {
 			}
 		}
 		return false;
+	}
+
+	static public function reflectionTypeToPhpParserType(?\ReflectionType $type) {
+		if ($type instanceof \ReflectionNamedType) {
+			if($type->isBuiltin()) {
+				return TypeComparer::identifierFromName($type->getName());
+			} else {
+				return TypeComparer::nameFromName($type->getName());
+			}
+		} else if ($type instanceof \ReflectionUnionType) {
+			$subtypes = array_map(
+				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
+				$type->getTypes()
+			);
+			if($type->allowsNull()) {
+				$subtypes[]=TypeComparer::identifierFromName("null");
+			}
+			return TypeComparer::getUniqueTypes($subtypes);
+		} else if ($type instanceof \ReflectionIntersectionType) {
+			$subtypes = array_map(
+				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
+				$type->getTypes()
+			);
+			return new IntersectionType( [$subtypes] );
+		} else if ($type==null) {
+			return null;
+		} else {
+			throw new \InvalidArgumentException();
+		}
 	}
 
 	/**
@@ -164,6 +225,22 @@ class Util {
 		return null;
 	}
 
+	static function findAbstractedConstantExpr(string $className, string $constantName, SymbolTable $symbolTable) {
+		while ($className) {
+			$class = $symbolTable->getAbstractedClass($className);
+			if (!$class) {
+				return null;
+			}
+
+			$constant = $class->getConstantExpr($constantName);
+			if ($constant) {
+				return $constant;
+			}
+			$className = $class->getParentClassName();
+		}
+		return null;
+	}
+
 	/**
 	 * findAbstractedProperty
 	 *
@@ -173,20 +250,21 @@ class Util {
 	 *
 	 * @return array First param is the abstracted method, second param is the class it was declared in.
 	 */
-	static public function findAbstractedProperty($className, $name, SymbolTable $symbolTable) {
+	static public function findAbstractedProperty(string $className, string $name, SymbolTable $symbolTable):?Property {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
-				return [null,""];
+				return null;
 			}
 
-			$method = $class->getProperty($name);
-			if ($method) {
-				return [$method, $className];
+			$prop = $symbolTable->getAbstractedProperty($class, $name);
+			if ($prop) {
+				return $prop;
 			}
-			$className = $class->getParentClassName();
+
+			$className=$class->getParentClassName();
 		}
-		return [null,""];
+		return null;
 	}
 
 	/**
@@ -230,6 +308,16 @@ class Util {
 	 */
 	static public function callIsCompatible(ClassMethod $method,MethodCall $call) {
 
+	}
+
+	static public function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren):array {
+		$ret=[];
+		foreach($potentialChildren as $potentialChild) {
+			if ($table->isParentClassOrInterface($parent, $potentialChild)) {
+				$ret[] = $potentialChild;
+			}
+		}
+		return $ret;
 	}
 
 	/**
@@ -320,13 +408,13 @@ class Util {
 	 * @return mixed|null
 	 */
 	static public function getLastStatement(array $stmts) {
-		$lastStatement = null;
-		foreach ($stmts as $stmt) {
-			if (!$stmt instanceof Nop) {
-				$lastStatement = $stmt;
+		for (end($stmts); key($stmts)!==null; prev($stmts)){
+			$currentElement = current($stmts);
+			if (!$currentElement instanceof Nop) {
+				return $currentElement;
 			}
 		}
-		return $lastStatement;
+		return null;
 	}
 
 	/**
@@ -380,6 +468,17 @@ class Util {
 			}
 		}
 		return $hasDefault;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	static function getPhpGlobalNames(): array {
+		return [
+			"GLOBALS", "_GET", "_POST", "_COOKIE",
+			"_REQUEST", "_SERVER", "_SESSION", "_FILES",
+			"http_response_header"
+		];
 	}
 }
 

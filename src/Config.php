@@ -36,7 +36,7 @@ class Config {
 	private $reindex = false;
 
 	/** @var array nested array with the settings for what files to import */
-	private $config = [];
+	protected $config = [];
 
 	/** @var string */
 	private $symbolTableFile = "symbol_table";
@@ -97,10 +97,14 @@ class Config {
 	/** @var bool */
 	static private $useDocBlockForInlineVars = false;
 
+	static private $useDocBlockTypedArrays = false;
+
+	static private $useDocBlockGenerics = false;
+
 	/**
 	 * @return void
 	 */
-	private function loadConfigVars() {
+	protected function loadConfigVars() {
 		if (isset($this->config) && array_key_exists('options', $this->config) && is_array($this->config['options'])) {
 			foreach ($this->config['options'] as $key => $value) {
 				if ($value === true) {
@@ -116,6 +120,13 @@ class Config {
 							break;
 						case "DocBlockInlineVars":
 							self::$useDocBlockForInlineVars = true;
+							break;
+						case "DocBlockTypedArrays":
+							self::$useDocBlockTypedArrays = true;
+							break;
+						case "DocBlockGenerics":
+							self::$useDocBlockGenerics = true;
+							break;
 					}
 				}
 			}
@@ -153,10 +164,10 @@ class Config {
 		}
 
 		if ($this->processes > 1 && $this->preferredTable == self::MEMORY_SYMBOL_TABLE) {
-			$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
+			$this->preferredTable = self::JSON_SYMBOL_TABLE;
 		}
 
-		if ($this->preferredTable == self::SQLITE_SYMBOL_TABLE || $this->preferredTable == self::JSON_SYMBOL_TABLE) {
+		if ($this->preferredTable == self::JSON_SYMBOL_TABLE) {
 			if (!file_exists($this->getSymbolTableFile())) {
 				$this->forceIndex = true;
 			}
@@ -164,11 +175,7 @@ class Config {
 				unlink($this->getSymbolTableFile());
 			}
 
-			if ($this->preferredTable == self::JSON_SYMBOL_TABLE) {
-				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\JsonSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
-			} else {
-				$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\SqliteSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
-			}
+			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\JsonSymbolTable($this->getSymbolTableFile(), $this->getBasePath());
 		} else {
 			$this->forceIndex = true;
 			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable($this->getBasePath());
@@ -177,9 +184,19 @@ class Config {
 	}
 
 	/**
+	 * @return array
+	 */
+	public function getPsrRoots() {
+		if (isset($this->config) && array_key_exists('psr-roots', $this->config) && is_array($this->config['psr-roots'])) {
+			return $this->config['psr-roots'];
+		}
+		return [];
+	}
+
+	/**
 	 * @return bool
 	 */
-	static function shouldUseDocBlockForProperties() {
+	static function shouldUseDocBlockForProperties():bool {
 		return self::$useDocBlockForProperties;
 	}
 
@@ -190,24 +207,24 @@ class Config {
 		return self::$useDocBlockForParameters;
 	}
 
-	/**
-	 * @return bool
-	 */
-	static function shouldUseDocBlockForReturnValues() {
+
+	static function shouldUseDocBlockForReturnValues():bool {
 		return self::$useDocBlockForReturnValue;
 	}
 
-	/**
-	 * @return bool
-	 */
-	static function shouldUseDocBlockForInlineVars() {
+	static function shouldUseDocBlockForInlineVars():bool{
 		return self::$useDocBlockForInlineVars;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function shouldOutputTimings() {
+	static function shouldUseDocBlockTypedArrays():bool {
+		return self::$useDocBlockTypedArrays;
+	}
+
+	static function shouldUseDocBlockGenerics():bool {
+		return self::$useDocBlockGenerics;
+	}
+
+	public function shouldOutputTimings():bool {
 		return $this->timings;
 	}
 
@@ -280,7 +297,7 @@ class Config {
 					break;
 
 				case '--format':
-					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["xunit", "text", "counts"])) {
+					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["csv","xunit", "text", "counts"])) {
 						throw new InvalidConfigException;
 					}
 					$this->format = $argv[$argCount];
@@ -298,9 +315,6 @@ class Config {
 				case '-i':
 					$this->forceIndex = true;
 					break;
-				case '-s':
-					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
-					break;
 				case '-m':
 					$this->preferredTable = self::MEMORY_SYMBOL_TABLE;
 					break;
@@ -313,7 +327,7 @@ class Config {
 						throw new InvalidConfigException;
 					}
 					++$argCount;
-					list($wholeMatch, $this->partitionNumber, $this->partitions) = $params;
+					list(, $this->partitionNumber, $this->partitions) = $params;
 					if ($this->partitionNumber < 1 || $this->partitionNumber > $this->partitions) {
 						throw new InvalidConfigException;
 					}
@@ -331,9 +345,7 @@ class Config {
 					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException;
 					}
-					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 					$this->fileList = [$argv[++$argCount]];
-					$this->reindex = true;
 					break;
 				case '-o':
 					if ($argCount + 1 >= count($argv)) {
@@ -490,8 +502,7 @@ class Config {
 	 * @return string
 	 */
 	private function getSymbolTableFile() {
-		return $this->basePath . "/" . $this->symbolTableFile .
-			($this->preferredTable == self::SQLITE_SYMBOL_TABLE ? ".sqlite3" : ".json");
+		return $this->basePath . "/" . $this->symbolTableFile . ".json";
 	}
 
 	/**

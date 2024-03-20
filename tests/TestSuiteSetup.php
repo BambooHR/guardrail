@@ -1,6 +1,8 @@
 <?php namespace BambooHR\Guardrail\Tests;
 
 use BambooHR\Guardrail\Checks\BaseCheck;
+use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\XUnitOutput;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
@@ -25,10 +27,25 @@ abstract class TestSuiteSetup extends TestCase {
 	 *
 	 * @param string $fileName
 	 * @param mixed  $emit
-	 *
+	 * @param array  $additionalConfig
 	 * @return int
 	 */
-	public function runAnalyzerOnFile($fileName, $emit) {
+	public function runAnalyzerOnFile($fileName, $emit, array $additionalConfig = []) {
+		$output = $this->analyzeFileToOutput($fileName, $emit, $additionalConfig);
+		$counts=$output->getCounts();
+		foreach($additionalConfig['ignore-errors']??[] as $error) {
+			unset($counts[$error]);
+		}
+		return array_sum($counts);
+	}
+
+	/**
+	 * @param string $fileName
+	 * @param mixed  $emit
+	 * @param array  $additionalConfig
+	 * @return XUnitOutput
+	 */
+	public function analyzeFileToOutput($fileName, $emit, array $additionalConfig = []) {
 		$testDataDirectory = $this->getCallerTestDataDirectory($this);
 		if (false === strpos($fileName, $testDataDirectory)) {
 			$fileName = $testDataDirectory . $fileName;
@@ -38,17 +55,46 @@ abstract class TestSuiteSetup extends TestCase {
 			throw new \InvalidArgumentException("That file does not exist. Make sure it follows the NameOfTestClass.#.inc \n pattern and is in the TestData directory of the class file directory.");
 		}
 
-		$config = new TestConfig($fileName, $emit);
+		$config = new TestConfig($fileName, $emit, $additionalConfig);
 		$output = new XUnitOutput($config);
 
-		$indexer = new IndexingPhase($config);
-		$indexer->indexFile($config, $fileName);
+		$indexer = new IndexingPhase($config, $output);
+		$indexer->indexFile($fileName);
 
-		$analyzer = new AnalyzingPhase($output);
+		$analyzer = new AnalyzingPhase();
 		$analyzer->initParser($config, $output);
-		$analyzer->analyzeFile($fileName, $config);
 
-		return $output->getErrorCount();
+		$analyzer->analyzeFile($fileName, $config);
+		return $output;
+	}
+
+	public function getStringErrorCount($fileData, $additionalConfig=[]):int {
+		$counts = $this->analyzeString($fileData,$additionalConfig)->getCounts();
+		return array_sum($counts);
+	}
+
+	public function analyzeString($fileData, $additionalConfig=[]) {
+		$fileName = "test.php";
+		$emit = ErrorConstants::getConstants();
+		unset( $emit[array_search(ErrorConstants::TYPE_AUTOLOAD_ERROR, $emit)] );
+		$additionalConfig = array_merge(["basePath" => "/"], $additionalConfig);
+		return $this->analyzeStringToOutput($fileName, $fileData, $emit, $additionalConfig);
+	}
+
+	public function analyzeStringToOutput(string $fileName, string $fileData, $emit, array $additionalConfig = []) {
+		if (!str_starts_with($fileData,"<?php")) {
+			$fileData = "<?php\n".$fileData;
+		}
+		$config = new TestConfig($fileName, $emit, $additionalConfig);
+		$output = new XUnitOutput($config);
+
+		$indexer = new IndexingPhase($config, $output);
+		$indexer->indexString($fileName, $fileData);
+
+		$analyzer = new AnalyzingPhase();
+		$analyzer->initParser($config, $output );
+		$analyzer->analyzeString($fileName, $fileData);
+		return $output;
 	}
 
 	/**
@@ -68,7 +114,7 @@ abstract class TestSuiteSetup extends TestCase {
 	 *
 	 * @return void
 	 */
-	public function tearDown() {
+	public function tearDown():void {
 		parent::tearDown();
 		unset($this->testFile);
 

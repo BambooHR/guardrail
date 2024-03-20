@@ -18,10 +18,12 @@ class ConsoleOutput extends XUnitOutput {
 	 * @return void
 	 */
 	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+		$this->totalErrors++;
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
 			return;
 		}
-		if ($this->emitErrors) {
+		$this->displayedErrors++;
+		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}
 		$this->errors[$fileName][] = ["line" => $lineNumber, "message" => $message];
@@ -32,13 +34,19 @@ class ConsoleOutput extends XUnitOutput {
 	 */
 	public function renderResults() {
 		echo "\n";
+		$white=$this->ttyContent("\33[97m");
+		$reset=$this->ttyContent("\33[0m");
 		foreach ($this->errors as $fileName => $errors) {
-			echo " Line  | $fileName\n";
+			echo " ${white}Line${reset}  | ${white}$fileName${reset}\n";
 			echo "-------+----------------------------------------------------------------\n";
 			usort($errors, function ($cmpa, $cmpb) {
 				return $cmpa['line'] > $cmpb['line'] ? 1 : ($cmpa['line'] == $cmpb['line'] ? 0 : -1);
 			});
 			foreach ($errors as $error) {
+				if (!is_int($error['line'])) {
+					var_dump($error);
+				}
+
 				printf("%6d | %s\n", $error['line'], $error['message']);
 			}
 			echo "\n";

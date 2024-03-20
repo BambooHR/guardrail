@@ -66,7 +66,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 *
 	 * @return void
 	 */
-	public function addClass($name, Class_ $class, $file) {
+	public function addClass($name, ClassLike $class, $file) {
 		$this->classes[strtolower($name)] = $this->basePath . '/' . $file;
 	}
 
@@ -140,6 +140,9 @@ class InMemorySymbolTable extends SymbolTable {
 	 * @return mixed
 	 */
 	public function getTraitFile($name) {
+		if (!array_key_exists(strtolower($name), $this->traits)) {
+			return null;
+		}
 		return $this->traits[strtolower($name)];
 	}
 

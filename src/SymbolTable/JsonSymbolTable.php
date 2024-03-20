@@ -30,7 +30,13 @@ use ReflectionException;
 class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 	/** @var array [$type][$name] = ['has_trait'=>,'data'=>,'file'=>] */
-	private $index = [];
+	private $index = [
+		SymbolTable::TYPE_CLASS => [],
+		SymbolTable::TYPE_FUNCTION => [],
+		SymbolTable::TYPE_INTERFACE => [],
+		SymbolTable::TYPE_TRAIT => [],
+		SymbolTable::TYPE_DEFINE => []
+	];
 
 	private $processNumber = 0;
 
@@ -55,7 +61,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function disconnect() {
 		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
-		file_put_contents($fileName, json_encode($this->index));
+		$str=json_encode($this->index,JSON_THROW_ON_ERROR|JSON_INVALID_UTF8_SUBSTITUTE);
+		file_put_contents($fileName, $str) ;
 	}
 
 	/**
@@ -87,10 +94,13 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @throws Exception
 	 */
 	private function addType($name, $file, $type, $hasTrait = 0, $data = "") {
-		if (!isset($this->index[$type])) {
+		$name=strtolower($name);
+		if (!array_key_exists($type, $this->index)) {
 			$this->index[$type] = [];
 		}
-		$this->index[$type][strtolower($name)] = ['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
+		if (!array_key_exists($name, $this->index[$type])) {
+			$this->index[$type][$name] = ['file' => $file, 'has_trait' => $hasTrait, 'data' => $data];
+		}
 	}
 
 	/**
@@ -110,7 +120,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	function indexTable($processCount) {
 		for ($index = 1; $index <= $processCount; ++$index) {
 			$fileName = $this->fileName . '.' . $index;
-			$arr = json_decode(file_get_contents($fileName), true);
+			$content = file_get_contents($fileName);
+			$arr = json_decode($content, true);
 			foreach ($arr as $type => $arr2) {
 				if (!isset($this->index[$type])) {
 					$this->index[$type] = [];
@@ -261,7 +272,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function updateClass(ClassLike $class) {
 		$name = strtolower($class->namespacedName);
 
-		$clone = $this->stripMethodContents($class);
+		$clone = static::stripMethodContents($class);
 		$serializedString = self::serializeObject($clone);
 		$type = $class instanceof Trait_ ? self::TYPE_TRAIT : self::TYPE_CLASS;
 
@@ -292,7 +303,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return mixed
 	 */
-	public function stripMethodContents(ClassLike $class) {
+	public static function stripMethodContents(ClassLike $class) {
 		// Make a deep copy and then remove implementation code (to save space).
 		$clone = unserialize(serialize($class));
 		foreach ($clone->stmts as $index => &$stmt) {
@@ -348,14 +359,14 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return void
 	 */
-	public function addClass($name, Class_ $class, $file) {
+	public function addClass($name, ClassLike $class, $file) {
 		$usesTrait = 0;
 		foreach ($class->stmts as $stmt) {
 			if ($stmt instanceof TraitUse) {
 				$usesTrait = 1;
 			}
 		}
-		$clone = $this->stripMethodContents($class);
+		$clone = static::stripMethodContents($class);
 		$this->addType($name, $file, self::TYPE_CLASS, $usesTrait, self::serializeObject($clone));
 	}
 

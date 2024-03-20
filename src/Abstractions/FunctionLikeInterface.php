@@ -1,5 +1,9 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use PhpParser\Node\ComplexType;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
+
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
@@ -26,12 +30,7 @@ interface FunctionLikeInterface {
 	 */
 	public function getMinimumRequiredParameters();
 
-	/**
-	 * getReturnType
-	 *
-	 * @return string
-	 */
-	public function getReturnType();
+	public function getComplexReturnType();
 
 	/**
 	 * hasNulllableReturnType
@@ -43,7 +42,7 @@ interface FunctionLikeInterface {
 	/**
 	 * getDocBlockReturnType
 	 *
-	 * @return string|null
+	 * @return ComplexType|Name|Identifier|null
 	 */
 	public function getDocBlockReturnType();
 
@@ -81,4 +80,6 @@ interface FunctionLikeInterface {
 	 * @return bool
 	 */
 	public function isVariadic();
+
+	public function getThrowsList():array;
 }

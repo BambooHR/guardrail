@@ -5,16 +5,14 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Abstractions\Property;
-use BambooHR\Guardrail\Attributes;
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\TypeInferrer;
+use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
-use BambooHR\Guardrail\Util;
 
 /**
  * Class PropertyFetch
@@ -23,10 +21,8 @@ use BambooHR\Guardrail\Util;
  */
 class PropertyStoreCheck extends BaseCheck {
 
-	/**
-	 * @var TypeInferrer
-	 */
-	private $typeInferer;
+
+	private TypeComparer $typeComparer;
 
 	/**
 	 * PropertyFetch constructor.
@@ -36,7 +32,7 @@ class PropertyStoreCheck extends BaseCheck {
 	 */
 	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
-		$this->typeInferer = new TypeInferrer($symbolTable);
+		$this->typeComparer = new TypeComparer($symbolTable);
 	}
 
 	/**
@@ -60,22 +56,52 @@ class PropertyStoreCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof Node\Expr\Assign && $node->var instanceof PropertyFetch && $node->var->name instanceof Node\Identifier) {
-			list($leftType, $leftAttributes) = $this->typeInferer->inferType($inside, $node->var, $scope);
-			list($rightType, $rightAttributes) = $this->typeInferer->inferType($inside, $node->expr, $scope);
 
-			if ($leftType && $rightType && $leftType != $rightType && $leftType != Scope::MIXED_TYPE && $rightType != Scope::MIXED_TYPE) {
-				if ($leftType[0] != "!" && $rightType[0] != "!") {
-					if (!$this->symbolTable->isParentClassOrInterface($leftType, $rightType)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_ASSIGN_MISMATCH, "Type mismatch can not assign $rightType into a $leftType");
+			$targetType = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			$valueType = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			$nodeVarName=strval($node->var->name);
+
+			//echo "Checking safety of assigning ".TypeComparer::typeToString($valueType). " into a  ".TypeComparer::typeToString($targetType)."\n";
+
+			$insideConstructor=$this->insideConstructor($scope);
+
+			TypeComparer::forEachType($targetType, function($individualType) use ($nodeVarName, $fileName, $node, $insideConstructor) {
+				if ($individualType instanceof Node\Identifier || $individualType instanceof Node\Name) {
+					$typeStr = strval($individualType);
+					if ($this->symbolTable->isDefinedClass($typeStr)) {
+						$property = Util::findAbstractedProperty($typeStr, $nodeVarName, $this->symbolTable);
+						if ($property &&
+							!$insideConstructor &&
+							($property->isReadOnly() || $property->getClass()->isReadOnly())
+						) {
+							$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to set read only variable " . $typeStr . "->" . $nodeVarName);
+						}
 					}
-				} else if (!$this->isArray($leftType) && $this->isArray($rightType)) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ASSIGN_MISMATCH, "Type mismatch can not assign $rightType into a $leftType");
 				}
+			});
+
+
+			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope->isStrict())) {
+				if($targetType instanceof Node\Identifier && util::isScalarType(strval($targetType))) {
+					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR;
+				} else {
+					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH;
+				}
+				$this->emitError($fileName, $node, $errorType, "Type mismatch can not assign " . TypeComparer::typeToString($valueType) . " into a " . TypeComparer::typeToString($targetType));
 			}
 		}
 	}
 
-	private function isArray($type) {
-		return $type == Scope::ARRAY_TYPE || strpos($type,"[]")!==false;
+	function insideConstructor(?Scope $scope) {
+		if (!$scope) {
+			return false;
+		}
+		foreach(array_reverse($scope->getParentNodes()) as $parentNode) {
+			if ($parentNode instanceof Node\FunctionLike || $parentNode instanceof Node\Stmt\Class_) {
+				return ($parentNode instanceof Node\Stmt\ClassMethod &&
+					strcasecmp($parentNode->name,"__construct")==0);
+			}
+		}
+		return false;
 	}
 }

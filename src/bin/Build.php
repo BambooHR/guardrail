@@ -18,9 +18,14 @@ try {
 	$baseDir = dirname(dirname(__DIR__));
 	echo "Building relative to $baseDir\n";
 	$it = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS);
-	$it2 = new \RecursiveIteratorIterator($it);
+	$it2 = new class($it) extends \RecursiveFilterIterator {
+		function accept():bool {
+			return $this->current()->getExtension() !== "phar";
+		}
+	};
+	$it3 = new \RecursiveIteratorIterator($it2);
 
-	$phar->buildFromIterator($it2, $baseDir);
+	$phar->buildFromIterator($it3, $baseDir);
 
 	$phar->stopBuffering();
 	echo "Done\n";

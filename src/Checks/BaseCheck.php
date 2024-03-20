@@ -5,12 +5,10 @@
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Metrics\Metric;
-use BambooHR\Guardrail\Metrics\MetricOutputInterface;
-use PhpParser\Node;
+use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use BambooHR\Guardrail\Output\OutputInterface;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
 /**

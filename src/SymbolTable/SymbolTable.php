@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Abstractions\ClassInterface;
 use BambooHR\Guardrail\Abstractions\FunctionAbstraction as AbstractionFunction;
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractionClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
@@ -71,7 +72,7 @@ abstract class SymbolTable {
 		}
 		$ob = $this->cache->get("Class:" . $cacheName);
 		if (!$ob) {
-			$ob = Grabber::getClassFromFile($this, $file, $name, Class_::class);
+			$ob = Grabber::getClassFromFile($this, $file, $name);
 			if ($ob) {
 				$this->cache->add("Class:" . $cacheName, $ob);
 			}
@@ -84,12 +85,11 @@ abstract class SymbolTable {
 	 *
 	 * Checks all parent classes and parent interfaces to see if $child is can be used in their place.
 	 *
-	 * @param string $potentialParent The potential parent
-	 * @param string $child           The child
-	 *
-	 * @return bool
 	 */
-	public function isParentClassOrInterface($potentialParent, $child) {
+	public function isParentClassOrInterface(string $potentialParent, string $child):bool {
+		if (strcasecmp($potentialParent,"object")==0) {
+			return true;
+		}
 		while ($child) {
 			if (strcasecmp($potentialParent, $child) == 0) {
 				return true;
@@ -166,6 +166,20 @@ abstract class SymbolTable {
 		return $ob;
 	}
 
+	function getAbstractedProperty(ClassInterface $class, $propertyName) {
+
+		$cacheName= $propertyName."@".$class->getName();
+		$ob = $this->cache->get("AProp:" . $cacheName);
+		if ($ob) {
+			return $ob;
+		}
+		$ob = $class->getProperty($propertyName);
+		if($ob) {
+			$this->cache->add("AProp:" . $cacheName, $ob);
+		}
+		return $ob;
+	}
+
 	/**
 	 * getAbstractedMethod
 	 *
@@ -235,6 +249,21 @@ abstract class SymbolTable {
 				$this->cache->add("Trait:" . $name, $ob);
 			}
 		}
+		return $ob;
+	}
+
+	public function getAbstractedTrait($name) {
+		$cacheKey = 'ATrait:' . strtolower(strval($name));
+		$ob = $this->cache->get($cacheKey);
+		if ($ob !== null) {
+			return $ob;
+		}
+		$trait = $this->getTrait($name);
+		if ($trait === null) {
+			return null;
+		}
+		$ob = new AbstractionClass($trait);
+		$this->cache->add($cacheKey, $ob);
 		return $ob;
 	}
 
@@ -355,7 +384,7 @@ abstract class SymbolTable {
 	 */
 	public function ignoreType($name) {
 		$name = strtolower($name);
-		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator' || $name == 'object');
+		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator' || $name == 'object' || $name=='mixed' || $name=='null');
 	}
 
 	/**
@@ -377,13 +406,13 @@ abstract class SymbolTable {
 	/**
 	 * addClass
 	 *
-	 * @param string $name  The name
-	 * @param Class_ $class Instance of ClassAbstraction
-	 * @param string $file  The file
+	 * @param string    $name  The name
+	 * @param ClassLike $class Instance of ClassAbstraction
+	 * @param string    $file  The file
 	 *
 	 * @return mixed
 	 */
-	abstract function addClass($name, Class_ $class, $file);
+	abstract function addClass($name, ClassLike $class, $file);
 
 	/**
 	 * addInterface

@@ -27,24 +27,22 @@ class Property {
 	 */
 	private $access;
 
-	/**
-	 * @var bool
-	 */
-	private $static;
+
+	private bool $isStatic;
+
+	private bool $isReadOnly;
 
 	/**
 	 * Property constructor.
 	 *
-	 * @param string $name     The name of the property
-	 * @param string $type     The type of the property
-	 * @param string $access   The access
-	 * @param bool   $isStatic Is it static
+
 	 */
-	public function __construct($name,$type, $access, $isStatic) {
+	public function __construct(private ClassInterface $cls, string $name,?\PhpParser\Node $type, string $access, bool $isStatic, bool $isReadOnly) {
 		$this->name = $name;
 		$this->access = $access;
 		$this->type = $type;
-		$this->static = $isStatic;
+		$this->isStatic = $isStatic;
+		$this->isReadOnly = $isReadOnly;
 	}
 
 	/**
@@ -56,6 +54,10 @@ class Property {
 		return $this->name;
 	}
 
+	public function getClass():ClassInterface {
+		return $this->cls;
+	}
+
 	/**
 	 * getAccess
 	 *
@@ -63,6 +65,10 @@ class Property {
 	 */
 	public function getAccess() {
 		return $this->access;
+	}
+
+	public function isReadOnly() {
+		return $this->isReadOnly;
 	}
 
 	/**
@@ -80,6 +86,6 @@ class Property {
 	 * @return bool
 	 */
 	public function isStatic() {
-		return $this->static;
+		return $this->isStatic;
 	}
 }

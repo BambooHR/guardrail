@@ -1,16 +1,24 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
 /**
- * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
+ * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
 
-use BambooHR\Guardrail\Config;
+use BambooHR\Guardrail\NodeVisitors\Grabber;
+use BambooHR\Guardrail\TypeComparer;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt\Case_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\EnumCase;
 use PhpParser\Node\Stmt\Interface_;
-use BambooHR\Guardrail\NodeVisitors\Grabber;
 use PhpParser\Node\Stmt\PropertyProperty;
 
 /**
@@ -56,6 +64,10 @@ class ClassAbstraction implements ClassInterface {
 		} else {
 			return false;
 		}
+	}
+
+	public function isReadOnly(): bool {
+		return ($this->class instanceof Class_ ? $this->class->isReadonly() : false);
 	}
 
 	/**
@@ -134,16 +146,51 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name) {
-		$constants = Grabber::filterByType($this->class->stmts, ClassConst::class);
-		foreach ($constants as $constList) {
-			foreach ($constList->consts as $const) {
-				if (strcasecmp($const->name, $name) == 0) {
-					return true;
+	public function hasConstant($name):bool {
+		return $this->getConstantExpr($name) ? true : false;
+	}
+
+	public function getConstantExpr($name):null|Expr|Name|Identifier {
+
+		if ($this->isEnum()) {
+			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
+			foreach($constants as $enumOption) {
+				/** @var EnumCase $enumOption */
+				if (strcasecmp($enumOption->name,$name)==0) {
+					return $this->class->namespacedName;
 				}
 			}
 		}
-		return false;
+		$constants = Grabber::filterByType($this->class->stmts, [ClassConst::class, EnumCase::class]);
+		foreach ($constants as $constList) {
+			if ($constList instanceof ClassConst) {
+				foreach ($constList->consts as $const) {
+					if (strcasecmp($const->name, $name) == 0) {
+						if($const->value instanceof LNumber) {
+							return TypeComparer::identifierFromName("int");
+						} else if ($const->value instanceof String_) {
+							return TypeComparer::identifierFromName("string");
+						} else if (
+							$const->value instanceof Expr\ConstFetch &&
+							(
+								strcasecmp($const->value->name,"true")==0 ||
+								strcasecmp($const->value->name,"false")==0
+							)
+						) {
+							return TypeComparer::identifierFromName("bool");
+						}
+						return $const->value;
+					}
+				}
+			} else {
+				if($constList instanceof EnumCase) {
+					if (strcasecmp($constList->name, $name)==0) {
+						return $this->class->namespacedName;
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -172,26 +219,34 @@ class ClassAbstraction implements ClassInterface {
 	 * @return Property
 	 */
 	public function getProperty($name) {
-		$properties = Grabber::filterByType($this->class->stmts, \PhpParser\Node\Stmt\Property::class);
-		foreach ($properties as $prop) {
-			/** @var \PhpParser\Node\Stmt\Property $prop */
-			foreach ($prop->props as $propertyProperty) {
-				/** @var PropertyProperty $propertyProperty */
-				if ($propertyProperty->name == $name) {
-					if ($prop->isPrivate()) {
-						$access = "private";
-					} else if ($prop->isProtected()) {
-						$access = "protected";
-					} else {
-						$access = "public";
+		foreach ($this->class->stmts as $prop) {
+			if ($prop instanceof \PhpParser\Node\Stmt\Property) {
+				/** @var \PhpParser\Node\Stmt\Property $prop */
+				foreach ($prop->props as $propertyProperty) {
+					/** @var PropertyProperty $propertyProperty */
+					if ($propertyProperty->name == $name) {
+						if ($prop->isPrivate()) {
+							$access = "private";
+						} else {
+							if ($prop->isProtected()) {
+								$access = "protected";
+							} else {
+								$access = "public";
+							}
+						}
+						$type = $prop->type;
+						//if (Config::shouldUseDocBlockForProperties() && empty($type)) {
+						//	$type = Scope::nameFromName($propertyProperty->namespacedType);
+						//}
+						return new Property($this,$propertyProperty->name, $type, $access, $prop->isStatic(), $prop->isReadOnly());
 					}
-					$type = strval($prop->type);
-					if (Config::shouldUseDocBlockForProperties() && empty($type)) {
-						$type = $propertyProperty->getAttribute("namespacedType");
-					}
-					return new Property($propertyProperty->name, $type, $access, $prop->isStatic());
 				}
 			}
 		}
+		return null;
+	}
+
+	public function isEnum(): bool {
+		return $this->class instanceof Enum_;
 	}
 }

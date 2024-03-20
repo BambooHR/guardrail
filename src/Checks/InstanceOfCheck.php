@@ -5,11 +5,11 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
-use BambooHR\Guardrail\Scope;
 
 /**
  * Class InstanceOfCheck
