@@ -199,6 +199,8 @@ class AnalyzingPhase {
 		$pm = new AnalyzingParentProcess($toProcess, $totalBytes, $output, $metricOutput);
 		$pm->run($this, $config);
 		$this->setTimingResults($pm->getTimings());
+
+		$metricOutput->close();
 		return ($output->getErrorCount() > 0 ? 1 : 0);
 	}
 

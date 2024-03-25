@@ -173,14 +173,6 @@ class MethodCall extends CallCheck {
 		if ($method->isDeprecated()) {
 			$errorType = $method->isInternal() ? ErrorConstants::TYPE_DEPRECATED_INTERNAL : ErrorConstants::TYPE_DEPRECATED_USER;
 			$this->emitError($fileName, $node, $errorType, "Call to deprecated function " . $method->getName());
-			$this->metricOutput->emitMetric(
-				new Metric(
-					$fileName,
-					$node->getLine(),
-					$errorType,
-					['class' => $className, 'method' => $methodName, 'line' => $method->getStartingLine()]
-				)
-			);
 		}
 
 		$name = $className . "->" . $methodName;
