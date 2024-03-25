@@ -17,6 +17,8 @@ class TestComplexityCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:CyclomaticComplexityCheck:OrClauses Many Or clauses in a single statement
 	 */
 	public function testManyOrClauses() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_METRICS_COMPLEXITY));
+		// As of 3/25/2024, this check emits a metric, rather than emitting an error. So we expect 0 errors in this test.
+		// Will follow up quickly with the ability to emit based on exceeding a customizable metric threshold.
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_METRICS_COMPLEXITY));
 	}
 }

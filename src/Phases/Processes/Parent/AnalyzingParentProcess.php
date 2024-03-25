@@ -4,6 +4,7 @@ namespace BambooHR\Guardrail\Phases\Processes\Parent;
 
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Exceptions\SocketException;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Phases\AnalyzingPhase;
 use BambooHR\Guardrail\Phases\Processes\Child\AnalyzingChildProcess;
@@ -20,7 +21,12 @@ class AnalyzingParentProcess extends ProcessManager {
 	private $timingResults = [];
 
 
-	function __construct(private array $toProcess, private int $totalBytes, private OutputInterface $output) {
+	function __construct(
+		private array $toProcess,
+		private int $totalBytes,
+		private OutputInterface $output,
+		private MetricOutputInterface $metricOutput
+	) {
 		$this->start = microtime(true);
 	}
 
@@ -116,6 +122,11 @@ class AnalyzingParentProcess extends ProcessManager {
 				$this->acceptTimings( json_decode(base64_decode($details), true) );
 				Socket::writeComplete($socket,"DONE\n");
 				return ProcessManager::CLOSE_CONNECTION;
+
+			case 'METRIC':
+				$metric = unserialize(base64_decode($details));
+				$this->metricOutput->emitMetric($metric);
+				break;
 			default:
 				$this->output->outputVerbose("Internal protocol Error.  Unknown message($message)\n");
 				exit(1);

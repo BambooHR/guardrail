@@ -2,6 +2,8 @@
 
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Metrics\MetricInterface;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\XUnitOutput;
@@ -56,7 +58,11 @@ abstract class TestSuiteSetup extends TestCase {
 		}
 
 		$config = new TestConfig($fileName, $emit, $additionalConfig);
-		$output = new XUnitOutput($config);
+		$output = new class($config) extends XUnitOutput implements MetricOutputInterface {
+			function emitMetric(MetricInterface $metric): void {
+				return;
+			}
+		};
 
 		$indexer = new IndexingPhase($config, $output);
 		$indexer->indexFile($fileName);
@@ -86,7 +92,11 @@ abstract class TestSuiteSetup extends TestCase {
 			$fileData = "<?php\n".$fileData;
 		}
 		$config = new TestConfig($fileName, $emit, $additionalConfig);
-		$output = new XUnitOutput($config);
+		$output = new class($config) extends XUnitOutput implements MetricOutputInterface {
+			function emitMetric(MetricInterface $metric): void {
+				return;
+			}
+		};
 
 		$indexer = new IndexingPhase($config, $output);
 		$indexer->indexString($fileName, $fileData);

@@ -1,7 +1,7 @@
 <?php namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
- * Guardrail.  Copyright (c) 2016-2023, BambooHR.
+ * Guardrail.  Copyright (c) 2016-2024, BambooHR.
  * Apache 2.0 License
  */
 
@@ -44,6 +44,7 @@ use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Scope\Scope;
@@ -54,6 +55,8 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Metrics\JsonMetricOutput;
 
 /**
  * Class StaticAnalyzer
@@ -110,11 +113,12 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 * @param OutputInterface $output Instance if OutputInterface
 	 * @param Config $config The config
 	 */
-	function __construct(SymbolTable $index, OutputInterface $output, Config $config)
+	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config)
 	{
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
+		$this->metricOutput = $metricOutput;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
@@ -142,7 +146,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new AccessingSuperGlobalsCheck($this->index, $output),
 			new UnreachableCodeCheck($this->index, $output),
 			new Psr4Check($this->index, $output, $config->getPsrRoots()),
-			new CyclomaticComplexityCheck($this->index, $output),
+			new CyclomaticComplexityCheck($this->index, $output, $metricOutput),
 			new ConditionalAssignmentCheck($this->index, $output),
 			new ClassMethodStringCheck($this->index, $output),
 			new UnusedPrivateMemberVariableCheck($this->index, $output),

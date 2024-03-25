@@ -144,13 +144,14 @@ class XUnitOutput implements OutputInterface {
 	/**
 	 * shouldEmit
 	 *
-	 * @param string $fileName   The file name
-	 * @param string $name       The name
-	 * @param int    $lineNumber The line number the error occurred on.
+	 * @param string         $fileName   The file name
+	 * @param string         $name       The name
+	 * @param int            $lineNumber The line number the error occurred on.
+	 * @param float|int|null $metric
 	 *
 	 * @return bool
 	 */
-	public function shouldEmit($fileName, $name, $lineNumber) {
+	public function shouldEmit($fileName, $name, $lineNumber, float|int|null $metric=null) {
 		if (isset($this->silenced[$name]) && $this->silenced[$name] > 0) {
 			return false;
 		}
@@ -174,6 +175,13 @@ class XUnitOutput implements OutputInterface {
 						!$this->config->getFilter() ||
 						!$this->config->getFilter()->shouldEmit($fileName, $name, $lineNumber)
 					)
+				) {
+					continue;
+				}
+				if (
+					isset($entry['when-above']) &&
+					!is_null($metric) &&
+					$metric <= floatval($entry['when-above'])
 				) {
 					continue;
 				}
