@@ -18,6 +18,7 @@ use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
 use BambooHR\Guardrail\NodeVisitors\TraitImportingVisitor;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Output\SocketOutput;
+use BambooHR\Guardrail\Output\XUnitOutput;
 use BambooHR\Guardrail\Phases\Processes\Child\AnalyzingChildProcess;
 use BambooHR\Guardrail\Phases\Processes\Parent\AnalyzingParentProcess;
 use BambooHR\Guardrail\Socket;
@@ -49,7 +50,7 @@ class AnalyzingPhase {
 
 	private StaticAnalyzer $analyzer;
 
-	private SocketOutput $output;
+	private OutputInterface & MetricOutputInterface $output;
 
 	private array $timingResults = [[],[]];
 
@@ -64,7 +65,7 @@ class AnalyzingPhase {
 	}
 
 
-	function initParser(Config $config, SocketOutput $output) {
+	function initParser(Config $config, XUnitOutput & MetricOutputInterface $output) {
 		$traverser1 = new NodeTraverser;
 		$traverser1->addVisitor($resolver = new NameResolver());
 		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));

@@ -109,7 +109,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 */
 	public function calculateComplexity(array $statements): int {
 		$complexity = 1;
-		ForEachNode::run($statements, function (Node $node) use (&$complexity, &$minLine, &$maxLine) {
+		ForEachNode::run($statements, function (Node $node) use (&$complexity) {
 			if (self::isStatementBranch($node) || self::isExpressionBranch($node)) {
 				++$complexity;
 			}

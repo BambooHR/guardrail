@@ -33,7 +33,7 @@ class MethodCall extends CallCheck {
 	 * @param SymbolTable     $symbolTable Instance of the SymbolTable
 	 * @param OutputInterface $doc         Instance of OutputInterface
 	 */
-	public function __construct(SymbolTable $symbolTable, OutputInterface $doc, private MetricOutputInterface $metricOutput) {
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 		$this->callableCheck = new CallableCheck($symbolTable, $doc);
 	}
