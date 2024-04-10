@@ -163,7 +163,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function getClassOrInterfaceData($name) {
 		return $this->getData($name);
-
 	}
 
 	/**
@@ -175,23 +174,26 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return mixed|string
 	 */
 	public function getData($name, $type = self::TYPE_CLASS) {
-
 		$name = strtolower($name);
 		if ($type == self::TYPE_FUNCTION) {
 			if (!isset($this->index[$type]) || !isset($this->index[$type][$name])) {
-				return "";
+				return ["", ""];
 			}
 			$result = $this->index[$type][$name]['data'];
+			$file = $this->index[$type][$name]['file'];
 		} else if ($type == self::TYPE_CLASS) {
 			if (isset($this->index[self::TYPE_CLASS]) && isset($this->index[self::TYPE_CLASS][$name])) {
 				$result = $this->index[self::TYPE_CLASS][$name]['data'];
+				$file = $this->index[self::TYPE_CLASS][$name]['file'];
 			} else if (isset($this->index[self::TYPE_INTERFACE]) && isset($this->index[self::TYPE_INTERFACE][$name])) {
 				$result = $this->index[self::TYPE_INTERFACE][$name]['data'];
+				$file = $this->index[self::TYPE_INTERFACE][$name]['file'];
 			} else {
-				return "";
+				return ["", ""];
 			}
 		}
-		return self::unserializeObject($result);
+
+		return [self::unserializeObject($result), $file];
 	}
 
 	/**
@@ -229,9 +231,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function getAbstractedFunction($name) {
 		$ob = $this->cache->get("AFunction:" . $name);
 		if (!$ob) {
-			$ob = $this->getData($name, self::TYPE_FUNCTION);
-			if ($ob) {
-				$ob = new AbstractFunction($ob);
+			$data = $this->getData($name, self::TYPE_FUNCTION);
+			$class = $data[0];
+			$file = $data[1];
+			if ($class) {
+				$ob = new AbstractFunction($class, $file);
 			} else {
 				try {
 					$refl = new \ReflectionFunction($name);
@@ -408,9 +412,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$cacheName = strtolower($name);
 		$ob = $this->cache->get("AClass:" . $cacheName);
 		if (!$ob) {
-			$tmp = $this->getClassOrInterfaceData($name);
-			if ($tmp) {
-				$ob = new AbstractClass($tmp);
+			$data = $this->getClassOrInterfaceData($name);
+			$class = $data[0];
+			$file = $data[1];
+			if ($class) {
+				$ob = new AbstractClass($class, $file);
 			} else if (strpos($name, "\\") === false) {
 				try {
 					$refl = new ReflectionClass($name);

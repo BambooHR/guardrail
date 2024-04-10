@@ -148,9 +148,10 @@ abstract class SymbolTable {
 		$cacheName = strtolower($name);
 		$ob = $this->cache->get("AClass:" . $cacheName);
 		if (!$ob) {
-			$tmp = $this->getClassOrInterface($name);
-			if ($tmp) {
-				$ob = new AbstractionClass($tmp);
+			$abstractClass = $this->getClassOrInterface($name);
+			$abstractClassFile = $this->getClassOrInterfaceFile($name);
+			if ($abstractClass) {
+				$ob = new AbstractionClass($abstractClass, $abstractClassFile);
 			} else if (strpos($name, "\\") === false) {
 				try {
 					$refl = new ReflectionClass($name);
@@ -259,10 +260,11 @@ abstract class SymbolTable {
 			return $ob;
 		}
 		$trait = $this->getTrait($name);
-		if ($trait === null) {
+		$traitFile = $this->getTraitFile($name);
+		if ($trait === null || $traitFile === null) {
 			return null;
 		}
-		$ob = new AbstractionClass($trait);
+		$ob = new AbstractionClass($trait, $traitFile);
 		$this->cache->add($cacheKey, $ob);
 		return $ob;
 	}
@@ -373,6 +375,17 @@ abstract class SymbolTable {
 	 */
 	public function getClassOrInterface($name) {
 		return $this->getClass($name) ?: $this->getInterface($name);
+	}
+
+	/**
+	 * getClassOrInterface
+	 *
+	 * @param string $name The name
+	 *
+	 * @return string
+	 */
+	public function getClassOrInterfaceFile($name) {
+		return $this->getClassFile($name) ?: $this->getInterfaceFile($name);
 	}
 
 	/**

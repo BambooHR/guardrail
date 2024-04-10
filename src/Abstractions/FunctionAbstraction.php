@@ -31,8 +31,9 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 *
 	 * @param AstFunction $method Instance of AstFunction
 	 */
-	public function __construct(AstFunction $method) {
+	public function __construct(AstFunction $method, string $fileName) {
 		$this->function = $method;
+		$this->fileName = $fileName;
 	}
 
 	public function getComplexReturnType() {

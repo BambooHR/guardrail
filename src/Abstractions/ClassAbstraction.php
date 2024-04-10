@@ -32,14 +32,25 @@ class ClassAbstraction implements ClassInterface {
 	 * @var ClassLike
 	 */
 	private $class;
+	private ?string $fileName;
 
 	/**
 	 * ClassAbstraction constructor.
 	 *
 	 * @param ClassLike $class Instance of ClassLike
 	 */
-	public function __construct(ClassLike $class) {
+	public function __construct(ClassLike $class, ?string $fileName = null) {
 		$this->class = $class;
+		$this->fileName = $fileName;
+	}
+
+	/**
+	 * getFile
+	 *
+	 * @return string|null
+	 */
+	public function getFile(): ?string {
+		return $this->fileName;
 	}
 
 	/**
