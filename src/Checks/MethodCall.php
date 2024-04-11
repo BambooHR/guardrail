@@ -164,7 +164,7 @@ class MethodCall extends CallCheck {
 
 		$params = $method->getParameters();
 		$minimumArgs = $method->getMinimumRequiredParameters();
-		if (count($node->args) < $minimumArgs) {
+		if (count($node->args) < $minimumArgs && !$node->isFirstClassCallable()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Function call parameter count mismatch to method " . $method->getName() . " (passed " . count($node->args) . " requires $minimumArgs)");
 		}
 		if (count($node->args) > count($params) && !$method->isVariadic()) {
