@@ -117,7 +117,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	{
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output, $config);
-		$this->scopeStack->pushScope(new Scope(true, true, false));
+		$this->scopeStack->pushScope(new Scope(true, true, false, config: $config));
 		$this->metricOutput = $metricOutput;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
@@ -218,7 +218,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	{
 		$this->file = $name;
 		$this->scopeStack = new ScopeStack( $this->scopeStack->getOutput(), $config );
-		$this->scopeStack->pushScope(new Scope(true, true, false));
+		$this->scopeStack->pushScope(new Scope(true, true, false, config: $config));
 		$this->scopeStack->setCurrentFile($name);
 	}
 

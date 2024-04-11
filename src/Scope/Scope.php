@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\FunctionLike;
@@ -28,7 +29,8 @@ class Scope implements PluginScopeInterface {
 		public bool $isStatic,
 		public bool $isGlobal,
 		public bool $isStrict,
-		private ?FunctionLike $inside = null
+		private ?FunctionLike $inside = null,
+		private ?Config $config = null,
 	) {
 	}
 
@@ -230,7 +232,7 @@ class Scope implements PluginScopeInterface {
 			$newVar->typeChanged = false;
 			$newVars[$var->name] = $newVar;
 		}
-		$ret = new self($this->isStatic, $this->isGlobal, $this->isStrict, $this->inside);
+		$ret = new self($this->isStatic, $this->isGlobal, $this->isStrict, $this->inside, $this->config);
 		$ret->vars = $newVars;
 		return $ret;
 	}
@@ -256,5 +258,9 @@ class Scope implements PluginScopeInterface {
 				$this->vars[$name]->mergeVar($otherVar);
 			}
 		}
+	}
+
+	function getConfig(): Config {
+		return $this->config;
 	}
 }
