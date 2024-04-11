@@ -2,6 +2,7 @@
 
 namespace BambooHR\Guardrail\Scope;
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Scope as ScopeInterface;
 use PhpParser\Node;
 use PhpParser\Node\ComplexType;
@@ -28,4 +29,5 @@ interface PluginScopeInterface
 	function getVarType($name):Name|Identifier|ComplexType|null;
 	function getVarExists(string $name):bool;
 	function getVarObject($name):?ScopeVar;
+	function getConfig(): Config;
 }
