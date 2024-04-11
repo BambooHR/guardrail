@@ -35,7 +35,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 			$isStatic = $func->static;
 		}
 
-		$scope = new Scope\Scope($isStatic, false, $scopeStack->getCurrentScope()->isStrict, $func, $scopeStack->getConfig());
+		$scope = new Scope\Scope($isStatic, false, $scopeStack->getCurrentScope()->isStrict, $scopeStack->getConfig(), $func);
 
 		$func->setAttribute('function-scope', $scope);
 		foreach ($func->getParams() as $param) {

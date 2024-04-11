@@ -29,8 +29,8 @@ class Scope implements PluginScopeInterface {
 		public bool $isStatic,
 		public bool $isGlobal,
 		public bool $isStrict,
+		private Config $config,
 		private ?FunctionLike $inside = null,
-		private ?Config $config = null,
 	) {
 	}
 
@@ -232,7 +232,7 @@ class Scope implements PluginScopeInterface {
 			$newVar->typeChanged = false;
 			$newVars[$var->name] = $newVar;
 		}
-		$ret = new self($this->isStatic, $this->isGlobal, $this->isStrict, $this->inside, $this->config);
+		$ret = new self($this->isStatic, $this->isGlobal, $this->isStrict, $this->config, $this->inside);
 		$ret->vars = $newVars;
 		return $ret;
 	}

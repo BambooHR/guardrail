@@ -103,7 +103,7 @@ abstract class TestSuiteSetup extends TestCase {
 
 		$analyzer = new AnalyzingPhase();
 		$analyzer->initParser($config, $output );
-		$analyzer->analyzeString($fileName, $fileData);
+		$analyzer->analyzeString($fileName, $fileData, $config);
 		return $output;
 	}
 
