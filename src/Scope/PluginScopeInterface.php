@@ -29,5 +29,4 @@ interface PluginScopeInterface
 	function getVarType($name):Name|Identifier|ComplexType|null;
 	function getVarExists(string $name):bool;
 	function getVarObject($name):?ScopeVar;
-	function getConfig(): Config;
 }

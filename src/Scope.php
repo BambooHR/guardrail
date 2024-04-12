@@ -21,4 +21,5 @@ interface Scope extends PluginScopeInterface {
 
 	public function setVarUsed($name):void;
 
+	public function getConfig(): Config;
 }

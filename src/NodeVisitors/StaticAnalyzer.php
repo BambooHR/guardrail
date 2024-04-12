@@ -217,8 +217,8 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	public function setFile($name, Config $config)
 	{
 		$this->file = $name;
-		$this->scopeStack = new ScopeStack( $this->scopeStack->getOutput(), $config );
-		$this->scopeStack->pushScope(new Scope(true, true, false, $config));
+		$this->scopeStack = new ScopeStack($this->scopeStack->getOutput(), $config);
+		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->scopeStack->setCurrentFile($name);
 	}
 
