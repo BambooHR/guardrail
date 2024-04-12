@@ -116,7 +116,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config)
 	{
 		$this->index = $index;
-		$this->scopeStack = new ScopeStack($output);
+		$this->scopeStack = new ScopeStack($output, $config);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->metricOutput = $metricOutput;
 
@@ -210,13 +210,14 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 * setFile
 	 *
 	 * @param string $name The name
+	 * @param Config $config
 	 *
 	 * @return void
 	 */
-	public function setFile($name)
+	public function setFile($name, Config $config)
 	{
 		$this->file = $name;
-		$this->scopeStack = new ScopeStack( $this->scopeStack->getOutput() );
+		$this->scopeStack = new ScopeStack($this->scopeStack->getOutput(), $config);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->scopeStack->setCurrentFile($name);
 	}

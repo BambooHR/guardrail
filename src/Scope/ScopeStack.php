@@ -2,6 +2,7 @@
 
 namespace BambooHR\Guardrail\Scope;
 
+use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope as ScopeInterface;
 use PhpParser\Node;
@@ -18,7 +19,14 @@ class ScopeStack implements ScopeInterface {
 
 	private string $currentFile;
 
-	function __construct(private OutputInterface $output) { }
+	function __construct(
+		private OutputInterface $output,
+		private Config $config,
+	) { }
+
+	function getConfig(): Config {
+		return $this->config;
+	}
 
 	function getOutput(): OutputInterface {
 		return $this->output;

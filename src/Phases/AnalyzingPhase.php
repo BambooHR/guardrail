@@ -176,7 +176,7 @@ class AnalyzingPhase {
 	function analyzeFile($file, Config $config) {
 		$name = Util::removeInitialPath($config->getBasePath(), $file);
 		$fileData = file_get_contents($file);
-		return $this->analyzeString($name,$fileData);
+		return $this->analyzeString($name, $fileData, $config);
 	}
 
 	/**
@@ -286,12 +286,13 @@ class AnalyzingPhase {
 	}
 
 	/**
-	 * @param bool|string $fileData
-	 * @param string $file
-	 * @param bool|string $name
-	 * @return void
+	 * @param string $name
+	 * @param string $fileData
+	 * @param Config $config
+	 *
+	 * @return int
 	 */
-	public function analyzeString(string $name, string $fileData): int
+	public function analyzeString(string $name, string $fileData, Config $config): int
 	{
 		try {
 			$stmts = $this->parser->parse($fileData);
@@ -304,7 +305,7 @@ class AnalyzingPhase {
 					}
 				}
 
-				$this->analyzer->setFile($name);
+				$this->analyzer->setFile($name, $config);
 				foreach ($this->traversers as $traverser) {
 					$traverser->traverse($stmts);
 				}
