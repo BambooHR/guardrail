@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Scope;
 
-use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Scope as ScopeInterface;
 use PhpParser\Node;
 use PhpParser\Node\ComplexType;

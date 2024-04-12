@@ -117,7 +117,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	{
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output, $config);
-		$this->scopeStack->pushScope(new Scope(true, true, false, $config));
+		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->metricOutput = $metricOutput;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
