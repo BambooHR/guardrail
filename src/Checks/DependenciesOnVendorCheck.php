@@ -45,7 +45,7 @@ class DependenciesOnVendorCheck extends BaseCheck {
 		if (str_contains($name, "\\") && !str_starts_with($name, "bamboohr\\")) {
 			return $this->symbolTable->getClassFile($name) ??
 				$this->symbolTable->getInterfaceFile($name) ??
-				$this->symbolTable->getFunctionFile($name);
+				$this->symbolTable->getFunctionFile($name) ?? "";
 		}
 
 		return "";
