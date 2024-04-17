@@ -32,6 +32,7 @@ use BambooHR\Guardrail\Checks\PropertyStoreCheck;
 use BambooHR\Guardrail\Checks\Psr4Check;
 use BambooHR\Guardrail\Checks\ReadOnlyPropertyCheck;
 use BambooHR\Guardrail\Checks\ReturnCheck;
+use BambooHR\Guardrail\Checks\DependenciesOnVendorCheck;
 use BambooHR\Guardrail\Checks\SplatCheck;
 use BambooHR\Guardrail\Checks\StaticCallCheck;
 use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
@@ -46,7 +47,6 @@ use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Output\OutputInterface;
-use BambooHR\Guardrail\Output\SocketOutput;
 use BambooHR\Guardrail\Scope\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -55,8 +55,6 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
-use BambooHR\Guardrail\Checks\ErrorConstants;
-use BambooHR\Guardrail\Metrics\JsonMetricOutput;
 
 /**
  * Class StaticAnalyzer
@@ -159,6 +157,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new ClassConstCheck($this->index, $output),
 			new ThrowsCheck($this->index, $output),
 			new CountableEmptinessCheck($this->index, $output),
+			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
