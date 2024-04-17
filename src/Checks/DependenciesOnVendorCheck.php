@@ -27,7 +27,7 @@ class DependenciesOnVendorCheck extends BaseCheck {
 						new Metric(
 							$fileName,
 							$node->getLine(),
-							"BambooHR.Metric.Vendors",
+							"Standard.Metrics.Vendors",
 							["class" => strval($className), "references" => $matches[1], "full_path" => strval($referenceFileName)]
 						)
 					);
@@ -42,7 +42,7 @@ class DependenciesOnVendorCheck extends BaseCheck {
 			return "";
 		}
 
-		if (str_contains($name, "\\") && !str_starts_with($name, "bamboohr\\")) {
+		if (str_contains($name, "\\")) {
 			return $this->symbolTable->getClassFile($name) ??
 				$this->symbolTable->getInterfaceFile($name) ??
 				$this->symbolTable->getFunctionFile($name) ?? "";
