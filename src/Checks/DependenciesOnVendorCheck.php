@@ -19,7 +19,6 @@ class DependenciesOnVendorCheck extends BaseCheck {
 	}
 
 	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
-		var_dump($fileName);
 		if ($node instanceof Node\Stmt\Class_) {
 			foreach ($this->getAllNames($node) as $referenceFileName) {
 				if ($referenceFileName && preg_match("@[/\\\\]?vendor[/\\\\]([-a-z_0-9]+[/\\\\][-a-z_0-9]+)@", $referenceFileName, $matches)) {
