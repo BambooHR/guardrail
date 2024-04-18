@@ -41,7 +41,11 @@ class CountsOutput extends XUnitOutput {
 		arsort( $this->errors, SORT_NUMERIC );
 		echo "-------+----------------------------------------------------------------\n";
 		foreach ($this->errors as $className => $errors) {
-			printf("%6d | %s\n", $errors, $className );
+			if ($this->config->getOutputFile()) {
+				file_put_contents($this->config->getOutputFile(), sprintf("%6d | %s\n", $errors, $className), FILE_APPEND);
+			} else {
+				printf("%6d | %s\n", $errors, $className );
+			}
 		}
 	}
 }

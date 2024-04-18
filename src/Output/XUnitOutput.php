@@ -17,7 +17,7 @@ use Webmozart\Glob\Glob;
 class XUnitOutput implements OutputInterface {
 
 	/** @var Config  */
-	private $config;
+	protected $config;
 
 	/** @var JUnitXml\TestSuiteElement[] */
 	protected $suites;

@@ -17,7 +17,11 @@ class CsvOutput extends XUnitOutput
 	}
 
 	public function renderResults() {
-		$f=fopen("php://stdout", "w");
+		if ($this->config->getOutputFile()) {
+			$f = fopen($this->config->getOutputFile(), "w");
+		} else {
+			$f = fopen("php://stdout", "w");
+		}
 		foreach($this->errors as $fileName=>$errors) {
 			usort($errors, fn($cmpa, $cmpb) => $cmpa['line'] <=> $cmpb['line'] );
 			foreach($errors as $error) {
