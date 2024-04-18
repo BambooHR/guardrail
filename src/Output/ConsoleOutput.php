@@ -46,8 +46,11 @@ class ConsoleOutput extends XUnitOutput {
 				if (!is_int($error['line'])) {
 					var_dump($error);
 				}
-
-				printf("%6d | %s\n", $error['line'], $error['message']);
+				if ($this->config->getOutputFile()) {
+					file_put_contents($this->config->getOutputFile(), sprintf("%6d | %s\n", $error['line'], $error['message']), FILE_APPEND);
+				} else {
+					printf("%6d | %s\n", $error['line'], $error['message']);
+				}
 			}
 			echo "\n";
 		}
