@@ -196,7 +196,7 @@ abstract class SymbolTable {
 			if (!$ob && strpos($className, "\\") === false) {
 				try {
 					$refl = new ReflectionMethod($className, $methodName);
-					$ob = new ReflectedClassMethod($refl);
+					$ob = new ReflectedClassMethod(new ReflectedClass($refl->getDeclaringClass()), $refl);
 				} catch (ReflectionException $exception) {
 					$ob = null;
 				}

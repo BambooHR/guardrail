@@ -39,11 +39,19 @@ class PropertyFetch implements ExpressionInterface
 		if (($node instanceof Node\Expr\PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) && $node->name instanceof Node\Identifier) {
 			/** @var Node\Expr\PropertyFetch $expr */
 			$expr = $node;
-			$class = $this->getClass($expr, $scopeStack);
 
-			$resolvedType = $this->getProperty($class, $expr->name, $table);
+			$resolvedType =null;
+			$chainedName = TypeComparer::getChainedPropertyFetchName($expr);
+			if( $chainedName && $scopeStack->getVarExists($chainedName)) {
+				$resolvedType = $scopeStack->getVarType($chainedName);
+			}
+
+			if (!$resolvedType) {
+				$class = $this->getClass($expr, $scopeStack);
+				$resolvedType = $this->getProperty($class, $expr->name, $table);
+			}
 			if ($resolvedType!==null && $node instanceof Node\Expr\NullsafePropertyFetch) {
-				$hadNullClass = TypeComparer::ifAnyType($class, fn($type)=>TypeComparer::isNamedIdentifier($type,"null"));
+				$hadNullClass = TypeComparer::ifAnyTypeIsNull($class);
 				if ($hadNullClass) {
 					// Add null to the list of potential types if the class to the left of ?-> is potentially null
 					$resolvedType = TypeComparer::getUniqueTypes( TypeComparer::identifierFromName("null"), $resolvedType);
@@ -106,11 +114,12 @@ class PropertyFetch implements ExpressionInterface
 		}
 		$scopeName = TypeComparer::getChainedPropertyFetchName($node);
 		$scope = $scopeStack->getCurrentScope();
-		if ($scopeName !== null && $scope->getVarExists($scopeName)) {
+		if ($scopeName !== null && $scope->getVarType($scopeName)) {
 			return $scope->getVarType($scopeName);
 		}
 
 		// 2. See if we have inferred what $expr is
-		return $expr->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		$inferred= $expr->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		return $inferred;
 	}
 }

@@ -102,7 +102,6 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 				if (strcasecmp(strval($call->name), "get_defined_vars()") == 0) {
 					$scopeStack->getCurrentScope()->markAllVarsUsed();
 				}
-
 			}
 
 			$function = $table->getAbstractedFunction(strval($call->name));
@@ -176,22 +175,30 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 	}
 
-	function checkForPropertyCastedCall(Node\Expr\FuncCall $func, ScopeStack $scope) {
+	function checkForPropertyCastedCall(Node\Expr\FuncCall $func, ScopeStack $scopeStack) {
 		if ($func->name instanceof Name &&
 			count($func->args) == 1 &&
-			$func->args[0]->value instanceof Node\Expr\PropertyFetch
+			(
+				$func->args[0]->value instanceof Node\Expr\PropertyFetch ||
+				$func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch
+			)
 		) {
 			$varName = NodePatterns::getVariableOrPropertyName($func->args[0]->value);
 			$type = $this->getCastedCallType(strtolower($func->name));
 
 			if (!is_null($type) && !is_null($varName)) {
 
-				if ($func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch) {
-					// TODO: confirm all elements are non-null or null-safe, then set all
-					// different lengths of chains as non-null
-					//$list = explode("->", $varName);
-				} else {
-					$this->tagScopeAsType($func, $scope, $varName, $type);
+				// The end node of the chain gets a specific type
+				$this->tagScopeAsType($func, $scopeStack, $varName, $type);
+				// If the last node in the chain is a specific type, then no node in the chain is null.
+				if (
+					$func->args[0]->value instanceof Node\Expr\PropertyFetch ||
+					$func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch
+				) {
+					$earlier = $func->args[0]->value;
+					$scope = $scopeStack->getCurrentScope()->getScopeClone();
+					TypeComparer::removeNullInferences($earlier, $scope, $earlier->getLine());
+					$func->setAttribute('assertsFalse', $scope);
 				}
 			}
 		}
@@ -225,6 +232,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 		if ($call->class instanceof Node\Name && gettype($call->name) == "string") {
 			$method = $table->getAbstractedMethod(strval($call->class), strval($call->name));
+			echo "looking up ".$call->class."::".$call->name." on ".$call->getLine()."\n";
 			if ($method) {
 				if ($pass==1) {
 					$params = $method->getParameters();

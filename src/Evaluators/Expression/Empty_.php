@@ -25,8 +25,21 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 				$varName = $this->getVarName($node->vars[0]);
 				if ($varName) {
 					$scope = $scopeStack->getCurrentScope()->getScopeClone();
-					$scope->setVarType($varName, TypeComparer::removeNullOption($scope->getVarType($varName)), $node->getLine());
+					if ($scope->getVarType($varName)) {
+						$parentType = $scope->getVarType($varName);
+					} else {
+						$parentType = $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+					}
+					if ($parentType) {
+						$parentType = TypeComparer::removeNullOption($parentType);
+						$node->setAttribute(TypeComparer::INFERRED_TYPE_ATTR, $parentType);
+					}
+					TypeComparer::removeNullOptions($node->vars[0], $scope, $node->vars[0]->getLine());
 					$node->setAttribute('assertsTrue', $scope);
+
+					$falseScope = $scopeStack->getCurrentScope()->getScopeClone();
+					$falseScope->setVarType($varName, TypeComparer::identifierFromName("null"), $node->getLine());
+					$node->setAttribute('assertsFalse', $falseScope);
 				}
 			}
 		} else if ($node instanceof Node\Expr\Empty_) {
@@ -48,13 +61,12 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 				$not->setAttribute('assertsTrue', $not->expr->getAttribute('assertsFalse'));
 			}
 			if (
-				!$not->expr->hasAttribute('assertsTrue') &&
-				!$not->expr->hasAttribute('assertsFalse') &&
-				$not->expr instanceof Node\Expr\Variable
+				!$not->hasAttribute('assertsTrue') &&
+				!$not->hasAttribute('assertsFalse') &&
+				$not->expr instanceof Node\Expr\Variable || $not->expr instanceof Node\Expr\PropertyFetch
 			) {
 				$scope = $scopeStack->getCurrentScope()->getScopeClone();
-				$varName = $this->getVarName($node->expr);
-				$scope->setVarType($varName, TypeComparer::removeNullOption($scope->getVarType($varName)), $node->getLine());
+				TypeComparer::removeNullOptions($not->expr, $scope, $not->getLine());
 				$not->setAttribute('assertsFalse', $scope);
 			}
 		}
@@ -63,10 +75,6 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 
 	private function getVarName(Node\Expr $var): ?string {
 		$varName = NodePatterns::getVariableOrPropertyName($var);
-		while (!is_null($varName) && str_contains($varName, '->')) {
-			$varName = substr($varName, 0, strrpos($varName, "->") ?: 0);
-		}
-
 		return $varName;
 	}
 }

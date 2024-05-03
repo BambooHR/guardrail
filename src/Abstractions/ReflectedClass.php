@@ -128,7 +128,7 @@ class ReflectedClass implements ClassInterface {
 		try {
 			$method = $this->refl->getMethod($name);
 			if ($method) {
-				return new ReflectedClassMethod($method);
+				return new ReflectedClassMethod($this, $method);
 			}
 		} catch (\ReflectionException $exception) {
 			return null;

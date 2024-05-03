@@ -2,6 +2,7 @@
 
 namespace BambooHR\Guardrail;
 
+use BambooHR\Guardrail\Evaluators\Expression\ArrayDimFetch;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 use PhpParser\Node\ComplexType;
@@ -136,9 +137,6 @@ class TypeComparer
 		) {
 			$left = self::getChainedPropertyFetchName($rootNode->var);
 			return $left ? ($left."->".$rootNode->name) : null;
-		} else if ($rootNode instanceof Node\Expr\ArrayDimFetch) {
-			$left = self::getChainedPropertyFetchName($rootNode->var);
-			return $left;
 		} else if ($rootNode instanceof Node\Expr\Variable && is_string($rootNode->name)) {
 			return strval($rootNode->name);
 		} else {
@@ -251,6 +249,30 @@ class TypeComparer
 
 	static function removeNullOption(ComplexType|Identifier|Name|null $a): ComplexType|Identifier|Name|null {
 		return self::removeNamedOption($a,"null");
+	}
+
+
+	static function removeNullOptions(Node\Expr\Variable|Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch|Node\Expr\ArrayDimFetch $expr, Scope\Scope $scope, int $line) {
+		while ($expr!==null && !($expr instanceof ArrayDimFetch)) {
+			$name=self::getChainedPropertyFetchName($expr);
+			$type = $scope->getVarType($name) ? $scope->getVarType($name) : $expr->getAttribute(self::INFERRED_TYPE_ATTR);
+			$newType = self::removeNullOption($type);
+			$scope->setVarType($name,  $newType, $line);
+			$expr = ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\NullsafePropertyFetch) ? $expr->var : null;
+		}
+	}
+
+	static function removeNullInferences(Node\Expr\Variable|Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch|Node\Expr\ArrayDimFetch $expr, Scope\Scope $scope, int $line) {
+		while ($expr!==null && !($expr instanceof ArrayDimFetch)) {
+			$name=self::getChainedPropertyFetchName($expr);
+			if ($name === null || $name=="this") {
+				return;
+			}
+			$type = $expr->getAttribute(self::INFERRED_TYPE_ATTR);
+			$newType = self::removeNullOption($type);
+			$scope->setVarType($name,  $newType, $line);
+			$expr = ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\NullsafePropertyFetch) ? $expr->var : null;
+		}
 	}
 
 	static function removeNamedOption(ComplexType|Identifier|Name|null $a, string $name): ComplexType|Identifier|Name|null {

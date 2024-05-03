@@ -57,7 +57,6 @@ class MethodCall extends CallCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 
@@ -80,44 +79,50 @@ class MethodCall extends CallCheck {
 					return;
 				}
 			}
-			if ($scope) {
+
+			$name=TypeComparer::getChainedPropertyFetchName($var);
+			if ($scope && $name && $scope->getVarType($name)) {
+
+				$className = $scope->getVarType($name);
+				//$scope->dump();
+				//echo "Getting var type:$name=$className\n";
+			} else {
 				$className = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			}
+			//echo "Looking up dynamic call $className->$methodName\n";
 
 			if($node instanceof Expr\NullsafeMethodCall) {
 				$className = TypeComparer::removeNullOption($className);
 			}
 
-			//echo "TYPE:".TypeComparer::typeToString($className)."\n";
+			if (TypeComparer::ifAnyTypeIsNull($className)) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
+				return;
+			}
+
 			TypeComparer::forEachType($className, function($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
-				$isNull = TypeComparer::isNamedIdentifier($classNameOb,"null");
-				if($classNameOb instanceof Node\Name || $isNull) {
-					if ($isNull) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
-						return;
-					} else {
+				if($classNameOb instanceof Node\Name) {
+					if ($classNameOb instanceof Node\Name &&
+						$classNameOb=="T" &&
+						$classNameOb->getAttribute('templates') &&
+						$classNameOb->getAttribute('templates')[0]
+					) {
 
-						if ($classNameOb instanceof Node\Name &&
-							$classNameOb=="T" &&
-							$classNameOb->getAttribute('templates') &&
-							$classNameOb->getAttribute('templates')[0]
-						) {
-
-							$classNameOb = $classNameOb->getAttribute('templates')[0];
-						}
-
-						$typeClassName = strval($classNameOb);
-						$class= $this->symbolTable->getAbstractedClass($typeClassName);
-
-						if (!$class) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
-							return;
-						}
-						//$templates= ["T"]; //$class->getTemplates()''
+						$classNameOb = $classNameOb->getAttribute('templates')[0];
 					}
+
+					$typeClassName = strval($classNameOb);
+					$class= $this->symbolTable->getAbstractedClass($typeClassName);
+
+					if (!$class) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
+						return;
+					}
+					//$templates= ["T"]; //$class->getTemplates()
+
 					$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
 					if ($method) {
-						$this->checkMethod($fileName, $node, $typeClassName, $methodName, $scope, $method, $inside);
+						$this->checkMethod($fileName, $node, $method->getClass()->getName(), $methodName, $scope, $method, $inside);
 					} else {
 						// If there is a magic __call method, then we can't know if it will handle these calls.
 						if (
@@ -155,11 +160,17 @@ class MethodCall extends CallCheck {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 		}
-
-		if ($method->getAccessLevel() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($className, $inside->namespacedName) != 0)) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt call private method " . $methodName);
-		} else if ($method->getAccessLevel() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($className, $inside->namespacedName))) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call protected method " . $methodName);
+		$callingFromClass = $inside ? strval($inside->namespacedName) : "";
+		if ($method->getAccessLevel() == "private" && ($callingFromClass==="" || strcasecmp($className, $callingFromClass) != 0)) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call private method $className->" . $methodName);
+		} else if (
+			$method->getAccessLevel() == "protected" &&
+			(
+				$callingFromClass==="" ||
+				!$this->symbolTable->isParentClassOrInterface($className, $callingFromClass)
+			)
+		) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call protected method $className->" . $methodName);
 		}
 
 		$params = $method->getParameters();

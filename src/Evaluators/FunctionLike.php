@@ -16,10 +16,11 @@ use PhpParser\Node\Stmt\ClassMethod;
 
 class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function getInstanceType(): array {
-		return [Closure::class, ArrowFunction::class, Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
+		return [Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
 	}
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
+		// This picks up for functions and methods, but not closures. Closures are handled in the Expression\FunctionLike class.
 		self::handleEnterFunctionLike($node, $scopeStack);
 	}
 
