@@ -25,32 +25,36 @@ class CommandLineRunner {
 		echo "
 Usage: php guardrail.phar [-a] [-i] [-n #] [--format xunit|text] [-o output_file_name] [-p #/#] [--timings] config_file
 
-where: -p #/#                 = Define the number of partitions and the current partition.
+where: -p #/#                               = Define the number of partitions and the current partition.
                                 Use for multiple hosts. Example: -p 1/4
                                 
-       --format {format}      = Use \"xunit\" format or a more console friendly \"text\" format                          
+       --format {format}                    = Use \"xunit\" format or a more console friendly \"text\" format                          
 
-       -n #                   = number of child process to run.
-                                Use for multiple processes on a single host.
+       -n #                                 = number of child process to run.
+                                              Use for multiple processes on a single host.
 
-       -a                     = run the \"analyze\" operation
+       -a                                   = run the \"analyze\" operation
 
-       -i                     = run the \"index\" operation.
-                                Defaults to yes if using in memory index.       
+       -i                                   = run the \"index\" operation.
+                                              Defaults to yes if using in memory index.       
         
-       -j                     = prefer json index
+       -j                                   = prefer json index
 
-       -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
+       -m                                   = prefer in memory index (only available when -n=1 and -p=1/1)
 
-       -o output_file_name    = Output results to the specified filename
+       -o output_file_name                  = Output results to the specified filename
 
-       -v                     = Increase verbosity level.  Can be used once or twice.
+       -mo metric_output_file_name          = Output results to the specified filename
 
-       -h  or --help          = Ignore all other options and show this page.
+       -so symbol_table_output_file_name    = Output results to the specified filename
+
+       -v                                   = Increase verbosity level.  Can be used once or twice.
+
+       -h  or --help                        = Ignore all other options and show this page.
        
-       -l  or --list          = Ignore all other options and list standard test names.
+       -l  or --list                        = Ignore all other options and list standard test names.
 
-       --timings              = Output a summary of how long each check ran for.
+       --timings                            = Output a summary of how long each check ran for.
 ";
 	}
 
