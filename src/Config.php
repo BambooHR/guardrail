@@ -39,7 +39,7 @@ class Config {
 	protected $config = [];
 
 	/** @var string */
-	private $symbolTableFile = "symbol_table.json";
+	private $symbolTableFile = "symbol_table";
 
 	/** @var int The number of partitions */
 	private $partitions = 1;
