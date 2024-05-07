@@ -44,9 +44,9 @@ where: -p #/#                               = Define the number of partitions an
 
        -o output_file_name                  = Output results to the specified filename
 
-       -mo metric_output_file_name          = Output results to the specified filename
+       --metric-output                      = Output results to the specified filename
 
-       -so symbol_table_output_file_name    = Output results to the specified filename
+       --symbol-table-output                = Output results to the specified filename
 
        -v                                   = Increase verbosity level.  Can be used once or twice.
 
