@@ -359,13 +359,13 @@ class Config {
 					}
 					$this->outputFile = $argv[++$argCount];
 					break;
-				case '-mo':
+				case '--metric-output':
 					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException;
 					}
 					$this->metricOutputFile = $argv[++$argCount];
 					break;
-				case '-so':
+				case '--symbol-table-output':
 					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException;
 					}
