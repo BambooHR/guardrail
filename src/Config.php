@@ -39,7 +39,7 @@ class Config {
 	protected $config = [];
 
 	/** @var string */
-	private $symbolTableFile = "symbol_table.json";
+	private $symbolTableFile = "symbol_table";
 
 	/** @var int The number of partitions */
 	private $partitions = 1;
@@ -51,12 +51,6 @@ class Config {
 
 	/** @var string */
 	private $outputFile = "";
-
-	/** @var string */
-	private $metricOutputFile = "";
-
-	/** @var string */
-	private $symbolTableOutputFile = "";
 
 	/** @var int MEMORY_SYMBOL_TABLE | SQLITE_SYMBOL_TABLE */
 	private $preferredTable = self::MEMORY_SYMBOL_TABLE;
@@ -359,18 +353,6 @@ class Config {
 					}
 					$this->outputFile = $argv[++$argCount];
 					break;
-				case '-mo':
-					if ($argCount + 1 >= count($argv)) {
-						throw new InvalidConfigException;
-					}
-					$this->metricOutputFile = $argv[++$argCount];
-					break;
-				case '-so':
-					if ($argCount + 1 >= count($argv)) {
-						throw new InvalidConfigException;
-					}
-					$this->symbolTableOutputFile = $argv[++$argCount];
-					break;
 				case '--diff':
 					if ($argCount + 1 >= count($argv)) {
 						throw new InvalidConfigException();
@@ -520,10 +502,6 @@ class Config {
 	 * @return string
 	 */
 	private function getSymbolTableFile() {
-		if (!empty($this->symbolTableOutputFile)) {
-			return $this->symbolTableOutputFile;
-		}
-
 		return $this->basePath . "/" . $this->symbolTableFile . ".json";
 	}
 
@@ -573,6 +551,6 @@ class Config {
 	}
 
 	public function getMetricOutputFile() {
-		return $this->metricOutputFile ?: "metrics.json";
+		return "metrics.json";
 	}
 }
