@@ -275,37 +275,35 @@ Note: Command line usage will probably change significantly in the v1.0 release.
 <pre>
 Usage: php -d memory_limit=500M vendor/bin/guardrail.php [-a] [-i] [-n #] [-o output_file_name] [-p #/#] config_file
 
-where: -p #/#                               = Define the number of partitions and the current partition.
-                                              Use for multiple hosts. Example: -p 1/4
+where: -p #/#                 = Define the number of partitions and the current partition.
+                                Use for multiple hosts. Example: -p 1/4
 
-       -n #                                 = number of child process to run.
-                                              Use for multiple processes on a single host.  A good rule of thumb is 1 process per CPU core.
+       -n #                   = number of child process to run.
+                                Use for multiple processes on a single host.  A good rule of thumb is 1 process per CPU core.
 
-       -a                                   = run the "analyze" operation
+       -a                     = run the "analyze" operation
 
-       -i                                   = run the "index" operation.
-                                              Defaults to yes if using in memory index.
+       -i                     = run the "index" operation.
+                                Defaults to yes if using in memory index.
                                 
-       --diff patch_file                    = Allows you to limit results to only those errors occuring on
-                                              lines in a particular patch set.  Requires unified diff format taken
-                                              from the root directory of the project.  Must set emit { "when": "new" }
-                                              for each error that you want to emit in this fashion.                                                                     
+       --diff patch_file      = Allows you to limit results to only those errors occuring on
+                                lines in a particular patch set.  Requires unified diff format taken
+                                from the root directory of the project.  Must set emit { "when": "new" }
+                                for each error that you want to emit in this fashion.                                                                     
                                 
-       --format format                      = Select choose between "xunit", "text", or "counts"                                 
+       --format format        = Select choose between "xunit", "text", or "counts"                                 
 
-       -s                                   = prefer sqlite index
+       -s                     = prefer sqlite index
 
-       -m                                   = prefer in memory index (only available when -n=1 and -p=1/1)
+       -m                     = prefer in memory index (only available when -n=1 and -p=1/1)
 
-       -o output_file_name                  = Output results in junit format to the specified filename
+       -o output_file_name    = Output results in junit format to the specified filename
        
-       -mo metric_output_file_name          = Output results to the specified filename
+       
 
-       -so symbol_table_output_file_name    = Output results to the specified filename
+       -v                     = Increase verbosity level.  Can be used once or twice.
 
-       -v                                   = Increase verbosity level.  Can be used once or twice.
-
-       -h  or --help                        = Ignore all other options and show this page.
+       -h  or --help          = Ignore all other options and show this page.
 
 
 </pre>
