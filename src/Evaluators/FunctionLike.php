@@ -16,11 +16,10 @@ use PhpParser\Node\Stmt\ClassMethod;
 
 class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function getInstanceType(): array {
-		return [Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
+		return [Closure::class, ArrowFunction::class, Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
 	}
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-		// This picks up for functions and methods, but not closures. Closures are handled in the Expression\FunctionLike class.
 		self::handleEnterFunctionLike($node, $scopeStack);
 	}
 
@@ -48,9 +47,6 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 			}
 			$scope->setVarWritten($param->var->name, $func->getLine());
 			$scope->setVarUsed(strval($param->var->name)); // It's ok to leave a parameter unused, so we just mark it used.
-		}
-		if ($func instanceof ClassMethod && !$isStatic  && $scopeStack->getCurrentClass()) {
-			$scope->setVarType("this",$scopeStack->getCurrentClass()->namespacedName, $func->getLine());
 		}
 		if ($func instanceof Node\Expr\ArrowFunction) {
 			// Scan the arrow function for all variables and auto import them into the scope.

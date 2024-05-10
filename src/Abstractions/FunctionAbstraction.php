@@ -12,7 +12,6 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Param;
-use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Function_ as AstFunction;
 
 /**
@@ -147,7 +146,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 				return true;
 			}
 		}
-		if ($this->function instanceof Function_ || $this->function instanceof \PhpParser\Node\Stmt\ClassMethod) {
+		if ($this->function instanceof FunctionAbstraction || $this->function instanceof \PhpParser\Node\Stmt\ClassMethod) {
 			return VariadicCheckVisitor::isVariadic($this->function->getStmts());
 		}
 		return false;

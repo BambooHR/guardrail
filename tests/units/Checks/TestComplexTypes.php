@@ -42,13 +42,4 @@ class TestComplexTypes extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed change Type Inference to non null" );
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_NULL_DEREFERENCE), "Failed change Type Inference to non null" );
 	}
-
-	public function testStringArrayUnionIsArray() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc',[ ErrorConstants::TYPE_SIGNATURE_TYPE]), "Failed change Type Inference from string|array to string" );
-	}
-
-
-	public function testChainedPropertyAttributes() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.6.inc',[ ErrorConstants::TYPE_SIGNATURE_TYPE]), "Failed change Type Inference from string|array to string" );
-	}
 }

@@ -100,11 +100,8 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 
 		$instance = $this->findInstance(get_class($node));
-		if ($instance instanceof ExpressionInterface) {
-			$inferredType = $instance->onExit($node, $table, $scopeStack);
-			$node->setAttribute(TypeComparer::INFERRED_TYPE_ATTR, $inferredType);
-		}
-
+		$inferredType = $instance->onExit($node, $table, $scopeStack);
+		$node->setAttribute(TypeComparer::INFERRED_TYPE_ATTR, $inferredType);
 		if ($node->hasAttribute('push-false-scope-on-leave')) {
 			if ($node->hasAttribute('assertsFalse')) {
 				$scopeStack->pushScope($node->getAttribute('assertsFalse'));
@@ -138,7 +135,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 	}
 
-	function findInstance($class):?ExpressionInterface {
+	function findInstance($class):ExpressionInterface {
 		static $cache = [];
 		if (isset($cache[$class])) {
 			return $cache[$class];
@@ -161,10 +158,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			}
 		}
 
-		if (!is_a($class,Node\Expr\ArrayItem::class, true) &&
-		!is_a($class,Node\Expr\ClosureUse::class, true)) {
-			throw new \InvalidArgumentException("Unknown expression $class");
-		}
-		return null;
+
+		throw new \InvalidArgumentException("Unknown expression $class");
 	}
 }

@@ -5,7 +5,6 @@ namespace BambooHR\Guardrail\Evaluators\Expression;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
 use BambooHR\Guardrail\Evaluators\OnEnterEvaluatorInterface;
-use BambooHR\Guardrail\Evaluators\OnExitEvaluatorInterface;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
@@ -30,8 +29,6 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 		$assign = $node;
 		$valueType=$assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR );
 		$this->setValueType($assign->var, $valueType, $scopeStack);
-	//	echo "Assigning value type: ".($assign->var->name)."$valueType\n";
-	//	$scopeStack->dump();
 		return $valueType;
 	}
 

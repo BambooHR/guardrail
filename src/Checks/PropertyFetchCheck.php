@@ -43,25 +43,17 @@ class PropertyFetchCheck extends BaseCheck {
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
 		if ($node instanceof PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) {
 
-			$chainedName = NodePatterns::getVariableOrPropertyName($node);
-
-			if (!$chainedName) {
+			if (!$node->name instanceof Node\Identifier) {
 				// Variable property name.  Yuck!
 				return;
 			}
 
-			$chainedParent = substr($chainedName, 0, strrpos($chainedName, "->"));
-
-			if ($scope->getVarType($chainedParent)) {
-				$type = $scope->getVarType($chainedParent);
-			} else {
-				$type = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			}
+			$type = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 
 			if (!$node instanceof Node\Expr\NullsafePropertyFetch) {
 				if (TypeComparer::ifAnyTypeIsNull($type) && !NodePatterns::parentIgnoresNulls($scope->getParentNodes(), $node)) {
-					$variable = TypeComparer::getChainedPropertyFetchName($node) ?? "";
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . ($variable!="" ? " \$$variable" : ""));
+					$variable = ($node->var instanceof Node\Expr\Variable && is_string($node->var->name)) ? ' $' . $node->var->name : '';
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . $variable);
 				}
 			}
 
@@ -125,24 +117,12 @@ class PropertyFetchCheck extends BaseCheck {
 			// It's ok to access a protected or private property if there is a __get method.
 			$hasGet = Util::findAbstractedMethod($type, "__get", $this->symbolTable);
 			if (!$hasGet) {
-				$callingClass = $inside ? strval($inside->namespacedName) : "";
-				if ($access === "private" && strcasecmp($declaredIn, $callingClass) !== 0) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property $declaredIn->" . $node->name. " from ".
-											  (!$inside ? "outside a class" : $callingClass ));
+				if ($access == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($declaredIn, $inside->namespacedName) != 0)) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property " . $node->name);
 
-				} else if (
-					$access == "protected" &&
-					(
-						$callingClass === ""
-						||
-						(
-							Util::findAbstractedMethod($type, "__get", $this->symbolTable) ||
-							!$this->symbolTable->isParentClassOrInterface($declaredIn, $callingClass)
-						)
-					)
-				) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property $declaredIn->" . $node->name . " from ".
-											  (!$inside ? "outside a class" : $callingClass ));
+				} else if ($access == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($declaredIn, $inside->namespacedName))) {
+
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property " . $node->name);
 				}
 			}
 		}

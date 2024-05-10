@@ -35,24 +35,17 @@ class ThrowsCheck extends BaseCheck {
 			$type=$node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if ($type) {
 				TypeComparer::forEachType($type, function($typeNode) use ($node,$scope, $fileName) {
-					if ($typeNode instanceof Node\IntersectionType) {
-						$methods = [];
-						foreach($typeNode->types as $subType) {
-							$method[] = Util::findAbstractedMethod($subType, $node->name, $this->symbolTable );
-						}
-					} else {
-						$methods = [Util::findAbstractedMethod(strval($typeNode), $node->name, $this->symbolTable)];
-					}
-					foreach($methods as $method) {
-						if ($method) {
-							$throws = $method->getThrowsList();
-							foreach ($throws as $throw) {
-								if (!$this->parentCatches($scope->getParentNodes(), $throw) &&
-									!$this->isDocumentedThrow($scope->getInsideFunction(), $throw)) {
-									$this->emitError($fileName, $node, ErrorConstants::TYPE_UNDOCUMENTED_EXCEPTION, "Undocumented exception ($throw) thrown by " . TypeComparer::typeToString($typeNode) . "::" . $node->name);
-								}
+					$method = Util::findAbstractedMethod($typeNode, $node->name, $this->symbolTable );
+					if ($method) {
+						$throws=$method->getThrowsList();
+						foreach($throws as $throw) {
+							if (!$this->parentCatches($scope->getParentNodes(), $throw) &&
+								!$this->isDocumentedThrow($scope->getInsideFunction(), $throw))
+							{
+								$this->emitError($fileName, $node, ErrorConstants::TYPE_UNDOCUMENTED_EXCEPTION,"Undocumented exception ($throw) thrown by ".$typeNode."::".$node->name);
 							}
 						}
+
 					}
 				});
 			}
