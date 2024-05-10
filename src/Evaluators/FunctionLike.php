@@ -49,6 +49,9 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 			$scope->setVarWritten($param->var->name, $func->getLine());
 			$scope->setVarUsed(strval($param->var->name)); // It's ok to leave a parameter unused, so we just mark it used.
 		}
+		if ($func instanceof ClassMethod && !$isStatic  && $scopeStack->getCurrentClass()) {
+			$scope->setVarType("this",$scopeStack->getCurrentClass()->namespacedName, $func->getLine());
+		}
 		if ($func instanceof Node\Expr\ArrowFunction) {
 			// Scan the arrow function for all variables and auto import them into the scope.
 			$variables = self::getAllReferencedVariables([$func->expr]);

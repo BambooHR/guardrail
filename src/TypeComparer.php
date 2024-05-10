@@ -62,6 +62,30 @@ class TypeComparer
 		return false;
 	}
 
+
+	/**
+	 * Given a chain of $Variable->PropertyFetch...->Identifier, produce a name
+	 * Does not produce a name if there are any Array lookups in the chain or if the end isn't a string identifier.
+	 *
+	 */
+	public static function getChainedElements(?Node $expr): array {
+		while ($expr !== null) {
+			if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
+				$entries[] = strval($expr->name);
+				return array_reverse($entries);
+			} else if (
+				($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\NullsafePropertyFetch) &&
+				$expr->name instanceof Identifier
+			) {
+				$entries[] = strval($expr->name);
+				$expr = $expr->var;
+			} else {
+				break;
+			}
+		}
+		return [];
+	}
+
 	function areSimpleTypesCompatible(Name|Identifier|null $target, Name|Identifier|UnionType|null $value, bool $strict): bool {
 		if($target == null){
 			return true;
@@ -253,25 +277,43 @@ class TypeComparer
 
 
 	static function removeNullOptions(Node\Expr\Variable|Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch|Node\Expr\ArrayDimFetch $expr, Scope\Scope $scope, int $line) {
+		$first=$expr;
 		while ($expr!==null && !($expr instanceof ArrayDimFetch)) {
 			$name=self::getChainedPropertyFetchName($expr);
+			if ($name == "") {
+				return;
+			}
 			$type = $scope->getVarType($name) ? $scope->getVarType($name) : $expr->getAttribute(self::INFERRED_TYPE_ATTR);
 			$newType = self::removeNullOption($type);
 			$scope->setVarType($name,  $newType, $line);
+			if ($expr !== $first) {
+				$scope->setVarUsed($name);
+			}
 			$expr = ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\NullsafePropertyFetch) ? $expr->var : null;
 		}
 	}
 
-	static function removeNullInferences(Node\Expr\Variable|Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch|Node\Expr\ArrayDimFetch $expr, Scope\Scope $scope, int $line) {
-		while ($expr!==null && !($expr instanceof ArrayDimFetch)) {
-			$name=self::getChainedPropertyFetchName($expr);
-			if ($name === null || $name=="this") {
-				return;
+	static function removeNullInferences(Node\Expr\Variable|Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch|Node\Expr\ArrayDimFetch $expr, SymbolTable $symbolTable, Scope\Scope $scope, int $line) {
+		$entries = self::getChainedElements($expr);
+		$var = array_shift($entries);
+		$classType  = self::removeNullOption($scope->getVarType($var));
+		$scope->setVarType($var, $classType, $line);
+		foreach($entries as $name) {
+			$propName = $var . "->" . $name;
+			$classType = $scope->getVarType($propName);
+			if (!$classType) {
+				$classType = $scope->getVarType($var);
+				$types = [];
+				TypeComparer::forEachAnyEveryType($classType, function ($type) use (&$types, $name, $symbolTable) {
+					$property = Util::findAbstractedProperty(strval($type), $name, $symbolTable);
+					if ($property?->getType()) {
+						$types[] = $property->getType();
+					}
+				});
+				$classType = self::removeNullOption(self::getUniqueTypes(...$types));
 			}
-			$type = $expr->getAttribute(self::INFERRED_TYPE_ATTR);
-			$newType = self::removeNullOption($type);
-			$scope->setVarType($name,  $newType, $line);
-			$expr = ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\NullsafePropertyFetch) ? $expr->var : null;
+			$scope->setVarType($propName,  $classType, $line);
+			$var = $propName;
 		}
 	}
 
@@ -282,7 +324,8 @@ class TypeComparer
 				$ret[]=$el;
 			}
 		});
-		return self::getUniqueTypes(...$ret);
+		$ret2=self::getUniqueTypes(...$ret);
+		return $ret2;
 	}
 
 	static function ifEveryType(ComplexType|Identifier|Name $node, callable $fn) {
@@ -329,7 +372,7 @@ class TypeComparer
 			call_user_func($fn, TypeComparer::identifierFromName("null"));
 			$node = $node->type;
 		}
-		if ($node instanceof Name || $node instanceof Identifier) {
+		if ($node instanceof Name || $node instanceof Identifier || $node instanceof IntersectionType) {
 			call_user_func($fn, $node);
 		} else if($node instanceof UnionType) {
 			foreach ($node->types as $type) {
@@ -389,7 +432,7 @@ class TypeComparer
 				} else if (TypeComparer::isNamedIdentifier($typeA,"mixed") && $unknown != 1) {
 					$unknown = 2;
 				} else {
-					$used[strval($typeA)] = $typeA;
+					$used[TypeComparer::typeToString($typeA)] = $typeA;
 				}
 			});
 		}

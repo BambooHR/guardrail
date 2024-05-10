@@ -26,5 +26,15 @@ class TestNullablePropertiesCheck extends TestSuiteSetup {
 		$result = $this->runAnalyzerOnFile('.3.inc', [ ErrorConstants::TYPE_NULL_DEREFERENCE, ErrorConstants::TYPE_NULL_METHOD_CALL]);
 		$this->assertEquals(0, $result);
 	}
+	public function testBranchedNullAssertion() {
+		$result = $this->runAnalyzerOnFile('.4.inc', [ ErrorConstants::TYPE_NULL_DEREFERENCE, ErrorConstants::TYPE_NULL_METHOD_CALL]);
+		$this->assertEquals(0, $result);
+	}
+
+
+	public function testNullablePropertyWhenNotNull() {
+		$result = $this->runAnalyzerOnFile('.5.inc', [ ErrorConstants::TYPE_NULL_DEREFERENCE, ErrorConstants::TYPE_NULL_METHOD_CALL]);
+		$this->assertEquals(0, $result);
+	}
 }
 
