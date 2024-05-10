@@ -234,7 +234,6 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 		if ($call->class instanceof Node\Name && gettype($call->name) == "string") {
 			$method = $table->getAbstractedMethod(strval($call->class), strval($call->name));
-			echo "looking up ".$call->class."::".$call->name." on ".$call->getLine()."\n";
 			if ($method) {
 				if ($pass==1) {
 					$params = $method->getParameters();
