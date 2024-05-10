@@ -25,20 +25,13 @@ class ClassMethod implements MethodInterface {
 	 */
 	private $method;
 
-	private ClassInterface $class;
-
 	/**
 	 * ClassMethod constructor.
 	 *
 	 * @param ParserClassMethod $method Instance of ClassMethod
 	 */
-	public function __construct(ClassInterface $class, ParserClassMethod $method) {
-		$this->class = $class;
+	public function __construct(ParserClassMethod $method) {
 		$this->method = $method;
-	}
-
-	public function getClass():ClassInterface {
-		return $this->class;
 	}
 
 	public function getComplexReturnType() {
