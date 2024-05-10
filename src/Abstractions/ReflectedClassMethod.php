@@ -22,13 +22,16 @@ class ReflectedClassMethod implements MethodInterface {
 	 */
 	private $refl;
 
+	private ClassInterface $class;
+
 	/**
 	 * ReflectedClassMethod constructor.
 	 *
 	 * @param \ReflectionMethod $refl Instance of ReflectionMethod
 	 */
-	public function __construct(\ReflectionMethod $refl) {
+	public function __construct(ClassInterface $class, \ReflectionMethod $refl) {
 		$this->refl = $refl;
+		$this->class = $class;
 	}
 
 	/**
@@ -38,6 +41,10 @@ class ReflectedClassMethod implements MethodInterface {
 	 */
 	public function isStatic() {
 		return $this->refl->isStatic();
+	}
+
+	function getClass():ClassInterface {
+		return $this->class;
 	}
 
 	/**

@@ -1,5 +1,7 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use PhpParser\Node;
+
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
  * Apache 2.0 License
@@ -13,7 +15,7 @@
 class Property {
 
 	/**
-	 * @var string
+	 * @var \PhpParser\Node
 	 */
 	private $type;
 
@@ -74,7 +76,7 @@ class Property {
 	/**
 	 * getType
 	 *
-	 * @return string
+	 * @return Node
 	 */
 	public function getType() {
 		return $this->type;
