@@ -80,29 +80,26 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 			return TypeComparer::identifierFromName("callable");
 		}
 		if ($call->name instanceof Node\Name) {
-			if ($pass==1) {
+			if ($pass==2) {
 				if (strcasecmp($call->name, "assert") == 0 &&
 					count($call->args) == 1
 				) {
 					$var = $call->args[0]->value;
-					if ($var instanceof Instanceof_) {
-						$expr = $var->expr;
-						if ($expr instanceof Variable) {
-							$class = $var->class;
-							if ($class instanceof Node\Name) {
-								$scopeStack->getCurrentScope()->setVarType($expr->name, $class, $var->getLine());
-							}
-						}
+					if ($var instanceof Instanceof_ &&
+						$var->expr instanceof Variable &&
+						is_string($var->expr->name) &&
+						$var->class instanceof Node\Name
+					) {
+						$scopeStack->getCurrentScope()->setVarType($var->expr->name, $var->class, $var->getLine());
 					}
 				}
 				$this->checkForVariableCastedCall($call, $scopeStack);
-				$this->checkForPropertyCastedCall($call, $scopeStack);
+				$this->checkForPropertyCastedCall($call, $table, $scopeStack);
 
 				// Special case for "get_defined_vars()".  Mark everything used.
 				if (strcasecmp(strval($call->name), "get_defined_vars()") == 0) {
 					$scopeStack->getCurrentScope()->markAllVarsUsed();
 				}
-
 			}
 
 			$function = $table->getAbstractedFunction(strval($call->name));
@@ -176,22 +173,31 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 	}
 
-	function checkForPropertyCastedCall(Node\Expr\FuncCall $func, ScopeStack $scope) {
+	function checkForPropertyCastedCall(Node\Expr\FuncCall $func, SymbolTable $table, ScopeStack $scopeStack) {
 		if ($func->name instanceof Name &&
 			count($func->args) == 1 &&
-			$func->args[0]->value instanceof Node\Expr\PropertyFetch
+			(
+				$func->args[0]->value instanceof Node\Expr\PropertyFetch ||
+				$func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch
+			)
 		) {
 			$varName = NodePatterns::getVariableOrPropertyName($func->args[0]->value);
 			$type = $this->getCastedCallType(strtolower($func->name));
 
 			if (!is_null($type) && !is_null($varName)) {
 
-				if ($func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch) {
-					// TODO: confirm all elements are non-null or null-safe, then set all
-					// different lengths of chains as non-null
-					//$list = explode("->", $varName);
-				} else {
-					$this->tagScopeAsType($func, $scope, $varName, $type);
+				// The end node of the chain gets a specific type
+
+				// If the last node in the chain is a specific type, then no node in the chain is null.
+				if (
+					$func->args[0]->value instanceof Node\Expr\PropertyFetch ||
+					$func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch
+				) {
+					$earlier = $func->args[0]->value;
+					$this->tagScopeAsType($func, $scopeStack, $varName, $type);
+					$falseScope = $func->getAttribute('assertsFalse');
+					TypeComparer::removeNullInferences($earlier, $table , $falseScope, $earlier->getLine());
+					$func->setAttribute('assertsFalse', $falseScope);
 				}
 			}
 		}
@@ -213,8 +219,11 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	function tagScopeAsType(Node $node, ScopeStack $parent, string $name, string $type) {
 		$trueScope = $parent->getCurrentScope()->getScopeClone();
 		$falseScope = $trueScope->getScopeClone();
-		$trueScope->setVarType($name, TypeComparer::nameFromName($type), $node->getLine());
-		$falseScope->setVarType($name, TypeComparer::removeNamedOption($falseScope->getVarType($name), $type), $node->getLine());
+		/** @var Node\Expr\CallLike $node */
+
+		$trueScope->setVarType($name, TypeComparer::identifierFromName($type), $node->getLine());
+		$falseVarType = $falseScope->getVarType($name)??$node->args[0]->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		$falseScope->setVarType($name, TypeComparer::removeNamedOption($falseVarType, $type), $node->getLine());
 		$node->setAttribute('assertsTrue', $trueScope);
 		$node->setAttribute('assertsFalse', $falseScope);
 	}

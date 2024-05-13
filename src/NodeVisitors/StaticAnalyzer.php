@@ -45,6 +45,7 @@ use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
+use BambooHR\Guardrail\Evaluators\ExpressionInterface;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope\Scope;
@@ -91,7 +92,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 
 	const EVALUATORS = [
 		Ev\Catch_::class,
-		Ev\Class_::class,
 		Ev\Declare_::class,
 		Ev\Expression::class,
 		Ev\ExpressionStatement::class,
@@ -230,17 +230,12 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 */
 	public function enterNode(Node $node)
 	{
-		$this->scopeStack->pushParentNode($node);
-		if ($node instanceof Node\Param || $node instanceof Node\Expr\ClosureUse) {
-			return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
-		}
-
-		if ($node instanceof Node\Identifier || $node instanceof Node\Name || $node instanceof Node\NullableType || $node instanceof Node\Expr\ArrayItem) {
-			return null;
-		}
-
 		if ($node instanceof Trait_) {
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
+		}
+
+		if ($node instanceof Node\Stmt\ClassLike) {
+			$this->scopeStack->pushClass($node);
 		}
 
 		if (Config::shouldUseDocBlockForInlineVars() && !($node instanceof FunctionLike)) {
@@ -261,6 +256,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		if ($evaluator instanceof Ev\OnEnterEvaluatorInterface) {
 			$evaluator->onEnter($node, $this->index, $this->scopeStack);
 		}
+		$this->scopeStack->pushParentNode($node);
 		return null;
 	}
 
@@ -273,36 +269,27 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 */
 	public function leaveNode(Node $node)
 	{
+		if ($node instanceof Trait_) {
+			return;
+		}
+
 		$this->scopeStack->popParentNode();
-		if ($node instanceof Node\Expr\ClosureUse || $node instanceof Trait_) {
-			return;
-		}
-		if ($node instanceof Node\Identifier || $node instanceof Node\Name || $node instanceof Node\NullableType || $node instanceof Node\Expr\ArrayItem) {
-			return;
-		}
 
 		$evaluator = $this->getEvaluator($node);
 		if ($evaluator instanceof Ev\OnExitEvaluatorInterface) {
 			$evaluator->onExit($node, $this->index, $this->scopeStack);
 		}
 
-		// By the time the checks run, we've evaluated all the child expressions and tagged them with types.
-		$class = get_class($node);
-		if (isset($this->checks[$class])) {
-			$last = microtime(true);
-			foreach ($this->checks[$class] as $check) {
-				$start = $last;
-				$check->run($this->file, $node, $this->scopeStack->getCurrentClass(), $this->scopeStack);
-				$last = microtime(true);
-				$name = get_class($check);
-				$this->timings[$name] = ($this->timings[$name] ?? 0) + ($last - $start);
-				$this->counts[$name] = ($this->counts[$name] ?? 0) + 1;
-			}
+		$this->runChecks($node);
+
+		if ($node instanceof Node\Stmt\ClassLike) {
+			$this->scopeStack->popClass();
 		}
 
 		if ($node instanceof FunctionLike) {
 			$this->updateFunctionEmit($node, $this->scopeStack, "pop");
 		}
+
 	}
 
 	/**
@@ -333,6 +320,28 @@ class StaticAnalyzer extends NodeVisitorAbstract
 						}
 					}
 				}
+			}
+		}
+	}
+
+	/**
+	 * @param Node $node
+	 * @return void
+	 */
+	private function runChecks(Node $node): void {
+		$inside = $this->scopeStack->getCurrentClass();
+
+		// By the time the checks run, we've evaluated all the child expressions and tagged them with types.
+		$class = get_class($node);
+		if (isset($this->checks[$class])) {
+			$last = microtime(true);
+			foreach ($this->checks[$class] as $check) {
+				$start = $last;
+				$check->run($this->file, $node, $inside, $this->scopeStack);
+				$last = microtime(true);
+				$name = get_class($check);
+				$this->timings[$name] = ($this->timings[$name] ?? 0) + ($last - $start);
+				$this->counts[$name] = ($this->counts[$name] ?? 0) + 1;
 			}
 		}
 	}

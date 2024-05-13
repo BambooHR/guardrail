@@ -20,7 +20,11 @@ class NodePatterns
 
 	public static function parentIgnoresNulls(array $parentNodes, Node $child):bool {
 		foreach($parentNodes as $node) {
-			if ($node instanceof Node\Expr\Isset_ || $node instanceof Node\Expr\Empty_ || ($node instanceof Node\Expr\BinaryOp\Coalesce && $node->left === $child)) {
+			if ($node instanceof Node\Expr\Isset_ ||
+				$node instanceof Node\Expr\Empty_ ||
+				($node instanceof Node\Expr\BinaryOp\Coalesce && $node->left === $child) ||
+				($node instanceof Node\Expr\Assign && $node->var===$child)
+			) {
 				return true;
 			}
 		}

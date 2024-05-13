@@ -39,11 +39,19 @@ class PropertyFetch implements ExpressionInterface
 		if (($node instanceof Node\Expr\PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) && $node->name instanceof Node\Identifier) {
 			/** @var Node\Expr\PropertyFetch $expr */
 			$expr = $node;
-			$class = $this->getClass($expr, $scopeStack);
 
-			$resolvedType = $this->getProperty($class, $expr->name, $table);
-			if ($resolvedType!==null && $node instanceof Node\Expr\NullsafePropertyFetch) {
-				$hadNullClass = TypeComparer::ifAnyType($class, fn($type)=>TypeComparer::isNamedIdentifier($type,"null"));
+			$resolvedType =null;
+			$chainedName = TypeComparer::getChainedPropertyFetchName($expr);
+			if( $chainedName && $scopeStack->getVarType($chainedName)) {
+				$resolvedType = $scopeStack->getVarType($chainedName);
+			}
+
+			$class = $this->getClass($expr, $scopeStack);
+			if (!$resolvedType) {
+				$resolvedType = $this->getProperty($class, $expr->name, $table);
+			}
+			if ($class!==null && $resolvedType!==null && $node instanceof Node\Expr\NullsafePropertyFetch) {
+				$hadNullClass = TypeComparer::ifAnyTypeIsNull($class);
 				if ($hadNullClass) {
 					// Add null to the list of potential types if the class to the left of ?-> is potentially null
 					$resolvedType = TypeComparer::getUniqueTypes( TypeComparer::identifierFromName("null"), $resolvedType);
@@ -96,21 +104,14 @@ class PropertyFetch implements ExpressionInterface
 	public function getClass(Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch $expr, ScopeStack $scopeStack): mixed
 	{
 		// 1. See if our scope has an inferred symbolic type.  ie: "$foo->bar->baz=int"
-		// This is the case if we have local variables or if we have done some
-		// assertions: ie: if($foo instanceof) { }
-
-		// Figure out what we know about this particular type
-		$node = $expr->var;
-		if (isset($expr->var->name) && $expr->var->name == "this") {
-			$node = $expr;
-		}
-		$scopeName = TypeComparer::getChainedPropertyFetchName($node);
+		$scopeName = TypeComparer::getChainedPropertyFetchName($expr->var);
 		$scope = $scopeStack->getCurrentScope();
-		if ($scopeName !== null && $scope->getVarExists($scopeName)) {
+		if ($scopeName !== null && $scope->getVarType($scopeName)) {
 			return $scope->getVarType($scopeName);
 		}
 
 		// 2. See if we have inferred what $expr is
-		return $expr->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		$inferred= $expr->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		return $inferred;
 	}
 }

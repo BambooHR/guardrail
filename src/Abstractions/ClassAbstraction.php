@@ -136,7 +136,7 @@ class ClassAbstraction implements ClassInterface {
 	 */
 	public function getMethod($name) {
 		$method = $this->class->getMethod($name);
-		return $method ? new ClassMethod($method) : null;
+		return $method ? new ClassMethod($this,$method) : null;
 	}
 
 	/**

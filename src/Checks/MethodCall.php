@@ -57,10 +57,8 @@ class MethodCall extends CallCheck {
 	 * @param ClassLike|null $inside   Instance of the ClassLike (the class we are parsing) [optional]
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
-	 * @return mixed
 	 */
 	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
-
 		if ($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) {
 			if ($inside instanceof Trait_) {
 				// Traits should be converted into methods in the class, so that we can check them in context.
@@ -80,7 +78,11 @@ class MethodCall extends CallCheck {
 					return;
 				}
 			}
-			if ($scope) {
+
+			$name=TypeComparer::getChainedPropertyFetchName($var);
+			if ($scope && $name && $scope->getVarType($name)) {
+				$className = $scope->getVarType($name);
+			} else {
 				$className = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			}
 
@@ -88,45 +90,27 @@ class MethodCall extends CallCheck {
 				$className = TypeComparer::removeNullOption($className);
 			}
 
-			//echo "TYPE:".TypeComparer::typeToString($className)."\n";
+			if (TypeComparer::ifAnyTypeIsNull($className)) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
+				return;
+			}
+
 			TypeComparer::forEachType($className, function($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
-				$isNull = TypeComparer::isNamedIdentifier($classNameOb,"null");
-				if($classNameOb instanceof Node\Name || $isNull) {
-					if ($isNull) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
-						return;
-					} else {
-
-						if ($classNameOb instanceof Node\Name &&
-							$classNameOb=="T" &&
-							$classNameOb->getAttribute('templates') &&
-							$classNameOb->getAttribute('templates')[0]
-						) {
-
-							$classNameOb = $classNameOb->getAttribute('templates')[0];
+				if($classNameOb instanceof Node\IntersectionType) {
+					// Only one interface of the intersection has to implement the method.
+					// Multiple interfaces may require the same method
+					$matchCount = 0;
+					foreach($classNameOb->types as $type) {
+						if ($this->inspectIndividualName($type, $fileName, $node, $methodName, $scope, $inside)) {
+							$matchCount++;
 						}
-
-						$typeClassName = strval($classNameOb);
-						$class= $this->symbolTable->getAbstractedClass($typeClassName);
-
-						if (!$class) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
-							return;
-						}
-						//$templates= ["T"]; //$class->getTemplates()''
 					}
-					$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
-					if ($method) {
-						$this->checkMethod($fileName, $node, $typeClassName, $methodName, $scope, $method, $inside);
-					} else {
-						// If there is a magic __call method, then we can't know if it will handle these calls.
-						if (
-							!Util::findAbstractedMethod($typeClassName, "__call", $this->symbolTable) &&
-							!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $typeClassName) &&
-							!$this->wrappedByMethodExistsCheck($node, $scope)
-						) {
-							$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of $typeClassName::$methodName");
-						}
+					if ($matchCount < 1) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of " . TypeComparer::typeToString($classNameOb) . "::$methodName");
+					}
+				} else if($classNameOb instanceof Node\Name) {
+					if (!$this->inspectIndividualName($classNameOb, $fileName, $node, $methodName, $scope, $inside)) {
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of ".strval($classNameOb)."::$methodName");
 					}
 				} else {
 					if ($classNameOb != null && !TypeComparer::isNamedIdentifier($classNameOb,"mixed") && !TypeComparer::isNamedIdentifier($classNameOb,"object")) {
@@ -155,11 +139,17 @@ class MethodCall extends CallCheck {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 		}
-
-		if ($method->getAccessLevel() == "private" && (!$inside || !isset($inside->namespacedName) || strcasecmp($className, $inside->namespacedName) != 0)) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt call private method " . $methodName);
-		} else if ($method->getAccessLevel() == "protected" && (!$inside || !isset($inside->namespacedName) || !$this->symbolTable->isParentClassOrInterface($className, $inside->namespacedName))) {
-			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call protected method " . $methodName);
+		$callingFromClass = $inside ? strval($inside->namespacedName) : "";
+		if ($method->getAccessLevel() == "private" && ($callingFromClass==="" || strcasecmp($className, $callingFromClass) != 0)) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call private method $className->" . $methodName);
+		} else if (
+			$method->getAccessLevel() == "protected" &&
+			(
+				$callingFromClass==="" ||
+				!$this->symbolTable->isParentClassOrInterface($className, $callingFromClass)
+			)
+		) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call protected method $className->" . $methodName);
 		}
 
 		$params = $method->getParameters();
@@ -239,5 +229,43 @@ class MethodCall extends CallCheck {
 			});
 		}
 		return $match;
+	}
+
+
+	function inspectIndividualName(Node\Name $classNameOb, string $fileName, Expr\MethodCall|Expr\NullsafeMethodCall $node, string $methodName, Scope $scope, ?ClassLike $inside): bool {
+		if ($classNameOb instanceof Node\Name &&
+			$classNameOb == "T" &&
+			$classNameOb->getAttribute('templates') &&
+			$classNameOb->getAttribute('templates')[0]
+		) {
+
+			$classNameOb = $classNameOb->getAttribute('templates')[0];
+		}
+
+		$typeClassName = strval($classNameOb);
+		$class = $this->symbolTable->getAbstractedClass($typeClassName);
+
+		if (!$class) {
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
+			return false;
+		}
+		//$templates= ["T"]; //$class->getTemplates()
+
+		$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
+		if ($method) {
+			$this->checkMethod($fileName, $node, $method->getClass()->getName(), $methodName, $scope, $method, $inside);
+			return true;
+		} else {
+			// If there is a magic __call method, then we can't know if it will handle these calls.
+			if (
+				!Util::findAbstractedMethod($typeClassName, "__call", $this->symbolTable) &&
+				!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $typeClassName) &&
+				!$this->wrappedByMethodExistsCheck($node, $scope)
+			) {
+
+				return false;
+			}
+			return true;
+		}
 	}
 }
