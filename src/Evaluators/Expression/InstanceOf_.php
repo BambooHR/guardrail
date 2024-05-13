@@ -33,12 +33,15 @@ class InstanceOf_ implements ExpressionInterface {
 				}
 			}
 			$varName = TypeComparer::getChainedPropertyFetchName($instanceOf->expr);
-			$trueScope = $scopeStack->getCurrentScope()->getScopeClone();
-			$falseScope = $trueScope->getScopeClone();
-			$trueScope->setVarType($varName, $className, $node->getLine());
-			$falseScope->setVarType($varName, TypeComparer::removeNamedOption($falseScope->getVarType($varName), strval($className)), $node->getLine());
-			$node->setAttribute('assertsTrue', $trueScope);
-			$node->setAttribute('assertsFalse', $falseScope);
+
+			if ($varName !== "this" && $varName!="") {
+				$trueScope = $scopeStack->getCurrentScope()->getScopeClone();
+				$falseScope = $trueScope->getScopeClone();
+				$trueScope->setVarType($varName, $className, $node->getLine());
+				$falseScope->setVarType($varName, TypeComparer::removeNamedOption($falseScope->getVarType($varName), strval($className)), $node->getLine());
+				$node->setAttribute('assertsTrue', $trueScope);
+				$node->setAttribute('assertsFalse', $falseScope);
+			}
 		}
 
 		return TypeComparer::identifierFromName("bool" );
