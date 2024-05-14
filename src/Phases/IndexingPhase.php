@@ -54,7 +54,7 @@ class IndexingPhase {
 		$this->traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 		$this->traverser1->addVisitor(new PromotedPropertyVisitor());
 		$this->traverser2 = new NodeTraverser;
-		$this->indexer = new SymbolTableIndexer($config->getSymbolTable());
+		$this->indexer = new SymbolTableIndexer($config->getSymbolTable(), $output);
 		$this->traverser2->addVisitor($this->indexer);
 		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
 	}

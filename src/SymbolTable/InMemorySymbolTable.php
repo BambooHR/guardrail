@@ -155,7 +155,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 */
 	public function getInterfaceFile($name) {
 		if (!isset($this->interfaces[strtolower($name)])) {
-			return null;
+			return "";
 		}
 		return $this->interfaces[strtolower($name)];
 	}
@@ -169,7 +169,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 */
 	public function getClassFile($name) {
 		if (!isset($this->classes[strtolower($name)])) {
-			return null;
+			return "";
 		}
 		return $this->classes[strtolower($name)];
 	}
@@ -185,7 +185,7 @@ class InMemorySymbolTable extends SymbolTable {
 		if (isset($this->functions[strtolower($name)])) {
 			return $this->functions[strtolower($name)];
 		}
-		return null;
+		return "";
 	}
 
 	/**
