@@ -41,6 +41,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		SymbolTable::TYPE_DEFINE => []
 	];
 
+	private const TYPE_STRING_TABLE = 6;
+
 	private $processNumber = 0;
 
 	private $fileName;
@@ -67,7 +69,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function disconnect() {
 		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
-		$this->index["6"]=$this->types;
+		$this->index[self::TYPE_STRING_TABLE]=$this->types;
 		$str=json_encode($this->index,JSON_THROW_ON_ERROR|JSON_INVALID_UTF8_SUBSTITUTE|JSON_PRETTY_PRINT);
 		file_put_contents($fileName, $str) ;
 	}
@@ -89,8 +91,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$fileName = $this->fileName . ($this->processNumber ? '.' . $this->processNumber : '');
 		if (file_exists($fileName)) {
 			$this->index = json_decode(file_get_contents($fileName), true);
-			$this->types = TypeStringTable::fromArray($this->index['6']);
-			unset($this->index['6']);
+			$this->types = TypeStringTable::fromArray($this->index[self::TYPE_STRING_TABLE]);
+			unset($this->index[self::TYPE_STRING_TABLE]);
 		} else {
 			$this->index = [];
 		}
