@@ -2,6 +2,7 @@
 
 namespace BambooHR\Guardrail\SymbolTable;
 
+use BambooHR\Guardrail\Exceptions\DocBlockParserException;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\TypeParser;
 use PhpParser\Node\ComplexType;
@@ -34,7 +35,12 @@ class TypeStringTable implements \JsonSerializable {
 		if (strcasecmp($this->ids[$index], "mixed")==0) {
 			return TypeComparer::identifierFromName("mixed");
 		}
-		$type= self::$parser->parse( $this->ids[$index] );
+		try {
+			$type = self::$parser->parse($this->ids[$index]);
+		}
+		catch(DocBlockParserException $ex) {
+			return new Identifier("mixed");
+		}
 		if (!$type) {
 			echo "Unable to parse: ".$this->ids[$index]."\n";
 			return new Identifier("mixed");
