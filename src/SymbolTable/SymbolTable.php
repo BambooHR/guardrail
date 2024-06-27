@@ -299,7 +299,7 @@ abstract class SymbolTable {
 	 *
 	 * @return string
 	 */
-	public function adjustBasePath($fileName) {
+	public function adjustBasePath(string  $fileName):string {
 		if (strpos($fileName, "phar://") === 0) {
 			$fileName = substr($fileName, 7);
 		} else if (!empty($fileName) && strpos($fileName, "/") !== 0) {
@@ -312,9 +312,9 @@ abstract class SymbolTable {
 	 * @param string $fileName A potentially absolute path
 	 * @return string
 	 */
-	public function removeBasePath($fileName) {
-		if (strpos($fileName, $this->basePath) === 0) {
-			return substr($fileName, strlen($this->basePath));
+	public function removeBasePath(string $fileName):string {
+		if ($this->basePath!=="" && strpos($fileName, $this->basePath) === 0) {
+			return substr($fileName, strlen($this->basePath)+1);
 		} else {
 			return $fileName;
 		}
