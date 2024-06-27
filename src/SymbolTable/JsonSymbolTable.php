@@ -857,7 +857,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$params = [];
 		$matches = [];
 		foreach ($parts as $part) {
-			preg_match("/^(\\.\\.\\.)?([0-9]+)?(?:@([0-9]+))?([& ])?\\$([^ =]+)(=(.*))?$/", $part, $matches);
+			preg_match("/^(\\.\\.\\.)?([0-9]+)?(?:@([0-9]+))?([& ])?\\$([^ =]+)(?:=(.*))?$/", $part, $matches);
 			if (!empty($matches[2])) {
 				$type = $this->types->getString(intval($matches[2]));
 			} else {
@@ -872,8 +872,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			$param->variadic = !empty($matches[1]);
 			$param->byRef = !empty($matches[4]) && $matches[4] == "&";
 			if (!empty($matches[6])) {
-				if (str_contains($matches[7],"::")) {
-					list($class,$name)=explode('::', $matches[7]);
+				if (str_contains($matches[6],"::")) {
+					list($class,$name)=explode('::', $matches[6]);
 					if ($class=="") {
 						$param->default = new Node\Expr\ConstFetch(new Node\Name($name));
 					} else {
@@ -926,13 +926,13 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 					$ret.="int";
 				} else if ($param->default instanceof Node\Scalar\DNumber) {
 					$ret.="float";
-				} else if ($param->default instanceof Node\Expr\ConstFetch && $param->default->name=="null") {
+				} else if ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name,"null")==0) {
 					$ret.="null";
 				} else if ($param->default instanceof Node\Expr\Array_) {
 					$ret .= "array";
-				} else if ($param->default instanceof Node\Expr\ConstFetch && $param->default->name=="true") {
+				} else if ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name,"true")==0) {
 					$ret.="true";
-				} else if ($param->default instanceof Node\Expr\ConstFetch && $param->default->name=="false") {
+				} else if ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name,"false")==0) {
 					$ret.="false";
 				} else if ($param->default instanceof Node\Expr\ClassConstFetch && $param->default->class instanceof Node\Name && $param->default->name instanceof Node\Identifier){
 					$ret.=$param->default->class."::".$param->default->name;
