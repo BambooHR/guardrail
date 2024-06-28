@@ -82,8 +82,8 @@ class StaticCallCheck extends CallCheck {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Unable to find method.  $name::" . $node->name);
 			}
 		} else {
-			if (! $method->isStatic()) {
-				if (! $scope->isStatic() && $possibleDynamic) {
+			if (!$method->isStatic()) {
+				if (!$scope->isStatic() && $possibleDynamic) {
 					//if ($node->name != "__construct" && $node->class != "parent") {
 					//	echo "Static call in $fileName " . $node->getLine() . "\n";
 					//}
@@ -91,14 +91,16 @@ class StaticCallCheck extends CallCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to call non-static method: $name::" . $node->name . " statically");
 				}
 			}
-			$minimumParams = $method->getMinimumRequiredParameters();
-			if (count($node->args) < $minimumParams) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Static call to method $name::" . $node->name . " does not pass enough parameters (" . count($node->args) . " passed $minimumParams required)");
+
+			if (!$node->isFirstClassCallable()) {
+				$minimumParams = $method->getMinimumRequiredParameters();
+				if (count($node->args) < $minimumParams) {
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Static call to method $name::" . $node->name . " does not pass enough parameters (" . count($node->args) . " passed $minimumParams required)");
+				}
+
+				$this->checkParams($fileName, $node, $method->getName(), $scope, $inside, $node->args, $method->getParameters());
 			}
-
-			$this->checkParams($fileName, $node, $method->getName(), $scope, $inside, $node->args, $method->getParameters());
 		}
-
 }
 
 	/**

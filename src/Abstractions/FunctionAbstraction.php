@@ -147,9 +147,10 @@ class FunctionAbstraction implements FunctionLikeInterface {
 				return true;
 			}
 		}
-		if ($this->function instanceof Function_ || $this->function instanceof \PhpParser\Node\Stmt\ClassMethod) {
-			return VariadicCheckVisitor::isVariadic($this->function->getStmts());
+		if ($this->function->getAttribute("variadic_implementation")) {
+			return true;
 		}
+
 		return false;
 	}
 

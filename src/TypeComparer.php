@@ -25,7 +25,59 @@ class TypeComparer
 		return $identifier[$str];
 	}
 
-	static public function nameFromName(string $str):Name {
+	static private function compareUnionElements(Name|Identifier|IntersectionType $a, Name|Identifier|IntersectionType $b) {
+		$aType = $a instanceof IntersectionType ? 1 : 0;
+		$bType = $b instanceof IntersectionType ? 1 : 0;
+		if ($aType != $bType) {
+			return $aType <=> $bType;
+		}
+		if ($aType == 1) {
+			$commonIndexes = min(count($a->types), count($b->types));
+			for ($i = 0; $i <= $commonIndexes; ++$i) {
+				$diff = strcmp($a->types[$i], $b->types[$i]);
+				if ($diff !== 0) {
+					return $diff;
+				}
+			}
+			return count($a->types) <=> count($b->types);
+		} else {
+			return strcmp(strval($a), strval($b));
+		}
+	}
+
+	private static function normalizeUnionType(UnionType $type):UnionType {
+		// First, sort any intersections inside the union.
+		foreach($type->types as $subType) {
+			if ($subType instanceof Node\IntersectionType) {
+				self::normalizeIntersectionType($subType);
+			}
+		}
+		usort($type->types, self::compareUnionElements(...));
+		return $type;
+	}
+
+
+	private static function normalizeIntersectionType(IntersectionType $type):IntersectionType {
+		usort($type->types, function($a, $b) {
+			return strcmp(strval($a), strval($b));
+		});
+		return $type;
+	}
+
+	public static function normalizeType(ComplexType|Identifier|Name|null $type):ComplexType|Identifier|Name|null {
+		if ($type instanceof Node\NullableType) {
+			$type = new UnionType([self::identifierFromName("null"), $type->type]);
+		}
+		if ($type instanceof Node\UnionType) {
+			return self::normalizeUnionType($type);
+		}
+		if ($type instanceof Node\IntersectionType) {
+			return self::normalizeIntersectionType($type);
+		}
+		return $type;
+	}
+
+	public static function nameFromName(string $str):Name {
 		static $name = [];
 		if(!array_key_exists($str, $name)) {
 			$name[$str]=new Name($str);
