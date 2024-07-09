@@ -563,7 +563,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 	function serializeFunction(Function_ $function):string {
-		$ret = "F" . ($function->returnsByRef()?"&":"").$function->namespacedName;
+		$ret = "F" . $function->namespacedName . ($function->returnsByRef()?"&":"");
 		$ret.=$this->serializeParams($function->params);
 		if ($function->returnType!==null || $function->getAttribute("namespacedReturn")!==null) {
 			$ret.=":";
@@ -752,7 +752,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 	function unserializeProperty(string $serializedProperty):Property {
-		//echo "Unserialize property $serializedProperty\n";
 		preg_match('/^(P)([^$@]+)?(?:@([0-9]+))?\\$([^ ]*)( [0-9]+)?$/', $serializedProperty, $matches);
 		$type = !empty(trim($matches[2])) ? $this->types->getString(intval(trim($matches[2]))) : null;
 		$name = $matches[4];
