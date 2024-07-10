@@ -18,7 +18,7 @@ use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
-use PHPUnit\Util\Type;
+use PhpParser\Node\Stmt\Interface_;
 
 /**
  * Class InterfaceCheck
@@ -50,7 +50,7 @@ class InterfaceCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [Class_::class];
+		return [Class_::class, Interface_::class];
 	}
 
 	/**
@@ -65,7 +65,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, Class_ $class, Node\FunctionLike $astNode, MethodInterface $method, MethodInterface $parentMethod) {
+	protected function checkMethod($fileName, Class_|Interface_ $class, Node\FunctionLike $astNode, MethodInterface $method, MethodInterface $parentMethod) {
 
 		$visibility = $method->getAccessLevel();
 		$oldVisibility = $parentMethod->getAccessLevel();
@@ -96,7 +96,7 @@ class InterfaceCheck extends BaseCheck {
 						if (!$isContravariant) {
 							$childParamType = TypeComparer::typeToString($childParam->getType());
 							$parentParamType = TypeComparer::typeToString($parentParam->getType());
-							$this->emitErrorOnLine($fileName, $method->getStartingLine(), self::TYPE_SIGNATURE_TYPE, "Child method parameter " . $childParam->getName() . " type mismatch " . $className . "::" . $method->getName() . " : $parentParamType -> $childParamType");
+							$this->emitError($fileName, $astNode, self::TYPE_SIGNATURE_TYPE, "Child method parameter " . $childParam->getName() . " type mismatch " . $className . "::" . $method->getName() . " : $parentParamType -> $childParamType");
 						}
 					}
 					if ($childParam->getName() != $parentParam->getName()) {
@@ -164,34 +164,6 @@ class InterfaceCheck extends BaseCheck {
 	}
 
 	/**
-	 * implementsMethod
-	 *
-	 * @param Class_ $node            Instance of ClassAbstraction
-	 * @param string $interfaceMethod The interface
-	 *
-	 * @return ClassMethod|null
-	 */
-	protected function implementsMethod(Class_ $node, $interfaceMethod) {
-		$current = new AbstractedClass_($node);
-		while (true) {
-			// Is it directly in the class
-			$classMethod = $current->getMethod($interfaceMethod);
-			if ($classMethod) {
-				return $classMethod;
-			}
-
-			if ($current->getParentClassName()) {
-				$current = $this->symbolTable->getAbstractedClass($current->getParentClassName());
-				if (!$current) {
-					return null;
-				}
-			} else {
-				return null;
-			}
-		}
-	}
-
-	/**
 	 * run
 	 *
 	 * @param string         $fileName The name of the file we are parsing
@@ -203,12 +175,15 @@ class InterfaceCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Class_) {
-			if ($node->implements) {
+			if ($node->implements || $node->extends) {
 				$this->processNodeImplements($fileName, $node);
 			}
 			if ($node->extends) {
 				$this->processNodeExtends($fileName, $node);
 			}
+		}
+		if ($node instanceof Interface_ && $node->extends) {
+			$this->processNodeImplements($fileName, $node);
 		}
 	}
 
@@ -220,30 +195,19 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	private function processNodeImplements($fileName, Class_ $node) {
-		$arr = is_array($node->implements) ? $node->implements : [$node->implements];
-		foreach ($arr as $interface) {
-			$name = $interface->toString();
-			if ($name) {
-				$interface = $this->symbolTable->getAbstractedClass($name);
-				if (!$interface) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, $node->name . " implements unknown interface " . $name);
-				} else {
-					$this->processNodeImplementsNotAbstract($fileName, $node, $interface);
-				}
+	private function processNodeImplements(string $fileName, Class_|Interface_ $node):void {
+		$arr = Util::findAllInterfaces(strval($node->namespacedName), $this->symbolTable);
+		foreach ($arr as $name) {
+			$interface = $this->symbolTable->getAbstractedClass($name);
+			if (!$interface) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, $node->name . " implements unknown interface " . $name);
+			} else {
+				$this->processNodeImplementsInterface($fileName, $node, $interface);
 			}
 		}
 	}
 
-	/**
-	 * processNodeExtends
-	 *
-	 * @param string $fileName The file name
-	 * @param Node   $node     Instance of Node
-	 *
-	 * @return void
-	 */
-	private function processNodeExtends($fileName, Class_ $node) {
+	private function processNodeExtends(string $fileName, Class_ $node):void {
 		$class = new AbstractedClass_($node);
 		$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 		if (!$parentClass) {
@@ -262,22 +226,24 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 
-	private function processNodeImplementsNotAbstract($fileName, Class_ $node, ClassInterface $interface) {
-		// Don't force abstract classes to implement all methods.
-		if (!$node->isAbstract()) {
-			foreach ($interface->getMethodNames() as $interfaceMethod) {
-				$classMethod = $this->implementsMethod($node, $interfaceMethod);
-				if (!$classMethod) {
-					if (!$node->isAbstract()) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
-					}
-				} else {
-					foreach($node->stmts as $stmt) {
-						if ($stmt instanceof Node\Stmt\ClassMethod && strcasecmp($stmt->name, $interfaceMethod)==0) {
-							$this->checkMethod($fileName, $node, $stmt, $classMethod, $interface->getMethod($interfaceMethod));
-							break;
-						}
-					}
+	private function processNodeImplementsInterface(string $fileName, Class_|Interface_ $node, ClassInterface $interface):void {
+		$methods = $interface->getMethodNames();
+		foreach($methods as $methodName) {
+			$this->processInterfaceMethod($node, $methodName, $fileName, $interface);
+		}
+	}
+
+	public function processInterfaceMethod(Class_|Interface_ $node, string $interfaceMethod, string $fileName, ClassInterface $interface) : void {
+		$classMethod = Util::findAbstractedMethod($node->namespacedName, $interfaceMethod, $this->symbolTable);
+		if (!$classMethod) {
+			if ($node instanceof Node\Stmt\Class_ && !$node->isAbstract()) {
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNIMPLEMENTED_METHOD, $node->name . " does not implement method " . $interfaceMethod);
+			}
+		} else {
+			foreach ($node->stmts as $stmt) {
+				if ($stmt instanceof Node\Stmt\ClassMethod && strcasecmp($stmt->name, $interfaceMethod) == 0) {
+					$this->checkMethod($fileName, $node, $stmt, $classMethod, $interface->getMethod($interfaceMethod));
+					break;
 				}
 			}
 		}
