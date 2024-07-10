@@ -225,6 +225,23 @@ class Util {
 		return null;
 	}
 
+	static public function findAllInterfaces(string $className, SymbolTable $symbolTable):array {
+		$interfaces = [];
+		while ($className) {
+			$class = $symbolTable->getAbstractedClass($className);
+			if (!$class) {
+				return $interfaces;
+			}
+			$immediateList = $class->getInterfaceNames();
+			foreach($immediateList as $immediate ) {
+				$childInterfaces = static::findAllInterfaces($immediate, $symbolTable);
+				$interfaces = [ ...$childInterfaces, $immediate, ...$interfaces];
+			}
+			$className = $class->getParentClassName();
+		}
+ 		return array_unique($interfaces);
+	}
+
 	static function findAbstractedConstantExpr(string $className, string $constantName, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
