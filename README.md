@@ -241,14 +241,14 @@ Sample config file:
         "Standard.Parse.Error",
         
         {
-        	"emit": "Standard.Security.Shell",
-        	"glob": "**/System/**/*",
-        	"ignore": "**/System/Shell/**/*"
+            "emit": "Standard.Security.Shell",
+            "glob": "**/System/**/*",
+            "ignore": "**/System/Shell/**/*"
         },
         
         {
-        	"emit": "Standard.Unknown.Class.Method",
-        	"when": "new",
+            "emit": "Standard.Unknown.Class.Method",
+            "when": "new",
             "glob": ["**/app/BambooHR/Events/Routes", "**/app/BambooHR/Silo/DataWarehouse/**/*"],
             "ignore": ["**/test/**/*", "**/app/BambooHR/Silo/Benefits/Shared/Enrollment/**/*"]
         },
