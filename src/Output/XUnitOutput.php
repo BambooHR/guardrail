@@ -162,18 +162,22 @@ class XUnitOutput implements OutputInterface {
 				if (isset($entry['emit']) && !self::emitPatternMatches($name, $entry['emit'])) {
 					continue;
 				}
-				if (isset($entry['glob']) && !Glob::match( "/" . $fileName, "/" . $entry['glob'])) {
-					continue;
-				}
-				if (isset($entry['ignore'])) {
-					if (is_array($entry['ignore'])) {
-						foreach ($entry['ignore'] as $ignoredFile) {
-							if (Glob::match("/" . $fileName, "/" . $ignoredFile)) {
-								continue 2;
-							}
-						}
+				$glob = $entry['glob'];
+				if (isset($glob)) {
+					if (is_array($glob) && !$this->fileExistsInArray($fileName, $glob)) {
+						continue;
 					} else {
-						if (Glob::match("/" . $fileName, "/" . $entry['ignore'])) {
+						if (Glob::match("/" . $fileName, "/" . $glob)) {
+							continue;
+						}
+					}
+				}
+				$ignore = $entry['ignore'];
+				if (isset($ignore)) {
+					if (is_array($ignore) && $this->fileExistsInArray($fileName, $ignore)) {
+						continue;
+					} else {
+						if (Glob::match("/" . $fileName, "/" . $ignore)) {
 							continue;
 						}
 					}
@@ -197,6 +201,21 @@ class XUnitOutput implements OutputInterface {
 				}
 				return true;
 			} else if (is_string($entry) && self::emitPatternMatches($name, $entry)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param string $fileName
+	 * @param array  $entryArray
+	 *
+	 * @return bool
+	 */
+	private function fileExistsInArray($fileName, array $entryArray) : bool {
+		foreach ($entryArray as $entryItem) {
+			if (Glob::match("/" . $fileName, "/" . $entryItem)) {
 				return true;
 			}
 		}
