@@ -241,14 +241,16 @@ Sample config file:
         "Standard.Parse.Error",
         
         {
-        	"emit":"Standard.Security.Shell",
-        	"glob":"**/System/**/*",
-        	"glob-igore": "**/System/Shell/**/*"
+        	"emit": "Standard.Security.Shell",
+        	"glob": "**/System/**/*",
+        	"ignore": "**/System/Shell/**/*"
         },
         
         {
-        	"emit":"Standard.Unknown.Class.Method",
-        	"when": "new"
+        	"emit": "Standard.Unknown.Class.Method",
+        	"when": "new",
+            "glob": ["**/app/BambooHR/Events/Routes", "**/app/BambooHR/Silo/DataWarehouse/**/*"],
+            "ignore": ["**/test/**/*", "**/app/BambooHR/Silo/Benefits/Shared/Enrollment/**/*"]
         },
         
         "BambooHR.Impossible.Inject"
@@ -260,8 +262,8 @@ Sample config file:
 ```
 
 The simplest version of an emit entry is a simple string that identifies the type of error to always emit.
-A longer form is a nested JSON object.  It may contain a single glob string that the filename must match and,
- optionally, a glob-ignore string to ignore.  You may define multiple globbing rules per type of error.  
+A longer form is a nested JSON object.  It may contain a single glob string or array of glob strings that the filename must match and,
+ optionally, an ignore string or array of strings to ignore.  You may define multiple globbing rules per type of error.  
  If the error passes any one section it will be emitted.
 
 You can also disable an error for the duration of a function by adding `@guardrail-ignore [type1],[type2]`
