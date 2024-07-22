@@ -167,7 +167,7 @@ class XUnitOutput implements OutputInterface {
 					if (is_array($glob) && !$this->fileExistsInArray($fileName, $glob)) {
 						continue;
 					} else {
-						if (Glob::match("/" . $fileName, "/" . $glob)) {
+						if (!Glob::match("/" . $fileName, "/" . $glob)) {
 							continue;
 						}
 					}
