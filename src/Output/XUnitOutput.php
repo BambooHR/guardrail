@@ -163,24 +163,12 @@ class XUnitOutput implements OutputInterface {
 					continue;
 				}
 				$glob = $entry['glob'];
-				if (isset($glob)) {
-					if (is_array($glob) && !$this->fileExistsInArray($fileName, $glob)) {
-						continue;
-					} else {
-						if (!Glob::match("/" . $fileName, "/" . $glob)) {
-							continue;
-						}
-					}
+				if (isset($glob) && !$this->fileMatchesArrayOrString($fileName, $glob)) {
+					continue;
 				}
 				$ignore = $entry['ignore'];
-				if (isset($ignore)) {
-					if (is_array($ignore) && $this->fileExistsInArray($fileName, $ignore)) {
-						continue;
-					} else {
-						if (Glob::match("/" . $fileName, "/" . $ignore)) {
-							continue;
-						}
-					}
+				if (isset($ignore) && $this->fileMatchesArrayOrString($fileName, $glob)) {
+					continue;
 				}
 				if (
 					isset($entry['when']) &&
@@ -205,6 +193,20 @@ class XUnitOutput implements OutputInterface {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * @param string $fileName
+	 * @param mixed  $haystack
+	 *
+	 * @return bool
+	 */
+	private function fileMatchesArrayOrString($fileName, $haystack) : bool {
+		if (is_array($haystack)) {
+			return $this->fileExistsInArray($fileName, $haystack);
+		} else {
+			return Glob::match("/" . $fileName, "/" . $haystack);
+		}
 	}
 
 	/**
