@@ -165,8 +165,18 @@ class XUnitOutput implements OutputInterface {
 				if (isset($entry['glob']) && !Glob::match( "/" . $fileName, "/" . $entry['glob'])) {
 					continue;
 				}
-				if (isset($entry['ignore']) && Glob::match("/" . $fileName, "/" . $entry['ignore'])) {
-					continue;
+				if (isset($entry['ignore'])) {
+					if (is_array($entry['ignore'])) {
+						foreach ($entry['ignore'] as $ignoredFile) {
+							if (Glob::match("/" . $fileName, "/" . $ignoredFile)) {
+								continue 2;
+							}
+						}
+					} else {
+						if (Glob::match("/" . $fileName, "/" . $entry['ignore'])) {
+							continue;
+						}
+					}
 				}
 				if (
 					isset($entry['when']) &&
