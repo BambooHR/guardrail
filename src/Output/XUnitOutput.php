@@ -162,10 +162,10 @@ class XUnitOutput implements OutputInterface {
 				if (isset($entry['emit']) && !self::emitPatternMatches($name, $entry['emit'])) {
 					continue;
 				}
-				if (isset($entry['glob']) && !Glob::match( "/" . $fileName, "/" . $entry['glob'])) {
+				if (isset($entry['glob']) && !$this->fileMatchesArrayOrString($fileName, $entry['glob'])) {
 					continue;
 				}
-				if (isset($entry['ignore']) && Glob::match("/" . $fileName, "/" . $entry['ignore'])) {
+				if (isset($entry['ignore']) && $this->fileMatchesArrayOrString($fileName, $entry['ignore'])) {
 					continue;
 				}
 				if (
@@ -187,6 +187,35 @@ class XUnitOutput implements OutputInterface {
 				}
 				return true;
 			} else if (is_string($entry) && self::emitPatternMatches($name, $entry)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param string $fileName
+	 * @param mixed  $haystack
+	 *
+	 * @return bool
+	 */
+	private function fileMatchesArrayOrString($fileName, $haystack) : bool {
+		if (is_array($haystack)) {
+			return $this->fileExistsInArray($fileName, $haystack);
+		} else {
+			return Glob::match("/" . $fileName, "/" . $haystack);
+		}
+	}
+
+	/**
+	 * @param string $fileName
+	 * @param array  $entryArray
+	 *
+	 * @return bool
+	 */
+	private function fileExistsInArray($fileName, array $entryArray) : bool {
+		foreach ($entryArray as $entryItem) {
+			if (Glob::match("/" . $fileName, "/" . $entryItem)) {
 				return true;
 			}
 		}
