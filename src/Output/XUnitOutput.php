@@ -162,12 +162,10 @@ class XUnitOutput implements OutputInterface {
 				if (isset($entry['emit']) && !self::emitPatternMatches($name, $entry['emit'])) {
 					continue;
 				}
-				$glob = $entry['glob'];
-				if (isset($glob) && !$this->fileMatchesArrayOrString($fileName, $glob)) {
+				if (isset($entry['glob']) && !$this->fileMatchesArrayOrString($fileName, $entry['glob'])) {
 					continue;
 				}
-				$ignore = $entry['ignore'];
-				if (isset($ignore) && $this->fileMatchesArrayOrString($fileName, $glob)) {
+				if (isset($entry['ignore']) && $this->fileMatchesArrayOrString($fileName, $entry['ignore'])) {
 					continue;
 				}
 				if (
