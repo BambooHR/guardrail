@@ -64,6 +64,33 @@ class TypeComparer
 		return $type;
 	}
 
+	public static function literalValuesAreEqual(?Node\Expr $a, ?Node\Expr $b):bool {
+		if ($a===null && $b===null) {
+			return true;
+		}
+		if ($a instanceof Node\Scalar && $b instanceof Node\Scalar) {
+			return $a->value == $b->value;
+		}
+		if ($a instanceof Node\Expr\Array_ && $b instanceof Node\Expr\Array_) {
+			if (count($a->items) != count($b->items)) {
+				return false;
+			}
+			foreach($a->items as $index => $item) {
+				if (!isset($b->items[$index])) {
+					return false;
+				}
+				if (!static::literalValuesAreEqual($item->key, $b->items[$index]->value)) {
+					return false;
+				}
+				if (!static::literalValuesAreEqual($item->value, $b->items[$index]->value)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	public static function normalizeType(ComplexType|Identifier|Name|null $type):ComplexType|Identifier|Name|null {
 		if ($type instanceof Node\NullableType) {
 			$type = new UnionType([self::identifierFromName("null"), $type->type]);

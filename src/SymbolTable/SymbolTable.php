@@ -314,7 +314,7 @@ abstract class SymbolTable {
 	 */
 	public function removeBasePath(string $fileName):string {
 		if ($this->basePath!=="" && strpos($fileName, $this->basePath) === 0) {
-			return substr($fileName, strlen($this->basePath)+1);
+			return substr($fileName, strlen($this->basePath));
 		} else {
 			return $fileName;
 		}

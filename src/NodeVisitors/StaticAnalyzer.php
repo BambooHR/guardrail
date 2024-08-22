@@ -18,6 +18,7 @@ use BambooHR\Guardrail\Checks\CountableEmptinessCheck;
 use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
 use BambooHR\Guardrail\Checks\DefinedConstantCheck;
 use BambooHR\Guardrail\Checks\DocBlockTypesCheck;
+use BambooHR\Guardrail\Checks\DuplicateMemberCheck;
 use BambooHR\Guardrail\Checks\EnumCheck;
 use BambooHR\Guardrail\Checks\FunctionCallCheck;
 use BambooHR\Guardrail\Checks\GotoCheck;
@@ -158,6 +159,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new ThrowsCheck($this->index, $output),
 			new CountableEmptinessCheck($this->index, $output),
 			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
+			new DuplicateMemberCheck($this->index, $output),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 

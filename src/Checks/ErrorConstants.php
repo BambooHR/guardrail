@@ -60,6 +60,7 @@ class ErrorConstants {
 	const TYPE_UNIMPLEMENTED_METHOD = 'Standard.Inheritance.Unimplemented';
 	const TYPE_UNKNOWN_CLASS = 'Standard.Unknown.Class';
 	const TYPE_OVERRIDE_BASE_CLASS = 'Standard.Override.Base';
+	const TYPE_DUPLICATE_NAME = 'Standard.Duplicate.Name';
 
 	const TYPE_UNDOCUMENTED_EXCEPTION = 'Standard.Undocumented.Exception';
 

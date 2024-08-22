@@ -203,7 +203,7 @@ class XUnitOutput implements OutputInterface {
 		if (is_array($haystack)) {
 			return $this->fileExistsInArray($fileName, $haystack);
 		} else {
-			return Glob::match("/" . $fileName, "/" . $haystack);
+			return self::globCache($fileName, $haystack);
 		}
 	}
 
@@ -213,9 +213,19 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
+
+	private static function globCache(string $fileName, string $pattern):bool {
+		static $cacheFile = null;
+		static $matches = [];
+		if ($cacheFile == $fileName && isset($matches[$pattern])) {
+			return $matches[$pattern];
+		}
+		return $matches[$pattern] = Glob::match("/" . $fileName, "/" . $pattern);
+	}
+
 	private function fileExistsInArray($fileName, array $entryArray) : bool {
 		foreach ($entryArray as $entryItem) {
-			if (Glob::match("/" . $fileName, "/" . $entryItem)) {
+			if (self::globCache($fileName, $entryItem)) {
 				return true;
 			}
 		}
