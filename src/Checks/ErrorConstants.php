@@ -81,6 +81,8 @@ class ErrorConstants {
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
+	const TYPE_ENUM_RESERVED_METHOD = 'Standard.Enum.ReservedMethod';
+
 
 
 	/**
