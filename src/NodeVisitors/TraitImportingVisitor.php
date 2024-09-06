@@ -26,11 +26,6 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 
 
 	/**
-	 * @var array
-	 */
-	private $classStack = [];
-
-	/**
 	 * TraitImportingVisitor constructor.
 	 *
 	 * @param SymbolTable $index Instance of SymbolTable
@@ -39,37 +34,16 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 		$this->importer  = new TraitImporter($index);
 	}
 
-
-	/**
-	 * enterNode
-	 *
-	 * @param Node $node Instance of Node
-	 *
-	 * @return null
-	 */
-	public function enterNode(Node $node) {
-		if ($node instanceof Class_ || $node instanceof Trait_ || $node instanceof Node\Stmt\Enum_) {
-			array_push($this->classStack, $node);
-		}
-		return null;
-	}
-
 	/**
 	 * leaveNode
 	 *
 	 * @param Node $node Instance of Node
 	 *
-	 * @return array|null
+	 * @return int|null|array
 	 */
 	public function leaveNode(Node $node) {
 		if ($node instanceof Class_ || $node instanceof Trait_ || $node instanceof Enum_) {
-			array_pop($this->classStack);
-		} else if ($node instanceof Node\Stmt\TraitUse) {
-
-			$class = end($this->classStack);
-			assert($class);
-			$traits = $this->importer->resolveTraits($node, $class);
-			return $traits;
+			$node->stmts = $this->importer->processClassLike($node);
 		}
 		return null;
 	}
