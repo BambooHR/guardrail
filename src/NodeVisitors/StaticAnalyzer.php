@@ -75,6 +75,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	private $checks = [];
 
 	private ScopeStack $scopeStack;
+	private MetricOutputInterface $metricOutput;
 
 	/** @var array */
 	private $timings = [];
@@ -114,7 +115,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config)
 	{
 		$this->index = $index;
-		$this->scopeStack = new ScopeStack($output, $config);
+		$this->scopeStack = new ScopeStack($output, $metricOutput, $config);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->metricOutput = $metricOutput;
 
@@ -216,7 +217,9 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	public function setFile($name, Config $config)
 	{
 		$this->file = $name;
-		$this->scopeStack = new ScopeStack($this->scopeStack->getOutput(), $config);
+		$this->scopeStack = new ScopeStack(
+			$this->scopeStack->getOutput(), $this->scopeStack->getMetricOutput(), $config
+		);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->scopeStack->setCurrentFile($name);
 	}
