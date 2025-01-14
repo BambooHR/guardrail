@@ -75,7 +75,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	private $checks = [];
 
 	private ScopeStack $scopeStack;
-	private MetricOutputInterface $metricOutput;
 
 	/** @var array */
 	private $timings = [];
@@ -117,7 +116,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output, $metricOutput, $config);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
-		$this->metricOutput = $metricOutput;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
