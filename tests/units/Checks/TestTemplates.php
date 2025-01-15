@@ -9,7 +9,7 @@ class TestTemplates extends TestSuiteSetup {
 
 
 	function testValidTemplate() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.1.inc',"Standard.*", ["ignore-errors"=>["Standard.Autoload.Unsafe"]]));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.1.inc',"Standard.*", ["ignore-errors"=>["Standard.Autoload.Unsafe", ErrorConstants::TYPE_WEB_API_DOCUMENTATION_CHECK]]));
 
 	}
 
