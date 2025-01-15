@@ -43,6 +43,7 @@ use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
 use BambooHR\Guardrail\Checks\UnsafeSuperGlobalCheck;
 use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
+use BambooHR\Guardrail\Checks\WebApiDocumentationCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
@@ -157,6 +158,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new ThrowsCheck($this->index, $output),
 			new CountableEmptinessCheck($this->index, $output),
 			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
+			new WebApiDocumentationCheck($this->index, $output, $metricOutput),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
