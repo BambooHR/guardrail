@@ -9,6 +9,11 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
 class WebApiDocumentationCheck extends BaseCheck {
+	private const string ATTRIBUTE_NAMESPACE = 'OpenApi\Attributes';
+	private const string SEARCH_PHRASES_KEY = 'vector-search-phrases';
+	private const string DEPRECATED_KEY = 'deprecated';
+	private const string X_KEY = 'x';
+
 	function __construct($index, $output, private readonly MetricOutputInterface $metricOutput) {
 		parent::__construct($index, $output);
 	}
@@ -35,24 +40,24 @@ class WebApiDocumentationCheck extends BaseCheck {
 			foreach ($node->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attribute) {
 					$attributeName = $attribute->name->toString();
-					if (str_starts_with($attributeName, 'OpenApi\Attributes')) {
+					if (str_starts_with($attributeName, self::ATTRIBUTE_NAMESPACE)) {
+						$hasDefinedSearchPhrases = false;
 						foreach ($attribute->args as $arg) {
-							if ($arg->name->name === 'deprecated' && $arg->value->name->toString() == 'true') {
-								$this->metricOutput->emitMetric(new Metric(
-									$fileName,
-									$node->getLine(),
-									ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
-									[]
-								));
-								break;
-							}
+							$this->checkDeprecatedAttribute($arg, $fileName, $node);
+							$hasDefinedSearchPhrases = $hasDefinedSearchPhrases ?: $this->hasVectorSearchPhrase($arg);
 						}
-
+						if (!$hasDefinedSearchPhrases) {
+							$this->emitErrorOnLine(
+								$fileName,
+								$node->getLine(),
+								ErrorConstants::TYPE_WEB_API_DOCUMENTATION_SEARCH_PHRASES_CHECK,
+								"OpenAPI Attribute must have a vector-search-phrases key defined. Method: {$node->name->name}"
+							);
+						}
 						return;
 					}
 				}
 			}
-
 			$className = $inside->namespacedName->toString();
 			$this->emitErrorOnLine(
 				$fileName,
@@ -62,5 +67,28 @@ class WebApiDocumentationCheck extends BaseCheck {
 					documentation through an OpenAPI Attribute. Method: {$node->name->name}, Class: $className"
 			);
 		}
+	}
+
+	private function checkDeprecatedAttribute($arg, $fileName, $node) {
+		if ($arg->name->name === self::DEPRECATED_KEY && $arg->value->name->toString() == 'true') {
+			$this->metricOutput->emitMetric(new Metric(
+				$fileName,
+				$node->getLine(),
+				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
+				[]
+			));
+		}
+	}
+
+	private function hasVectorSearchPhrase($arg): bool {
+		if ($arg->name->name === self::X_KEY && $arg->value instanceof Node\Expr\Array_) {
+			foreach ($arg->value->items as $item) {
+				if ($item->key->value === self::SEARCH_PHRASES_KEY) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }
