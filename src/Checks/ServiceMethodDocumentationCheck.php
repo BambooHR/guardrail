@@ -2,17 +2,13 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
 class ServiceMethodDocumentationCheck extends BaseCheck {
 
-	function __construct($index, $output, private readonly MetricOutputInterface $metricOutput) {
-		parent::__construct($index, $output);
-	}
-
+	private const array BLOCKED_SERVICE_DOCUMENTATION_TYPES = [null, 'mixed', 'object'];
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -32,46 +28,153 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		if ($node instanceof Node\Stmt\ClassMethod && $node->isPublic()) {
-			foreach ($node->getParams() as $param) {
-				if ($param->type instanceof Node\UnionType || $param->type instanceof Node\IntersectionType) {
-					foreach ($param->type->types as $type) {
-						$this->checkParamTyping($type, $node, $fileName, $inside);
-					}
-				}
-				else {
-					$this->checkParamTyping($param->type, $node, $fileName, $inside);
-				}
+			$docComment = $node->getDocComment();
+			if (empty($docComment)) {
+				$this->emitMissingDocBlockError($fileName, $node, $inside);
+				return;
 			}
-			$returnType = $node->getReturnType();
-			if ($returnType instanceof Node\UnionType || $returnType instanceof Node\IntersectionType) {
-				foreach ($returnType->types as $type) {
-					$this->checkReturnTyping($type->name ?? $type->toString(), $node, $fileName, $inside);
-				}
-			} else {
-				$this->checkReturnTyping($returnType, $node, $fileName, $inside);
+
+			$docCommentData = $this->extractDocCommentData($docComment);
+			$actualParams = array_map(fn($param) => $param->var, $node->getParams());
+			$docCommentParams = $docCommentData['params'];
+
+			$this->validateParameters($actualParams, $docCommentParams, $fileName, $node, $inside);
+			$this->validateReturnType($node, $docCommentData['return'], $fileName, $inside);
+		}
+	}
+
+	private function emitMissingDocBlockError(string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {
+		$this->emitErrorOnLine($fileName, $node->getLine(),
+			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
+			"Method: {$node->name->name}, Class: {$inside->name->name} - All public Service methods must have a DocBlock."
+		);
+	}
+
+	private function validateParameters($actualParams, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {
+		if (count($docCommentParams) > count($actualParams)) {
+			$this->emitErrorOnLine($fileName, $node->getLine(),
+				ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
+				"Method: {$node->name->name}, Class: {$inside->name->name} - There are extra parameters in your DocBlock that are not present in the method signature."
+			);
+		}
+
+		foreach ($actualParams as $actualParam) {
+			$this->validateParameter($actualParam, $docCommentParams, $fileName, $node, $inside);
+		}
+	}
+
+	private function validateParameter($actualParam, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {
+		$actualParamName = $actualParam->name ?? $actualParam->getString();
+		$docCommentParam = $docCommentParams[$actualParamName] ?? null;
+		if (!$docCommentParam) {
+			$this->emitParameterMismatchError($fileName, $node, $inside, $actualParamName);
+			return;
+		}
+
+		$actualParamAttribute = $actualParam->getAttribute('inferrer-type');
+		if ($this->isComplexType($actualParamAttribute)) {
+			$this->validateComplexType($actualParamAttribute->types, $docCommentParam['type'], $fileName, $node, $inside, $actualParamName);
+		} else {
+			$actualParamType = $actualParamAttribute?->name ?? $actualParamAttribute?->toString();
+			$this->validateSimpleType($actualParamType, $docCommentParam['type'], $fileName, $node, $inside, $actualParamName);
+		}
+	}
+
+	private function isComplexType($type): bool {
+		return $type instanceof Node\UnionType || $type instanceof Node\IntersectionType;
+	}
+
+	private function validateComplexType($actualParamTypes, $docCommentParamType, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $propertyName): void {
+		if (!is_array($docCommentParamType) || count($actualParamTypes) !== count($docCommentParamType)) {
+			$this->emitTypeMismatchError($fileName, $node, $inside, $propertyName);
+			return;
+		}
+
+		foreach ($actualParamTypes as $typeObject) {
+			$actualParamType = $typeObject->name ?? $typeObject->toString();
+			if (!in_array($actualParamType, $docCommentParamType) || in_array($actualParamType, self::BLOCKED_SERVICE_DOCUMENTATION_TYPES)) {
+				$this->emitTypeMismatchError($fileName, $node, $inside, $propertyName);
+				break;
 			}
 		}
 	}
 
-	private function checkParamTyping($type, Node\Stmt\ClassMethod $node, string $fileName, Node\Stmt\ClassLike $inside) {
-		if (in_array($type?->name ?? $type?->toString() ?? null, [null, 'mixed', 'object'])) {
-			$this->emitErrorOnLine(
-				$fileName,
-				$node->getLine(),
-				ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
-				"Method: {$node->name->name}, Class: {$inside->name->name} - All public Service methods should have strong types for all parameters. 'Mixed' and 'object' params are prohibited."
-			);
+	private function validateSimpleType($actualParamType, $docCommentParamType, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $paramName): void {
+		if ($actualParamType !== $docCommentParamType || in_array($actualParamType, self::BLOCKED_SERVICE_DOCUMENTATION_TYPES)) {
+			$this->emitTypeMismatchError($fileName, $node, $inside, $paramName);
 		}
 	}
 
-	private function checkReturnTyping($type, Node\Stmt\ClassMethod $node, string $fileName, Node\Stmt\ClassLike $inside) {
-		if (in_array($type, [null, 'mixed', 'object'])) {
-			$this->emitErrorOnLine(
-				$fileName,
-				$node->getLine(),
-				ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
-				"Method: {$node->name->name}, Class: {$inside->name->name} - All public Service methods should have a return type. 'Mixed' and 'object' return types are prohibited."
-			);
+	private function emitParameterMismatchError(string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $paramName): void {
+		$this->emitErrorOnLine($fileName, $node->getLine(),
+			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
+			"Method: {$node->name->name}, Class: {$inside->name->name} - DocBlock does not contain matching parameter: $paramName"
+		);
+	}
+
+	private function emitTypeMismatchError(string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $propertyName): void {
+		$this->emitErrorOnLine($fileName, $node->getLine(),
+			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
+			"Method: {$node->name->name}, Class: {$inside->name->name}, Property: $propertyName - DocBlock does not match method signature."
+		);
+	}
+
+	/**
+	 * @param Node\Stmt\ClassMethod $node
+	 * @param                       $docCommentReturn
+	 * @param string                $fileName
+	 * @param ClassLike             $inside
+	 *
+	 * @return void
+	 */
+	private function validateReturnType(Node\Stmt\ClassMethod $node, $docCommentReturn, string $fileName, Node\Stmt\ClassLike $inside): void {
+		$propertyName = 'return';
+		if (!$docCommentReturn) {
+			$this->emitTypeMismatchError($fileName, $node, $inside, $propertyName);
+			return;
 		}
+
+		$actualReturn = $node->getReturnType();
+		if ($this->isComplexType($actualReturn)) {
+			$this->validateComplexType($actualReturn->types, $docCommentReturn, $fileName, $node, $inside, $propertyName);
+		} else {
+			$this->validateSimpleType($actualReturn?->name ?? $actualReturn?->toString() ?? null, $docCommentReturn, $fileName, $node, $inside, $propertyName);
+		}
+	}
+
+	/**
+	 * @param string|null $docComment
+	 *
+	 * @return array
+	 */
+	private function extractDocCommentData(?string $docComment) {
+		$result = [
+			'params' => [],
+			'return' => null,
+		];
+		if (preg_match_all('/@param\s+([^\s$]+(?:\s*[\|&]\s*[^\s$]+)*)?\s*(\$[^\s]+)?/', $docComment, $paramMatches, PREG_SET_ORDER)) {
+			foreach ($paramMatches as $paramMatch) {
+				$result['params'][$variableName] = [
+					'type' => $this->extractDocGetVariableType($paramMatch[1] ?? null),
+					'variable' => $variableName = ltrim($paramMatch[2] ?? null, '$'),
+				];
+			}
+		}
+
+		if (preg_match('/@return\s+([^\s$]+(?:\s*\|\s*[^\s$]+|&[^\s$]+)*)/', $docComment, $returnMatch)) {
+			$result['return'] = $this->extractDocGetVariableType($returnMatch[1] ?? null);
+		}
+
+		return $result;
+	}
+
+	private function extractDocGetVariableType($variableType) {
+		if (str_contains($variableType, '|')) {
+			$variableType = array_map('trim', explode('|', $variableType));
+		} else if (str_contains($variableType, '&')) {
+			$variableType = array_map('trim', explode('&', $variableType));
+		}
+
+		return $variableType;
 	}
 }

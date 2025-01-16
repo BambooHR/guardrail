@@ -23,4 +23,18 @@ class TestServiceMethodDocumentationCheck extends TestSuiteSetup {
 	public function testReturnTypesSetAndUnset() {
 		$this->assertEquals(4, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK), "");
 	}
+
+	/**
+	 * @return void
+	 */
+	public function testSimpleTypesMatchingAndUnMatchingDocBlocks() {
+		$this->assertEquals(7, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK), "");
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testComplexTypesMatchingAndUnMatchingDocBlocks() {
+		$this->assertEquals(13, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK), "");
+	}
 }
