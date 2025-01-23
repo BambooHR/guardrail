@@ -84,6 +84,7 @@ class ErrorConstants {
 	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
 	const TYPE_WEB_API_DOCUMENTATION_CHECK = 'Standard.WebApi.Documentation';
 	const TYPE_WEB_API_DOCUMENTATION_SEARCH_PHRASES_CHECK = 'Standard.WebApi.Documentation.SearchPhrases';
+	const TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK = 'Standard.ServiceMethod.Documentation';
 
 
 	/**

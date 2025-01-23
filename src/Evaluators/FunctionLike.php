@@ -29,15 +29,6 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 	 * @return void
 	 */
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-		if (str_contains($node->getDocComment()?->getText(), '@deprecated')) {
-			$scopeStack->getMetricOutput()->emitMetric(new Metric(
-				$node->name,
-				$node->getLine(),
-				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
-				[]
-			));
-		}
-
 		self::handleEnterFunctionLike($node, $scopeStack);
 	}
 

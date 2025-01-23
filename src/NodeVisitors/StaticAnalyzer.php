@@ -33,6 +33,7 @@ use BambooHR\Guardrail\Checks\Psr4Check;
 use BambooHR\Guardrail\Checks\ReadOnlyPropertyCheck;
 use BambooHR\Guardrail\Checks\ReturnCheck;
 use BambooHR\Guardrail\Checks\DependenciesOnVendorCheck;
+use BambooHR\Guardrail\Checks\ServiceMethodDocumentationCheck;
 use BambooHR\Guardrail\Checks\SplatCheck;
 use BambooHR\Guardrail\Checks\StaticCallCheck;
 use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
@@ -159,6 +160,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new CountableEmptinessCheck($this->index, $output),
 			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
 			new WebApiDocumentationCheck($this->index, $output, $metricOutput),
+			new ServiceMethodDocumentationCheck($this->index, $output, $metricOutput),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
