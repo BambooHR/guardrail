@@ -5,21 +5,21 @@ namespace BambooHR\Guardrail\Tests\units\Checks;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
 
-class TestWebApiDocumentationCheck extends TestSuiteSetup {
+class TestOpenApiAttributeDocumentationCheck extends TestSuiteSetup {
 	/**
 	 * testApiAttributeIsPresent
 	 *
 	 * @return void
 	 */
 	public function testApiAttributeIsPresent() {
-		$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_WEB_API_DOCUMENTATION_CHECK), "");
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK), "");
 	}
 
 	/**
 	 * @return void
 	 */
 	public function testOnlyErrorsOnPublicMethods() {
-		$this->assertEquals(2, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_WEB_API_DOCUMENTATION_CHECK), "");
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK), "");
 	}
 
 	/**
@@ -34,6 +34,6 @@ class TestWebApiDocumentationCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testWithAndWithoutVectorSearchPhrases() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_WEB_API_DOCUMENTATION_SEARCH_PHRASES_CHECK), "");
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_SEARCH_PHRASES_CHECK), "");
 	}
 }

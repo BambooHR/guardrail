@@ -8,7 +8,7 @@ use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
-class WebApiDocumentationCheck extends BaseCheck {
+class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	private const string ATTRIBUTE_NAMESPACE = 'OpenApi\Attributes';
 	private const string SEARCH_PHRASES_KEY = 'vector-search-phrases';
 	private const string DEPRECATED_KEY = 'deprecated';
@@ -50,7 +50,7 @@ class WebApiDocumentationCheck extends BaseCheck {
 							$this->emitErrorOnLine(
 								$fileName,
 								$node->getLine(),
-								ErrorConstants::TYPE_WEB_API_DOCUMENTATION_SEARCH_PHRASES_CHECK,
+								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_SEARCH_PHRASES_CHECK,
 								"OpenAPI Attribute must have a vector-search-phrases key defined. Method: {$node->name->name}"
 							);
 						}
@@ -62,7 +62,7 @@ class WebApiDocumentationCheck extends BaseCheck {
 			$this->emitErrorOnLine(
 				$fileName,
 				$node->getLine(),
-				ErrorConstants::TYPE_WEB_API_DOCUMENTATION_CHECK,
+				ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK,
 				"All public controller methods should be associated with a route and must have 
 					documentation through an OpenAPI Attribute. Method: {$node->name->name}, Class: $className"
 			);
