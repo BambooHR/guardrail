@@ -2,11 +2,17 @@
 
 namespace BambooHR\Guardrail\Checks;
 
+use BambooHR\Guardrail\Metrics\Metric;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
 class ServiceMethodDocumentationCheck extends BaseCheck {
+
+	function __construct($index, $output, private MetricOutputInterface $metricOutput) {
+		parent::__construct($index, $output);
+	}
 
 	private const array BLOCKED_SERVICE_DOCUMENTATION_TYPES = [null, 'mixed', 'object'];
 	/**
@@ -38,6 +44,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 			$actualParams = array_map(fn($param) => $param->var, $node->getParams());
 			$docCommentParams = $docCommentData['params'];
 
+			$this->emitMetricsForNode($node);
 			$this->validateParameters($actualParams, $docCommentParams, $fileName, $node, $inside);
 			$this->validateReturnType($node, $docCommentData['return'], $fileName, $inside);
 		}
@@ -48,6 +55,22 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 			"Method: {$node->name->name}, Class: {$inside->name->name} - All public Service methods must have a DocBlock."
 		);
+	}
+
+	/**
+	 * @param Node\Stmt\ClassMethod $node
+	 *
+	 * @return void
+	 */
+	private function emitMetricsForNode(Node\Stmt\ClassMethod $node): void {
+		if (str_contains($node->getDocComment()?->getText(), '@deprecated')) {
+			$this->metricOutput->emitMetric(new Metric(
+				$node->name,
+				$node->getLine(),
+				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
+				[]
+			));
+		}
 	}
 
 	private function validateParameters($actualParams, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {

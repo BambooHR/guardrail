@@ -160,7 +160,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new CountableEmptinessCheck($this->index, $output),
 			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
 			new WebApiDocumentationCheck($this->index, $output, $metricOutput),
-			new ServiceMethodDocumentationCheck($this->index, $output),
+			new ServiceMethodDocumentationCheck($this->index, $output, $metricOutput),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
