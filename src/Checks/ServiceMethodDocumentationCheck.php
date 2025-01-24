@@ -37,7 +37,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
 		$this->emitMetricsForNode($node);
-		if ($node instanceof Node\Stmt\ClassMethod && $this->isServiceMethod($inside) && $node->isPublic()) {
+		if ($node instanceof Node\Stmt\ClassMethod && $this->isServiceClass($inside) && $node->isPublic()) {
 			$docComment = $node->getDocComment();
 			if (empty($docComment)) {
 				$this->emitMissingDocBlockError($fileName, $node, $inside);
@@ -53,7 +53,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function isServiceMethod(?ClassLike $inside = null) {
+	private function isServiceClass(?ClassLike $inside = null) {
 		if ($inside instanceof Class_) {
 			$parentClass = $inside->extends?->toString();
 			if (str_contains($parentClass, self::BASE_SERVICE)) {
@@ -61,7 +61,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 			}
 			if ($inside->extends instanceof Node\Name) {
 				$parentClass = $this->symbolTable->getClass($inside->extends);
-				return $this->isServiceMethod($parentClass);
+				return $this->isServiceClass($parentClass);
 			}
 		}
 
