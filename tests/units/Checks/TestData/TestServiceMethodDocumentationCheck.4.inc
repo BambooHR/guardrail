@@ -1,6 +1,6 @@
 <?php
 
-class MyService {
+class MyService extends BaseService {
 	// This method should emit 5 errors
 	/**
 	 * @param bool                   $a
@@ -49,6 +49,32 @@ class MyService {
 	 */
 	public function docBlockWithExtraTypes(string $a, int $b): int {
 		return 123;
+	}
+
+	// This method should emit 0 errors
+
+	/**
+	 * @param ?string|null $a
+	 * @param string|null $b
+	 * @param ?string $c
+	 *
+	 * @return int|null
+	 */
+	public function nullableTypes(?string $a, ?string $b, string|null $c): ?int {
+		return 123;
+	}
+
+	// This method should emit 2 errors for $b and $c
+
+	/**
+	 * @param MyObj[] $a
+	 * @param ?MyObj2[] $b
+	 * @param MyObj2[]|null $c
+	 *
+	 * @return MyObj3[]
+	 */
+	public function descriptiveArrayTypes(array $a, array $b, array $c): array {
+		return [];
 	}
 }
 

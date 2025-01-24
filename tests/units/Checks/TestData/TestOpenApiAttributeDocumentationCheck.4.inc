@@ -2,19 +2,19 @@
 use OpenApi\Attributes as OA;
 
 
-class MyController {
+class MyController extends BaseController {
 	#[OA\Get(path: "/test")]
-	public function withoutSearchPhrases() {
+	public function withoutDescription() {
 		return false;
 	}
 
-	#[OA\Get(path: "/test", x: ['vector-search-phrases' => []])]
-	public function withEmptySearchPhrases() {
+	#[OA\Get(path: "/test", description: '')]
+	public function withEmptyDescription() {
 		return false;
 	}
 
-	#[OA\Get(path: "/test", x: ['vector-search-phrases' => ['my test search phrase']])]
-	public function withSearchPhrases() {
+	#[OA\Get(path: "/test", description: 'this is my great description')]
+	public function withDescription() {
 		return false;
 	}
 }

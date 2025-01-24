@@ -1,6 +1,9 @@
 <?php
 
-class MyService {
+class MyBaseService {
+}
+
+class MyService extends MyBaseService {
 	// This method should emit 1 error
 	/**
 	 * @return int

@@ -1,7 +1,9 @@
 <?php
 use OpenApi\Attributes as OA;
 
-class MyController {
+class MyBaseController {
+}
+class MyController extends MyBaseController {
 	function undefinedVisibilityMethod() {
 		return false;
 	}

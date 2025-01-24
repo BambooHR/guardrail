@@ -12,7 +12,7 @@ class TestServiceMethodDocumentationCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testParametersSetAndUnset() {
-		$this->assertEquals(5, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK), "");
+		$this->assertEquals(6, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK), "");
 	}
 
 	/**
@@ -35,6 +35,6 @@ class TestServiceMethodDocumentationCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testComplexTypesMatchingAndUnMatchingDocBlocks() {
-		$this->assertEquals(13, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK), "");
+		$this->assertEquals(15, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK), "");
 	}
 }

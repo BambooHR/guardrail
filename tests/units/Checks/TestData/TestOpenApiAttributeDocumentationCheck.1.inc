@@ -1,13 +1,18 @@
 <?php
 use OpenApi\Attributes as OA;
 
+class BaseController {
+}
+class MyController extends BaseController {
+	// constructors don't need an attribute
+	public function __construct() {
+	}
 
-class MyController {
 	/**
 	 * @return bool
 	 */
 	#[\Onsen\SecurityAudit\Sensitivity\Low]
-	#[OA\Get(path: "/test")]
+	#[OA\Get(path: "/test", description: '123')]
 	public function hasAttribute() {
 		return false;
 	}

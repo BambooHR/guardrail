@@ -1,6 +1,9 @@
 <?php
-
-class MyService {
+class BaseService {
+}
+class SubService extends BaseService {
+}
+class MyService extends SubService {
 	// This method should emit 2 errors
 	/**
 	 * @param $a
@@ -28,7 +31,7 @@ class MyService {
 		return 123;
 	}
 
-	// This method should emit 2 errors
+//	 This method should emit 2 errors
 
 	/**
 	 * @param bool $a
@@ -39,8 +42,6 @@ class MyService {
 	public function partialMatchingDocBlock(string $a, int $b): int {
 		return 123;
 	}
-
-
 
 	// This method should emit 2 errors
 

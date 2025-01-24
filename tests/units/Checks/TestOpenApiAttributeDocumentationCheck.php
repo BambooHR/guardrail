@@ -34,6 +34,6 @@ class TestOpenApiAttributeDocumentationCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testWithAndWithoutVectorSearchPhrases() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_SEARCH_PHRASES_CHECK), "");
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK), "");
 	}
 }

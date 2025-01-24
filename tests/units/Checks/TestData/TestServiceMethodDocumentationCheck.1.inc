@@ -1,6 +1,10 @@
 <?php
 
-class MyService {
+use BambooHR\Silo\ApplicantTracking\Domain\JobsFeedDomain;
+
+class BaseService {
+}
+class MyService extends BaseService {
 	// This method should emit 2 errors
 	/**
 	 * @param int    $a
@@ -58,6 +62,35 @@ class MyService {
 	 */
 	public function withNormalTypedParams(bool $a, int $b, string $c): int {
 		return 123;
+	}
+
+	// This method should emit 0 errors
+
+	/**
+	 * @param MyObj $a
+	 *
+	 * @return MyObj2
+	 */
+	public function objTest(MyObj $a): MyObj2 {
+		return new MyObj2();
+	}
+
+	// This method should emit 1 error for the return type not being present
+
+	/**
+	 *
+	 */
+	public function emptyTest() {
+		return;
+	}
+
+	// This method should emit 0 errors since return type is not allowed on constructors
+	/**
+	 *
+	 * @param MyObj $a domain
+	 */
+	public function __construct(MyObj $a) {
+		$this->a = $a;
 	}
 }
 
