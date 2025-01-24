@@ -249,9 +249,10 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		];
 		if (preg_match_all('/@param\s+([^\s$]+(?:\s*[\|&]\s*[^\s$]+)*)?\s*(\$[^\s]+)?/', $docComment, $paramMatches, PREG_SET_ORDER)) {
 			foreach ($paramMatches as $paramMatch) {
+				$variableName = ltrim($paramMatch[2] ?? null, '$');
 				$result['params'][$variableName] = [
 					'type' => $this->extractDocGetVariableType($paramMatch[1] ?? null),
-					'variable' => $variableName = ltrim($paramMatch[2] ?? null, '$'),
+					'variable' => $variableName,
 				];
 			}
 		}
