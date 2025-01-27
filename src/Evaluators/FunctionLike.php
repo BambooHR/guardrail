@@ -3,6 +3,7 @@
 namespace BambooHR\Guardrail\Evaluators;
 
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Metrics\Metric;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
@@ -19,8 +20,15 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 		return [Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class];
 	}
 
+	/**
+	 * This picks up for functions and methods, but not closures. Closures are handled in the Expression\FunctionLike class.
+	 * @param Node        $node
+	 * @param SymbolTable $table
+	 * @param ScopeStack  $scopeStack
+	 *
+	 * @return void
+	 */
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-		// This picks up for functions and methods, but not closures. Closures are handled in the Expression\FunctionLike class.
 		self::handleEnterFunctionLike($node, $scopeStack);
 	}
 

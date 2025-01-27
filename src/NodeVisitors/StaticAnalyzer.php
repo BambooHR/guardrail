@@ -33,6 +33,7 @@ use BambooHR\Guardrail\Checks\Psr4Check;
 use BambooHR\Guardrail\Checks\ReadOnlyPropertyCheck;
 use BambooHR\Guardrail\Checks\ReturnCheck;
 use BambooHR\Guardrail\Checks\DependenciesOnVendorCheck;
+use BambooHR\Guardrail\Checks\ServiceMethodDocumentationCheck;
 use BambooHR\Guardrail\Checks\SplatCheck;
 use BambooHR\Guardrail\Checks\StaticCallCheck;
 use BambooHR\Guardrail\Checks\StaticPropertyFetchCheck;
@@ -43,6 +44,7 @@ use BambooHR\Guardrail\Checks\UnreachableCodeCheck;
 use BambooHR\Guardrail\Checks\UnsafeSuperGlobalCheck;
 use BambooHR\Guardrail\Checks\UnusedPrivateMemberVariableCheck;
 use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
+use BambooHR\Guardrail\Checks\OpenApiAttributeDocumentationCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
@@ -114,9 +116,8 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config)
 	{
 		$this->index = $index;
-		$this->scopeStack = new ScopeStack($output, $config);
+		$this->scopeStack = new ScopeStack($output, $metricOutput, $config);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
-		$this->metricOutput = $metricOutput;
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
 		$checkers = [
@@ -158,6 +159,8 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new ThrowsCheck($this->index, $output),
 			new CountableEmptinessCheck($this->index, $output),
 			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
+			new OpenApiAttributeDocumentationCheck($this->index, $output, $metricOutput),
+			new ServiceMethodDocumentationCheck($this->index, $output, $metricOutput),
 			//new ClassStoredAsVariableCheck($this->index, $output)
 		];
 
@@ -216,7 +219,9 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	public function setFile($name, Config $config)
 	{
 		$this->file = $name;
-		$this->scopeStack = new ScopeStack($this->scopeStack->getOutput(), $config);
+		$this->scopeStack = new ScopeStack(
+			$this->scopeStack->getOutput(), $this->scopeStack->getMetricOutput(), $config
+		);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->scopeStack->setCurrentFile($name);
 	}

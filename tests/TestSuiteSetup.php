@@ -2,6 +2,7 @@
 
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Metrics\Metric;
 use BambooHR\Guardrail\Metrics\MetricInterface;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\NodeVisitors\StaticAnalyzer;
@@ -42,6 +43,37 @@ abstract class TestSuiteSetup extends TestCase {
 	}
 
 	/**
+	 * runAnalyzerOnFile
+	 *
+	 * @param string $fileName
+	 * @param mixed  $emit
+	 * @param array  $additionalConfig
+	 *
+	 * @return XUnitOutput
+	 */
+	public function getOutputFromAnalyzer($fileName, $emit, array $additionalConfig = []) {
+		return $this->analyzeFileToOutput($fileName, $emit, $additionalConfig);
+	}
+
+	/**
+	 * @param $output
+	 * @param $metricType
+	 *
+	 * @return int
+	 */
+	public function getMetricCountByName($output, $metricType) {
+		/** @var Metric[] $counts */
+		$counts = $output->metrics;
+		$count = 0;
+		foreach($counts as $metric) {
+			if ($metric->getType() == $metricType) {
+				$count++;
+			}
+		}
+		return $count;
+	}
+
+	/**
 	 * @param string $fileName
 	 * @param mixed  $emit
 	 * @param array  $additionalConfig
@@ -59,13 +91,17 @@ abstract class TestSuiteSetup extends TestCase {
 
 		$config = new TestConfig($fileName, $emit, $additionalConfig);
 		$output = new class($config) extends XUnitOutput implements MetricOutputInterface {
+			public array $metrics = [];
 			function emitMetric(MetricInterface $metric): void {
-				return;
+				$this->metrics[] = $metric;
 			}
 		};
 
 		$indexer = new IndexingPhase($config, $output);
 		$indexer->indexFile($fileName);
+		foreach ($additionalConfig['additionalFilesToIndex'] ?? [] as $file) {
+			$indexer->indexFile($file);
+		}
 
 		$analyzer = new AnalyzingPhase();
 		$analyzer->initParser($config, $output);

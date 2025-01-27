@@ -3,6 +3,7 @@
 namespace BambooHR\Guardrail\Scope;
 
 use BambooHR\Guardrail\Config;
+use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope as ScopeInterface;
 use PhpParser\Node;
@@ -21,6 +22,7 @@ class ScopeStack implements ScopeInterface {
 
 	function __construct(
 		private OutputInterface $output,
+		private MetricOutputInterface $metricOutput,
 		private Config $config,
 	) { }
 
@@ -30,6 +32,10 @@ class ScopeStack implements ScopeInterface {
 
 	function getOutput(): OutputInterface {
 		return $this->output;
+	}
+
+	public function getMetricOutput(): MetricOutputInterface {
+		return $this->metricOutput;
 	}
 
 	function pushClass(Node\Stmt\ClassLike $class):void
