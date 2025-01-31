@@ -34,6 +34,13 @@ class TestOpenApiAttributeDocumentationCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testWithAndWithoutRequiredProperties() {
-		$this->assertEquals(5, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK), "");
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK), "");
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testWithAndWithoutRequiredTeamName() {
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_TEAM_CHECK), "");
 	}
 }
