@@ -47,7 +47,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 						$hasDescription = false;
 						$hasTeamName = false;
 						foreach ($attribute->args as $arg) {
-							$this->checkDeprecatedAttribute($arg, $fileName, $node);
+							$this->checkDeprecatedAttribute($arg, $fileName, $node, $inside);
 							$hasDescription = $hasDescription ?: $this->hasDescription($arg);
 							$hasTeamName = $hasTeamName ?: $this->hasTeamName($arg);
 						}
@@ -97,15 +97,27 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 		return false;
 	}
 
-	private function checkDeprecatedAttribute($arg, $fileName, $node) {
+	private function checkDeprecatedAttribute($arg, $fileName, $node, $inside) {
 		if ($arg?->name?->name === self::DEPRECATED_KEY && $arg?->value?->name?->toString() == 'true') {
 			$this->metricOutput->emitMetric(new Metric(
 				$fileName,
 				$node->getLine(),
 				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
-				[]
+				["name" => $this->getNodeName($node, $inside)]
 			));
 		}
+	}
+
+	public function getNodeName(Node $node, ?Node\Stmt\ClassLike $inside) {
+		if ($node instanceof Node\Stmt\ClassMethod) {
+			$className = isset($inside) && isset($inside->name) ? strval($inside->name) : "(anonymous)";
+			$name = $className . ($node->isStatic() ? "->" : "::") . $node->name;
+		} else {
+			/** @var Node\Stmt\Function_ $node */
+			$name = strval($node->name);
+		}
+
+		return $name;
 	}
 
 	private function hasDescription($arg): bool {

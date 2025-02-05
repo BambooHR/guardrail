@@ -8,6 +8,8 @@ use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Function_;
 
 class ServiceMethodDocumentationCheck extends BaseCheck {
 
@@ -36,7 +38,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		$this->emitMetricsForNode($node);
+		$this->emitMetricsForNode($node, $inside);
 		if ($node instanceof Node\Stmt\ClassMethod && $this->isServiceClass($inside) && $node->isPublic()) {
 			$docComment = $node->getDocComment();
 			if (empty($docComment)) {
@@ -76,19 +78,32 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node\Stmt\ClassMethod $node
+	 * @param Node      $node
+	 * @param ClassLike $inside
 	 *
 	 * @return void
 	 */
-	private function emitMetricsForNode($node): void {
+	private function emitMetricsForNode(Node $node, ClassLike $inside): void {
 		if (str_contains($node->getDocComment()?->getText(), '@deprecated')) {
 			$this->metricOutput->emitMetric(new Metric(
 				$node->name,
 				$node->getLine(),
 				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
-				[]
+				["name" => $this->getNodeName($node, $inside)]
 			));
 		}
+	}
+
+	public function getNodeName(Node $node, ?Node\Stmt\ClassLike $inside) {
+		if ($node instanceof Node\Stmt\ClassMethod) {
+			$className = isset($inside) && isset($inside->name) ? strval($inside->name) : "(anonymous)";
+			$name = $className . ($node->isStatic() ? "->" : "::") . $node->name;
+		} else {
+			/** @var Node\Stmt\Function_ $node */
+			$name = strval($node->name);
+		}
+
+		return $name;
 	}
 
 	private function validateParameters($actualParams, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {
