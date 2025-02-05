@@ -78,12 +78,12 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node      $node
-	 * @param ClassLike $inside
+	 * @param Node           $node
+	 * @param ClassLike|null $inside
 	 *
 	 * @return void
 	 */
-	private function emitMetricsForNode(Node $node, ClassLike $inside): void {
+	private function emitMetricsForNode(Node $node, ?Node\Stmt\ClassLike $inside): void {
 		if (str_contains($node->getDocComment()?->getText(), '@deprecated')) {
 			$this->metricOutput->emitMetric(new Metric(
 				$node->name,
