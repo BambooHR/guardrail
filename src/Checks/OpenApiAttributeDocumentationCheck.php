@@ -102,7 +102,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 			$this->metricOutput->emitMetric(new Metric(
 				$fileName,
 				$node->getLine(),
-				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
+				ErrorConstants::TYPE_METRICS_DEPRECATED_APIS,
 				["name" => $this->getNodeName($node, $inside)]
 			));
 		}

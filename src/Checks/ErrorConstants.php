@@ -40,7 +40,8 @@ class ErrorConstants {
 	const TYPE_INCORRECT_REGEX = 'Standard.Incorrect.Regex';
 	const TYPE_METRICS_COMPLEXITY = 'Standard.Metrics.Complexity';
 	const TYPE_METRICS_LINES_OF_CODE = 'Standard.Metrics.Lines';
-	const TYPE_METRICS_DEPRECATED_FUNCTIONS = 'Standard.Metrics.Deprecated';
+	const TYPE_METRICS_DEPRECATED_SERVICE_METHODS = 'Standard.Metrics.Deprecated.Service';
+	const TYPE_METRICS_DEPRECATED_APIS = 'Standard.Metrics.Deprecated.API';
 	const TYPE_MISSING_BREAK = 'Standard.Switch.Break';
 	const TYPE_MISSING_CONSTRUCT = 'Standard.Constructor.MissingCall';
 	const TYPE_NULL_DEREFERENCE = "Standard.Null.Dereference";

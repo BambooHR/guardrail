@@ -16,8 +16,8 @@ class DeprecatedFunctionMetricTest extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testRunDeprecatedMetricOnFunction() {
-		$output = $this->getOutputFromAnalyzer('.1.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS);
-		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS));
+		$output = $this->getOutputFromAnalyzer('.1.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_SERVICE_METHODS);
+		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_SERVICE_METHODS));
 	}
 
 	/**
@@ -26,7 +26,7 @@ class DeprecatedFunctionMetricTest extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testRunDeprecatedMetricOnClassMethod() {
-		$output = $this->getOutputFromAnalyzer('.2.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS);
-		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS));
+		$output = $this->getOutputFromAnalyzer('.2.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_SERVICE_METHODS);
+		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_SERVICE_METHODS));
 	}
 }

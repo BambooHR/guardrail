@@ -88,7 +88,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 			$this->metricOutput->emitMetric(new Metric(
 				$node->name,
 				$node->getLine(),
-				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
+				ErrorConstants::TYPE_METRICS_DEPRECATED_SERVICE_METHODS,
 				["name" => $this->getNodeName($node, $inside)]
 			));
 		}

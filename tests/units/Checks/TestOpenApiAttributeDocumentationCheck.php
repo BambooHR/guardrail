@@ -26,8 +26,8 @@ class TestOpenApiAttributeDocumentationCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testMethodWithDeprecatedAttribute() {
-		$output = $this->getOutputFromAnalyzer('.3.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS);
-		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS));
+		$output = $this->getOutputFromAnalyzer('.3.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_APIS);
+		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_APIS));
 	}
 
 	/**
