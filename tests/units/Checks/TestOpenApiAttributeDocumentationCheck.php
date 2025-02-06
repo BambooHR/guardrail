@@ -26,14 +26,21 @@ class TestOpenApiAttributeDocumentationCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testMethodWithDeprecatedAttribute() {
-		$output = $this->getOutputFromAnalyzer('.3.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS);
-		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS));
+		$output = $this->getOutputFromAnalyzer('.3.inc', ErrorConstants::TYPE_METRICS_DEPRECATED_APIS);
+		$this->assertEquals(1, $this->getMetricCountByName($output, ErrorConstants::TYPE_METRICS_DEPRECATED_APIS));
 	}
 
 	/**
 	 * @return void
 	 */
-	public function testWithAndWithoutVectorSearchPhrases() {
+	public function testWithAndWithoutRequiredProperties() {
 		$this->assertEquals(2, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK), "");
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testWithAndWithoutRequiredTeamName() {
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY), "");
 	}
 }

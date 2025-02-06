@@ -11,7 +11,8 @@ use PhpParser\Node\Stmt\ClassLike;
 
 class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	private const string ATTRIBUTE_NAMESPACE = 'OpenApi\Attributes';
-	private const string SEARCH_PHRASES_KEY = 'vector-search-phrases';
+	private const string TEAM_NAME_KEY = 'team-name';
+	private const string X_KEY = 'x';
 	private const string DEPRECATED_KEY = 'deprecated';
 	private const string DESCRIPTION_KEY = 'description';
 	private const string BASE_CONTROLLER = 'BaseController';
@@ -44,9 +45,11 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 					$attributeName = $attribute?->name?->toString();
 					if (str_starts_with($attributeName, self::ATTRIBUTE_NAMESPACE)) {
 						$hasDescription = false;
+						$hasTeamName = false;
 						foreach ($attribute->args as $arg) {
-							$this->checkDeprecatedAttribute($arg, $fileName, $node);
+							$this->checkDeprecatedAttribute($arg, $fileName, $node, $inside);
 							$hasDescription = $hasDescription ?: $this->hasDescription($arg);
+							$hasTeamName = $hasTeamName ?: $this->hasTeamName($arg);
 						}
 						if (!$hasDescription) {
 							$this->emitErrorOnLine(
@@ -54,6 +57,14 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 								$node->getLine(),
 								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK,
 								"OpenAPI Attribute must have a description. Method: {$node->name->name}"
+							);
+						}
+						if (!$hasTeamName) {
+							$this->emitErrorOnLine(
+								$fileName,
+								$node->getLine(),
+								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY,
+								"OpenAPI Attribute must have a 'team-name' key set in the 'x' property. Method: {$node->name->name}"
 							);
 						}
 						return;
@@ -86,18 +97,42 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 		return false;
 	}
 
-	private function checkDeprecatedAttribute($arg, $fileName, $node) {
+	private function checkDeprecatedAttribute($arg, $fileName, $node, $inside) {
 		if ($arg?->name?->name === self::DEPRECATED_KEY && $arg?->value?->name?->toString() == 'true') {
 			$this->metricOutput->emitMetric(new Metric(
 				$fileName,
 				$node->getLine(),
-				ErrorConstants::TYPE_METRICS_DEPRECATED_FUNCTIONS,
-				[]
+				ErrorConstants::TYPE_METRICS_DEPRECATED_APIS,
+				["name" => $this->getNodeName($node, $inside)]
 			));
 		}
 	}
 
+	public function getNodeName(Node $node, ?Node\Stmt\ClassLike $inside) {
+		if ($node instanceof Node\Stmt\ClassMethod) {
+			$className = isset($inside) && isset($inside->name) ? strval($inside->name) : "(anonymous)";
+			$name = $className . ($node->isStatic() ? "->" : "::") . $node->name;
+		} else {
+			/** @var Node\Stmt\Function_ $node */
+			$name = strval($node->name);
+		}
+
+		return $name;
+	}
+
 	private function hasDescription($arg): bool {
 		return $arg->name->name === self::DESCRIPTION_KEY && !empty($arg->value->value);
+	}
+
+	private function hasTeamName($arg): bool {
+		if ($arg->name->name === self::X_KEY && $arg->value instanceof Node\Expr\Array_) {
+			foreach ($arg->value->items as $item) {
+				if ($item->key->value === self::TEAM_NAME_KEY && !empty($item->value->value)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }

@@ -12,7 +12,7 @@ class MyController extends BaseController {
 	 * @return bool
 	 */
 	#[\Onsen\SecurityAudit\Sensitivity\Low]
-	#[OA\Get(path: "/test", description: '123')]
+	#[OA\Get(path: "/test", description: '123', x: ['team-name' => 'my-team'])]
 	public function hasAttribute() {
 		return false;
 	}

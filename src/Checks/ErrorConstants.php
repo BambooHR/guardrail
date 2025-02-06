@@ -40,7 +40,8 @@ class ErrorConstants {
 	const TYPE_INCORRECT_REGEX = 'Standard.Incorrect.Regex';
 	const TYPE_METRICS_COMPLEXITY = 'Standard.Metrics.Complexity';
 	const TYPE_METRICS_LINES_OF_CODE = 'Standard.Metrics.Lines';
-	const TYPE_METRICS_DEPRECATED_FUNCTIONS = 'Standard.Metrics.Deprecated';
+	const TYPE_METRICS_DEPRECATED_SERVICE_METHODS = 'Standard.Metrics.Deprecated.Service';
+	const TYPE_METRICS_DEPRECATED_APIS = 'Standard.Metrics.Deprecated.API';
 	const TYPE_MISSING_BREAK = 'Standard.Switch.Break';
 	const TYPE_MISSING_CONSTRUCT = 'Standard.Constructor.MissingCall';
 	const TYPE_NULL_DEREFERENCE = "Standard.Null.Dereference";
@@ -83,6 +84,7 @@ class ErrorConstants {
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
 	const TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK = 'Standard.OpenApiAttribute.Documentation';
+	const TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY = 'Standard.OpenApiAttribute.MissingRequiredExtensionProperty';
 	const TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK = 'Standard.ServiceMethod.Documentation';
 
 
