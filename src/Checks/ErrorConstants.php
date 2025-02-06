@@ -83,7 +83,7 @@ class ErrorConstants {
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
 	const TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK = 'Standard.OpenApiAttribute.Documentation';
-	const TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_TEAM_CHECK = 'Standard.OpenApiAttribute.Documentation.TeamName';
+	const TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY = 'Standard.OpenApiAttribute.MissingRequiredExtensionProperty';
 	const TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK = 'Standard.ServiceMethod.Documentation';
 
 

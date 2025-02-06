@@ -63,7 +63,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 							$this->emitErrorOnLine(
 								$fileName,
 								$node->getLine(),
-								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_TEAM_CHECK,
+								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY,
 								"OpenAPI Attribute must have a 'team-name' key set in the 'x' property. Method: {$node->name->name}"
 							);
 						}
