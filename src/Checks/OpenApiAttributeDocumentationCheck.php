@@ -55,7 +55,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 							$this->emitErrorOnLine(
 								$fileName,
 								$node->getLine(),
-								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK,
+								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY,
 								"OpenAPI Attribute must have a description. Method: {$node->name->name}"
 							);
 						}
@@ -121,11 +121,11 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	}
 
 	private function hasDescription($arg): bool {
-		return $arg->name->name === self::DESCRIPTION_KEY && !empty($arg->value->value);
+		return $arg?->name?->name === self::DESCRIPTION_KEY && !empty($arg->value->value);
 	}
 
 	private function hasTeamName($arg): bool {
-		if ($arg->name->name === self::X_KEY && $arg->value instanceof Node\Expr\Array_) {
+		if ($arg?->name?->name === self::X_KEY && $arg->value instanceof Node\Expr\Array_) {
 			foreach ($arg->value->items as $item) {
 				if ($item->key->value === self::TEAM_NAME_KEY && !empty($item->value->value)) {
 					return true;

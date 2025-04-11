@@ -32,4 +32,38 @@ class MyController extends BaseController {
 	public function withAllProperties() {
 		return false;
 	}
+
+	// We don't support non type hinted arguments. This should emit one error for description
+	#[\Onsen\SecurityAudit\Sensitivity\Low]
+	#[OA\Get('path',
+		'operationId',
+		'description',
+		'summary',
+		[['oauth' => []]],
+		x: ['team-name' => 'my-team'],
+	)]
+	public function testWithoutDescriptionParamHint() {
+		return false;
+	}
+
+	// We don't support non type hinted arguments. This should emit two errors for description and team name
+	#[\Onsen\SecurityAudit\Sensitivity\Low]
+	#[OA\Get('path',
+		'operationId',
+		'description',
+		'summary',
+		[['oauth' => []]],
+		'servers',
+		'requestBody',
+		'tags',
+		'parameters',
+		'responses',
+		'callbacks',
+		'externalDocs',
+		'deprecated',
+		['team-name' => 'my-team'],
+	)]
+	public function testWithoutParamHints() {
+		return false;
+	}
 }
