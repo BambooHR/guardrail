@@ -73,6 +73,7 @@ Guardrail classifies checks by name.  Here is the standard list of errors.  Note
 | Standard.Inheritance.Unimplemented  | Class implementing an interface fails to implement on of it's methods.                                       |
 | Standard.Function.InsideFunction    | Declaring a function inside of another function.  (Closures/lambdas are still allowed.)                      |
 | Standard.Global.Expression          | Referencing $GLOBALS\[ $expr ]                                                                               |
+| Standard.Global.Function            | Function defined at the global level. Functions should be placed in namespaces, classes, or conditional blocks. |
 | Standard.Global.String              | Referencing a global with either global $var or $GLOBALS\['var']                                             |
 | Standard.Goto                       | Any instance of a "goto" statement                                                                           |
 | Standard.Override.Base              | Attempt to use a #\[Override] on method in a base class                                                      |

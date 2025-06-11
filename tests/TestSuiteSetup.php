@@ -119,6 +119,7 @@ abstract class TestSuiteSetup extends TestCase {
 		$fileName = "test.php";
 		$emit = ErrorConstants::getConstants();
 		unset( $emit[array_search(ErrorConstants::TYPE_AUTOLOAD_ERROR, $emit)] );
+		unset( $emit[array_search(ErrorConstants::TYPE_GLOBAL_FUNCTION, $emit)] );
 		$additionalConfig = array_merge(["basePath" => "/"], $additionalConfig);
 		return $this->analyzeStringToOutput($fileName, $fileData, $emit, $additionalConfig);
 	}
