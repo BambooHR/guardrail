@@ -17,6 +17,7 @@ use BambooHR\Guardrail\Checks\ConstructorCheck;
 use BambooHR\Guardrail\Checks\CountableEmptinessCheck;
 use BambooHR\Guardrail\Checks\CyclomaticComplexityCheck;
 use BambooHR\Guardrail\Checks\DefinedConstantCheck;
+use BambooHR\Guardrail\Checks\GlobalFunctionCheck;
 use BambooHR\Guardrail\Checks\DocBlockTypesCheck;
 use BambooHR\Guardrail\Checks\EnumCheck;
 use BambooHR\Guardrail\Checks\FunctionCallCheck;
@@ -158,6 +159,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new ClassConstCheck($this->index, $output),
 			new ThrowsCheck($this->index, $output),
 			new CountableEmptinessCheck($this->index, $output),
+			new GlobalFunctionCheck($this->index, $output),
 			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
 			new OpenApiAttributeDocumentationCheck($this->index, $output, $metricOutput),
 			new ServiceMethodDocumentationCheck($this->index, $output, $metricOutput),

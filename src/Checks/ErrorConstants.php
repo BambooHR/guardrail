@@ -21,6 +21,7 @@ class ErrorConstants {
 	const TYPE_PSR4 = "Standard.Psr4";
 	const TYPE_DEPRECATED_INTERNAL = 'Standard.Deprecated.Internal';
 	const TYPE_DEPRECATED_USER = 'Standard.Deprecated.User';
+	const TYPE_GLOBAL_FUNCTION = 'Standard.Global.Function';
 	const TYPE_DOC_BLOCK_MISMATCH = 'Standard.DocBlock.Mismatch';
 	const TYPE_DOC_BLOCK_PARAM = 'Standard.DocBlock.Param';
 	const TYPE_DOC_BLOCK_RETURN = 'Standard.DocBlock.Return';
