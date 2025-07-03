@@ -107,7 +107,7 @@ class TestUnifiedDiffFilter extends TestCase {
         
         // ignoreParts = 2
         $result2 = UnifiedDiffFilter::parse($patchContent, 2);
-        $this->assertArrayHasKey('src/Example.php', $result2);
+        $this->assertArrayHasKey('Folder/Example.php', $result2);
     }
     
     /**
