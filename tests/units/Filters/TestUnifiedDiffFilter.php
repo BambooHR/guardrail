@@ -26,7 +26,7 @@ class TestUnifiedDiffFilter extends TestCase {
         $result = UnifiedDiffFilter::parse($patchContent);
         
         $this->assertArrayHasKey('src/Example.php', $result);
-        $this->assertEquals([[10, 16]], $result['Example.php']);
+        $this->assertEquals([[10, 16]], $result['src/Example.php']);
     }
     
     /**
@@ -48,8 +48,8 @@ class TestUnifiedDiffFilter extends TestCase {
         
         $this->assertArrayHasKey('src/Example1.php', $result);
         $this->assertArrayHasKey('src/Example2.php', $result);
-        $this->assertEquals([[5, 11]], $result['Example1.php']);
-        $this->assertEquals([[15, 21]], $result['Example2.php']);
+        $this->assertEquals([[5, 11]], $result['src/Example1.php']);
+        $this->assertEquals([[15, 21]], $result['src/Example2.php']);
     }
     
     /**
@@ -85,8 +85,8 @@ class TestUnifiedDiffFilter extends TestCase {
         
         $result = UnifiedDiffFilter::parse($patchContent);
         
-        $this->assertArrayHasKey('Example.php', $result);
-        $this->assertEquals([[5, 5]], $result['Example.php']);
+        $this->assertArrayHasKey('src/Example.php', $result);
+        $this->assertEquals([[5, 5]], $result['src/Example.php']);
     }
     
     /**
