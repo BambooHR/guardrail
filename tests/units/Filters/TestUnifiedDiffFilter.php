@@ -25,7 +25,7 @@ class TestUnifiedDiffFilter extends TestCase {
         
         $result = UnifiedDiffFilter::parse($patchContent);
         
-        $this->assertArrayHasKey('Example.php', $result);
+        $this->assertArrayHasKey('src/Example.php', $result);
         $this->assertEquals([[10, 16]], $result['Example.php']);
     }
     
@@ -46,8 +46,8 @@ class TestUnifiedDiffFilter extends TestCase {
         
         $result = UnifiedDiffFilter::parse($patchContent);
         
-        $this->assertArrayHasKey('Example1.php', $result);
-        $this->assertArrayHasKey('Example2.php', $result);
+        $this->assertArrayHasKey('src/Example1.php', $result);
+        $this->assertArrayHasKey('src/Example2.php', $result);
         $this->assertEquals([[5, 11]], $result['Example1.php']);
         $this->assertEquals([[15, 21]], $result['Example2.php']);
     }
@@ -67,8 +67,8 @@ class TestUnifiedDiffFilter extends TestCase {
         
         $result = UnifiedDiffFilter::parse($patchContent);
         
-        $this->assertArrayHasKey('Example.php', $result);
-        $this->assertEquals([[5, 11], [20, 26]], $result['Example.php']);
+        $this->assertArrayHasKey('src/Example.php', $result);
+        $this->assertEquals([[5, 11], [20, 26]], $result['src/Example.php']);
     }
     
     /**
@@ -103,11 +103,11 @@ class TestUnifiedDiffFilter extends TestCase {
         
         // Default ignoreParts = 1
         $result1 = UnifiedDiffFilter::parse($patchContent);
-        $this->assertArrayHasKey('Folder/Example.php', $result1);
+        $this->assertArrayHasKey('src/Folder/Example.php', $result1);
         
         // ignoreParts = 2
         $result2 = UnifiedDiffFilter::parse($patchContent, 2);
-        $this->assertArrayHasKey('Example.php', $result2);
+        $this->assertArrayHasKey('src/Example.php', $result2);
     }
     
     /**
@@ -220,14 +220,14 @@ class TestUnifiedDiffFilter extends TestCase {
         $diffFilter = new UnifiedDiffFilter($filter);
         
         // Lines that should emit
-        $this->assertTrue($diffFilter->shouldEmit('Example.php', 'ERROR_TYPE', 10));
-        $this->assertTrue($diffFilter->shouldEmit('Example.php', 'ERROR_TYPE', 15));
-        $this->assertTrue($diffFilter->shouldEmit('Example.php', 'ERROR_TYPE', 20));
+        $this->assertTrue($diffFilter->shouldEmit('src/Example.php', 'ERROR_TYPE', 10));
+        $this->assertTrue($diffFilter->shouldEmit('src/Example.php', 'ERROR_TYPE', 15));
+        $this->assertTrue($diffFilter->shouldEmit('src/Example.php', 'ERROR_TYPE', 20));
         
         // Lines that should not emit
-        $this->assertFalse($diffFilter->shouldEmit('Example.php', 'ERROR_TYPE', 5));
-        $this->assertFalse($diffFilter->shouldEmit('Example.php', 'ERROR_TYPE', 18));
-        $this->assertFalse($diffFilter->shouldEmit('Example.php', 'ERROR_TYPE', 25));
-        $this->assertFalse($diffFilter->shouldEmit('OtherFile.php', 'ERROR_TYPE', 10));
+        $this->assertFalse($diffFilter->shouldEmit('src/Example.php', 'ERROR_TYPE', 5));
+        $this->assertFalse($diffFilter->shouldEmit('src/Example.php', 'ERROR_TYPE', 18));
+        $this->assertFalse($diffFilter->shouldEmit('src/Example.php', 'ERROR_TYPE', 25));
+        $this->assertFalse($diffFilter->shouldEmit('src/OtherFile.php', 'ERROR_TYPE', 10));
     }
 }
