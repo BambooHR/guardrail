@@ -1,5 +1,6 @@
 <?php namespace BambooHR\Guardrail\Abstractions;
 
+use InvalidArgumentException;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -97,4 +98,16 @@ interface ClassInterface {
 	public function isEnum():bool;
 
 	public function isReadOnly():bool;
+
+	/**
+	 * @return AttributeInterface[]
+	 */
+	public function getAttributes(): array;
+
+	// TODO(shayman@bamboohr.com): Review design
+
+	/**
+	 * @throws InvalidArgumentException
+	 */
+	public function getConstant(string $name): mixed;
 }

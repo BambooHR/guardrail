@@ -2,12 +2,9 @@
 
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
-use PhpParser\Node\Expr;
+use InvalidArgumentException;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\DNumber;
-use PhpParser\Node\Scalar\LNumber;
-use PhpParser\Node\Scalar\String_;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -197,5 +194,16 @@ class ReflectedClass implements ClassInterface {
 			return $this->refl->isReadOnly();
 		}
 		return false;
+	}
+
+	public function getAttributes(): array {
+		return array_map(
+			fn($attribute) => new ReflectedAttribute($attribute),
+			$this->refl->getAttributes()
+		);
+	}
+
+	public function getConstant(string $name): mixed {
+		return $this->refl->getConstant($name) ?? throw new InvalidArgumentException("Constant '$name' does not exist");
 	}
 }

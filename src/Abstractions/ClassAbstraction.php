@@ -7,12 +7,13 @@
 
 use BambooHR\Guardrail\NodeVisitors\Grabber;
 use BambooHR\Guardrail\TypeComparer;
+use InvalidArgumentException;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Scalar;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\Stmt\Case_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
@@ -248,5 +249,43 @@ class ClassAbstraction implements ClassInterface {
 
 	public function isEnum(): bool {
 		return $this->class instanceof Enum_;
+	}
+
+	public function getAttributes(): array
+	{
+		$attributes = [];
+		foreach ($this->class->attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				$attributes[] = new AttributeAbstraction($attr);
+			}
+		}
+		return $attributes;
+	}
+
+	public function getConstant(string $name): mixed
+	{
+		$classConstStmts = Grabber::filterByType($this->class->stmts, [ClassConst::class]);
+
+		foreach ($classConstStmts as $classConstStmt) {
+			if ($classConstStmt instanceof ClassConst) {
+				foreach ($classConstStmt->consts as $const) {
+					if (strcasecmp($const->name, $name) == 0) {
+						if ($const->value instanceof Scalar) {
+							return $const->value->value;
+						} else if ($const->value instanceof Expr\ConstFetch) {
+							if (strcasecmp($const->value->name, "true") == 0 ||
+								strcasecmp($const->value->name, "false") == 0)
+								return strcasecmp($const->value->name, "true") == 0;
+
+							if (strcasecmp($const->value->name, "NULL") == 0) {
+								return null;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		throw new InvalidArgumentException();
 	}
 }
