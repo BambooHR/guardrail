@@ -26,7 +26,7 @@ readonly class ReflectedAttribute implements AttributeInterface
 		);
 	}
 
-	private function toExpression(mixed $argumentValue): ?Expr {
+	private function toExpression(mixed $argumentValue): Expr {
 		return match (gettype($argumentValue)) {
 			"boolean" => new ConstFetch(new Name($argumentValue ? "true" : "false")),
 			"integer" => new LNumber($argumentValue),

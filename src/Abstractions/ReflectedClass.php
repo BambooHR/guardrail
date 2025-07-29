@@ -204,6 +204,11 @@ class ReflectedClass implements ClassInterface {
 	}
 
 	public function getConstant(string $name): mixed {
-		return $this->refl->getConstant($name) ?? throw new InvalidArgumentException("Constant '$name' does not exist");
+		if ($this->hasConstant($name)) {
+			return $this->refl->getConstant($name);
+		}
+		else {
+			throw new InvalidArgumentException("Constant '$name' does not exist");
+		}
 	}
 }

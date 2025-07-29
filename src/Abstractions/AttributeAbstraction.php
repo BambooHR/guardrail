@@ -13,7 +13,7 @@ readonly class AttributeAbstraction implements AttributeInterface
 
 	function getName(): string
 	{
-		return $this->attribute->name;
+		return $this->attribute->name->toString();
 	}
 
 	function getArgumentExpressions(): array

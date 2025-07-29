@@ -254,7 +254,7 @@ readonly class ConstantExpressionEvaluator {
 				default => $class->toString(),
 			};
 		} else {
-			return $this->evaluate($class->expr, $inside, $scope);
+			return $this->evaluate($class, $inside, $scope);
 		}
 	}
 
