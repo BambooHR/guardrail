@@ -10,9 +10,17 @@ use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node\Attribute;
 use PhpParser\Node\AttributeGroup;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Exit_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\IntersectionType;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\DNumber;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
@@ -496,6 +504,31 @@ class Util {
 			"_REQUEST", "_SERVER", "_SESSION", "_FILES",
 			"http_response_header"
 		];
+	}
+
+	static public function valueToExpression(mixed $value): ?Expr {
+		return match (gettype($value)) {
+			'boolean' => new ConstFetch(new Name($value ? 'true' : 'false')),
+			'integer' => new LNumber($value),
+			'double'  => new DNumber($value),
+			'string'  => new String_($value),
+			'array'   => self::arrayToExpression($value),
+			'NULL'    => new ConstFetch(new Name('null')),
+			default   => null, // Handles invalid types like resources or objects
+		};
+	}
+
+	static private function arrayToExpression(array $values): ?Expr {
+		$items = [];
+		foreach ($values as $key => $value) {
+			$itemValue = self::valueToExpression($value);
+			if ($itemValue === null) {
+				return null;
+			}
+			$itemKey = is_string($key) ? new String_($key) : null;
+			$items[] = new ArrayItem($itemValue, $itemKey);
+		}
+		return new Array_($items);
 	}
 }
 

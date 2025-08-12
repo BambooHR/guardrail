@@ -93,18 +93,18 @@ class AttributeCheck extends BaseCheck
 
 	private function getAttributeFlags(AttributeInterface $attributeAttribute, ?ClassLike $inside, ?Scope $scope): ?int
 	{
-		$argumentExpressions = $attributeAttribute->getArgumentExpressions();
+		$arguments = $attributeAttribute->getArguments();
 
-		if (empty($argumentExpressions)) {
+		if (empty($arguments)) {
 			return Attribute::TARGET_ALL;
 		}
 
-		if (count($argumentExpressions) != 1) {
+		if (count($arguments) != 1) {
 			return null;
 		}
 
 		try {
-			$argumentValue = $this->constantExpressionEvaluator->evaluate($argumentExpressions[0], $inside, $scope);
+			$argumentValue = $this->constantExpressionEvaluator->evaluate($arguments[0]->value);
 
 			return is_int($argumentValue) ? $argumentValue : null;
 		} catch (ConstExprEvaluationException) {
@@ -115,7 +115,7 @@ class AttributeCheck extends BaseCheck
 	private function findAttributeAttribute(ClassInterface $class): ?AttributeInterface
 	{
 		foreach ($class->getAttributes() as $classAttribute) {
-			if ($classAttribute->getName() === Attribute::class) {
+			if ($classAttribute->getClassName() === Attribute::class) {
 				return $classAttribute;
 			}
 		}

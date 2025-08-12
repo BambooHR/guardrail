@@ -2,25 +2,13 @@
 
 namespace BambooHR\Guardrail\Abstractions;
 
-use PhpParser\Node\Expr;
+use PhpParser\Node\Arg;
 
-/**
- * This interface represents the application of an attribute.
- * It is not the attribute class itself, but rather a representation of
- * how an attribute is applied to a class, method, property, etc.
- */
-interface AttributeInterface
-{
-	/**
-	 * This method returns the name of the attribute class being applied.
-	 */
-	function getName(): string;
+interface AttributeInterface {
+	public function getClassName(): string;
 
 	/**
-	 * This method returns an array of arguments that were passed to the
-	 * attribute's constructor when it was applied.
-	 *
-	 * @return Expr[]
+	 * @return Arg[]
 	 */
-	function getArgumentExpressions(): array;
+	public function getArguments(): array;
 }

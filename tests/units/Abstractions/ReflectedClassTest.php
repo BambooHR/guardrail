@@ -16,24 +16,18 @@ use ReflectionClass;
 use Attribute;
 
 #[Attribute]
-class TestAttributeForReflectedTest
-{
+class TestAttributeForReflectedTest {
 	public function __construct(public string $value)
 	{
 	}
 }
 
 #[TestAttributeForReflectedTest("hello")]
-class ClassWithAttributeForReflectedTest
-{
-}
+class ClassWithAttributeForReflectedTest {}
 
-class ClassWithoutAttributesForReflectedTest
-{
-}
+class ClassWithoutAttributesForReflectedTest {}
 
-class ClassWithConstantsForReflectedTest
-{
+class ClassWithConstantsForReflectedTest {
 	const TEST_STRING = "string value";
 	const TEST_INT = 42;
 	const TEST_FLOAT = 3.14;
@@ -43,11 +37,9 @@ class ClassWithConstantsForReflectedTest
 	const TEST_ARRAY = ["foo" => "bar", 1 => 2];
 }
 
-class ReflectedClassTest extends TestCase
-{
+class ReflectedClassTest extends TestCase {
 
-	public function testGetAttributes()
-	{
+	public function testGetAttributes() {
 		$reflectionClass = new ReflectionClass(ClassWithAttributeForReflectedTest::class);
 		$reflectedClass = new ReflectedClass(new ReflectionClass(ClassWithAttributeForReflectedTest::class));
 		$this->assertEquals(
@@ -56,8 +48,7 @@ class ReflectedClassTest extends TestCase
 		);
 	}
 
-	public function testGetAttributesReturnsEmptyArray()
-	{
+	public function testGetAttributesReturnsEmptyArray() {
 		$reflectedClass = new ReflectedClass(new ReflectionClass(ClassWithoutAttributesForReflectedTest::class));
 		$this->assertEquals([], $reflectedClass->getAttributes());
 	}
@@ -65,14 +56,12 @@ class ReflectedClassTest extends TestCase
 	/**
 	 * @dataProvider constantValueProvider
 	 */
-	public function testGetConstantValueExpression($constantName, $expectedNode)
-	{
+	public function testGetConstantValueExpression($constantName, $expectedNode) {
 		$reflectedClass = new ReflectedClass(new ReflectionClass(ClassWithConstantsForReflectedTest::class));
 		$this->assertEquals($expectedNode, $reflectedClass->getConstantValueExpression($constantName));
 	}
 
-	public function constantValueProvider(): array
-	{
+	public function constantValueProvider(): array {
 		return [
 			'string' => ['TEST_STRING', new String_("string value")],
 			'integer' => ['TEST_INT', new LNumber(42)],
@@ -87,8 +76,7 @@ class ReflectedClassTest extends TestCase
 		];
 	}
 
-	public function testGetConstantValueExpressionForNonExistent()
-	{
+	public function testGetConstantValueExpressionForNonExistent() {
 		$reflectedClass = new ReflectedClass(new ReflectionClass(ClassWithConstantsForReflectedTest::class));
 		$this->assertNull($reflectedClass->getConstantValueExpression('NON_EXISTENT_CONST'));
 	}

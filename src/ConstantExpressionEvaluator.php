@@ -87,7 +87,7 @@ readonly class ConstantExpressionEvaluator {
 	/**
 	 * @throws ConstExprEvaluationException
 	 */
-	private function resolveValue(string $className, string $constantName) {
+	private function resolveValue(string $className, string $constantName): mixed {
 		if ($constantName == "class") {
 			return $className;
 		}
