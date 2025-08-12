@@ -262,30 +262,16 @@ class ClassAbstraction implements ClassInterface {
 		return $attributes;
 	}
 
-	public function getConstant(string $name): mixed
+	public function getConstantValueExpression(string $name): ?Expr
 	{
-		$classConstStmts = Grabber::filterByType($this->class->stmts, [ClassConst::class]);
-
-		foreach ($classConstStmts as $classConstStmt) {
-			if ($classConstStmt instanceof ClassConst) {
-				foreach ($classConstStmt->consts as $const) {
-					if (strcasecmp($const->name, $name) == 0) {
-						if ($const->value instanceof Scalar) {
-							return $const->value->value;
-						} else if ($const->value instanceof Expr\ConstFetch) {
-							if (strcasecmp($const->value->name, "true") == 0 ||
-								strcasecmp($const->value->name, "false") == 0)
-								return strcasecmp($const->value->name, "true") == 0;
-
-							if (strcasecmp($const->value->name, "NULL") == 0) {
-								return null;
-							}
-						}
-					}
+		foreach ($this->class->getConstants() as $classConsts) {
+			foreach ($classConsts->consts as $const) {
+				if ($const->name == $name) {
+					return $const->value;
 				}
 			}
 		}
 
-		throw new InvalidArgumentException();
+		return null;
 	}
 }

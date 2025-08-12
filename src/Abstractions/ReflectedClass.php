@@ -3,8 +3,15 @@
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use InvalidArgumentException;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\DNumber;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -203,12 +210,36 @@ class ReflectedClass implements ClassInterface {
 		);
 	}
 
-	public function getConstant(string $name): mixed {
-		if ($this->hasConstant($name)) {
-			return $this->refl->getConstant($name);
+	public function getConstantValueExpression(string $name): ?Expr {
+		$constant = $this->refl->getConstant($name);
+		if ($this->refl->hasConstant($name)) {
+			$constant = $this->refl->getConstant($name);
+			return $this->wrapValueInExpression($constant);
 		}
 		else {
-			throw new InvalidArgumentException("Constant '$name' does not exist");
+			return null;
 		}
+	}
+
+	private function wrapValueInExpression(mixed $value): ?Expr {
+		return match (gettype($value)) {
+			'boolean' => new ConstFetch(new Name($value ? 'true' : 'false')),
+			'integer' => new LNumber($value),
+			'double'  => new DNumber($value),
+			'string'  => new String_($value),
+			'array'   => $this->wrapArrayInExpression($value),
+			'NULL'    => new ConstFetch(new Name('null')),
+			default   => null, // Handles invalid types like resources or objects
+		};
+	}
+
+	private function wrapArrayInExpression(mixed $values): ?Expr {
+		$items = [];
+		foreach ($values as $key => $value) {
+			$itemValue = $this->wrapValueInExpression($value);
+			$itemKey = is_int($key) ? new LNumber($key) : new String_($key);
+			$items[] = new ArrayItem($itemValue, $itemKey);
+		}
+		return new Array_($items);
 	}
 }

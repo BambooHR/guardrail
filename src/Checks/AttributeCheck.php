@@ -2,33 +2,26 @@
 
 namespace BambooHR\Guardrail\Checks;
 
+use Attribute;
 use BambooHR\Guardrail\Abstractions\AttributeInterface;
 use BambooHR\Guardrail\Abstractions\ClassInterface;
+use BambooHR\Guardrail\ConstantExpressionEvaluator;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
-use Error;
-use InvalidArgumentException;
 use PhpParser\ConstExprEvaluationException;
-use PhpParser\ConstExprEvaluator;
 use PhpParser\Node;
 use PhpParser\Node\Attribute as NodeAttribute;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Expr\PropertyFetch;
-use PhpParser\Node\Identifier;
-use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
-use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Param;
-use PhpParser\Node\Stmt\Interface_;
-use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\Enum_;
-use Attribute;
+use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\Trait_;
 
 class AttributeCheck extends BaseCheck
 {
@@ -44,8 +37,6 @@ class AttributeCheck extends BaseCheck
 	}
 
 	/**
-	 * getCheckNodeTypes
-	 *
 	 * @return string[]
 	 */
 	public function getCheckNodeTypes(): array
@@ -63,14 +54,6 @@ class AttributeCheck extends BaseCheck
 		];
 	}
 
-	/**
-	 * @param string $fileName The name of the file we are parsing
-	 * @param Node $node Instance of the Node
-	 * @param ClassLike|null $inside Instance of the ClassLike (the class we are parsing) [optional]
-	 * @param Scope|null $scope Instance of the Scope (all variables in the current state) [optional]
-	 *
-	 * @return void
-	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null): void
 	{
 		$seenAttributes = [];
@@ -82,15 +65,6 @@ class AttributeCheck extends BaseCheck
 		}
 	}
 
-	/**
-	 * @param string $fileName
-	 * @param NodeAttribute $attribute
-	 * @param Node $node
-	 * @param array $seenAttributes
-	 * @param ClassLike|null $inside
-	 * @param Scope|null $scope
-	 * @return void
-	 */
 	private function checkAttribute(string $fileName, NodeAttribute $attribute, Node $node, array &$seenAttributes, ?ClassLike $inside = null, ?Scope $scope = null): void
 	{
 		$attributeName = $attribute->name->toString();
@@ -149,10 +123,6 @@ class AttributeCheck extends BaseCheck
 	}
 
 
-	/**
-	 * @param Node $node
-	 * @return int
-	 */
 	private function getNodeTargetFlag(Node $node): int
 	{
 		return match (get_class($node)) {
@@ -175,13 +145,6 @@ class AttributeCheck extends BaseCheck
 		$this->instantiationCheck->run($fileName, $new, $inside, $scope);
 	}
 
-	/**
-	 * @param Node $node
-	 * @param int $attributeAttributeFlags
-	 * @param string $fileName
-	 * @param string $attributeName
-	 * @return void
-	 */
 	public function validateAttributeTarget(Node $node, int $attributeAttributeFlags, string $fileName, string $attributeName): void
 	{
 		if (!($this->getNodeTargetFlag($node) & $attributeAttributeFlags)) {
@@ -196,90 +159,5 @@ class AttributeCheck extends BaseCheck
 			$this->emitError($fileName, $attribute->name, ErrorConstants::TYPE_ATTRIBUTE_NOT_REPEATABLE, "Attribute " . $attributeName . " is not repeatable");
 		}
 		$seenAttributes[$attributeName] = true;
-	}
-}
-
-readonly class ConstantExpressionEvaluator {
-	public function __construct(private SymbolTable $symbolTable) {}
-	/**
-	 * @throws ConstExprEvaluationException
-	 */
-	public function evaluate(Expr $expr, ?ClassLike $inside, ?Scope $scope) {
-		$evaluator = new ConstExprEvaluator(
-			fn($unhandledExpr) => $this->fallbackEvaluator($unhandledExpr, $inside, $scope),
-		);
-
-		return $evaluator->evaluateSilently($expr);
-	}
-
-	/**
-	 * @throws ConstExprEvaluationException
-	 */
-	private function fallbackEvaluator(Expr $expr, ?ClassLike $inside, ?Scope $scope) {
-		// TODO(shayman@bamboohr.com): 1. Handle infinite recursion of constant references
-		// 2. Implement or remove cases
-		if ($expr instanceof Node\Scalar\MagicConst) {
-			throw new ConstExprEvaluationException();
-		} else if ($expr instanceof Expr\ConstFetch) {
-			throw new ConstExprEvaluationException();
-		} else if ($expr instanceof Expr\ClassConstFetch) {
-			return $this->evaluateClassConstFetch($expr, $inside, $scope);
-		} else if ($expr instanceof New_) {
-			throw new ConstExprEvaluationException();
-		} else if ($expr instanceof PropertyFetch) {
-			throw new ConstExprEvaluationException();
-		}
-
-		throw new ConstExprEvaluationException();
-	}
-
-	/**
-	 * @throws ConstExprEvaluationException
-	 * @throws InvalidArgumentException
-	 */
-	private function evaluateClassConstFetch(Expr $expr, ?ClassLike $inside, ?Scope $scope) {
-		$className = $this->resolveClassName($expr->class, $inside, $scope);
-		$name = $this->resolveName($expr->name, $inside, $scope);
-		return $this->resolveValue($className, $name);
-	}
-
-	/**
-	 * @throws ConstExprEvaluationException
-	 */
-	private function resolveClassName(Expr|Name $class, ?ClassLike $inside, ?Scope $scope): string {
-		if ($class instanceof Name) {
-			return match ($class->toString()) {
-				"self", "static" => $inside->name->toString(),
-				"parent" => $inside->extends->toString(),
-				default => $class->toString(),
-			};
-		} else {
-			return $this->evaluate($class, $inside, $scope);
-		}
-	}
-
-	/**
-	 * @throws ConstExprEvaluationException
-	 */
-	private function resolveName(Expr|Error|Identifier $name, ?ClassLike $inside, ?Scope $scope) {
-		if ($name instanceof Identifier) {
-			return $name->toString();
-		} else {
-			return $this->evaluate($name, $inside, $scope);
-		}
-	}
-
-	/**
-	 * @throws InvalidArgumentException
-	 */
-	private function resolveValue(string $class, string $name) {
-		if ($name == "class") {
-			return $class;
-		}
-
-		/** @var ClassInterface $classInterface */
-		$classInterface = $this->symbolTable->getAbstractedClass($class);
-
-		return $classInterface->getConstant($name);
 	}
 }
