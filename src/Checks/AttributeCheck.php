@@ -23,13 +23,11 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\Trait_;
 
-class AttributeCheck extends BaseCheck
-{
+class AttributeCheck extends BaseCheck {
 	private InstantiationCheck $instantiationCheck;
 	private ConstantExpressionEvaluator $constantExpressionEvaluator;
 
-	public function __construct(SymbolTable $symbolTable, OutputInterface $doc)
-	{
+	public function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
 
 		$this->instantiationCheck = new InstantiationCheck($symbolTable, $doc);
@@ -39,8 +37,7 @@ class AttributeCheck extends BaseCheck
 	/**
 	 * @return string[]
 	 */
-	public function getCheckNodeTypes(): array
-	{
+	public function getCheckNodeTypes(): array {
 		return [
 			Function_::class,
 			Class_::class,
@@ -54,8 +51,7 @@ class AttributeCheck extends BaseCheck
 		];
 	}
 
-	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null): void
-	{
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null): void {
 		$seenAttributes = [];
 		/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 		foreach ($node->attrGroups as $attrGroup) {
@@ -65,8 +61,7 @@ class AttributeCheck extends BaseCheck
 		}
 	}
 
-	private function checkAttribute(string $fileName, NodeAttribute $attribute, Node $node, array &$seenAttributes, ?ClassLike $inside = null, ?Scope $scope = null): void
-	{
+	private function checkAttribute(string $fileName, NodeAttribute $attribute, Node $node, array &$seenAttributes, ?ClassLike $inside = null, ?Scope $scope = null): void {
 		$attributeName = $attribute->name->toString();
 		$attributeClass = $this->symbolTable->getAbstractedClass($attributeName);
 
@@ -83,7 +78,7 @@ class AttributeCheck extends BaseCheck
 
 		$this->validateAttributeArguments($fileName, $attribute, $inside, $scope);
 
-		$flags = $this->getAttributeFlags($attributeAttribute, $inside, $scope);
+		$flags = $this->getAttributeFlags($attributeAttribute);
 
 		if (!is_null($flags)) {
 			$this->validateAttributeTarget($node, $flags, $fileName, $attributeName);
@@ -91,8 +86,7 @@ class AttributeCheck extends BaseCheck
 		}
 	}
 
-	private function getAttributeFlags(AttributeInterface $attributeAttribute, ?ClassLike $inside, ?Scope $scope): ?int
-	{
+	private function getAttributeFlags(AttributeInterface $attributeAttribute): ?int {
 		$arguments = $attributeAttribute->getArguments();
 
 		if (empty($arguments)) {
@@ -112,8 +106,7 @@ class AttributeCheck extends BaseCheck
 		}
 	}
 
-	private function findAttributeAttribute(ClassInterface $class): ?AttributeInterface
-	{
+	private function findAttributeAttribute(ClassInterface $class): ?AttributeInterface {
 		foreach ($class->getAttributes() as $classAttribute) {
 			if ($classAttribute->getClassName() === Attribute::class) {
 				return $classAttribute;
@@ -123,8 +116,7 @@ class AttributeCheck extends BaseCheck
 	}
 
 
-	private function getNodeTargetFlag(Node $node): int
-	{
+	private function getNodeTargetFlag(Node $node): int {
 		return match (get_class($node)) {
 			Class_::class, Interface_::class, Trait_::class, Enum_::class => Attribute::TARGET_CLASS,
 			Function_::class => Attribute::TARGET_FUNCTION,
@@ -136,8 +128,7 @@ class AttributeCheck extends BaseCheck
 		};
 	}
 
-	private function validateAttributeArguments(string $fileName, NodeAttribute $attribute, ?ClassLike $inside, ?Scope $scope): void
-	{
+	private function validateAttributeArguments(string $fileName, NodeAttribute $attribute, ?ClassLike $inside, ?Scope $scope): void {
 		$new = new Node\Expr\New_(
 			$attribute->name,
 			$attribute->args
@@ -145,15 +136,13 @@ class AttributeCheck extends BaseCheck
 		$this->instantiationCheck->run($fileName, $new, $inside, $scope);
 	}
 
-	public function validateAttributeTarget(Node $node, int $attributeAttributeFlags, string $fileName, string $attributeName): void
-	{
+	public function validateAttributeTarget(Node $node, int $attributeAttributeFlags, string $fileName, string $attributeName): void {
 		if (!($this->getNodeTargetFlag($node) & $attributeAttributeFlags)) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ATTRIBUTE_WRONG_TARGET, "Attribute $attributeName cannot be applied to target " . $node->getType());
 		}
 	}
 
-	private function validateAttributeRepeatability(string $fileName, NodeAttribute $attribute, int $attributeAttributeFlags, array &$seenAttributes): void
-	{
+	private function validateAttributeRepeatability(string $fileName, NodeAttribute $attribute, int $attributeAttributeFlags, array &$seenAttributes): void {
 		$attributeName = $attribute->name->toString();
 		if (isset($seenAttributes[$attributeName]) && !($attributeAttributeFlags & Attribute::IS_REPEATABLE)) {
 			$this->emitError($fileName, $attribute->name, ErrorConstants::TYPE_ATTRIBUTE_NOT_REPEATABLE, "Attribute " . $attributeName . " is not repeatable");
