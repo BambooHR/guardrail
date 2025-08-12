@@ -525,7 +525,7 @@ class Util {
 			if ($itemValue === null) {
 				return null;
 			}
-			$itemKey = is_string($key) ? new String_($key) : null;
+			$itemKey = self::valueToExpression($key);
 			$items[] = new ArrayItem($itemValue, $itemKey);
 		}
 		return new Array_($items);

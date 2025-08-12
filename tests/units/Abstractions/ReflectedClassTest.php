@@ -35,6 +35,9 @@ class ClassWithConstantsForReflectedTest {
 	const TEST_BOOL_FALSE = false;
 	const TEST_NULL = null;
 	const TEST_ARRAY = ["foo" => "bar", 1 => 2];
+	const TEST_IMPLICIT_ARRAY = ["foo", "bar"];
+	const TEST_STRING_KEY_ARRAY = ["foo" => "bar", "baz" => "bat"];
+	const TEST_INT_KEY_ARRAY = [1 => "foo", 2 => "bar"];
 }
 
 class ReflectedClassTest extends TestCase {
@@ -73,6 +76,18 @@ class ReflectedClassTest extends TestCase {
 				new ArrayItem(new String_('bar'), new String_('foo')),
 				new ArrayItem(new LNumber(2), new LNumber(1))
 			])],
+			'implicit_array' => ['TEST_IMPLICIT_ARRAY', new Array_([
+				new ArrayItem(new String_('foo'), new LNumber(0)),
+				new ArrayItem(new String_('bar'), new LNumber(1))
+			])],
+			'string_key_array' => ['TEST_STRING_KEY_ARRAY', new Array_([
+				new ArrayItem(new String_('bar'), new String_('foo')),
+				new ArrayItem(new String_('bat'), new String_('baz')),
+			])],
+			'int_key_array' => ['TEST_INT_KEY_ARRAY', new Array_([
+				new ArrayItem(new String_('foo'), new LNumber(1)),
+				new ArrayItem(new String_('bar'), new LNumber(2))
+			])]
 		];
 	}
 
