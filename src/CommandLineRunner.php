@@ -16,12 +16,13 @@ use BambooHR\Guardrail\Exceptions\InvalidConfigException;
  */
 class CommandLineRunner {
 
+	public const ERROR_MASK = E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING;
 	/**
 	 * usage
 	 *
 	 * @return void
 	 */
-	public function usage() {
+	public function usage(): void {
 		echo "
 Usage: php guardrail.phar [-a] [-i] [-n #] [--format xunit|text] [-o output_file_name] [-p #/#] [--timings] config_file
 
@@ -65,27 +66,19 @@ where: -p #/#                               = Define the number of partitions an
 	 *
 	 * @return void
 	 */
-	public function run(array $argv) {
+	public function run(array $argv): void {
 
 		set_time_limit(0);
 		date_default_timezone_set("UTC");
-		$errorMask = E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING;
-		error_reporting( $errorMask );
+		error_reporting(self::ERROR_MASK);
 
 		set_exception_handler( function(\Throwable $exception) {
 			echo "Uncaught exception : ".$exception->getMessage()."\n";
 			echo $exception->getTraceAsString()."\n";
 			exit(1);
 		});
-		set_error_handler( function(
-			int $errno,
-    		string $errstr,
-    		string $errfile,
-			int $errline,
-		){
-			echo "ERROR: $errno: $errstr in $errfile line $errline\n";
-			exit(1);
-		},  $errorMask);
+
+		set_error_handler([__CLASS__, 'handleErrors'], self::ERROR_MASK);
 
 
 		if (!extension_loaded("pcntl")) {
@@ -140,5 +133,28 @@ where: -p #/#                               = Define the number of partitions an
 			}
 			exit($exitCode);
 		}
+	}
+
+    /**
+     * @return void
+     * @param int    $errno
+     * @param string $errstr
+     * @param string $errfile
+     * @param int    $errline
+     */
+    public static function handleErrors(int $errno, string $errstr, string $errfile, int $errline): void {
+		// Get the current error reporting level
+		$currentErrorReporting = error_reporting();
+
+		// The @ operator in PHP 8+ sets error_reporting to a specific value
+		// OR it might set it to 0 depending on context
+		$suppressedErrorReporting = E_ERROR | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR | E_PARSE;
+
+		// Check for both possible suppressed states
+		if ($currentErrorReporting === 0 || $currentErrorReporting === $suppressedErrorReporting) {
+			// This is a suppressed error (@), just return without terminating
+			return;
+		}
+		exit(1);
 	}
 }
