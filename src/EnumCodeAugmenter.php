@@ -13,7 +13,6 @@ class EnumCodeAugmenter {
 		$property->setType(new Node\Identifier("string"));
 		$property->makeReadonly();
 		$enum->stmts[]= $property->getNode();
-		$enum->stmts[] = new Node\Stmt\ClassMethod("cases", ["returnType" => "array"]);
 		if ($isBacked) {
 			$enum->stmts[] = new Node\Stmt\ClassMethod("values",["returnType"=>"array"]);
 			$property = new Property("value");
