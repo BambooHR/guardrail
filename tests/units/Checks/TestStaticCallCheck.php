@@ -24,4 +24,12 @@ class TestStaticCallCheck extends TestSuiteSetup {
 	public function testParentInStaticClassClosure() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.StaticClosureParentClass.inc',ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
 	}
+
+	/**
+	 *
+	 * @return void
+	 */
+	public function testEnumCasesCall() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.EnumCasesCall.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
 }
