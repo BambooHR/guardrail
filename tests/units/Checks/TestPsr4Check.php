@@ -50,7 +50,7 @@ class TestPsr4Check extends TestSuiteSetup {
 	/**
 	 * @return string[][]
 	 */
-	public function fileProvider(): array {
+	public static function fileProvider(): array {
 		return [
 			['/Alpha/SDK/One.php', 0],
 			['/Alpha/Two.php', 0],

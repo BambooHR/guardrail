@@ -71,7 +71,7 @@ class Metric implements MetricInterface {
         return $this->causedByTraitData;
     }
 
-    public function jsonSerialize() {
+    public function jsonSerialize(): mixed {
         $data = [
             'file' => $this->file,
             'lineNumber' => $this->lineNumber,

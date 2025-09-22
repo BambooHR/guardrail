@@ -36,7 +36,7 @@ class GotoCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		$this->emitError($fileName, $node, ErrorConstants::TYPE_GOTO, "Usage of goto command");
 	}
 }

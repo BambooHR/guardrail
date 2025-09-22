@@ -37,7 +37,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		$this->emitMetricsForNode($node, $inside);
 		if ($node instanceof Node\Stmt\ClassMethod && $this->isServiceClass($inside) && $node->isPublic()) {
 			$docComment = $node->getDocComment();
@@ -58,7 +58,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	private function isServiceClass(?ClassLike $inside = null) {
 		if ($inside instanceof Class_) {
 			$parentClass = $inside->extends?->toString();
-			if (str_contains($parentClass, self::BASE_SERVICE)) {
+			if ($parentClass !== null && str_contains($parentClass, self::BASE_SERVICE)) {
 				return true;
 			}
 			if ($inside->extends instanceof Node\Name) {
@@ -84,7 +84,8 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	 * @return void
 	 */
 	private function emitMetricsForNode(Node $node, ?Node\Stmt\ClassLike $inside): void {
-		if (str_contains($node->getDocComment()?->getText(), '@deprecated')) {
+		$docComment = $node->getDocComment()?->getText();
+		if ($docComment !== null && str_contains($docComment, '@deprecated')) {
 			$this->metricOutput->emitMetric(new Metric(
 				$node->name,
 				$node->getLine(),

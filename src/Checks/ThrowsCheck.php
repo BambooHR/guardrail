@@ -20,7 +20,7 @@ class ThrowsCheck extends BaseCheck {
 		];
 	}
 
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 
 		if ($node instanceof Node\Expr\Throw_ || $node instanceof Node\Stmt\Throw_) {
 			$throws = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);

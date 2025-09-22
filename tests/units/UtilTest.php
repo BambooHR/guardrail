@@ -28,7 +28,7 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return array
 	 */
-	public function configData() {
+	public static function configData() {
 		return [
 			[__DIR__ . '/../../', ['src/Checks', 'src/Output', '/tmp'], true],
 			[__DIR__ . '/../../', ['tests/units', '/tmp'], true],
@@ -55,7 +55,7 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return array
 	 */
-	public function invalidData() {
+	public static function invalidData() {
 		return [
 			['/', ['app', 'vendor', '/usr/share/noDirShouldExistHere'], false],
 			[__DIR__ . '/../../', ['src/PotluckPie', 'src/Output', '/tmp'], false],
@@ -83,7 +83,7 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return array
 	 */
-	public function exceptionData() {
+	public static function exceptionData() {
 		return [
 			[null, ''],
 			[new \stdClass(), null],
@@ -111,7 +111,7 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return array
 	 */
-	public function pathData() {
+	public static function pathData() {
 		return [
 			['/test/', 'src/tree', '/test/src/tree'],
 			['/test', 'src/tree', '/test/src/tree'],
@@ -141,7 +141,7 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return array
 	 */
-	public function jsonFileData() {
+	public static function jsonFileData() {
 		return [
 			[__DIR__ . '/sampleData/good.json', true],
 			[__DIR__ . '/sampleData/bad.json', false],
@@ -167,7 +167,7 @@ class UtilTest  extends TestCase {
 	 *
 	 * @return array
 	 */
-	public function missingJsonFiles() {
+	public static function missingJsonFiles() {
 		return [
 			[__DIR__ . '/sampleData/missing.json'],
 			[__DIR__ . '/sampleData/nothingHere.json'],

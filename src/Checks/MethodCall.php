@@ -58,7 +58,7 @@ class MethodCall extends CallCheck {
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 		if ($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) {
 			if ($inside instanceof Trait_) {
 				// Traits should be converted into methods in the class, so that we can check them in context.
@@ -135,7 +135,7 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, $node, $className, $methodName, Scope $scope, MethodInterface $method, ClassLike $inside=null) {
+	protected function checkMethod($fileName, $node, $className, $methodName, Scope $scope, MethodInterface $method, ?ClassLike $inside=null) {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 		}
@@ -167,7 +167,7 @@ class MethodCall extends CallCheck {
 
 		$name = $className . "->" . $methodName;
 		$templates["T"]=true;
-		$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params, $templates);
+		$this->checkParams($fileName, $node, $name, $scope, $node->args, $params, $inside, $templates);
 	}
 
 	/**
@@ -177,7 +177,7 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return bool
 	 */
-	private function wrappedByMethodExistsCheck(Expr\MethodCall|Expr\NullsafeMethodCall $node, Scope $scope = null): bool {
+	private function wrappedByMethodExistsCheck(Expr\MethodCall|Expr\NullsafeMethodCall $node, ?Scope $scope = null): bool {
 		if ($scope && $scope->getInsideFunction()) {
 			$stmts = $scope->getInsideFunction()->getStmts();
 			return $this->checkForMethodExists($node, $stmts);
