@@ -70,10 +70,10 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		return false;
 	}
 
-	private function emitMissingDocBlockError(string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {
+	private function emitMissingDocBlockError(string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
 		$this->emitErrorOnLine($fileName, $node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
-			"Method: {$node->name?->name}, Class: {$inside->name?->name} - All public Service methods must have a DocBlock."
+			"Method: {$node->name?->name}, Class: {$inside?->name?->name} - All public Service methods must have a DocBlock."
 		);
 	}
 
@@ -107,11 +107,11 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		return $name;
 	}
 
-	private function validateParameters($actualParams, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {
+	private function validateParameters($actualParams, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
 		if (count($docCommentParams) > count($actualParams)) {
 			$this->emitErrorOnLine($fileName, $node->getLine(),
 				ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
-				"Method: {$node->name->name}, Class: {$inside->name->name} - There are extra parameters in your DocBlock that are not present in the method signature."
+				"Method: {$node->name->name}, Class: {$inside?->name?->name} - There are extra parameters in your DocBlock that are not present in the method signature."
 			);
 		}
 
@@ -120,7 +120,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function validateParameter($actualParam, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside): void {
+	private function validateParameter($actualParam, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
 		$actualParamName = $actualParam->name ?? $actualParam->getString();
 		$docCommentParam = $docCommentParams[$actualParamName] ?? null;
 		if (!$docCommentParam) {
@@ -143,7 +143,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		return $type instanceof Node\UnionType || $type instanceof Node\IntersectionType;
 	}
 
-	private function validateComplexType($actualParamTypes, $docCommentParamType, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $propertyName): void {
+	private function validateComplexType($actualParamTypes, $docCommentParamType, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside, string $propertyName): void {
 		$docCommentParamType = is_array($docCommentParamType) ? $docCommentParamType : [$docCommentParamType];
 
 		// Normalize doc comment types to handle nullable operator (?)
@@ -179,7 +179,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function validateNullableType(Node\NullableType $paramType, $docCommentParamTypes, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $propertyName): void {
+	private function validateNullableType(Node\NullableType $paramType, $docCommentParamTypes, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside, string $propertyName): void {
 		$actualType = $paramType->type->name ?? $paramType->type->toString();
 		$allowedTypes = [$actualType, 'null', "?$actualType"];
 		$docCommentParamTypes = is_array($docCommentParamTypes) ? $docCommentParamTypes : [$docCommentParamTypes];
@@ -193,7 +193,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function validateSimpleType($actualParamType, $docCommentParamType, string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $paramName): void {
+	private function validateSimpleType($actualParamType, $docCommentParamType, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside, string $paramName): void {
 		if (is_array($docCommentParamType)) {
 			$this->emitTypeMismatchError($fileName, $node, $inside, $paramName, 'Multiple DocBlock Param Types specified for only one actual param type.');
 		} else if (($actualParamType === 'array' && str_ends_with($docCommentParamType, '[]') && !str_starts_with($docCommentParamType, '?'))) {
@@ -205,21 +205,23 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function emitParameterMismatchError(string $fileName, Node\Stmt\ClassMethod $node, Node\Stmt\ClassLike $inside, string $paramName): void {
+	private function emitParameterMismatchError(string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside, string $paramName): void {
 		$this->emitErrorOnLine($fileName, $node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
-			"Method: {$node->name->name}, Class: {$inside->name->name} - DocBlock does not contain matching parameter: $paramName"
+			"Method: {$node->name->name}, Class: {$inside?->name?->name} - DocBlock does not contain matching parameter: $paramName"
 		);
 	}
 
 	private function emitTypeMismatchError(
-		string              $fileName, Node\Stmt\ClassMethod $node,
-		Node\Stmt\ClassLike $inside, string $propertyName,
-		string              $errorMessage
+		string                $fileName,
+		Node\Stmt\ClassMethod $node,
+		?Node\Stmt\ClassLike  $inside,
+		string                $propertyName,
+		string                $errorMessage
 	): void {
 		$this->emitErrorOnLine($fileName, $node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
-			"Method: {$node->name?->name}, Class: {$inside->name?->name}, Property: $propertyName - $errorMessage"
+			"Method: {$node->name?->name}, Class: {$inside?->name?->name}, Property: $propertyName - $errorMessage"
 		);
 	}
 
@@ -227,11 +229,11 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	 * @param Node\Stmt\ClassMethod $node
 	 * @param                       $docCommentReturn
 	 * @param string                $fileName
-	 * @param ClassLike             $inside
+	 * @param ?ClassLike            $inside
 	 *
 	 * @return void
 	 */
-	private function validateReturnType(Node\Stmt\ClassMethod $node, $docCommentReturn, string $fileName, Node\Stmt\ClassLike $inside): void {
+	private function validateReturnType(Node\Stmt\ClassMethod $node, $docCommentReturn, string $fileName, ?Node\Stmt\ClassLike $inside): void {
 		// return declarations on constructors are not allowed
 		if ($node->name->name === '__construct') {
 			return;

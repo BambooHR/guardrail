@@ -53,7 +53,7 @@ class ReturnCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Return_) {
-			$insideFunc = $scope->getInsideFunction();
+			$insideFunc = $scope?->getInsideFunction();
 
 			if (!$insideFunc) {
 				return;
@@ -85,7 +85,7 @@ class ReturnCheck extends BaseCheck {
 				$returnType = $inside->namespacedName;
 			}
 
-			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope->isStrict())) {
+			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope?->isStrict())) {
 				$functionName = $this->getFunctionName($insideFunc, $inside);
 				$msg = "Value returned from $functionName()" .
 					" must be a " . TypeComparer::typeToString($returnType) .

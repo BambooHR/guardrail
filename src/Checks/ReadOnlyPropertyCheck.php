@@ -14,7 +14,7 @@ class ReadOnlyPropertyCheck extends BaseCheck {
 
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof PropertyProperty) {
-			$parentNodes = $scope->getParentNodes();
+			$parentNodes = $scope?->getParentNodes();
 
 			/** @var Node\Stmt\Property $prop */
 			$prop = end($parentNodes);

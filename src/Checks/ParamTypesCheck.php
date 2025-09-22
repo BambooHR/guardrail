@@ -118,7 +118,7 @@ class ParamTypesCheck extends BaseCheck {
 			}
 		}
 	}
-	function checkForBadOverride(ClassMethod $node, ClassLike $inside, string $fileName) {
+	function checkForBadOverride(ClassMethod $node, ?ClassLike $inside, string $fileName) {
 		$isOverload = Util::getPhpAttribute("Override", $node->attrGroups);
 		if ($isOverload) {
 			if ($inside instanceof Class_) {

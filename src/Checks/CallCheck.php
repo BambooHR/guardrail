@@ -20,13 +20,13 @@ abstract class CallCheck extends BaseCheck {
 	 * @param string                  $fileName
 	 * @param Node                    $node
 	 * @param string                  $name
-	 * @param Scope                   $scope
+	 * @param ?Scope                  $scope
 	 * @param ClassLike|null          $inside
 	 * @param Node\Arg[]              $args
 	 * @param FunctionLikeParameter[] $params
 	 * @return void
 	 */
-	protected function checkParams($fileName, $node, $name, Scope $scope, array $args, array $params, ?ClassLike $inside = null, array $templates=[]) {
+	protected function checkParams($fileName, $node, $name, ?Scope $scope, array $args, array $params, ?ClassLike $inside = null, array $templates=[]) {
 		$named = false;
 		$covered = array_fill(0, count($params), 0);
 		foreach($args as $index=>$arg) {
@@ -82,14 +82,14 @@ abstract class CallCheck extends BaseCheck {
 	 * @param string                $fileName -
 	 * @param Node                  $node     -
 	 * @param string                $name     -
-	 * @param Scope                 $scope  -
+	 * @param ?Scope                $scope  -
 	 * @param Node\Arg              $arg    -
 	 * @param FunctionLikeParameter $param  -
 	 * @param ?ClassLike            $inside -
 	 *
 	 * @return void
 	 */
-	protected function checkParam($fileName, $node, $name, Scope $scope, Node\Arg $arg, FunctionLikeParameter $param, array $templates, ?ClassLike $inside = null) {
+	protected function checkParam($fileName, $node, $name, ?Scope $scope, Node\Arg $arg, FunctionLikeParameter $param, array $templates, ?ClassLike $inside = null) {
 		$variableName = $param->getName();
 		$type = $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		if ($arg->unpack) {
@@ -130,17 +130,17 @@ abstract class CallCheck extends BaseCheck {
 				$checker = new TypeComparer($this->symbolTable);
 
 				//echo "Type ".TypeComparer::typeToString($type)." vs ".TypeComparer::typeToString($expectedType)."\n";
-				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope->isStrict())) {
+				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope?->isStrict())) {
 					$nullOnlyError = false;
 					$typeStr=TypeComparer::typeToString($type);
 					if ($type instanceof Node\UnionType || $type instanceof Node\NullableType || TypeComparer::isNamedIdentifier($type,"null")) {
 						$typeWithOutNull = TypeComparer::removeNullOption($type);
-						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope->isStrict());
+						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope?->isStrict());
 					}
 					$this->emitError($fileName, $node,
 						$nullOnlyError ? ErrorConstants::TYPE_SIGNATURE_TYPE_NULL : ErrorConstants::TYPE_SIGNATURE_TYPE,
 						"Incompatible type passed to $name parameter \$$variableName ".
-						"expected ".TypeComparer::typeToString($expectedType). ", passed $typeStr".($scope->isStrict() ? " STRICT" : "")
+						"expected ".TypeComparer::typeToString($expectedType). ", passed $typeStr".($scope?->isStrict() ? " STRICT" : "")
 					);
 				}
 			}

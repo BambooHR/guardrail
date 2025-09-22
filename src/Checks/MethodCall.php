@@ -129,13 +129,13 @@ class MethodCall extends CallCheck {
 	 * @param Node            $node       The node
 	 * @param string          $className  The inside method
 	 * @param string          $methodName The name of the method being checked
-	 * @param Scope           $scope      Instance of Scope
+	 * @param ?Scope           $scope      Instance of Scope
 	 * @param MethodInterface $method     Instance of MethodInterface
-	 * @param ClassLike       $inside     What context we're executing inside (if any)
+	 * @param ?ClassLike       $inside     What context we're executing inside (if any)
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, $node, $className, $methodName, Scope $scope, MethodInterface $method, ?ClassLike $inside=null) {
+	protected function checkMethod($fileName, $node, $className, $methodName, ?Scope $scope, MethodInterface $method, ?ClassLike $inside=null) {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 		}

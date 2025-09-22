@@ -75,7 +75,7 @@ class InstantiationCheck extends MethodCall {
 							$this->emitError($fileName, $node, "Parameter mismatch", "Call to default constructor $name::__construct passing too many parameters");
 						}
 					} else {
-						if ($method->getAccessLevel() == "private" && (!$inside || strcasecmp($inside->namespacedName, $name) != 0)) {
+						if ($method->getAccessLevel() == "private" && (!$inside || strcasecmp($inside?->namespacedName, $name) != 0)) {
 							$this->emitError($fileName, $node, self::TYPE_SCOPE_ERROR, "Attempt to call private constructor outside of class $name");
 							return;
 						}

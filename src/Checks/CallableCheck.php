@@ -52,12 +52,12 @@ class CallableCheck extends BaseCheck {
 
 	/**
 	 * @param string         $fileName      -
-	 * @param Scope          $scope         -
+	 * @param ?Scope         $scope         -
 	 * @param ClassLike|null $inside        -
 	 * @param Expr\Array_    $callableArray -
 	 * @return void
 	 */
-	protected function checkArrayCallable($fileName, Scope $scope, ?ClassLike $inside, Expr\Array_ $callableArray) {
+	protected function checkArrayCallable($fileName, ?Scope $scope, ?ClassLike $inside, Expr\Array_ $callableArray) {
 		$itemCount = count($callableArray->items);
 		if ($itemCount != 2) {
 			$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_SIGNATURE_TYPE, "Callable arrays must have two parameters, $itemCount detected");

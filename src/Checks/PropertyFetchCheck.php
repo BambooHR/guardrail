@@ -52,14 +52,14 @@ class PropertyFetchCheck extends BaseCheck {
 
 			$chainedParent = substr($chainedName, 0, strrpos($chainedName, "->"));
 
-			if ($scope->getVarType($chainedParent)) {
-				$type = $scope->getVarType($chainedParent);
+			if ($scope?->getVarType($chainedParent)) {
+				$type = $scope?->getVarType($chainedParent);
 			} else {
 				$type = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			}
 
 			if (!$node instanceof Node\Expr\NullsafePropertyFetch) {
-				if (TypeComparer::ifAnyTypeIsNull($type) && !NodePatterns::parentIgnoresNulls($scope->getParentNodes(), $node)) {
+				if (TypeComparer::ifAnyTypeIsNull($type) && !NodePatterns::parentIgnoresNulls($scope?->getParentNodes(), $node)) {
 					$variable = TypeComparer::getChainedPropertyFetchName($node) ?? "";
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . ($variable!="" ? " \$$variable" : ""));
 				}

@@ -84,7 +84,7 @@ class StaticCallCheck extends CallCheck {
 			}
 		} else {
 			if (!$method->isStatic()) {
-				if (!$scope->isStatic() && $possibleDynamic) {
+				if (!$scope?->isStatic() && $possibleDynamic) {
 					//if ($node->name != "__construct" && $node->class != "parent") {
 					//	echo "Static call in $fileName " . $node->getLine() . "\n";
 					//}
