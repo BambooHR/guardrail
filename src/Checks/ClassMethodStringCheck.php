@@ -29,7 +29,7 @@ class ClassMethodStringCheck extends BaseCheck {
 	 * @param Scope|null     $scope    -
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		assert($node instanceof Node\Expr\BinaryOp\Concat);
 
 		// Look for ClassName::class."@method"

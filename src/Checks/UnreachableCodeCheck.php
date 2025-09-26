@@ -34,7 +34,7 @@ class UnreachableCodeCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Function_ || $node instanceof ClassMethod) {
 			$statements = [];
 			if ($node instanceof FunctionLike) {

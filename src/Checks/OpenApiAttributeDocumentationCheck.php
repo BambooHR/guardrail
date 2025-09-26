@@ -38,7 +38,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Stmt\ClassMethod && $this->isControllerClass($inside) && $node->isPublic() && $node->name->name !== '__construct') {
 			foreach ($node->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attribute) {
@@ -82,10 +82,10 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function isControllerClass(ClassLike $inside = null): bool {
+	private function isControllerClass(?ClassLike $inside = null): bool {
 		if ($inside instanceof Class_) {
 			$parentClass = $inside->extends?->toString();
-			if (str_contains($parentClass, self::BASE_CONTROLLER)) {
+			if ($parentClass !== null && str_contains($parentClass, self::BASE_CONTROLLER)) {
 				return true;
 			}
 			if ($inside->extends instanceof Node\Name) {

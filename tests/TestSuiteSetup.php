@@ -227,7 +227,7 @@ abstract class TestSuiteSetup extends TestCase {
 	public function checkClassEmitsErrorOnce($checkClass, Node $node) {
 		$builder = $this->getMockBuilder(OutputInterface::class);
 		$output = $builder
-			->setMethods(["emitError"])
+			->onlyMethods(["emitError"])
 			->getMockForAbstractClass();
 		$output->expects($this->once())->method("emitError");
 		$emptyTable = new InMemorySymbolTable(__DIR__);
@@ -247,7 +247,7 @@ abstract class TestSuiteSetup extends TestCase {
 	public function checkClassNeverEmitsError($checkClass, Node $node) {
 		$builder = $this->getMockBuilder(OutputInterface::class);
 		$output = $builder
-			->setMethods(["emitError"])
+			->onlyMethods(["emitError"])
 			->getMockForAbstractClass();
 		$output->expects($this->never())->method("emitError");
 		$emptyTable = new InMemorySymbolTable(__DIR__);
@@ -268,7 +268,7 @@ abstract class TestSuiteSetup extends TestCase {
 	public function checkClassEmitsErrorExact($checkClass, Node $node, $times, $errorData) {
 		$builder = $this->getMockBuilder(OutputInterface::class);
 		$output = $builder
-			->setMethods(["emitError"])
+			->onlyMethods(["emitError"])
 			->getMockForAbstractClass();
 		$output->expects($this->exactly((int) $times))->method("emitError");
 		call_user_func_array([$output,'withConsecutive'], $errorData);

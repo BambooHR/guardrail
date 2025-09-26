@@ -21,7 +21,7 @@ class ClassConstCheck extends BaseCheck {
 		return [ClassConst::class];
 	}
 
-	function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ClassConst) {
 			foreach($node->consts as $const) {
 				/** @var Node\Const_ $const */
