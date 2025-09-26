@@ -167,7 +167,7 @@ class MethodCall extends CallCheck {
 
 		$name = $className . "->" . $methodName;
 		$templates["T"]=true;
-		$this->checkParams($fileName, $node, $name, $scope, $node->args, $params, $inside, $templates);
+		$this->checkParams($fileName, $node, $name, $scope, $node->args, $params, $templates);
 	}
 
 	/**

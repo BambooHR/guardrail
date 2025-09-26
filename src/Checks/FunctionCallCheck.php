@@ -101,7 +101,7 @@ class FunctionCallCheck extends CallCheck {
 						$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name");
 					}
 					$params = $func->getParameters();
-					$this->checkParams($fileName, $node, $name, $scope, $node->args, $params, $inside);
+					$this->checkParams($fileName, $node, $name, $scope, $node->args, $params);
 				} else if (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}

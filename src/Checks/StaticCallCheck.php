@@ -99,7 +99,7 @@ class StaticCallCheck extends CallCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Static call to method $name::" . $node->name . " does not pass enough parameters (" . count($node->args) . " passed $minimumParams required)");
 				}
 
-				$this->checkParams($fileName, $node, $method->getName(), $scope, $node->args, $method->getParameters(), $inside);
+				$this->checkParams($fileName, $node, $method->getName(), $scope, $node->args, $method->getParameters());
 			}
 		}
 	}
