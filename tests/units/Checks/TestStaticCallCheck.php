@@ -7,15 +7,13 @@ use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
 
 
-class TestStaticCallCheck extends TestSuiteSetup
-{
+class TestStaticCallCheck extends TestSuiteSetup {
 
 	/**
 	 *
 	 * @return void
 	 */
-	public function testParentInClassClosure()
-	{
+	public function testParentInClassClosure() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.ClosureParentClass.inc', ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
 	}
 
@@ -23,8 +21,7 @@ class TestStaticCallCheck extends TestSuiteSetup
 	 *
 	 * @return void
 	 */
-	public function testParentInStaticClassClosure()
-	{
+	public function testParentInStaticClassClosure() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.StaticClosureParentClass.inc', ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
 	}
 
@@ -32,8 +29,7 @@ class TestStaticCallCheck extends TestSuiteSetup
 	 *
 	 * @return void
 	 */
-	public function testEnumCasesMethodExists()
-	{
+	public function testEnumCasesMethodExists() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.EnumCasesCall.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
 	}
 
@@ -41,8 +37,7 @@ class TestStaticCallCheck extends TestSuiteSetup
 	 *
 	 * @return void
 	 */
-	public function testEnumCasesMethodIsStatic()
-	{
+	public function testEnumCasesMethodIsStatic() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.EnumCasesCall.inc', ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
 	}
 }
