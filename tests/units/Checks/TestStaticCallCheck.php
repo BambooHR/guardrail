@@ -14,7 +14,7 @@ class TestStaticCallCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testParentInClassClosure() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.ClosureParentClass.inc', ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.ClosureParentClass.inc',ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
 	}
 
 	/**
@@ -22,7 +22,7 @@ class TestStaticCallCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testParentInStaticClassClosure() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.StaticClosureParentClass.inc', ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.StaticClosureParentClass.inc',ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL));
 	}
 
 	/**
