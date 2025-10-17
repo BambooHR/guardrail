@@ -48,7 +48,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
-		if ($node instanceof Node\Stmt\ClassMethod && $this->isControllerClass($inside, $node) && $this->isApiMethod($node)) {
+		if ($this->isApiMethod($node) && $this->isControllerClass($inside, $node)) {
 			$containsOpenApiAttribute = false;
 			foreach ($node->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attribute) {
@@ -112,7 +112,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	}
 
 	private function isApiMethod(Node $node) {
-		return $node->isPublic() && $node->name->name !== '__construct';
+		return $node instanceof Node\Stmt\ClassMethod && $node->isPublic() && $node->name->name !== '__construct';
 	}
 
 	private function checkDeprecatedAttribute($arg, $fileName, $node, $inside) {
