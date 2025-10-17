@@ -51,15 +51,15 @@ class ReturnCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Return_) {
-			$insideFunc = $scope->getInsideFunction();
+			$insideFunc = $scope?->getInsideFunction();
 
 			if (!$insideFunc) {
 				return;
 			}
 
-			$functionName = $this->getFunctionName($inside, $insideFunc);
+			$functionName = $this->getFunctionName($insideFunc, $inside);
 			$returnType = $insideFunc->getReturnType();
 
 			$returnIsVoid = TypeComparer::isNamedIdentifier($returnType,"void");
@@ -85,8 +85,8 @@ class ReturnCheck extends BaseCheck {
 				$returnType = $inside->namespacedName;
 			}
 
-			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope->isStrict())) {
-				$functionName = $this->getFunctionName($inside, $insideFunc);
+			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope?->isStrict())) {
+				$functionName = $this->getFunctionName($insideFunc, $inside);
 				$msg = "Value returned from $functionName()" .
 					" must be a " . TypeComparer::typeToString($returnType) .
 					", returning " . TypeComparer::typeToString($exprType);
@@ -98,11 +98,12 @@ class ReturnCheck extends BaseCheck {
 
 
 	/**
-	 * @param ClassLike         $inside     The class we're inside of (if any)
 	 * @param Node\FunctionLike $insideFunc The method we're inside of
+	 * @param ?ClassLike $inside The class we're inside of (if any)
+	 *
 	 * @return string
 	 */
-	protected function getFunctionName(ClassLike $inside = null, Node\FunctionLike $insideFunc) {
+	protected function getFunctionName(Node\FunctionLike $insideFunc, ?ClassLike $inside = null) {
 		$functionName = "";
 		if ($insideFunc instanceof Node\Stmt\Function_) {
 			$functionName = strval($insideFunc->name);

@@ -63,7 +63,7 @@ class SwitchCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 		if ($node instanceof Switch_) {
 			if (!Util::allBranchesExit([$node]) && is_array($node->cases)) {
 				$nextError = null;

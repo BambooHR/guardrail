@@ -14,7 +14,7 @@ class UseStatementCaseCheck extends BaseCheck {
 		return [ Node\Stmt\Use_::class ];
 	}
 
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Stmt\Use_ && ($node->type == Use_::TYPE_NORMAL)) {
 			foreach ($node->uses as $useNode) {
 				$this->verifyCaseOfUseStatement($useNode, $fileName);

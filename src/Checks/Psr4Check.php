@@ -37,7 +37,7 @@ class Psr4Check extends BaseCheck {
 	 * @param Node\Name|null $name The node to grab the class/trait/interface name from.
 	 * @return string
 	 */
-	private function getPsr4Path(Node\Name $name = null) {
+	private function getPsr4Path(?Node\Name $name = null) {
 		// PSR-4 lookup taken from Composer project
 		// Source: https://github.com/composer/composer/blob/2.3.5/src/Composer/Autoload/ClassLoader.php#L498-L513
 		$logicalPathPsr4 = '';
@@ -74,7 +74,7 @@ class Psr4Check extends BaseCheck {
 	 * @return void
 	 * @guardrail-ignore Standard.Unknown.Property
 	 */
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		$name = "";
 		$fullName = "";
 		if ($node instanceof Node\Stmt\Class_) {

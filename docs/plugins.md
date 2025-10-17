@@ -67,7 +67,7 @@ class CatchCheck extends BaseCheck
 		return [\PhpParser\Node\Stmt\Catch_::class];
 	}
  
-	function run($fileName, $node, ClassLike $inside=null, Scope $scope=null) {
+	function run($fileName, $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 		$name = $node->type->toString();
 		if ($this->symbolTable->ignoreType($name)) {
 			return;

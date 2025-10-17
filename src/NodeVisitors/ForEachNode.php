@@ -46,11 +46,11 @@ class ForEachNode extends NodeVisitorAbstract {
 	 * run
 	 *
 	 * @param array|null $nodes    Array of nodes
-	 * @param callable   $callback Accepts Node, Return NULL to leave unchanged, Node to replace, or NodeTraverser::DONT_TRAVERSE_CHILDREN
+	 * @param ?callable  $callback Accepts Node, Return NULL to leave unchanged, Node to replace, or NodeTraverser::DONT_TRAVERSE_CHILDREN
 	 *
 	 * @return void
 	 */
-	public static function run(array $nodes = null, callable $callback) {
+	public static function run(?array $nodes = null, ?callable $callback = null) {
 		if (is_array($nodes)) {
 			$traverser = new NodeTraverser();
 			$traverser->addVisitor(new self($callback));

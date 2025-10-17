@@ -51,7 +51,7 @@ class StaticCallCheck extends CallCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope = null) {
 		if ($node instanceof StaticCall) {
 			$this->checkStaticCall($fileName, $node, $inside, $scope);
 		}
@@ -60,15 +60,16 @@ class StaticCallCheck extends CallCheck {
 	/**
 	 * checkAbstractClassMethod
 	 *
-	 * @param string     $fileName        The filename
-	 * @param StaticCall $node            Instance of Node
-	 * @param Scope      $scope           Instance of Scope
-	 * @param string     $name            The name of the node
-	 * @param bool       $possibleDynamic Is the node possibly dynamic
+	 * @param string         $fileName        The filename
+	 * @param StaticCall     $node            Instance of Node
+	 * @param string         $name            The name of the node
+	 * @param bool           $possibleDynamic Is the node possibly dynamic
+	 * @param ClassLike|null $inside
+	 * @param Scope|null     $scope           Instance of Scope
 	 *
 	 * @return void
 	 */
-	protected function checkAbstractClassMethod($fileName, StaticCall $node, ClassLike $inside = null, Scope $scope = null, $name, $possibleDynamic) {
+	protected function checkAbstractClassMethod($fileName, StaticCall $node, $name, $possibleDynamic, ?ClassLike $inside = null, ?Scope $scope = null) {
 		$method = Util::findAbstractedMethod($name, $node->name, $this->symbolTable);
 
 		if ($node->name == "__construct" && ! $method) {
@@ -83,7 +84,7 @@ class StaticCallCheck extends CallCheck {
 			}
 		} else {
 			if (!$method->isStatic()) {
-				if (!$scope->isStatic() && $possibleDynamic) {
+				if (!$scope?->isStatic() && $possibleDynamic) {
 					//if ($node->name != "__construct" && $node->class != "parent") {
 					//	echo "Static call in $fileName " . $node->getLine() . "\n";
 					//}
@@ -98,20 +99,20 @@ class StaticCallCheck extends CallCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_COUNT, "Static call to method $name::" . $node->name . " does not pass enough parameters (" . count($node->args) . " passed $minimumParams required)");
 				}
 
-				$this->checkParams($fileName, $node, $method->getName(), $scope, $inside, $node->args, $method->getParameters());
+				$this->checkParams($fileName, $node, $method->getName(), $scope, $node->args, $method->getParameters());
 			}
 		}
-}
+	}
 
 	/**
 	 * checkDefaultSwitch
 	 *
-	 * @param ClassLike $inside Instance of ClassLike
-	 * @param string    $name   The name of the node
+	 * @param string     $name   The name of the node
+	 * @param ?ClassLike $inside Instance of ClassLike
 	 *
 	 * @return bool
 	 */
-	protected function checkDefaultSwitch(ClassLike $inside = null, $name) {
+	protected function checkDefaultSwitch($name, ?ClassLike $inside = null) {
 		$possibleDynamic = false;
 		if ($inside) {
 			$currentClass = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
@@ -120,19 +121,19 @@ class StaticCallCheck extends CallCheck {
 			}
 		}
 		return $possibleDynamic;
-}
+	}
 
 	/**
 	 * checkStaticCall
 	 *
 	 * @param string     $fileName The name of the file
 	 * @param StaticCall $node     Instance of StaticCall
-	 * @param ClassLike  $inside   Instance of ClassLike
-	 * @param Scope      $scope    Instance of Scope
+	 * @param ?ClassLike $inside   Instance of ClassLike
+	 * @param ?Scope     $scope    Instance of Scope
 	 *
 	 * @return void
 	 */
-	protected function checkStaticCall($fileName, StaticCall $node, ClassLike $inside = null, Scope $scope = null) {
+	protected function checkStaticCall($fileName, StaticCall $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node->class instanceof Name && $node->name instanceof Node\Identifier) {
 			$name = $node->class->toString();
 			if ($this->symbolTable->ignoreType($name)) {
@@ -168,7 +169,7 @@ class StaticCallCheck extends CallCheck {
 
 					return;
 				default:
-					$possibleDynamic = $this->checkDefaultSwitch($inside, $name);
+					$possibleDynamic = $this->checkDefaultSwitch($name, $inside);
 					break;
 			}
 			if (! $this->symbolTable->isDefinedClass($name)) {
@@ -176,8 +177,8 @@ class StaticCallCheck extends CallCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Static call to unknown class $name::" . $node->name);
 				}
 			} else {
-				$this->checkAbstractClassMethod($fileName, $node, $inside, $scope, $name, $possibleDynamic);
+				$this->checkAbstractClassMethod($fileName, $node, $name, $possibleDynamic, $inside, $scope);
 			}
 		}
-}
+	}
 }
