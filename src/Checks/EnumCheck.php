@@ -15,7 +15,7 @@ class EnumCheck extends BaseCheck {
 		return [Enum_::class];
 	}
 
-	function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Enum_) {
 			$isBacked = !is_null($node->scalarType);
 			foreach($node->stmts as $stmt) {

@@ -55,7 +55,7 @@ class PropertyStoreCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 		if ($node instanceof Node\Expr\Assign && $node->var instanceof PropertyFetch && $node->var->name instanceof Node\Identifier) {
 
 			$targetObject = $node->var->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
@@ -72,7 +72,7 @@ class PropertyStoreCheck extends BaseCheck {
 							$types[] = $property->getType();
 							if (
 								($property->isReadOnly() || $property->getClass()->isReadOnly()) &&
-								(!($inside instanceof Class_) || strcasecmp($inside->namespacedName, $typeStr) != 0)
+								(!($inside instanceof Class_) || strcasecmp($inside?->namespacedName, $typeStr) != 0)
 							) {
 								$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to set read only variable " . $typeStr . "->" . $nodeVarName);
 							}
@@ -82,7 +82,7 @@ class PropertyStoreCheck extends BaseCheck {
 			});
 
 			$targetType=TypeComparer::getUniqueTypes(...$types);
-			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope->isStrict())) {
+			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope?->isStrict())) {
 				if($targetType instanceof Node\Identifier && util::isScalarType(strval($targetType))) {
 					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR;
 				} else {

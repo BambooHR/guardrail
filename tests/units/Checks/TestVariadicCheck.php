@@ -25,7 +25,7 @@ class TestVariadicCheck extends TestSuiteSetup {
 	 *
 	 * @return array
 	 */
-	public function trueVariadicData() {
+	public static function trueVariadicData() {
 		return [
 			['<?php if(true) { func_get_args(); }', 'Nested call not detected'],
 			['<?php func_num_args();', 'Top level func_num_args() call not detected'],
@@ -67,7 +67,7 @@ class TestVariadicCheck extends TestSuiteSetup {
 	 *
 	 * @return array
 	 */
-	public function falseVariadicData() {
+	public static function falseVariadicData() {
 		return [
 			['<?php safe_func();', 'Clean code not detected variadic'],
 		];

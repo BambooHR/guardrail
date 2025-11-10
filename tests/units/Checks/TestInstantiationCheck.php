@@ -9,7 +9,7 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  *
  * @package BambooHR\Guardrail\Tests\Checks
  */
-class TestInstantionCheck extends TestSuiteSetup {
+class TestInstantiationCheck extends TestSuiteSetup {
 
 	/**
 	 *

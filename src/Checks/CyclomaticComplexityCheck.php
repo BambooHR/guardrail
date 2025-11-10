@@ -93,7 +93,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 * @param Scope|null               $scope    Any other relevant scope
 	 * @return void
 	 */
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node->stmts) {
 			if ($node instanceof Node\Stmt\ClassMethod) {
 				$this->checkStatements($fileName, $inside, $node, $node->stmts);
