@@ -109,11 +109,6 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:FunctionCallCheck:Properly handles invalid regex patterns
 	 */
 	public function testInvalidRegexPattern(): void {
-		// Explicitly override error handler to match CommandLineRunner error handler (have to do this with PHPUnit v9.x.x -- see https://docs.phpunit.de/en/10.5/error-handling.html for when we upgrade).
-		set_error_handler([CommandLineRunner::class, 'handleErrors'],  CommandLineRunner::ERROR_MASK);
-
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_INCORRECT_REGEX));
-
-		restore_error_handler();
 	}
 }

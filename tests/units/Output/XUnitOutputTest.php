@@ -25,7 +25,7 @@ class XUnitOutputTest extends TestCase {
 		self::assertEquals($expected, $actual);
 	}
 
-	public function shouldEmitIgnoreProvider() {
+	public static function shouldEmitIgnoreProvider() {
 		return [
 			['app/BambooHR/Silo/Benefits/Shared/BenefitCalculator/Settings/GroupPlanCalculatorSetting/RateSplittableGroupPlanCalculatorSetting.php', false],
 			['app/BambooHR/Controller/SomeTestOne.php', true]
@@ -47,7 +47,7 @@ class XUnitOutputTest extends TestCase {
 		self::assertEquals($expected, $actual);
 	}
 
-	public function shouldEmitGlobProvider() {
+	public static function shouldEmitGlobProvider() {
 		return [
 			['app/BambooHR/Silo/Benefits/Shared/BenefitCalculator/Settings/GroupPlanCalculatorSetting/RateSplittableGroupPlanCalculatorSetting.php', true],
 			['app/BambooHR/Controller/SomeTestOne.php', false]

@@ -40,7 +40,7 @@ class PropertyFetchCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 		if ($node instanceof PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) {
 
 			$chainedName = NodePatterns::getVariableOrPropertyName($node);
@@ -52,14 +52,14 @@ class PropertyFetchCheck extends BaseCheck {
 
 			$chainedParent = substr($chainedName, 0, strrpos($chainedName, "->"));
 
-			if ($scope->getVarType($chainedParent)) {
-				$type = $scope->getVarType($chainedParent);
+			if ($scope?->getVarType($chainedParent)) {
+				$type = $scope?->getVarType($chainedParent);
 			} else {
 				$type = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			}
 
 			if (!$node instanceof Node\Expr\NullsafePropertyFetch) {
-				if (TypeComparer::ifAnyTypeIsNull($type) && !NodePatterns::parentIgnoresNulls($scope->getParentNodes(), $node)) {
+				if (TypeComparer::ifAnyTypeIsNull($type) && !NodePatterns::parentIgnoresNulls($scope?->getParentNodes(), $node)) {
 					$variable = TypeComparer::getChainedPropertyFetchName($node) ?? "";
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . ($variable!="" ? " \$$variable" : ""));
 				}
@@ -78,7 +78,7 @@ class PropertyFetchCheck extends BaseCheck {
 						if (!$property) {
 							$this->handleUndeclaredProperty($fileName, $node, $typeStr);
 						} else {
-							$this->handleDeclaredProperty($fileName, $node, $typeStr, $inside, $property, $property->getClass()->getName());
+							$this->handleDeclaredProperty($fileName, $node, $typeStr, $property, $property->getClass()->getName(), $inside);
 						}
 					}
 				}
@@ -118,7 +118,7 @@ class PropertyFetchCheck extends BaseCheck {
 	 * @param string    $declaredIn -
 	 * @return void
 	 */
-	private function handleDeclaredProperty($fileName, Node $node, $type, ClassLike $inside = null, Property $property, $declaredIn) {
+	private function handleDeclaredProperty($fileName, Node $node, $type, Property $property, $declaredIn, ?ClassLike $inside = null) {
 		$access = $property->getAccess();
 
 		if ($access == "protected" || $access == "private") {

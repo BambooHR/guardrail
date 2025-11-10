@@ -38,7 +38,7 @@ class ConstructorCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	static public function containsConstructorCall(array $stmts = null) {
+	static public function containsConstructorCall(?array $stmts = null) {
 		$found = false;
 		ForEachNode::run($stmts, function (Node $node) use (&$found) {
 			if ($node instanceof StaticCall) {
@@ -65,7 +65,7 @@ class ConstructorCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ClassMethod) {
 			if ($inside instanceof Class_) {
 				if (strcasecmp($node->name, "__construct") == 0 &&

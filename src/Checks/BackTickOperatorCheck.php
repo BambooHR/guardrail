@@ -36,7 +36,7 @@ class BackTickOperatorCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 		if ($node instanceof ShellExec) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_BACKTICK, "Unsafe operator (back tick)");
 		}

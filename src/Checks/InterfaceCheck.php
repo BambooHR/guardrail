@@ -173,7 +173,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Class_) {
 			if ($node->implements || $node->extends) {
 				$this->processNodeImplements($fileName, $node);

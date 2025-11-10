@@ -19,7 +19,7 @@ class CountableEmptinessCheck extends BaseCheck {
 		return [Empty_::class];
 	}
 
-	function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		$type = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 
 		if (!($type instanceof Name)) {

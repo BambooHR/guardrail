@@ -40,7 +40,7 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name , ClassLike $inside=null) {
+	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name , ?ClassLike $inside=null) {
 		$return = true;
 
 		if ($name instanceof Node\NullableType && TypeComparer::isNamedIdentifier($name->type,"null")) {
@@ -77,7 +77,7 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 
 		if ($node instanceof Function_) {
 			$this->checkForNestedFunction($fileName, $node, $inside, $scope);
@@ -118,7 +118,7 @@ class ParamTypesCheck extends BaseCheck {
 			}
 		}
 	}
-	function checkForBadOverride(ClassMethod $node, ClassLike $inside, string $fileName) {
+	function checkForBadOverride(ClassMethod $node, ?ClassLike $inside, string $fileName) {
 		$isOverload = Util::getPhpAttribute("Override", $node->attrGroups);
 		if ($isOverload) {
 			if ($inside instanceof Class_) {
@@ -143,7 +143,7 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function checkForNestedFunction($fileName, Node\FunctionLike $node, ClassLike $inside = null, Scope $scope = null) {
+	public function checkForNestedFunction($fileName, Node\FunctionLike $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		$self = $this;
 		ForEachNode::run( $node->getStmts(), function($statement) use ($self, $fileName, $node) {
 			if ($statement instanceof Node\Stmt\Function_) {
