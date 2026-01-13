@@ -87,7 +87,7 @@ abstract class SymbolTable {
 	 *
 	 */
 	public function isParentClassOrInterface(string $potentialParent, string $child):bool {
-		if (strcasecmp($potentialParent,"object")==0) {
+		if (strcasecmp($potentialParent, "object") == 0) {
 			return true;
 		}
 		while ($child) {
@@ -168,13 +168,13 @@ abstract class SymbolTable {
 
 	function getAbstractedProperty(ClassInterface $class, $propertyName) {
 
-		$cacheName= $propertyName."@".$class->getName();
+		$cacheName = $propertyName."@".$class->getName();
 		$ob = $this->cache->get("AProp:" . $cacheName);
 		if ($ob) {
 			return $ob;
 		}
 		$ob = $class->getProperty($propertyName);
-		if($ob) {
+		if ($ob) {
 			$this->cache->add("AProp:" . $cacheName, $ob);
 		}
 		return $ob;
@@ -313,8 +313,8 @@ abstract class SymbolTable {
 	 * @return string
 	 */
 	public function removeBasePath(string $fileName):string {
-		if ($this->basePath!=="" && strpos($fileName, $this->basePath) === 0) {
-			return substr($fileName, strlen($this->basePath)+1);
+		if ($this->basePath !== "" && strpos($fileName, $this->basePath) === 0) {
+			return substr($fileName, strlen($this->basePath) + 1);
 		} else {
 			return $fileName;
 		}
@@ -384,7 +384,7 @@ abstract class SymbolTable {
 	 */
 	public function ignoreType($name) {
 		$name = strtolower($name);
-		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator' || $name == 'object' || $name=='mixed' || $name=='null');
+		return ($name == 'exception' || $name == 'stdclass' || $name == 'iterator' || $name == 'object' || $name == 'mixed' || $name == 'null');
 	}
 
 	/**

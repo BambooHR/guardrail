@@ -68,7 +68,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 				$fileName,
 				$node->getLine(),
 				ErrorConstants::TYPE_METRICS_COMPLEXITY,
-				["complexity"=>$complexity,"name"=>$name]
+				["complexity" => $complexity,"name" => $name]
 			)
 		);
 
@@ -80,7 +80,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 				$fileName,
 				$node->getLine(),
 				ErrorConstants::TYPE_METRICS_LINES_OF_CODE,
-				["lines" => $maxLine - $minLine + 1, "type" => $type, "name"=>$name]
+				["lines" => $maxLine - $minLine + 1, "type" => $type, "name" => $name]
 			)
 		);
 	}
@@ -118,7 +118,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node                     $node
 	 * @param Node\Stmt\ClassLike|null $inside
 	 * @return array
 	 */

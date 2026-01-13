@@ -42,9 +42,9 @@ class Util {
 	}
 
 	static function mapClassName(string $name, string $selfName, string $staticName):string {
-		if(strcasecmp($name,'static')==0) {
+		if (strcasecmp($name, 'static') == 0) {
 			return $staticName;
-		} else if(strcasecmp($name,'self')==0) {
+		} else if (strcasecmp($name, 'self') == 0) {
 			return $selfName;
 		} else {
 			return $name;
@@ -60,15 +60,15 @@ class Util {
 	 */
 	static public function isScalarType($name) {
 		$name = strtolower($name);
-		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float' || $name=="false" || $name =="true";
+		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float' || $name == "false" || $name == "true";
 	}
 
 
 	static function getPhpAttribute(string $name, array $attrGroups):?Attribute {
-		foreach($attrGroups as $attrGroup) {
+		foreach ($attrGroups as $attrGroup) {
 			/** @var AttributeGroup $attrGroup */
-			foreach($attrGroup->attrs as $attribute) {
-				if (strcasecmp($name, $attribute->name)==0) {
+			foreach ($attrGroup->attrs as $attribute) {
+				if (strcasecmp($name, $attribute->name) == 0) {
 					return $attribute;
 				}
 			}
@@ -83,11 +83,11 @@ class Util {
 	 * @return bool
 	 */
 	static public function isLegalNonObject($name) {
-		return self::isScalarType($name) || strcasecmp($name,"mixed") == 0 || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name,"resource") == 0 || strcasecmp($name,"object")==0;
+		return self::isScalarType($name) || strcasecmp($name, "mixed") == 0 || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name, "resource") == 0 || strcasecmp($name, "object") == 0;
 	}
 
 	static public function isSelfOrStaticType(string $name):bool {
-		return strcasecmp($name, "self")== 0 || strcasecmp($name,"static") ==0;
+		return strcasecmp($name, "self") == 0 || strcasecmp($name, "static") == 0;
 	}
 
 	/**
@@ -152,7 +152,7 @@ class Util {
 
 	static public function reflectionTypeToPhpParserType(?\ReflectionType $type) {
 		if ($type instanceof \ReflectionNamedType) {
-			if($type->isBuiltin()) {
+			if ($type->isBuiltin()) {
 				return TypeComparer::identifierFromName($type->getName());
 			} else {
 				return TypeComparer::nameFromName($type->getName());
@@ -162,8 +162,8 @@ class Util {
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
 			);
-			if($type->allowsNull()) {
-				$subtypes[]=TypeComparer::identifierFromName("null");
+			if ($type->allowsNull()) {
+				$subtypes[] = TypeComparer::identifierFromName("null");
 			}
 			return TypeComparer::getUniqueTypes($subtypes);
 		} else if ($type instanceof \ReflectionIntersectionType) {
@@ -172,7 +172,7 @@ class Util {
 				$type->getTypes()
 			);
 			return new IntersectionType( [$subtypes] );
-		} else if ($type==null) {
+		} else if ($type == null) {
 			return null;
 		} else {
 			throw new \InvalidArgumentException();
@@ -233,13 +233,13 @@ class Util {
 				return $interfaces;
 			}
 			$immediateList = $class->getInterfaceNames();
-			foreach($immediateList as $immediate ) {
+			foreach ($immediateList as $immediate) {
 				$childInterfaces = static::findAllInterfaces($immediate, $symbolTable);
 				$interfaces = [ ...$childInterfaces, $immediate, ...$interfaces];
 			}
 			$className = $class->getParentClassName();
 		}
- 		return array_unique($interfaces);
+		return array_unique($interfaces);
 	}
 
 	static function findAbstractedConstantExpr(string $className, string $constantName, SymbolTable $symbolTable) {
@@ -279,7 +279,7 @@ class Util {
 				return $prop;
 			}
 
-			$className=$class->getParentClassName();
+			$className = $class->getParentClassName();
 		}
 		return null;
 	}
@@ -328,8 +328,8 @@ class Util {
 	}
 
 	static public function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren):array {
-		$ret=[];
-		foreach($potentialChildren as $potentialChild) {
+		$ret = [];
+		foreach ($potentialChildren as $potentialChild) {
 			if ($table->isParentClassOrInterface($parent, $potentialChild)) {
 				$ret[] = $potentialChild;
 			}
@@ -425,7 +425,7 @@ class Util {
 	 * @return mixed|null
 	 */
 	static public function getLastStatement(array $stmts) {
-		for (end($stmts); key($stmts)!==null; prev($stmts)){
+		for (end($stmts); key($stmts) !== null; prev($stmts)) {
 			$currentElement = current($stmts);
 			if (!$currentElement instanceof Nop) {
 				return $currentElement;

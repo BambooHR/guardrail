@@ -12,13 +12,11 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Cast as CastExp;
 
 class Cast implements ExpressionInterface {
-	function getInstanceType(): string
-	{
+	function getInstanceType(): string {
 		return Node\Expr\Cast::class;
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		$expr = $this->lookupCastType($node);
 		if ($expr) {
 			return $expr;

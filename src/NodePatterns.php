@@ -19,11 +19,11 @@ class NodePatterns
 
 
 	public static function parentIgnoresNulls(array $parentNodes, Node $child):bool {
-		foreach($parentNodes as $node) {
+		foreach ($parentNodes as $node) {
 			if ($node instanceof Node\Expr\Isset_ ||
 				$node instanceof Node\Expr\Empty_ ||
 				($node instanceof Node\Expr\BinaryOp\Coalesce && $node->left === $child) ||
-				($node instanceof Node\Expr\Assign && $node->var===$child)
+				($node instanceof Node\Expr\Assign && $node->var === $child)
 			) {
 				return true;
 			}
@@ -36,7 +36,7 @@ class NodePatterns
 			$parent instanceof Node\Expr\BinaryOp\BooleanAnd ||
 			$parent instanceof Node\Expr\BinaryOp\BooleanOr ||
 			$parent instanceof Node\Stmt\If_ ||
-			($parent instanceof Node\Expr\Ternary && $parent->cond==$child)
+			($parent instanceof Node\Expr\Ternary && $parent->cond == $child)
 		);
 	}
 

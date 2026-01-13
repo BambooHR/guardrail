@@ -10,13 +10,11 @@ use PhpParser\Node\Expr\Variable;
 class Global_ implements OnEnterEvaluatorInterface
 {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return Node\Stmt\Global_::class;
 	}
 
-	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
-	{
+	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		/** @var Node\Stmt\Global_ $global */
 		$global = $node;
 		foreach ($global->vars as $var) {

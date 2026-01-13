@@ -87,10 +87,10 @@ class UnifiedDiffFilter implements FilterInterface {
 	function display() {
 		foreach ($this->filter as $fileName => $lineNumbers) {
 
-			echo "Filter: $fileName: " . 
-				implode(",", 
+			echo "Filter: $fileName: " .
+				implode(",",
 					array_map(
-						fn($lineNumberPair) => $lineNumberPair[0] . "-" . $lineNumberPair[1], 
+						fn($lineNumberPair) => $lineNumberPair[0] . "-" . $lineNumberPair[1],
 						$lineNumbers
 					)
 				) . "\n";

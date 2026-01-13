@@ -73,7 +73,7 @@ class CallableCheck extends BaseCheck {
 			}
 		} else {
 			$classType = $object->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			TypeComparer::forEachType($classType,function($childClassType) use ($fileName, $callableArray) {
+			TypeComparer::forEachType($classType, function($childClassType) use ($fileName, $callableArray) {
 				if ($childClassType && ($childClassType instanceof Node\Identifier || $childClassType instanceof Node\Name)) {
 					$this->checkClassType(strval($childClassType), $fileName, $callableArray);
 				}
@@ -118,13 +118,12 @@ class CallableCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param mixed $classType
-	 * @param string $fileName
+	 * @param mixed       $classType
+	 * @param string      $fileName
 	 * @param Expr\Array_ $callableArray
 	 * @return void
 	 */
-	public function checkClassType(string $classType, string $fileName, Expr\Array_ $callableArray): void
-	{
+	public function checkClassType(string $classType, string $fileName, Expr\Array_ $callableArray): void {
 		if ($classType) {
 			if (!$this->symbolTable->isDefinedClass($classType)) {
 				$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array class '$classType' is not defined");

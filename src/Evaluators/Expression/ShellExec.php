@@ -12,13 +12,11 @@ use PhpParser\Node;
 class ShellExec implements ExpressionInterface
 {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return [Node\Expr\ShellExec::class, Node\Expr\Eval_::class];
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		if ($node instanceof Node\Expr\ShellExec) {
 
 			return TypeComparer::identifierFromName("string");

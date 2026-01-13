@@ -66,7 +66,7 @@ class ReflectedClassMethod implements MethodInterface {
 	}
 
 	public function getComplexReturnType() {
-		if ( method_exists($this->refl,"getReturnType")) {
+		if ( method_exists($this->refl, "getReturnType")) {
 			return Util::reflectionTypeToPhpParserType($this->refl->getReturnType());
 		}
 		return null;
@@ -188,7 +188,7 @@ class ReflectedClassMethod implements MethodInterface {
 	}
 
 	public function getAttributes(string $name):array {
-		$attributes=$this->refl->getAttributes($name);
+		$attributes = $this->refl->getAttributes($name);
 		return array_map( function($attr) {
 			return new Attribute(new Name($attr->getName()));
 		}, $attributes);

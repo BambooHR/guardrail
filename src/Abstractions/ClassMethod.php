@@ -53,7 +53,7 @@ class ClassMethod implements MethodInterface {
 	}
 
 	public function getThrowsList():array {
-		return $this->method->getAttribute('throws',[]);
+		return $this->method->getAttribute('throws', []);
 	}
 
 	/**
@@ -187,12 +187,12 @@ class ClassMethod implements MethodInterface {
 	}
 
 	public function getAttributes(string $name): array {
-		$ret=[];
-		foreach($this->method->attrGroups as $group) {
-			foreach($group->attrs as $attr) {
+		$ret = [];
+		foreach ($this->method->attrGroups as $group) {
+			foreach ($group->attrs as $attr) {
 				/** @var Attribute $attr */
-				if (strcasecmp($attr->name, $name)==0) {
-					$ret[]=$attr;
+				if (strcasecmp($attr->name, $name) == 0) {
+					$ret[] = $attr;
 				}
 			}
 		}

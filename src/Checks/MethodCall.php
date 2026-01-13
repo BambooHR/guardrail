@@ -79,14 +79,14 @@ class MethodCall extends CallCheck {
 				}
 			}
 
-			$name=TypeComparer::getChainedPropertyFetchName($var);
+			$name = TypeComparer::getChainedPropertyFetchName($var);
 			if ($scope && $name && $scope->getVarType($name)) {
 				$className = $scope->getVarType($name);
 			} else {
 				$className = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			}
 
-			if($node instanceof Expr\NullsafeMethodCall) {
+			if ($node instanceof Expr\NullsafeMethodCall) {
 				$className = TypeComparer::removeNullOption($className);
 			}
 
@@ -96,11 +96,11 @@ class MethodCall extends CallCheck {
 			}
 
 			TypeComparer::forEachType($className, function($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
-				if($classNameOb instanceof Node\IntersectionType) {
+				if ($classNameOb instanceof Node\IntersectionType) {
 					// Only one interface of the intersection has to implement the method.
 					// Multiple interfaces may require the same method
 					$matchCount = 0;
-					foreach($classNameOb->types as $type) {
+					foreach ($classNameOb->types as $type) {
 						if ($this->inspectIndividualName($type, $fileName, $node, $methodName, $scope, $inside)) {
 							$matchCount++;
 						}
@@ -108,12 +108,12 @@ class MethodCall extends CallCheck {
 					if ($matchCount < 1) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of " . TypeComparer::typeToString($classNameOb) . "::$methodName");
 					}
-				} else if($classNameOb instanceof Node\Name) {
+				} else if ($classNameOb instanceof Node\Name) {
 					if (!$this->inspectIndividualName($classNameOb, $fileName, $node, $methodName, $scope, $inside)) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of ".strval($classNameOb)."::$methodName");
 					}
 				} else {
-					if ($classNameOb != null && !TypeComparer::isNamedIdentifier($classNameOb,"mixed") && !TypeComparer::isNamedIdentifier($classNameOb,"object")) {
+					if ($classNameOb != null && !TypeComparer::isNamedIdentifier($classNameOb, "mixed") && !TypeComparer::isNamedIdentifier($classNameOb, "object")) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Methods can only be called on objects in call to $methodName not on " . TypeComparer::typeToString($className));
 					}
 					// We don't emit errors on mixed or unknown objects.
@@ -129,9 +129,9 @@ class MethodCall extends CallCheck {
 	 * @param Node            $node       The node
 	 * @param string          $className  The inside method
 	 * @param string          $methodName The name of the method being checked
-	 * @param ?Scope           $scope      Instance of Scope
+	 * @param ?Scope          $scope      Instance of Scope
 	 * @param MethodInterface $method     Instance of MethodInterface
-	 * @param ?ClassLike       $inside     What context we're executing inside (if any)
+	 * @param ?ClassLike      $inside     What context we're executing inside (if any)
 	 *
 	 * @return void
 	 */
@@ -140,12 +140,12 @@ class MethodCall extends CallCheck {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 		}
 		$callingFromClass = $inside ? strval($inside->namespacedName) : "";
-		if ($method->getAccessLevel() == "private" && ($callingFromClass==="" || strcasecmp($className, $callingFromClass) != 0)) {
+		if ($method->getAccessLevel() == "private" && ($callingFromClass === "" || strcasecmp($className, $callingFromClass) != 0)) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call private method $className->" . $methodName);
 		} else if (
 			$method->getAccessLevel() == "protected" &&
 			(
-				$callingFromClass==="" ||
+				$callingFromClass === "" ||
 				!$this->symbolTable->isParentClassOrInterface($className, $callingFromClass)
 			)
 		) {
@@ -166,7 +166,7 @@ class MethodCall extends CallCheck {
 		}
 
 		$name = $className . "->" . $methodName;
-		$templates["T"]=true;
+		$templates["T"] = true;
 		$this->checkParams($fileName, $node, $name, $scope, $node->args, $params, $templates);
 	}
 
@@ -216,14 +216,14 @@ class MethodCall extends CallCheck {
 		$match = false;
 		if ($cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&
-			$cond->name->toString()=="method_exists" &&
+			$cond->name->toString() == "method_exists" &&
 			count($cond->args) >= 2 &&
 			$cond->args[1]->value instanceof Node\Scalar\String_ &&
 			$node->name instanceof Node\Identifier &&
 			$cond->args[1]->value->value === $node->name->name
 		) {
 			ForEachNode::run( $trueNodes, function($inner) use (&$match, $node) {
-				if ($node===$inner) {
+				if ($node === $inner) {
 					$match = true;
 				}
 			});

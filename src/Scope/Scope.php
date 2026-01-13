@@ -81,13 +81,13 @@ class Scope implements PluginScopeInterface {
 
 		$var = $this->vars[$name];
 		$var->type = $type;
-		$var->typeChanged=true;
+		$var->typeChanged = true;
 		$var->modifiedLine = $line;
-		if(str_contains($name,"->")) {
+		if (str_contains($name, "->")) {
 			// Assigning a shorter variable, means the longer chains are invalidated.
 			// IE: $a->b->c invalidates $a->b->c->d
-			$name.="->";
-			foreach(array_keys($this->vars) as $varName) {
+			$name .= "->";
+			foreach (array_keys($this->vars) as $varName) {
 				if (str_starts_with($varName, $name)) {
 					unset($this->vars["name"]);
 				}
@@ -119,7 +119,7 @@ class Scope implements PluginScopeInterface {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
-			$this->vars[$name]=$var;
+			$this->vars[$name] = $var;
 		}
 		$this->vars[$name]->modified = true;
 		$this->vars[$name]->modifiedLine = $line;
@@ -193,10 +193,10 @@ class Scope implements PluginScopeInterface {
 	 * @return ScopeVar[]
 	 */
 	public function getTypeChangedVars():array {
-		$ret =[];
-		foreach($this->vars as $key=>$var) {
+		$ret = [];
+		foreach ($this->vars as $key => $var) {
 			if ($var->typeChanged) {
-				$ret[$key]=$var;
+				$ret[$key] = $var;
 			}
 		}
 		return $ret;

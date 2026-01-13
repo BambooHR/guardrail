@@ -18,7 +18,7 @@ class ScopeVar {
 	 * @return void
 	 */
 	function mergeVar(ScopeVar $other) {
-		$this->typeChanged=true;
+		$this->typeChanged = true;
 		if ($this->type == $other->type) {
 			$this->type = TypeComparer::getUniqueTypes($this->type, $other->type);
 		}

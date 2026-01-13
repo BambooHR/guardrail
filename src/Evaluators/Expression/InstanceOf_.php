@@ -34,7 +34,7 @@ class InstanceOf_ implements ExpressionInterface {
 			}
 			$varName = TypeComparer::getChainedPropertyFetchName($instanceOf->expr);
 
-			if ($varName !== "this" && $varName!="") {
+			if ($varName !== "this" && $varName != "") {
 				$trueScope = $scopeStack->getCurrentScope()->getScopeClone();
 				$falseScope = $trueScope->getScopeClone();
 				$trueScope->setVarType($varName, $className, $node->getLine());

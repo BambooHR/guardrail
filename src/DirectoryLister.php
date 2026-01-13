@@ -10,7 +10,7 @@ class DirectoryLister {
 	 * @guardrail-ignore Standard.ConditionalAssignment
 	 */
 	static function getGenerator(string ...$dirs) {
-		while (NULL !== ($dir = array_shift($dirs))) {
+		while (null !== ($dir = array_shift($dirs))) {
 			if ($dh = opendir($dir)) {
 				while (false !== ($file = readdir($dh))) {
 					if ($file != '.' && $file != '..') {

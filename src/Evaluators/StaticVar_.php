@@ -9,13 +9,11 @@ use PhpParser\Node;
 class StaticVar_ implements OnEnterEvaluatorInterface
 {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return Node\Stmt\StaticVar::class;
 	}
 
-	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
-	{
+	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\StaticVar) {
 			// Static variables are evaluated before their assignment. We should ignore undefined checks on these variables.
 			$node->var->setAttribute('assignment', true);

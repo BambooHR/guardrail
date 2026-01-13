@@ -198,7 +198,7 @@ class FunctionCallCheck extends CallCheck {
 	 */
 	private function wrappedByFunctionsExistsCheck(Expr\FuncCall $node, string $name, ?Scope $scopeStack = null): bool {
 		$parents = $scopeStack?->getParentNodes();
-		foreach($parents as $parentNode) {
+		foreach ($parents as $parentNode) {
 			if ($parentNode instanceof Node\Stmt\If_ && self::isMatchingFunctionExistsCond($parentNode->cond, $name)) {
 				return true;
 			}
@@ -214,7 +214,7 @@ class FunctionCallCheck extends CallCheck {
 		return (
 			$cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&
-			$cond->name->toString()=="function_exists" &&
+			$cond->name->toString() == "function_exists" &&
 			count($cond->args) >= 1 &&
 			$cond->args[0]->value instanceof Node\Scalar\String_ &&
 			strcasecmp($cond->args[0]->value->value, $name) == 0
