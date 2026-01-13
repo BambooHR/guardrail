@@ -7,7 +7,7 @@ units:
 	./vendor/bin/phpunit --configuration tests/phpunit.xml tests
 
 lint:
-	./vendor/bin/phpcs --standard=PSR12 src/
+	./vendor/bin/phpcs --standard=./tests/ruleset.xml src/
 
 index:
 	php src/bin/guardrail.php -i -j self.json
