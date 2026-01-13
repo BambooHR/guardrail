@@ -88,14 +88,14 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 					$fileName,
 					$node->getLine(),
 					ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK,
-					"All public controller methods should be associated with a route and must have 
+					"All public controller methods should be associated with a route and must have
 					documentation through an OpenAPI Attribute. Method: {$node->name->name}, Class: $className"
 				);
 			}
 		}
 	}
 
-	private function isControllerClass(?ClassLike $inside = null, Node $node): bool {
+	private function isControllerClass(?ClassLike $inside, Node $node): bool {
 		if ($inside instanceof Class_) {
 			$parentClass = $inside->extends?->toString();
 			if ($parentClass !== null && (
