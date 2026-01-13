@@ -34,8 +34,8 @@ class ConsoleOutput extends XUnitOutput {
 	 */
 	public function renderResults() {
 		echo "\n";
-		$white=$this->ttyContent("\33[97m");
-		$reset=$this->ttyContent("\33[0m");
+		$white = $this->ttyContent("\33[97m");
+		$reset = $this->ttyContent("\33[0m");
 		foreach ($this->errors as $fileName => $errors) {
 			echo " ${white}Line${reset}  | ${white}$fileName${reset}\n";
 			echo "-------+----------------------------------------------------------------\n";

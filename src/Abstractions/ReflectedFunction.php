@@ -59,7 +59,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	}
 
 	public function getComplexReturnType() {
-		if(method_exists($this->refl, "getReturnType")) {
+		if (method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			return Util::reflectionTypeToPhpParserType($type);
 		}
@@ -166,7 +166,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 					if ($name == "usort" || $name == "uksort" || $name == "uasort") {
 						$type = TypeComparer::identifierFromName("callable");
 					}
-					if ($name=='exec') {
+					if ($name == 'exec') {
 						$isPassedByReference = true;
 					}
 					break;

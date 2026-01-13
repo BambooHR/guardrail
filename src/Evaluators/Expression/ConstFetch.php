@@ -11,13 +11,11 @@ use PhpParser\Node;
 
 class ConstFetch implements ExpressionInterface
 {
-	function getInstanceType(): string
-	{
+	function getInstanceType(): string {
 		return Node\Expr\ConstFetch::class;
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		/** @var Node\Expr\ConstFetch $constFetch */
 		$constFetch = $node;
 		return $this->getType($table, $constFetch);

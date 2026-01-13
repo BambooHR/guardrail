@@ -76,15 +76,15 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * ie: if (PHP_VERSION_NUM<80000) { include "polyfill.php"; }
 	 *
 	 * @param Function_|Class_|Interface_ $declarationNode
-	 * @param string $type
+	 * @param string                      $type
 	 * @return bool
 	 */
 	function isInsideConditionalDeclaration(Function_|Class_|Interface_|FuncCall|Enum_ $declarationNode, string $type):bool {
-		$found=false;
-		foreach($this->nodeStack as $node) {
+		$found = false;
+		foreach ($this->nodeStack as $node) {
 			if ($node instanceof Node\Stmt\If_) {
 				ForEachNode::run([...$node->stmts], function($stmt) use (&$found, $declarationNode) {
-					if ($stmt===$declarationNode) {
+					if ($stmt === $declarationNode) {
 						$found = true;
 					}
 				});
@@ -104,8 +104,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		try {
 			$type = new \ReflectionClass($name);
 			return !$type->isUserDefined();
-		}
-		catch(\ReflectionException) {
+		} catch (\ReflectionException) {
 			return false;
 		}
 	}
@@ -117,18 +116,17 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		try {
 			$type = new \ReflectionFunction($name);
 			return !$type->isUserDefined();
-		}
-		catch(\ReflectionException) {
+		} catch (\ReflectionException) {
 			return false;
 		}
 	}
 
 	function isInternalDefine($name):bool {
 		static $internalDefines = null;
-		if ($internalDefines===null) {
+		if ($internalDefines === null) {
 			$temp = get_defined_constants(true);
-			foreach($temp as $area=>$defines) {
-				if ($area!='user') {
+			foreach ($temp as $area => $defines) {
+				if ($area != 'user') {
 					foreach ($defines as $define => $value) {
 						$internalDefines[$define] = true;
 					}
@@ -147,7 +145,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return int|null
 	 */
 	public function enterNode(Node $node) {
-		$this->nodeStack[]=$node;
+		$this->nodeStack[] = $node;
 		if ($node instanceof Node\Stmt\Enum_) {
 			EnumCodeAugmenter::addEnumPropsAndMethods($node);
 			$this->handleClass($node);
@@ -157,7 +155,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			$this->handleInterface($node);
 		} elseif ($node instanceof Function_) {
 			$this->handleFunction($node);
-		} elseif ($node instanceof Node\Const_ && count($this->classStack)==0) {
+		} elseif ($node instanceof Node\Const_ && count($this->classStack) == 0) {
 			$defineName = strval($node->namespacedName);
 			$this->index->addDefine($defineName, $node, $this->filename);
 		} elseif ($node instanceof FuncCall &&
@@ -197,7 +195,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 
 	/**
 	 * @param Node\Scalar\String_ $arg0
-	 * @param FuncCall $node
+	 * @param FuncCall            $node
 	 * @return void
 	 */
 	public function handleDefine(Node\Scalar\String_ $arg0, FuncCall $node): void {

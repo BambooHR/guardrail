@@ -79,8 +79,7 @@ abstract class ProcessManager {
 				foreach ($read as $index => $socket) {
 					try {
 						$this->buffers[$index]->read($socket);
-					}
-					catch(SocketException $socketException) {
+					} catch (SocketException $socketException) {
 						echo "Socket error: ".$socketException->getMessage(). "\n";
 						unset($this->connections[$index]);
 						unset($this->buffers[$index]);
@@ -96,9 +95,8 @@ abstract class ProcessManager {
 	}
 
 	/**
-	 * @param int      $index              The index into the connections array
-	 * @param array    $messages           Any messages to transmit
-	 * @param callable $serverReadCallBack The callable to pass along to the user function.
+	 * @param int   $index    The index into the connections array
+	 * @param array $messages Any messages to transmit
 	 * @return void
 	 */
 	function dispatchClientMessages($index, $messages) {
@@ -108,7 +106,7 @@ abstract class ProcessManager {
 				echo "Error: Unexpected error reading from socket\n";
 				exit(1);
 			}
-			if ($msg === false || (trim($msg) !== "" && self::CLOSE_CONNECTION == $this->dispatchMessage($socket,$msg))) {
+			if ($msg === false || (trim($msg) !== "" && self::CLOSE_CONNECTION == $this->dispatchMessage($socket, $msg))) {
 				$childPid = $this->getPidForSocket($socket);
 				$status = 0;
 				socket_close($socket);
@@ -120,8 +118,8 @@ abstract class ProcessManager {
 	}
 
 	function dispatchMessage(\Socket $socket,$msg):int {
-		list($message,$details)=explode(" ",$msg,2);
-		return $this->handleClientMessage( $socket, $message, ...explode(" ",$details));
+		list($message,$details) = explode(" ", $msg, 2);
+		return $this->handleClientMessage( $socket, $message, ...explode(" ", $details));
 	}
 
 	abstract function handleClientMessage(\Socket $socket, string $message,string ... $params):int;

@@ -13,7 +13,7 @@ class CsvOutput extends XUnitOutput
 			return;
 		}
 		$this->displayedErrors++;
-		$this->errors[$fileName][] = ["name"=>$name,"line" => $lineNumber, "message" => $message];
+		$this->errors[$fileName][] = ["name" => $name,"line" => $lineNumber, "message" => $message];
 	}
 
 	public function renderResults() {
@@ -22,9 +22,9 @@ class CsvOutput extends XUnitOutput
 		} else {
 			$f = fopen("php://stdout", "w");
 		}
-		foreach($this->errors as $fileName=>$errors) {
+		foreach ($this->errors as $fileName => $errors) {
 			usort($errors, fn($cmpa, $cmpb) => $cmpa['line'] <=> $cmpb['line'] );
-			foreach($errors as $error) {
+			foreach ($errors as $error) {
 				fputcsv($f, [$fileName, $error['line'],$error['name'], $error['message']]);
 			}
 		}

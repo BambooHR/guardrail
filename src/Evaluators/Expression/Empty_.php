@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators\Expression;
 
@@ -12,15 +13,13 @@ use PhpParser\Node;
 class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return [Node\Expr\Empty_::class, Node\Expr\BooleanNot::class, Node\Expr\Isset_::class];
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		if ($node instanceof Node\Expr\Isset_) {
-			if (count($node->vars)==1) {
+			if (count($node->vars) == 1) {
 				// isset() removes "null" from the true assertions.
 				$varName = $this->getVarName($node->vars[0]);
 				if ($varName) {
@@ -65,8 +64,8 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 	}
 
 	/**
-	 * @param ScopeStack $scopeStack
-	 * @param string $varName
+	 * @param ScopeStack       $scopeStack
+	 * @param string           $varName
 	 * @param Node\Expr\Isset_ $node
 	 * @return void
 	 */
@@ -81,7 +80,7 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 			$parentType = TypeComparer::removeNullOption($parentType);
 			$node->setAttribute(TypeComparer::INFERRED_TYPE_ATTR, $parentType);
 		}
-		TypeComparer::removeNullOptions(($node instanceof Node\Expr\Empty_ ?  $node->expr : $node->vars[0]), $scope, $node->getLine());
+		TypeComparer::removeNullOptions(($node instanceof Node\Expr\Empty_ ? $node->expr : $node->vars[0]), $scope, $node->getLine());
 		return $scope;
 	}
 }

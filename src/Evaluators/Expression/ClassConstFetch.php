@@ -17,13 +17,11 @@ use PhpParser\Node\Stmt\Interface_;
 class ClassConstFetch implements ExpressionInterface
 {
 
-	function getInstanceType(): string
-	{
+	function getInstanceType(): string {
 		return Node\Expr\ClassConstFetch::class;
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		/** @var Node\Expr\ClassConstFetch $expr */
 		$expr = $node;
 		if ($expr->name instanceof Node\Expr) {
@@ -31,7 +29,7 @@ class ClassConstFetch implements ExpressionInterface
 		}
 
 		// Class constants can point to other class constants, so follow the chain.
-		while($expr instanceOf Node\Expr\ClassConstFetch && $expr->class instanceof Node\Name) {
+		while ($expr instanceOf Node\Expr\ClassConstFetch && $expr->class instanceof Node\Name) {
 			if ($expr->name == "class") {
 				return TypeComparer::identifierFromName("string");
 			} else {
@@ -41,7 +39,7 @@ class ClassConstFetch implements ExpressionInterface
 				// If Foo::member resolves to an enum EnumCase, then it
 				// will come back to us a Name (Foo) representing the Enum class.
 				//  We can just turn around and return that Name as the type.
-				if($expr instanceof Node\Name) {
+				if ($expr instanceof Node\Name) {
 					return $expr;
 				}
 			}

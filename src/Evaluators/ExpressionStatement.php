@@ -9,13 +9,11 @@ use PhpParser\Node;
 class ExpressionStatement implements OnExitEvaluatorInterface
 {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return Node\Stmt\Expression::class;
 	}
 
-	public function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
-	{
+	public function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 	//	echo "Complete expression statement\n";
 	}
 }

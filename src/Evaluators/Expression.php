@@ -42,8 +42,8 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 	private $instances = [];
 
 	function __construct() {
-		foreach(self::EXPRESSION_CLASSES as $className) {
-			$this->instances[]=new $className;
+		foreach (self::EXPRESSION_CLASSES as $className) {
+			$this->instances[] = new $className;
 		}
 	}
 
@@ -51,8 +51,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		return Node\Expr::class;
 	}
 
-	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
-	{
+	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node->hasAttribute('swap-scope-on-enter')) {
 			$scopeStack->swapTopTwoScopes();
 		}
@@ -71,11 +70,11 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			$scopeStack->pushScope($branch);
 			$cond = If_::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
-			$node->else->setAttribute('swap-scope-on-enter',true);
-			$node->setAttribute('pop-scope-on-leave',true);
+			$node->else->setAttribute('swap-scope-on-enter', true);
+			$node->setAttribute('pop-scope-on-leave', true);
 		}
 
-		if($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction) {
+		if ($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction) {
 			FunctionLike::handleEnterFunctionLike($node, $scopeStack);
 		}
 
@@ -91,7 +90,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node->hasAttribute('pop-scope-on-leave')) {
-			$type=$scopeStack->popScope();
+			$type = $scopeStack->popScope();
 			$scopeStack->getCurrentScope()->merge($type);
 		}
 
@@ -113,8 +112,8 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			}
 		}
 		if ($node->hasAttribute('grab-if-cond-scope-on-leave')) {
-			$parents= $scopeStack->getParentNodes();
-			$if= $parents[ array_key_last($parents)];
+			$parents = $scopeStack->getParentNodes();
+			$if = $parents[array_key_last($parents)];
 			If_::pushIfScope($if, $scopeStack);
 		}
 
@@ -144,25 +143,25 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			return $cache[$class];
 		}
 
-		foreach($this->instances as $instance) {
+		foreach ($this->instances as $instance) {
 			$handles = $instance->getInstanceType();
 			if (is_array($handles)) {
 				foreach ($handles as $subType) {
-					if(is_a($class, $subType, true)) {
-						$cache[$class]=$instance;
+					if (is_a($class, $subType, true)) {
+						$cache[$class] = $instance;
 						return $instance;
 					}
 				}
 			} else {
-				if (is_a($class, $handles,true)) {
-					$cache[$class]=$instance;
+				if (is_a($class, $handles, true)) {
+					$cache[$class] = $instance;
 					return $instance;
 				}
 			}
 		}
 
-		if (!is_a($class,Node\Expr\ArrayItem::class, true) &&
-		!is_a($class,Node\Expr\ClosureUse::class, true)) {
+		if (!is_a($class, Node\Expr\ArrayItem::class, true) &&
+		!is_a($class, Node\Expr\ClosureUse::class, true)) {
 			throw new \InvalidArgumentException("Unknown expression $class");
 		}
 		return null;
