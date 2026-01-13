@@ -1,8 +1,8 @@
 <?php
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators\Expression;
 
-use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;

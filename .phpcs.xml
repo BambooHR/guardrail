@@ -12,9 +12,7 @@
   <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
   <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
   <rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>
-  <rule ref="Squiz.Classes.ValidClassName">
-    <exclude name="Squiz.Classes.ValidClassName.NotCamelCaps"/>
-  </rule>
+  <rule ref="Squiz.Classes.ValidClassName"/>
   <rule ref="Generic.Functions.FunctionCallArgumentSpacing"/>
   <rule ref="Generic.PHP.LowerCaseConstant"/>
   <rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
