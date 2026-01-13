@@ -95,9 +95,8 @@ abstract class ProcessManager {
 	}
 
 	/**
-	 * @param int      $index              The index into the connections array
-	 * @param array    $messages           Any messages to transmit
-	 * @param callable $serverReadCallBack The callable to pass along to the user function.
+	 * @param int   $index    The index into the connections array
+	 * @param array $messages Any messages to transmit
 	 * @return void
 	 */
 	function dispatchClientMessages($index, $messages) {

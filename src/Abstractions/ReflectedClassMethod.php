@@ -27,7 +27,8 @@ class ReflectedClassMethod implements MethodInterface {
 	/**
 	 * ReflectedClassMethod constructor.
 	 *
-	 * @param \ReflectionMethod $refl Instance of ReflectionMethod
+	 * @param ClassInterface    $class The class this method belongs to
+	 * @param \ReflectionMethod $refl  Instance of ReflectionMethod
 	 */
 	public function __construct(ClassInterface $class, \ReflectionMethod $refl) {
 		$this->refl = $refl;

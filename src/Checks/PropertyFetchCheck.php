@@ -113,9 +113,9 @@ class PropertyFetchCheck extends BaseCheck {
 	 * @param string    $fileName   -
 	 * @param Node      $node       -
 	 * @param string    $type       -
-	 * @param ClassLike $inside     -
 	 * @param Property  $property   -
 	 * @param string    $declaredIn -
+	 * @param ClassLike $inside     -
 	 * @return void
 	 */
 	private function handleDeclaredProperty($fileName, Node $node, $type, Property $property, $declaredIn, ?ClassLike $inside = null) {

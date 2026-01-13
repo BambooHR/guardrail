@@ -189,8 +189,8 @@ class MethodCall extends CallCheck {
 	/**
 	 * Traverse each node tree to find a method_exists() function call for the requested method.
 	 *
-	 * @param Node $node
-	 * @param Node $stmt
+	 * @param Node  $node
+	 * @param array $stmts
 	 *
 	 * @return bool
 	 */

@@ -56,10 +56,11 @@ class InterfaceCheck extends BaseCheck {
 	/**
 	 * checkMethod
 	 *
-	 * @param string          $fileName     The file name
-	 * @param Class_          $class        Instance of ClassAbstraction
-	 * @param MethodInterface $method       Instance of MethodInterface
-	 * @param MethodInterface $parentMethod Instance of MethodInterface
+	 * @param string              $fileName     The file name
+	 * @param Class_ | Interface_ $class        Instance of ClassAbstraction
+	 * @param Node\FunctionLike   $astNode      Instance of FunctionLike
+	 * @param MethodInterface     $method       Instance of MethodInterface
+	 * @param MethodInterface     $parentMethod Instance of MethodInterface
 	 *
 	 * @guardrail-ignore Standard.Unknown.Property
 	 *
@@ -249,4 +250,3 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 }
-

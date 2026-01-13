@@ -847,7 +847,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 	/**
 	 * @param array $parts
-	 * @param array $matches
 	 * @return array
 	 */
 	public function unserializeParams(array $parts) : array {

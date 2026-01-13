@@ -30,6 +30,7 @@ class ClassMethod implements MethodInterface {
 	/**
 	 * ClassMethod constructor.
 	 *
+	 * @param ClassInterface    $class  The class this method belongs to
 	 * @param ParserClassMethod $method Instance of ClassMethod
 	 */
 	public function __construct(ClassInterface $class, ParserClassMethod $method) {

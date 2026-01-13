@@ -52,10 +52,10 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param string $fileName   The file being scanned
-	 * @param string $name       The name of the node being scanned
-	 * @param Node   $node       Node node being scanned
-	 * @param array  $statements An array of statements representing the function body.
+	 * @param string               $fileName   The file being scanned
+	 * @param ?Node\Stmt\ClassLike $inside     The name of the node being scanned
+	 * @param Node                 $node       Node node being scanned
+	 * @param array                $statements An array of statements representing the function body.
 	 * @return void
 	 */
 	function checkStatements($fileName, ?Node\Stmt\ClassLike $inside, Node $node, array $statements) {

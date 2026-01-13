@@ -5,7 +5,13 @@ namespace BambooHR\Guardrail;
 use BambooHR\Guardrail\Exceptions\SocketException;
 
 class Socket {
+
 	/* This function adapted from the PHP documentation on php.net */
+	/**
+	 * @param resource $fp
+	 * @param string   $string
+	 * @return int
+	 */
 	public static function writeComplete($fp, $string) {
 		$length = strlen($string);
 		$fwrite = 0;

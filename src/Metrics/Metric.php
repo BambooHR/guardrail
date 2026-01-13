@@ -1,7 +1,5 @@
 <?php namespace BambooHR\Guardrail\Metrics;
 
-use JsonSerializable;
-
 class Metric implements MetricInterface {
 	private $file;
 	private $lineNumber;
@@ -23,7 +21,8 @@ class Metric implements MetricInterface {
 	}
 
 	/**
-	 * @param array $traitData
+	 * @param string $traitName
+	 * @param string $importLine
 	 */
 	public function setCausedByTraitData($traitName, $importLine) {
 		$this->causedByTraitData = ['name' => $traitName, 'importLine' => $importLine];

@@ -109,9 +109,10 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	/**
 	 * StaticAnalyzer constructor.
 	 *
-	 * @param SymbolTable     $index  The index
-	 * @param OutputInterface $output Instance if OutputInterface
-	 * @param Config          $config The config
+	 * @param SymbolTable           $index        The index
+	 * @param OutputInterface       $output       Instance if OutputInterface
+	 * @param MetricOutputInterface $metricOutput Instance of MetricOutputInterface
+	 * @param Config                $config       The config
 	 */
 	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config) {
 		$this->index = $index;
@@ -296,8 +297,9 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	/**
 	 * updateFunctionEmit
 	 *
-	 * @param Node\FunctionLike $func      Instance of FunctionLike
-	 * @param string            $pushOrPop Push | Pop
+	 * @param Node\FunctionLike $func       Instance of FunctionLike
+	 * @param ScopeStack        $scopeStack Instance of ScopeStack
+	 * @param string            $pushOrPop  Push | Pop
 	 *
 	 * @return void
 	 */

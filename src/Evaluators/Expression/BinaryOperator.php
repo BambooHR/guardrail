@@ -79,10 +79,10 @@ class BinaryOperator implements ExpressionInterface {
 
 	/**
 	 * @param string      $sigil
-	 * @param Scope\Scope $trueScope
 	 * @param string      $varName
 	 * @param BinaryOp    $node
-	 * @param Scope       $falseScope
+	 * @param Scope\Scope $trueScope
+	 * @param Scope\Scope $falseScope
 	 * @return void
 	 */
 	public function handleNullEquivalency(string $sigil, string $varName, BinaryOp $node, Scope\Scope $trueScope, Scope\Scope $falseScope): void {

@@ -62,8 +62,7 @@ class IndexingPhase {
 	/**
 	 * Generator function that yields the next file to scan.
 	 *
-	 * @param \RecursiveIteratorIterator $it2   Instance of RecursiveIteratorIterator
-	 * @param bool                       $stubs Check the stubs
+	 * @param array $paths
 	 *
 	 * @return \Generator
 	 */
@@ -190,9 +189,8 @@ class IndexingPhase {
 	}
 
 	/**
-	 * @param bool|string $name
-	 * @param bool|string $fileData
-	 * @param string      $pathName
+	 * @param string $name
+	 * @param string $fileData
 	 * @return int
 	 */
 	public function indexString(string $name, string $fileData): int {
