@@ -16,10 +16,18 @@ class TestGenerator extends TestSuiteSetup {
 	}
 
 	public function testGeneratorShouldFailNoYield() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type" );
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type without yield" );
 	}
 
 	public function testGeneratorShouldFailEmptyFunction() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type" );
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type in empty function" );
+	}
+
+	public function testNotAGeneratorEmptyFunctionNoneReturnShouldPass() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate none return type should pass with empty function" );
+	}
+
+	public function testNotAGeneratorEmptyFunctionIntReturnShouldFailReturnType() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate int return type should fail with empty function" );
 	}
 }
