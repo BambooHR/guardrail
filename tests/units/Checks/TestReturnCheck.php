@@ -5,11 +5,11 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
 
 
 /**
- * Class TestFunctionCalCheck
+ * Class TestReturnCheck
  *
  * @package BambooHR\Guardrail\Tests\Checks
  */
-class TestGenerator extends TestSuiteSetup {
+class TestReturnCheck extends TestSuiteSetup {
 
 	public function testGeneratorShouldPass() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type" );
