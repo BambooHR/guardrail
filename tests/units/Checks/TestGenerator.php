@@ -27,7 +27,7 @@ class TestGenerator extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate none return type should pass with empty function" );
 	}
 
-	public function testNotAGeneratorEmptyFunctionIntReturnShouldFailReturnType() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate int return type should fail with empty function" );
+	public function testNotAGeneratorEmptyFunctionDifferentReturnShouldFail() {
+		$this->assertEquals(8, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate int return type should fail with empty function" );
 	}
 }
