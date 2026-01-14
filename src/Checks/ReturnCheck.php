@@ -38,7 +38,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [ Return_::class ];
+		return [ Return_::class, Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class ];
 	}
 
 	/**
@@ -52,6 +52,11 @@ class ReturnCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
+		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+			$this->checkGeneratorFunction($fileName, $node, $inside);
+			return;
+		}
+
 		if ($node instanceof Return_) {
 			$insideFunc = $scope?->getInsideFunction();
 
@@ -85,7 +90,7 @@ class ReturnCheck extends BaseCheck {
 				$returnType = $inside->namespacedName;
 			}
 
-			if ($this->isGeneratorFunction($returnType, $insideFunc)) {
+			if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
 				return;
 			}
 
@@ -97,6 +102,29 @@ class ReturnCheck extends BaseCheck {
 
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, $msg);
 			}
+		}
+	}
+
+	/**
+	 * Validate that a function with Generator return type contains yield
+	 *
+	 * @param string            $fileName The name of the file
+	 * @param Node\FunctionLike $node     The function/method node
+	 * @param ClassLike|null    $inside   The class we are inside of (if any)
+	 *
+	 * @return void
+	 */
+	private function checkGeneratorFunction(string $fileName, Node\FunctionLike $node, ?ClassLike $inside = null): void {
+		$returnType = $node->getReturnType();
+
+		if (!TypeComparer::isNamedIdentifier($returnType, "Generator")) {
+			return;
+		}
+
+		if (!$this->containsYield($node)) {
+			$functionName = $this->getFunctionName($node, $inside);
+			$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN,
+				"Function $functionName has Generator return type but does not contain yield");
 		}
 	}
 
