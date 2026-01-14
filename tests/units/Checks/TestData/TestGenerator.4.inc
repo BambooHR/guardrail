@@ -6,6 +6,6 @@ class TestClass {
 	}
 
 	function method(): void {
-		// Should fail because it is an empty function, which returns `void` and not a generator
+		// Should pass because it is an empty function, which has no return
 	}
 }
