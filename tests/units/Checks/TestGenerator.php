@@ -15,7 +15,11 @@ class TestGenerator extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type" );
 	}
 
-	public function testGeneratorShouldFail() {
+	public function testGeneratorShouldFailNoYield() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type" );
+	}
+
+	public function testGeneratorShouldFailEmptyFunction() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate generator return type" );
 	}
 }
