@@ -85,6 +85,10 @@ class ReturnCheck extends BaseCheck {
 				$returnType = $inside->namespacedName;
 			}
 
+			if ($this->isGeneratorFunction($returnType, $insideFunc)) {
+				return;
+			}
+
 			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope?->isStrict())) {
 				$functionName = $this->getFunctionName($insideFunc, $inside);
 				$msg = "Value returned from $functionName()" .
@@ -96,6 +100,64 @@ class ReturnCheck extends BaseCheck {
 		}
 	}
 
+	/**
+	 * Check if a function is a generator (has Generator return type and contains yield)
+	 *
+	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnType The return type
+	 * @param Node\FunctionLike                               $insideFunc The function to check
+	 *
+	 * @return bool
+	 */
+	private function isGeneratorFunction($returnType, Node\FunctionLike $insideFunc): bool {
+		if (!TypeComparer::isNamedIdentifier($returnType, "Generator")) {
+			return false;
+		}
+
+		return $this->containsYield($insideFunc);
+	}
+
+	/**
+	 * Check if a function contains a yield statement
+	 *
+	 * @param Node\FunctionLike $func The function to check
+	 *
+	 * @return bool
+	 */
+	private function containsYield(Node\FunctionLike $func): bool {
+		$stmts = $func->getStmts();
+		if (!$stmts) {
+			return false;
+		}
+
+		$finder = new class {
+			public bool $found = false;
+
+			public function search(array $nodes): void {
+				foreach ($nodes as $node) {
+					if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
+						$this->found = true;
+						return;
+					}
+					if ($node instanceof Node) {
+						foreach ($node->getSubNodeNames() as $name) {
+							$subNode = $node->$name;
+							if (is_array($subNode)) {
+								$this->search($subNode);
+							} else if ($subNode instanceof Node) {
+								$this->search([$subNode]);
+							}
+							if ($this->found) {
+								return;
+							}
+						}
+					}
+				}
+			}
+		};
+
+		$finder->search($stmts);
+		return $finder->found;
+	}
 
 	/**
 	 * @param Node\FunctionLike $insideFunc The method we're inside of
