@@ -117,20 +117,20 @@ class ReturnCheck extends BaseCheck {
 	private function checkGeneratorFunction(string $fileName, Node\FunctionLike $node, ?ClassLike $inside = null): void {
 		$returnType = $node->getReturnType();
 
+		if ($node instanceof Node\Stmt\ClassMethod && $node->isAbstract()) {
+			return;
+		}
+
+		if ($inside instanceof Node\Stmt\Interface_) {
+			return;
+		}
+
 		if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
 			if (!$this->containsYield($node)) {
 				$functionName = $this->getFunctionName($node, $inside);
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN,
 					"Function $functionName has Generator return type but does not contain yield");
 			}
-			return;
-		}
-
-		if ($node instanceof Node\Stmt\ClassMethod && $node->isAbstract()) {
-			return;
-		}
-
-		if ($inside instanceof Node\Stmt\Interface_) {
 			return;
 		}
 
@@ -157,7 +157,7 @@ class ReturnCheck extends BaseCheck {
 	 */
 	private function containsYield(Node\FunctionLike $func): bool {
 		$stmts = $func->getStmts();
-		if (!$stmts) {
+		if (empty($stmts)) {
 			return false;
 		}
 
@@ -200,7 +200,7 @@ class ReturnCheck extends BaseCheck {
 	 */
 	private function containsReturn(Node\FunctionLike $func): bool {
 		$stmts = $func->getStmts();
-		if (!$stmts) {
+		if (empty($stmts)) {
 			return false;
 		}
 
