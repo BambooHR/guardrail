@@ -43,6 +43,10 @@ class InvalidReturns {
 	function nonNullableReturnNull(): int {
 		return null;
 	}
+
+	function unionReturnString(): int|string {
+		return true;
+	}
 }
 
 // Standalone functions with invalid returns
@@ -80,4 +84,8 @@ function floatReturnArray(): float {
 
 function nonNullableReturnNull(): int {
 	return null;
+}
+
+function unionReturnString(): int|string {
+	return true;
 }

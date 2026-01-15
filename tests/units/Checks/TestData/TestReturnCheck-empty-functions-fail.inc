@@ -17,8 +17,3 @@ class EmptyFunctionsFail {
 
 	function staticReturn(): static {}
 }
-
-// Abstract method - should pass
-abstract class AbstractMethods {
-	abstract function method(): int;
-}

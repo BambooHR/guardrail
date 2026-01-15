@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+class testClass {
+    function test(): int {
+        return 1;
+    }
+}
+
 // Valid return types - all should pass
 class ValidReturns {
 	function intReturn(): int {
@@ -44,6 +50,10 @@ class ValidReturns {
 
 	function unionReturnString(): int|string {
 		return "test";
+	}
+
+	function classReturn(): testClass {
+		return new testClass();
 	}
 }
 
@@ -90,4 +100,8 @@ function unionReturn(): int|string {
 
 function unionReturnString(): int|string {
 	return "test";
+}
+
+function classReturn(): testClass {
+	return new testClass();
 }
