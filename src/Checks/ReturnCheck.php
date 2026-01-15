@@ -38,7 +38,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [ Return_::class ];
+		return [ Return_::class, Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class ];
 	}
 
 	/**
@@ -52,6 +52,11 @@ class ReturnCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
+		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+			$this->checkGeneratorFunction($fileName, $node, $inside);
+			return;
+		}
+
 		if ($node instanceof Return_) {
 			$insideFunc = $scope?->getInsideFunction();
 
@@ -85,6 +90,10 @@ class ReturnCheck extends BaseCheck {
 				$returnType = $inside->namespacedName;
 			}
 
+			if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
+				return;
+			}
+
 			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope?->isStrict())) {
 				$functionName = $this->getFunctionName($insideFunc, $inside);
 				$msg = "Value returned from $functionName()" .
@@ -96,6 +105,134 @@ class ReturnCheck extends BaseCheck {
 		}
 	}
 
+	/**
+	 * Validate function-level return type requirements
+	 *
+	 * @param string            $fileName The name of the file
+	 * @param Node\FunctionLike $node     The function/method node
+	 * @param ClassLike|null    $inside   The class we are inside of (if any)
+	 *
+	 * @return void
+	 */
+	private function checkGeneratorFunction(string $fileName, Node\FunctionLike $node, ?ClassLike $inside = null): void {
+		$returnType = $node->getReturnType();
+
+		if ($node instanceof Node\Stmt\ClassMethod && $node->isAbstract()) {
+			return;
+		}
+
+		if ($inside instanceof Node\Stmt\Interface_) {
+			return;
+		}
+
+		if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
+			if (!$this->containsYield($node)) {
+				$functionName = $this->getFunctionName($node, $inside);
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN,
+					"Function $functionName has Generator return type but does not contain yield");
+			}
+			return;
+		}
+
+		if ($returnType &&
+			!TypeComparer::isNamedIdentifier($returnType, "void") &&
+			!TypeComparer::isNamedIdentifier($returnType, "never") &&
+			!TypeComparer::isNamedIdentifier($returnType, "none") &&
+			!TypeComparer::isNamedIdentifier($returnType, "mixed")) {
+
+			if (!$this->containsReturn($node)) {
+				$functionName = $this->getFunctionName($node, $inside);
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN,
+					"Function $functionName must return a value but contains no return statement");
+			}
+		}
+	}
+
+	/**
+	 * Check if a function contains a yield statement
+	 *
+	 * @param Node\FunctionLike $func The function to check
+	 *
+	 * @return bool
+	 */
+	private function containsYield(Node\FunctionLike $func): bool {
+		$stmts = $func->getStmts();
+		if (empty($stmts)) {
+			return false;
+		}
+
+		$finder = new class {
+			public bool $found = false;
+
+			public function search(array $nodes): void {
+				foreach ($nodes as $node) {
+					if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
+						$this->found = true;
+						return;
+					}
+					if ($node instanceof Node) {
+						foreach ($node->getSubNodeNames() as $name) {
+							$subNode = $node->$name;
+							if (is_array($subNode)) {
+								$this->search($subNode);
+							} else if ($subNode instanceof Node) {
+								$this->search([$subNode]);
+							}
+							if ($this->found) {
+								return;
+							}
+						}
+					}
+				}
+			}
+		};
+
+		$finder->search($stmts);
+		return $finder->found;
+	}
+
+	/**
+	 * Check if a function contains a return statement
+	 *
+	 * @param Node\FunctionLike $func The function to check
+	 *
+	 * @return bool
+	 */
+	private function containsReturn(Node\FunctionLike $func): bool {
+		$stmts = $func->getStmts();
+		if (empty($stmts)) {
+			return false;
+		}
+
+		$finder = new class {
+			public bool $found = false;
+
+			public function search(array $nodes): void {
+				foreach ($nodes as $node) {
+					if ($node instanceof Return_) {
+						$this->found = true;
+						return;
+					}
+					if ($node instanceof Node) {
+						foreach ($node->getSubNodeNames() as $name) {
+							$subNode = $node->$name;
+							if (is_array($subNode)) {
+								$this->search($subNode);
+							} else if ($subNode instanceof Node) {
+								$this->search([$subNode]);
+							}
+							if ($this->found) {
+								return;
+							}
+						}
+					}
+				}
+			}
+		};
+
+		$finder->search($stmts);
+		return $finder->found;
+	}
 
 	/**
 	 * @param Node\FunctionLike $insideFunc The method we're inside of
