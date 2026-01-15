@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 // Empty functions that should PASS (no return required)
 class EmptyFunctionsPass {

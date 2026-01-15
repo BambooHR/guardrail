@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Tests\Checks;
+<?php declare(strict_types=1);
+
+namespace BambooHR\Guardrail\Tests\Checks;
 
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
@@ -40,7 +42,7 @@ class TestReturnCheck extends TestSuiteSetup {
 	public function testStandardReturnTypes() {
 		// All valid: int, string, array, bool, float, object, callable, nullable, union types = 0 errors
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-standard-returns.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate standard return types" );
-		// Invalid type mismatches (array returned for various types, object->array, callable->int, int->null) = 6 errors
+		// Invalid type mismatches: 18 errors (9 in class methods + 9 in standalone functions) in strict mode
 		$this->assertEquals(18, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate invalid return type mismatches" );
 	}
 }

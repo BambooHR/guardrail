@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 // Valid return types - all should pass
 class ValidReturns {
