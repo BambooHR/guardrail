@@ -47,6 +47,16 @@ class InvalidReturns {
 	function unionReturnString(): int|string {
 		return true;
 	}
+
+	function stringReturnNoReturnEmpty(): string {}
+
+	function stringReturnNoReturn(): string {
+		$test = 1;
+	}
+
+	function stringReturnVoid(): string {
+		return;
+}
 }
 
 // Standalone functions with invalid returns
@@ -88,4 +98,14 @@ function nonNullableReturnNull(): int {
 
 function unionReturnString(): int|string {
 	return true;
+}
+
+function stringReturnNoReturnEmpty(): string {}
+
+function stringReturnNoReturn(): string {
+	$test = 1;
+}
+
+function stringReturnVoid(): string {
+	return;
 }
