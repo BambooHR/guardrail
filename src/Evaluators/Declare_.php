@@ -18,7 +18,7 @@ class Declare_ implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		if (count($node->declares) > 0 && str_contains(strval($node->declares[0]->key), "strict")) {
 			$value = ($node->declares[0]->value instanceof Node\Scalar\LNumber && $node->declares[0]->value->value === 1) ? true : false;
 			if ($node->stmts != null) {
-				$scopeStack->pushScopeClone();
+				$scopeStack->pushScope($scopeStack->getScopeClone());
 			}
 			$scopeStack->getCurrentScope()->isStrict = $value;
 		}
