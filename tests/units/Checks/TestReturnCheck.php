@@ -36,4 +36,11 @@ class TestReturnCheck extends TestSuiteSetup {
 		// All valid: self return type, standalone function, closures, arrow functions = 0 errors
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-special-cases.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate special cases (self, closures, standalone functions)" );
 	}
+
+	public function testStandardReturnTypes() {
+		// All valid: int, string, array, bool, float, object, callable, nullable, union types = 0 errors
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-standard-returns.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate standard return types" );
+		// Invalid type mismatches (array returned for various types, object->array, callable->int, int->null) = 6 errors
+		$this->assertEquals(18, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to validate invalid return type mismatches" );
+	}
 }
