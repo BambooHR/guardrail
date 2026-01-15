@@ -8,7 +8,7 @@ class testClass {
 
 // Invalid return types - all should fail
 class InvalidReturns {
-	function arrayReturnString(): array {
+	function arrayReturnInt(): array {
 		return 42;
 	}
 
@@ -16,7 +16,7 @@ class InvalidReturns {
 		return "not an instance of testClass";
 	}
 
-    function objectReturnString(): object {
+	function objectReturnString(): object {
 		return "not an instance of object";
 	}
 
@@ -45,38 +45,39 @@ class InvalidReturns {
 	}
 }
 
-	function arrayReturnString(): array {
-		return 42;
-	}
+// Standalone functions with invalid returns
+function arrayReturnInt(): array {
+	return 42;
+}
 
-	function classReturnString(): testClass {
-		return "not an instance of testClass";
-	}
+function classReturnString(): testClass {
+	return "not an instance of testClass";
+}
 
-    function objectReturnString(): object {
-		return "not an instance of object";
-	}
+function objectReturnString(): object {
+	return "not an instance of object";
+}
 
-	function callableReturnInt(): callable {
-		return 42;
-	}
+function callableReturnInt(): callable {
+	return 42;
+}
 
-	function intReturnArray(): int {
-		return [];
-	}
+function intReturnArray(): int {
+	return [];
+}
 
-	function stringReturnArray(): string {
-		return [];
-	}
+function stringReturnArray(): string {
+	return [];
+}
 
-	function boolReturnArray(): bool {
-		return [];
-	}
+function boolReturnArray(): bool {
+	return [];
+}
 
-	function floatReturnArray(): float {
-		return [];
-	}
+function floatReturnArray(): float {
+	return [];
+}
 
-	function nonNullableReturnNull(): int {
-		return null;
-	}
+function nonNullableReturnNull(): int {
+	return null;
+}
