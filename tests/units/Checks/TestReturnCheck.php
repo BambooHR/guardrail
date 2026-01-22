@@ -13,7 +13,7 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  */
 class TestReturnCheck extends TestSuiteSetup {
 	public function testEmptyFunctions() {
-		// 3 valid empty functions (none, void, mixed) + 1 abstract = 0 errors
+		// 7 valid empty functions (none, void, mixed) + 1 abstract = 0 errors
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-empty-functions.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass empty functions with various return types" );
 		// 8 invalid empty functions (int, string, array, bool, callable, object, self, static) = 8 errors
 		$this->assertEquals(8, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return types" );
@@ -34,6 +34,7 @@ class TestReturnCheck extends TestSuiteSetup {
 	public function testStandardReturnTypes() {
 		// All valid: int, string, array, bool, float, object, callable, nullable, union types = 0 errors
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-standard-returns.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass standard return types" );		// Invalid type mismatches: 20 errors (10 in class methods + 10 in standalone functions)
+		// 32 invalid type mismatches (16 in class methods + 16 in standalone functions)
 		$this->assertEquals(32, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail standard return types" );
 	}
 }
