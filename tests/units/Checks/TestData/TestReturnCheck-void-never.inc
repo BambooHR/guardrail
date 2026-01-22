@@ -9,4 +9,8 @@ class VoidNeverValid {
 	function voidWithNoReturn(): void {
 		// No return statement
 	}
+
+	function neverWithNoReturn(): never {
+		$test = 1;
+	}
 }

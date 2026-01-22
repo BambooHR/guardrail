@@ -4,6 +4,10 @@
 class EmptyFunctionsPass {
 	function noneReturn(): none {}
 
+	function noneReturnMultiLine(): none {
+		// Empty function
+	}
+
 	function voidReturn(): void {}
 
 	function neverReturn(): never {}
@@ -20,4 +24,8 @@ class EmptyFunctionsPass {
 // Abstract method - should pass
 abstract class AbstractMethods {
 	abstract function method(): int;
+}
+
+function noneReturnMultiLine(): none {
+	// Empty function
 }

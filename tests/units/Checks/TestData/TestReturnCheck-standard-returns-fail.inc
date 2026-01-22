@@ -68,6 +68,10 @@ class InvalidReturns {
 	function stringReturnVoid(): string {
 		return;
 	}
+
+	function noReturn(): string {
+		$test = 1;
+	}
 }
 
 // Standalone functions with invalid returns
@@ -131,4 +135,8 @@ function stringReturnNoReturn(): string {
 
 function stringReturnVoid(): string {
 	return;
+}
+
+function noReturn(): string {
+	$test = 1;
 }
