@@ -11,6 +11,11 @@
          cacheDirectory=".phpunit.cache"
          backupStaticProperties="false"
 >
+  <source>
+    <include>
+      <directory suffix=".php">../src</directory>
+    </include>
+  </source>
   <testsuites>
     <testsuite name="Units">
       <directory suffix=".php">./units</directory>
