@@ -6,6 +6,14 @@ class EmptyFunctionsPass {
 
 	function voidReturn(): void {}
 
+	function neverReturn(): never {}
+
+	function nullReturn(): null {}
+
+	function nullableReturn(): ?int {}
+
+	function nullableStringReturn(): null|string {}
+
 	function mixedReturn(): mixed {}
 }
 

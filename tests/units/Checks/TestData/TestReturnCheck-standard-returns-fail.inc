@@ -56,7 +56,7 @@ class InvalidReturns {
 
 	function stringReturnVoid(): string {
 		return;
-}
+	}
 }
 
 // Standalone functions with invalid returns
