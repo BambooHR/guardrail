@@ -19,7 +19,7 @@ abstract class ChildProcess {
 
 	abstract function runCommand(string $command, string ...$params);
 
-	function run():int {
+	function run():?int {
 		$buffer = new SocketBuffer();
 		while (1) {
 			$buffer->read($this->socket);
