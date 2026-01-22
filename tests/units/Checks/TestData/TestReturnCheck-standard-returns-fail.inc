@@ -39,9 +39,20 @@ class InvalidReturns {
 	function floatReturnArray(): float {
 		return [];
 	}
+	function nonNullableReturnNone(): int {
+		return none;
+	}
 
 	function nonNullableReturnNull(): int {
 		return null;
+	}
+
+	function nonNullableReturnNever(): int {
+		return never;
+	}
+
+	function nonNullableReturnVoid(): int {
+		return void;
 	}
 
 	function unionReturnString(): int|string {
@@ -92,8 +103,20 @@ function floatReturnArray(): float {
 	return [];
 }
 
+function nonNullableReturnNone(): int {
+	return none;
+}
+
 function nonNullableReturnNull(): int {
 	return null;
+}
+
+function nonNullableReturnNever(): int {
+	return never;
+}
+
+function nonNullableReturnVoid(): int {
+	return void;
 }
 
 function unionReturnString(): int|string {
