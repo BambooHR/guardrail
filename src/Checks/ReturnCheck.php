@@ -156,14 +156,14 @@ class ReturnCheck extends BaseCheck {
 	/**
 	 * Check if a function contains yield or yield from statements
 	 *
-	 * @param array $stmts The function body statements
+	 * @param Node\FunctionLike $func The function to check
 	 *
 	 * @return bool
 	 */
-	protected function containsYield($node): bool {
+	protected function containsYield(Node\FunctionLike $func): bool {
 		$hasYield = false;
 
-		$stmts = $node->getStmts();
+		$stmts = $func->getStmts();
 		ForEachNode::run($stmts, function (Node $node) use (&$hasYield) {
 			if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
 				$hasYield = true;
