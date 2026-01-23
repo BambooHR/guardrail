@@ -139,11 +139,7 @@ class ReturnCheck extends BaseCheck {
 			return;
 		}
 
-		if ($returnType &&
-			!TypeComparer::isNamedIdentifier($returnType, "void") &&
-			!TypeComparer::isNamedIdentifier($returnType, "never") &&
-			!TypeComparer::isNamedIdentifier($returnType, "none") &&
-			!TypeComparer::isNamedIdentifier($returnType, "mixed")) {
+		if ($returnType && !$this->returnTypeAllowsNoReturn($returnType)) {
 
 			if (!$this->containsReturn($node)) {
 				$functionName = $this->getFunctionName($node, $inside);
@@ -208,5 +204,39 @@ class ReturnCheck extends BaseCheck {
 			$functionName = "$class::" . strval($insideFunc->name);
 		}
 		return $functionName;
+	}
+
+	/**
+	 * Check if a return type allows a function to have no return statement
+	 *
+	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnType
+	 *
+	 * @return bool
+	 */
+	protected function returnTypeAllowsNoReturn($returnType): bool {
+		if (!$returnType) {
+			return true;
+		}
+
+		$allowedTypes = ["void", "never", "mixed", "none", "null"];
+		foreach ($allowedTypes as $type) {
+			if (TypeComparer::isNamedIdentifier($returnType, $type)) {
+				return true;
+			}
+		}
+
+		if ($returnType instanceof Node\NullableType) {
+			return true;
+		}
+
+		if ($returnType instanceof Node\UnionType) {
+			foreach ($returnType->types as $type) {
+				if (TypeComparer::isNamedIdentifier($type, "null")) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }
