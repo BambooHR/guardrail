@@ -68,10 +68,6 @@ class ReturnCheck extends BaseCheck {
 			$functionName = $this->getFunctionName($insideFunc, $inside);
 			$returnType = $insideFunc->getReturnType();
 
-			if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
-				return;
-			}
-
 			$returnIsVoid = TypeComparer::isNamedIdentifier($returnType, "void");
 			$returnIsNever = TypeComparer::isNamedIdentifier($returnType, "never");
 			if ($returnIsVoid || $returnIsNever) {
@@ -214,10 +210,6 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	protected function returnTypeAllowsNoReturn($returnType): bool {
-		if (!$returnType) {
-			return true;
-		}
-
 		$allowedTypes = ["void", "never", "mixed", "none", "null"];
 		foreach ($allowedTypes as $type) {
 			if (TypeComparer::isNamedIdentifier($returnType, $type)) {
