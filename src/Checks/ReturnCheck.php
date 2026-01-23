@@ -5,6 +5,7 @@
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -66,6 +67,10 @@ class ReturnCheck extends BaseCheck {
 
 			$functionName = $this->getFunctionName($insideFunc, $inside);
 			$returnType = $insideFunc->getReturnType();
+
+			if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
+				return;
+			}
 
 			$returnIsVoid = TypeComparer::isNamedIdentifier($returnType, "void");
 			$returnIsNever = TypeComparer::isNamedIdentifier($returnType, "never");
@@ -149,46 +154,22 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
-	 * Check if a function contains a yield statement
+	 * Check if a function contains yield or yield from statements
 	 *
-	 * @param Node\FunctionLike $func The function to check
+	 * @param array $stmts The function body statements
 	 *
 	 * @return bool
 	 */
-	private function containsYield(Node\FunctionLike $func): bool {
-		$stmts = $func->getStmts();
-		if (empty($stmts)) {
-			return false;
-		}
+	protected function containsYield($node): bool {
+		$hasYield = false;
 
-		$finder = new class {
-			public bool $found = false;
-
-			public function search(array $nodes): void {
-				foreach ($nodes as $node) {
-					if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
-						$this->found = true;
-						return;
-					}
-					if ($node instanceof Node) {
-						foreach ($node->getSubNodeNames() as $name) {
-							$subNode = $node->$name;
-							if (is_array($subNode)) {
-								$this->search($subNode);
-							} else if ($subNode instanceof Node) {
-								$this->search([$subNode]);
-							}
-							if ($this->found) {
-								return;
-							}
-						}
-					}
-				}
+		$stmts = $node->getStmts();
+		ForEachNode::run($stmts, function (Node $node) use (&$hasYield) {
+			if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
+				$hasYield = true;
 			}
-		};
-
-		$finder->search($stmts);
-		return $finder->found;
+		});
+		return $hasYield;
 	}
 
 	/**
