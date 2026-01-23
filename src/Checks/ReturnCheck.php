@@ -180,39 +180,15 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function containsReturn(Node\FunctionLike $func): bool {
+		$hasReturn = false;
+
 		$stmts = $func->getStmts();
-		if (empty($stmts)) {
-			return false;
-		}
-
-		$finder = new class {
-			public bool $found = false;
-
-			public function search(array $nodes): void {
-				foreach ($nodes as $node) {
-					if ($node instanceof Return_) {
-						$this->found = true;
-						return;
-					}
-					if ($node instanceof Node) {
-						foreach ($node->getSubNodeNames() as $name) {
-							$subNode = $node->$name;
-							if (is_array($subNode)) {
-								$this->search($subNode);
-							} else if ($subNode instanceof Node) {
-								$this->search([$subNode]);
-							}
-							if ($this->found) {
-								return;
-							}
-						}
-					}
-				}
+		ForEachNode::run($stmts, function (Node $node) use (&$hasReturn) {
+			if ($node instanceof Node\Stmt\Return_) {
+				$hasReturn = true;
 			}
-		};
-
-		$finder->search($stmts);
-		return $finder->found;
+		});
+		return $hasReturn;
 	}
 
 	/**
