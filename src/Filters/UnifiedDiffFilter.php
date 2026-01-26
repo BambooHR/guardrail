@@ -87,26 +87,26 @@ class UnifiedDiffFilter implements FilterInterface {
 	function display() {
 		foreach ($this->filter as $fileName => $lineNumbers) {
 			echo "Filter: $fileName: ";
-			
+
 			// Stream output in chunks to avoid memory issues with large files
 			$chunkSize = 100; // Adjust based on your needs
 			$totalLines = count($lineNumbers);
-			
+
 			for ($i = 0; $i < $totalLines; $i += $chunkSize) {
 				$chunk = array_slice($lineNumbers, $i, $chunkSize);
-				echo implode(",",  
+				echo implode(",",
 					array_map(
 						fn($lineNumberPair) => $lineNumberPair[0] . "-" . $lineNumberPair[1],
 						$chunk
 					));
-				
+
 				// Flush output buffer to ensure content is sent to output
 				if ($i + $chunkSize < $totalLines) {
 					echo ",";
 					flush();
 				}
 			}
-			
+
 			echo "\n";
 			flush();
 		}
