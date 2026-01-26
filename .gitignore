@@ -10,3 +10,4 @@ guardrail.phar
 symbol_table.sqlite3
 /symbol_table.json
 /tests/.phpunit.result.cache
+/tests/.phpunit.cache

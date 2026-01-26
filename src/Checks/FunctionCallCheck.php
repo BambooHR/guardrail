@@ -72,7 +72,7 @@ class FunctionCallCheck extends CallCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 
 		if ($node instanceof Node\Expr\Eval_) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
@@ -101,7 +101,7 @@ class FunctionCallCheck extends CallCheck {
 						$this->emitError($fileName, $node, $errorType, "Call to deprecated function $name");
 					}
 					$params = $func->getParameters();
-					$this->checkParams($fileName, $node, $name, $scope, $inside, $node->args, $params);
+					$this->checkParams($fileName, $node, $name, $scope, $node->args, $params);
 				} else if (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}
@@ -196,9 +196,9 @@ class FunctionCallCheck extends CallCheck {
 	 *
 	 * @return bool
 	 */
-	private function wrappedByFunctionsExistsCheck(Expr\FuncCall $node, string $name, Scope $scopeStack = null): bool {
-		$parents=$scopeStack->getParentNodes();
-		foreach($parents as $parentNode) {
+	private function wrappedByFunctionsExistsCheck(Expr\FuncCall $node, string $name, ?Scope $scopeStack = null): bool {
+		$parents = $scopeStack?->getParentNodes();
+		foreach ($parents as $parentNode) {
 			if ($parentNode instanceof Node\Stmt\If_ && self::isMatchingFunctionExistsCond($parentNode->cond, $name)) {
 				return true;
 			}
@@ -214,7 +214,7 @@ class FunctionCallCheck extends CallCheck {
 		return (
 			$cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&
-			$cond->name->toString()=="function_exists" &&
+			$cond->name->toString() == "function_exists" &&
 			count($cond->args) >= 1 &&
 			$cond->args[0]->value instanceof Node\Scalar\String_ &&
 			strcasecmp($cond->args[0]->value->value, $name) == 0

@@ -19,10 +19,10 @@ class TypeParser {
 
 	private function adjustTypeString($type) {
 		// Clean up a few DocBlock eccentricities.
-		if ($type=='mixed') {
+		if ($type == 'mixed') {
 			$type = '';
 		}
-		if ($type=='boolean') {
+		if ($type == 'boolean') {
 			$type = 'bool';
 		}
 
@@ -33,12 +33,12 @@ class TypeParser {
 		if ($type && strval($type) != "") {
 			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type)) {
 				return new Node\Identifier($type);
-			} else if (str_starts_with($type,"\\" )) {
+			} else if (str_starts_with($type, "\\" )) {
 				return new Name\FullyQualified(substr($type, 1), ["templates" => $templateVars]);
-			} else if ($type=="T" || $type=="class-string") {
+			} else if ($type == "T" || $type == "class-string") {
 				return new Name\FullyQualified($type, ["templates" => $templateVars]);
 			} else {
-				$var=call_user_func($this->resolver,new Name($type));
+				$var = call_user_func($this->resolver, new Name($type));
 				if (count($templateVars)) {
 					$var->setAttribute('templates', $templateVars);
 				}
@@ -57,17 +57,17 @@ class TypeParser {
 	 * @throws DocBlockParserException
 	 */
 	private function parseString(string $type, int &$i): Name|Node\Identifier|null {
-		$this->skipWs($type,$i);
-		if (preg_match("/^([-A-Z0-9_\\\\]+)(?:((?:\[])+)|<([\\\\A-Z0-9_]+(,[\\\\A-Z0-9_]+)*)>)?/i", substr($type,$i), $matches, 0)) {
-			$i+=strlen($matches[0]);
-			$name=$this->adjustTypeString($matches[1]);
+		$this->skipWs($type, $i);
+		if (preg_match("/^([-A-Z0-9_\\\\]+)(?:((?:\[])+)|<([\\\\A-Z0-9_]+(,[\\\\A-Z0-9_]+)*)>)?/i", substr($type, $i), $matches, 0)) {
+			$i += strlen($matches[0]);
+			$name = $this->adjustTypeString($matches[1]);
 			if (!empty($matches[2])) {
 				if (!Config::shouldUseDocBlockTypedArrays()) {
 					return null;
 				}
-				$depth = substr_count($matches[2],"[]");
-				$leafType = new Identifier("array",["templates"=>[$this->generateNameOrIdentifier($name)]]);
-				if ($depth==1) {
+				$depth = substr_count($matches[2], "[]");
+				$leafType = new Identifier("array", ["templates" => [$this->generateNameOrIdentifier($name)]]);
+				if ($depth == 1) {
 					return $leafType;
 				} else {
 					$parent = $leafType;
@@ -77,11 +77,11 @@ class TypeParser {
 				}
 				return $parent;
 			} else if (!empty($matches[3])) {
-				$templateVars= array_map($this->generateNameOrIdentifier(...), explode(",", $matches[3]));
+				$templateVars = array_map($this->generateNameOrIdentifier(...), explode(",", $matches[3]));
 			} else {
 				$templateVars = [];
 			}
-			$ret=$this->generateNameOrIdentifier($name, $templateVars);
+			$ret = $this->generateNameOrIdentifier($name, $templateVars);
 			return $ret;
 		}
 		throw new DocBlockParserException("Invalid type name: \"$type\"");
@@ -128,7 +128,7 @@ class TypeParser {
 		$this->skipWs($type, $i);
 		if ($i >= strlen($type)) {
 			return $intType;
-		} else if ($type[$i]!="|") {
+		} else if ($type[$i] != "|") {
 			throw new DocBlockParserException("Expected \"|\" in type name in \"$type\"");
 		}
 		$types = [ $intType ];
@@ -137,7 +137,7 @@ class TypeParser {
 			$types[] = $this->parseIntersection($type, $i);
 		}
 
-		if ($i>=strlen($type)) {
+		if ($i >= strlen($type)) {
 			return new UnionType($types);
 		} else {
 			throw new DocBlockParserException();

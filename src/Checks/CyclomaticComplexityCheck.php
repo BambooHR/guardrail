@@ -52,10 +52,10 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param string $fileName   The file being scanned
-	 * @param string $name       The name of the node being scanned
-	 * @param Node   $node       Node node being scanned
-	 * @param array  $statements An array of statements representing the function body.
+	 * @param string               $fileName   The file being scanned
+	 * @param ?Node\Stmt\ClassLike $inside     The name of the node being scanned
+	 * @param Node                 $node       Node node being scanned
+	 * @param array                $statements An array of statements representing the function body.
 	 * @return void
 	 */
 	function checkStatements($fileName, ?Node\Stmt\ClassLike $inside, Node $node, array $statements) {
@@ -68,7 +68,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 				$fileName,
 				$node->getLine(),
 				ErrorConstants::TYPE_METRICS_COMPLEXITY,
-				["complexity"=>$complexity,"name"=>$name]
+				["complexity" => $complexity,"name" => $name]
 			)
 		);
 
@@ -80,7 +80,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 				$fileName,
 				$node->getLine(),
 				ErrorConstants::TYPE_METRICS_LINES_OF_CODE,
-				["lines" => $maxLine - $minLine + 1, "type" => $type, "name"=>$name]
+				["lines" => $maxLine - $minLine + 1, "type" => $type, "name" => $name]
 			)
 		);
 	}
@@ -93,7 +93,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 * @param Scope|null               $scope    Any other relevant scope
 	 * @return void
 	 */
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node->stmts) {
 			if ($node instanceof Node\Stmt\ClassMethod) {
 				$this->checkStatements($fileName, $inside, $node, $node->stmts);
@@ -118,7 +118,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node $node
+	 * @param Node                     $node
 	 * @param Node\Stmt\ClassLike|null $inside
 	 * @return array
 	 */

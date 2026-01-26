@@ -38,8 +38,7 @@ class ScopeStack implements ScopeInterface {
 		return $this->metricOutput;
 	}
 
-	function pushClass(Node\Stmt\ClassLike $class):void
-	{
+	function pushClass(Node\Stmt\ClassLike $class):void {
 		$this->classes[] = $class;
 	}
 
@@ -52,11 +51,11 @@ class ScopeStack implements ScopeInterface {
 	}
 
 	function getParent():Node {
-		return $this->parentNodes[ array_key_last($this->parentNodes) ];
+		return $this->parentNodes[array_key_last($this->parentNodes)];
 	}
 
 	function pushParentNode(Node $node):void {
-		$this->parentNodes[]=$node;
+		$this->parentNodes[] = $node;
 	}
 
 	function popParentNode() {
@@ -69,9 +68,9 @@ class ScopeStack implements ScopeInterface {
 
 	function swapTopTwoScopes() {
 		$count = count($this->scopes);
-		$tmp = $this->scopes[$count-2];
-		$this->scopes[$count-2] = $this->scopes[$count-1];
-		$this->scopes[$count-1] = $tmp;
+		$tmp = $this->scopes[$count - 2];
+		$this->scopes[$count - 2] = $this->scopes[$count - 1];
+		$this->scopes[$count - 1] = $tmp;
 	}
 
 	function popScope():PluginScopeInterface {
@@ -83,15 +82,14 @@ class ScopeStack implements ScopeInterface {
 	}
 
 	function getCurrentClass():?Node\Stmt\ClassLike {
-		if (count($this->classes)==0) {
+		if (count($this->classes) == 0) {
 			return null;
 		} else {
 			return end($this->classes);
 		}
 	}
 
-	public function isStatic(): bool
-	{
+	public function isStatic(): bool {
 		return $this->getCurrentScope()->isStatic();
 		// TODO: Implement isStatic() method.
 	}
@@ -99,49 +97,40 @@ class ScopeStack implements ScopeInterface {
 	public function isStrict():bool {
 		return $this->getCurrentScope()->isStrict();
 	}
-	public function isGlobal(): bool
-	{
+	public function isGlobal(): bool {
 		return $this->getCurrentScope()->isGlobal();
 	}
 
-	public function getInsideFunction(): ?FunctionLike
-	{
+	public function getInsideFunction(): ?FunctionLike {
 		return $this->getCurrentScope()->getInsideFunction();
 	}
 
-	public function setVarType($name, Name|Identifier|ComplexType|null $type, $line): void
-	{
+	public function setVarType($name, Name|Identifier|ComplexType|null $type, $line): void {
 		$this->getCurrentScope()->setVarType($name, $type, $line);
 	}
 
-	public function setVarReference($name, ScopeVar $ref): void
-	{
-		$this->getCurrentScope()->setVarReference($name,$ref);
+	public function setVarReference($name, ScopeVar $ref): void {
+		$this->getCurrentScope()->setVarReference($name, $ref);
 	}
 
-	public function setVarWritten($name, $line): void
-	{
+	public function setVarWritten($name, $line): void {
 
-		$this->getCurrentScope()->getInsideFunction()?->getAttribute('function-scope')?->setVarWritten($name,$line);
+		$this->getCurrentScope()->getInsideFunction()?->getAttribute('function-scope')?->setVarWritten($name, $line);
 	}
 
-	public function setVarUsed($name): void
-	{
+	public function setVarUsed($name): void {
 		$this->getCurrentScope()->getInsideFunction()?->getAttribute('function-scope')?->setVarUsed($name);
 	}
 
-	public function dump($typeChanged = false, $used = false, $modified = false): void
-	{
+	public function dump($typeChanged = false, $used = false, $modified = false): void {
 		$this->getCurrentScope()->dump();
 	}
 
-	public function markAllVarsUsed(): void
-	{
+	public function markAllVarsUsed(): void {
 		$this->getCurrentScope()->markAllVarsUsed();
 	}
 
-	public function getUnusedVars(): array
-	{
+	public function getUnusedVars(): array {
 		return $this->getCurrentScope()->getInsideFunction()?->getAttribute('function-scope')?->getUnusedVars() ?? [];
 	}
 
@@ -149,33 +138,27 @@ class ScopeStack implements ScopeInterface {
 		return $this->getCurrentScope()->getInsideFunction()?->getAttribute('function-scope')?->getUnusedVars() ?? [];
 	}
 
-	public function getTypeChangedVars(): array
-	{
+	public function getTypeChangedVars(): array {
 		return $this->getCurrentScope()->getTypeChangedVars();
 	}
 
-	function getVarType($name): Name|Identifier|ComplexType|null
-	{
+	function getVarType($name): Name|Identifier|ComplexType|null {
 		return $this->getCurrentScope()->getVarType($name);
 	}
 
-	function getVarExists(string $name): bool
-	{
+	function getVarExists(string $name): bool {
 		return $this->getInsideFunction()?->getAttribute('function-scope')?->getVarExists($name) ?? false;
 	}
 
-	function getVarObject($name): ?ScopeVar
-	{
+	function getVarObject($name): ?ScopeVar {
 		return $this->getInsideFunction()?->getAttribute('function-scope')?->getVarObject($name);
 	}
 
-	function getScopeClone(): Scope
-	{
+	function getScopeClone(): Scope {
 		return $this->getCurrentScope()->getScopeClone();
 	}
 
-	public function merge(ScopeInterface $other): void
-	{
+	public function merge(ScopeInterface $other): void {
 		$this->getCurrentScope()->merge($other);
 	}
 

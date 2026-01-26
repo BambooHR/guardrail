@@ -177,7 +177,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 			$type = $param->type;
 			if (!$type) {
 				// A parameter can not be only null.  So disregard these.
-				if ($docBlockType && !TypeComparer::isNamedIdentifier($docBlockType,"null")) {
+				if ($docBlockType && !TypeComparer::isNamedIdentifier($docBlockType, "null")) {
 					return $docBlockType;
 				}
 			}

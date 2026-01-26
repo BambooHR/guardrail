@@ -38,7 +38,7 @@ class UndefinedVariableCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside=null, Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
 		if ($node instanceof Variable) {
 			if ($node->name instanceof Expr) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_VARIABLE, "Variable variable detected");
@@ -46,7 +46,7 @@ class UndefinedVariableCheck extends BaseCheck {
 				$name = $node->name;
 				$parentNodes = $scope->getParentNodes();
 
-				if (!in_array($name, ["this", ...Util::getPhpGlobalNames()]) && !($parentNodes[count($parentNodes)-1] instanceof Expr\ClosureUse)) {
+				if (!in_array($name, ["this", ...Util::getPhpGlobalNames()]) && !($parentNodes[count($parentNodes) - 1] instanceof Expr\ClosureUse)) {
 					if (!$scope->getVarExists($name) && !$node->hasAttribute('assignment')) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Undefined variable: $name");
 					}

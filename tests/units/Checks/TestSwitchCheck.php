@@ -26,7 +26,7 @@ class TestSwitchCheck extends TestSuiteSetup {
 
 		$builder = $this->getMockBuilder(OutputInterface::class);
 		$output = $builder
-			->setMethods(["emitError"])
+			->onlyMethods(["emitError"])
 			->getMockForAbstractClass();
 		$emptyTable = new InMemorySymbolTable(__DIR__);
 		$stmts = $this->parseText($code);

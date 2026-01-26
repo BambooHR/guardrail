@@ -42,15 +42,34 @@ class UnifiedDiffFilter implements FilterInterface {
 				$start = $lineNumbers[2];
 				if (isset($lineNumbers[4])) {
 					$end = $start + $lineNumbers[4] - 1;
+					$filter[$fileName][] = [$start, $end];
 				} else {
-					$end = $start;
-				}
-				for ($line = $start; $line <= $end; ++$line) {
-					$filter[$fileName][] = $line;
+					$filter[$fileName][] = [$start, $start];
 				}
 			}
 		}
 		return $filter;
+	}
+
+	function binary_search($fileName, $lineNumber):bool {
+		if (!isset($this->filter[$fileName])) {
+			return false;
+		}
+		$lineNumbers = $this->filter[$fileName];
+		$left = 0;
+		$right = count($lineNumbers) - 1;
+		while ($left <= $right) {
+			$mid = floor(($left + $right) / 2);
+			[$min, $max] = $lineNumbers[$mid];
+			if ($lineNumber >= $min && $lineNumber <= $max) {
+				return true;
+			} else if ($min < $lineNumber) {
+				$left = $mid + 1;
+			} else {
+				$right = $mid - 1;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -75,7 +94,11 @@ class UnifiedDiffFilter implements FilterInterface {
 			
 			for ($i = 0; $i < $totalLines; $i += $chunkSize) {
 				$chunk = array_slice($lineNumbers, $i, $chunkSize);
-				echo implode(",", $chunk);
+				echo implode(",",  
+					array_map(
+						fn($lineNumberPair) => $lineNumberPair[0] . "-" . $lineNumberPair[1],
+						$chunk
+					));
 				
 				// Flush output buffer to ensure content is sent to output
 				if ($i + $chunkSize < $totalLines) {
@@ -96,6 +119,6 @@ class UnifiedDiffFilter implements FilterInterface {
 	 * @return bool
 	 */
 	function shouldEmit($fileName, $errorName, $lineNumber) {
-		return isset($this->filter[$fileName]) && in_array($lineNumber, $this->filter[$fileName]);
+		return $this->binary_search($fileName, $lineNumber);
 	}
 }

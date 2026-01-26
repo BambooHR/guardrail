@@ -34,7 +34,7 @@ class UnreachableCodeCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Function_ || $node instanceof ClassMethod) {
 			$statements = [];
 			if ($node instanceof FunctionLike) {
@@ -63,7 +63,7 @@ class UnreachableCodeCheck extends BaseCheck {
 	public function checkForUnreachableNode(array $statements) {
 		do {
 			$previous = array_shift($statements);
-		} while( $previous instanceof Node\Stmt\Nop);
+		} while ( $previous instanceof Node\Stmt\Nop);
 		foreach ($statements as $statement) {
 			if (!$statement instanceof Node\Stmt\Nop)
 				if (Util::allBranchesExit([$previous])) {

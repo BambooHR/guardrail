@@ -16,6 +16,15 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	private const string DEPRECATED_KEY = 'deprecated';
 	private const string DESCRIPTION_KEY = 'description';
 	private const string BASE_CONTROLLER = 'BaseController';
+	private const string BAMBOO_API = 'BambooAPI';
+	private const array OPEN_API_ATTRIBUTES = [
+		self::ATTRIBUTE_NAMESPACE . '\\Route',
+		self::ATTRIBUTE_NAMESPACE . '\\Get',
+		self::ATTRIBUTE_NAMESPACE . '\\Post',
+		self::ATTRIBUTE_NAMESPACE . '\\Put',
+		self::ATTRIBUTE_NAMESPACE . '\\Delete',
+		self::ATTRIBUTE_NAMESPACE . '\\Patch',
+	];
 
 	function __construct($index, $output, private readonly MetricOutputInterface $metricOutput) {
 		parent::__construct($index, $output);
@@ -38,12 +47,14 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
-		if ($node instanceof Node\Stmt\ClassMethod && $this->isControllerClass($inside) && $node->isPublic() && $node->name->name !== '__construct') {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
+		if ($this->isApiMethod($node) && $this->isControllerClass($inside, $node)) {
+			$containsOpenApiAttribute = false;
 			foreach ($node->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attribute) {
 					$attributeName = $attribute?->name?->toString();
-					if (str_starts_with($attributeName, self::ATTRIBUTE_NAMESPACE)) {
+					if (in_array($attributeName, self::OPEN_API_ATTRIBUTES)) {
+						$containsOpenApiAttribute = true;
 						$hasDescription = false;
 						$hasTeamName = false;
 						foreach ($attribute->args as $arg) {
@@ -54,7 +65,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 						if (!$hasDescription) {
 							$this->emitErrorOnLine(
 								$fileName,
-								$node->getLine(),
+								$attribute->getLine(),
 								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY,
 								"OpenAPI Attribute must have a description. Method: {$node->name->name}"
 							);
@@ -62,39 +73,46 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 						if (!$hasTeamName) {
 							$this->emitErrorOnLine(
 								$fileName,
-								$node->getLine(),
+								$attribute->getLine(),
 								ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY,
 								"OpenAPI Attribute must have a 'team-name' key set in the 'x' property. Method: {$node->name->name}"
 							);
 						}
-						return;
 					}
 				}
 			}
-			$className = $inside?->namespacedName?->toString();
-			$this->emitErrorOnLine(
-				$fileName,
-				$node->getLine(),
-				ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK,
-				"All public controller methods should be associated with a route and must have 
+
+			if (!$containsOpenApiAttribute) {
+				$className = $inside?->namespacedName?->toString();
+				$this->emitErrorOnLine(
+					$fileName,
+					$node->getLine(),
+					ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK,
+					"All public controller methods should be associated with a route and must have
 					documentation through an OpenAPI Attribute. Method: {$node->name->name}, Class: $className"
-			);
+				);
+			}
 		}
 	}
 
-	private function isControllerClass(ClassLike $inside = null): bool {
+	private function isControllerClass(?ClassLike $inside, Node $node): bool {
 		if ($inside instanceof Class_) {
 			$parentClass = $inside->extends?->toString();
-			if (str_contains($parentClass, self::BASE_CONTROLLER)) {
+			if ($parentClass !== null && (
+				str_contains($parentClass, self::BASE_CONTROLLER) || (str_contains($parentClass, self::BAMBOO_API) && $node->name->name === 'handle'))) {
 				return true;
 			}
 			if ($inside->extends instanceof Node\Name) {
 				$parentClass = $this->symbolTable->getClass($inside->extends);
-				return $this->isControllerClass($parentClass);
+				return $this->isControllerClass($parentClass, $node);
 			}
 		}
 
 		return false;
+	}
+
+	private function isApiMethod(Node $node) {
+		return $node instanceof Node\Stmt\ClassMethod && $node->isPublic() && $node->name->name !== '__construct';
 	}
 
 	private function checkDeprecatedAttribute($arg, $fileName, $node, $inside) {

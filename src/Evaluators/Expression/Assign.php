@@ -15,20 +15,18 @@ use PhpParser\Node\Expr\Variable;
 
 class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 {
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return [Node\Expr\Assign::class, Node\Expr\AssignRef::class, Node\Expr\List_::class];
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		if ($node instanceof List_) {
 			return TypeComparer::identifierFromName("array");
 		}
 
 		/** @var Node\Expr\Assign $assign */
 		$assign = $node;
-		$valueType=$assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR );
+		$valueType = $assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR );
 		$this->setValueType($assign->var, $valueType, $scopeStack);
 	//	echo "Assigning value type: ".($assign->var->name)."$valueType\n";
 	//	$scopeStack->dump();
@@ -65,14 +63,14 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 						//list() = or [$a,$b] = OR // return list($a, $b)
 						if (!$scope->getVarExists($value->name)) {
 
-							$value->setAttribute('assignment',true);
+							$value->setAttribute('assignment', true);
 							$scope->setVarType(strval($value->name), null, $innerVar->getLine());
 							$scope->setVarWritten(strval($value->name), $innerVar->getLine());
 
 						} else {
 							$scope->setVarUsed($value->name);
 						}
-					} else if($innerVar->key instanceof Node\Scalar\String_ && $value instanceof Variable) {
+					} else if ($innerVar->key instanceof Node\Scalar\String_ && $value instanceof Variable) {
 						// list("key1"=>$a, "key2"=>$b) or ["key1"=>$a, "key2"=>$b]
 						$scope->setVarUsed($value->name);
 					}

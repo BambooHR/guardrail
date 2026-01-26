@@ -23,16 +23,16 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 	public function enterNode(Node $node) {
 		if ($node instanceof Class_) {
 			$constructor = $node->getMethod("__construct");
-			if($constructor) {
+			if ($constructor) {
 				// For each parameter with a visibility modifier,
 				//   -  add a property declaration to the class.
 				//   -  add an assignment statement to the constructor
-				$newStmts=[];
-				$newProps=[];
+				$newStmts = [];
+				$newProps = [];
 				foreach ($constructor->getParams() as $param) {
 					if ($param->flags & (Class_::MODIFIER_READONLY | Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC)) {
 						$newProps[] = $this->buildProp($param);
-						$newStmts[] =  $this->buildAssign($param);
+						$newStmts[] = $this->buildAssign($param);
 					}
 				}
 				if (count($newProps) > 0) {
@@ -55,19 +55,19 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 
 	public function buildProp(Node\Param $param) {
 		$prop = new Property($param->var->name);
-		if($param->flags & Class_::MODIFIER_PUBLIC) {
+		if ($param->flags & Class_::MODIFIER_PUBLIC) {
 			$prop->makePublic();
 		}
-		if($param->flags & Class_::MODIFIER_PRIVATE) {
+		if ($param->flags & Class_::MODIFIER_PRIVATE) {
 			$prop->makePrivate();
 		}
-		if($param->flags & Class_::MODIFIER_PROTECTED) {
+		if ($param->flags & Class_::MODIFIER_PROTECTED) {
 			$prop->makeProtected();
 		}
-		if($param->flags & Class_::MODIFIER_READONLY) {
+		if ($param->flags & Class_::MODIFIER_READONLY) {
 			$prop->makeReadonly();
 		}
-		if($param->type) {
+		if ($param->type) {
 			$prop->setType( $param->type );
 		}
 

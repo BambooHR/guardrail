@@ -16,12 +16,12 @@ class IndexParentProcess extends ProcessManager {
 	}
 
 	function init(\Iterator $itr):void {
-		$this->itr=$itr;
+		$this->itr = $itr;
 	}
 
 	function displayStatusUpdate(): void {
 		if ($this->fileNumber % 50 == 0) {
-			$end=microtime(true);
+			$end = microtime(true);
 			$process = sprintf(
 				"Processing %s%.1f%s KB/second",
 				$this->output->ttyContent("\33[97m"),

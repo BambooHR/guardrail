@@ -31,7 +31,7 @@ class AccessingSuperGlobalsCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Global_) {
 			$this->checkForGlobal($fileName, $node);
 		}

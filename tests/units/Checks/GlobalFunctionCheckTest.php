@@ -19,7 +19,7 @@ class GlobalFunctionCheckTest extends TestSuiteSetup {
      *
      * @return array Array of test cases with [description, file, expected error count]
      */
-    public function functionLocationProvider(): array {
+    public static function functionLocationProvider(): array {
         return [
             'global function' => [
                 'Function at the global level should be flagged',

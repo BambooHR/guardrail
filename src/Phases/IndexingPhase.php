@@ -62,8 +62,7 @@ class IndexingPhase {
 	/**
 	 * Generator function that yields the next file to scan.
 	 *
-	 * @param \RecursiveIteratorIterator $it2    Instance of RecursiveIteratorIterator
-	 * @param bool                       $stubs  Check the stubs
+	 * @param array $paths
 	 *
 	 * @return \Generator
 	 */
@@ -71,7 +70,7 @@ class IndexingPhase {
 		$baseDir = $this->config->getBasePath();
 		$configArr = $this->config->getConfigArray();
 
-		foreach($paths as $path) {
+		foreach ($paths as $path) {
 			$tmpDirectory = Util::fullDirectoryPath($baseDir, $path);
 			$generator = DirectoryLister::getGenerator($tmpDirectory);
 			foreach ($generator as $filePath) {
@@ -134,10 +133,10 @@ class IndexingPhase {
 
 			Socket::writeComplete($child, "INDEX " . $itr->current() . "\n");
 
-			if (!$output->isTTY() && $config->getOutputLevel()==1) {
+			if (!$output->isTTY() && $config->getOutputLevel() == 1) {
 				$output->outputVerbose(".");
 			}
-			if ($config->getOutputLevel()==2) {
+			if ($config->getOutputLevel() == 2) {
 				$output->outputExtraVerbose( sprintf("%d - %s\n", $fileNumber, $itr->current()) );
 			}
 		}
@@ -167,7 +166,6 @@ class IndexingPhase {
 
 		$this->indexList($config, $output, $this->getFileList($indexPaths) );
 
-
 		$output->outputVerbose("Merging indexes\n");
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
@@ -191,13 +189,11 @@ class IndexingPhase {
 	}
 
 	/**
-	 * @param bool|string $name
-	 * @param bool|string $fileData
-	 * @param string $pathName
+	 * @param string $name
+	 * @param string $fileData
 	 * @return int
 	 */
-	public function indexString(string $name, string $fileData): int
-	{
+	public function indexString(string $name, string $fileData): int {
 		$this->indexer->setFilename($name);
 		try {
 			$statements = $this->parser->parse($fileData);

@@ -52,12 +52,12 @@ class CallableCheck extends BaseCheck {
 
 	/**
 	 * @param string         $fileName      -
-	 * @param Scope          $scope         -
+	 * @param ?Scope         $scope         -
 	 * @param ClassLike|null $inside        -
 	 * @param Expr\Array_    $callableArray -
 	 * @return void
 	 */
-	protected function checkArrayCallable($fileName, Scope $scope, ?ClassLike $inside, Expr\Array_ $callableArray) {
+	protected function checkArrayCallable($fileName, ?Scope $scope, ?ClassLike $inside, Expr\Array_ $callableArray) {
 		$itemCount = count($callableArray->items);
 		if ($itemCount != 2) {
 			$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_SIGNATURE_TYPE, "Callable arrays must have two parameters, $itemCount detected");
@@ -73,7 +73,7 @@ class CallableCheck extends BaseCheck {
 			}
 		} else {
 			$classType = $object->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			TypeComparer::forEachType($classType,function($childClassType) use ($fileName, $callableArray) {
+			TypeComparer::forEachType($classType, function($childClassType) use ($fileName, $callableArray) {
 				if ($childClassType && ($childClassType instanceof Node\Identifier || $childClassType instanceof Node\Name)) {
 					$this->checkClassType(strval($childClassType), $fileName, $callableArray);
 				}
@@ -90,7 +90,7 @@ class CallableCheck extends BaseCheck {
 	 * @param Scope|null     $scope    -l
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Scalar\String_) {
 			$funcName = $node->value;
 			if ($funcName && $funcName[0] == "\\") {
@@ -118,13 +118,12 @@ class CallableCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param mixed $classType
-	 * @param string $fileName
+	 * @param mixed       $classType
+	 * @param string      $fileName
 	 * @param Expr\Array_ $callableArray
 	 * @return void
 	 */
-	public function checkClassType(string $classType, string $fileName, Expr\Array_ $callableArray): void
-	{
+	public function checkClassType(string $classType, string $fileName, Expr\Array_ $callableArray): void {
 		if ($classType) {
 			if (!$this->symbolTable->isDefinedClass($classType)) {
 				$this->emitError($fileName, $callableArray, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable array class '$classType' is not defined");

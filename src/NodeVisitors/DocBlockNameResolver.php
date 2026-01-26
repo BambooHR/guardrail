@@ -30,7 +30,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 
 	function __construct($context) {
 		$this->context = $context;
-		$this->parser=new TypeParser(fn($fn)=>$this->resolveTypeName($fn));
+		$this->parser = new TypeParser(fn($fn)=>$this->resolveTypeName($fn));
 	}
 	/**
 	 * enterNode
@@ -58,7 +58,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	private function importInlineVarType(Node $node) {
 		$comment = $node->getDocComment();
 		if ($comment && preg_match_all('/@var +([-A-Z0-9_|\\\\<>]+(?:\[])*)( +\\$([A-Z0-9_]+))?/i', $comment->getText(), $matchArray, PREG_SET_ORDER)) {
-			$node->setAttribute("namespacedInlineVar",$this->buildVarsFromTag($matchArray));
+			$node->setAttribute("namespacedInlineVar", $this->buildVarsFromTag($matchArray));
 		}
 	}
 
@@ -70,21 +70,19 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 				if (isset($tag[2])) {
 					$str = strval($tag[1]);
 					try {
-						if ($str!="type" && $str!="name") {
+						if ($str != "type" && $str != "name") {
 							$params[$tag[2]] = $this->parser->parse($str);
 						}
 						//echo "Set docblock : ".$tag[2]." ".$str."\n";
-					}
-					catch(DocBlockParserException)
-					{
+					} catch (DocBlockParserException) {
 						//Ignore
 					}
 				}
 			}
 
-			foreach($node->getParams() as $param) {
+			foreach ($node->getParams() as $param) {
 				if (is_string($param->var->name)) {
-					$name=$param->var->name;
+					$name = $param->var->name;
 					if (isset($params[$name])) {
 						$param->setAttribute('DocBlockName', $params[$name]);
 					}
@@ -172,10 +170,9 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 
 			$returnType = $matchArray[1];
 			try {
-				$v=$this->parser->parse($returnType);
-				$node->setAttribute("namespacedReturn",$v);
-			}
-			catch(DocBlockParserException) {
+				$v = $this->parser->parse($returnType);
+				$node->setAttribute("namespacedReturn", $v);
+			} catch (DocBlockParserException) {
 				// Ignore it.
 			}
 		}
@@ -184,11 +181,10 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	private function processDockBlockThrows(Node $node, string $str) {
 		if ($str && preg_match_all('/@throws +([A-Z0-9_\\\\]+)/i', $str, $matchArray, PREG_SET_ORDER)) {
 			$list = [];
-			foreach($matchArray as $matches) {
+			foreach ($matchArray as $matches) {
 				try {
 					$list[] = $this->parser->parse($matches[0]);
-				}
-				catch(DocBlockParserException) {
+				} catch (DocBlockParserException) {
 					// Ignore
 				}
 			}
@@ -207,8 +203,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 				$str = strval($tag[1]);
 				try {
 					$vars[$tag[3]] = $this->parser->parse($str);
-				}
-				catch(DocBlockParserException) {
+				} catch (DocBlockParserException) {
 					//Ignore
 				}
 			}

@@ -108,7 +108,7 @@ class TraitImporter {
 	 * Different Traits may implement their own copies of the same method name.  That's fine at this point.  Later we will
 	 * use adaptations to reduce duplicates down to a single method for each name.
 	 *
-	 * @param TraitUse $use        Instance of TraitUse
+	 * @param TraitUse $use Instance of TraitUse
 	 *
 	 * @return array
 	 *

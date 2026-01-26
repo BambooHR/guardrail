@@ -10,8 +10,8 @@ class SocketBuffer {
 	private $messages = [];
 
 	static function firstEol($str) {
-		$index1 = strpos($str,"\n");
-		$index2 = strpos($str,"\r");
+		$index1 = strpos($str, "\n");
+		$index2 = strpos($str, "\r");
 		if ($index1 === false && $index2 === false) {
 			return false;
 		} else if ($index1 === false) {

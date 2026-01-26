@@ -18,7 +18,7 @@ class DependenciesOnVendorCheck extends BaseCheck {
 		return [Node\Stmt\Class_::class];
 	}
 
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Stmt\Class_) {
 			foreach ($this->getAllNames($node) as $referenceFileName) {
 				if ($referenceFileName && preg_match("@[/\\\\]?vendor[/\\\\]([-a-z_0-9]+[/\\\\][-a-z_0-9]+)@", $referenceFileName, $matches)) {
@@ -43,9 +43,7 @@ class DependenciesOnVendorCheck extends BaseCheck {
 		}
 
 		if (str_contains($name, "\\")) {
-			return $this->symbolTable->getClassFile($name) ??
-				$this->symbolTable->getInterfaceFile($name) ??
-				$this->symbolTable->getFunctionFile($name) ?? "";
+			return $this->symbolTable->getClassFile($name) ?? $this->symbolTable->getInterfaceFile($name) ?? $this->symbolTable->getFunctionFile($name) ?? "";
 		}
 
 		return "";

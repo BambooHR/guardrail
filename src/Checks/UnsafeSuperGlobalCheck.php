@@ -14,7 +14,7 @@ class UnsafeSuperGlobalCheck extends BaseCheck {
 		return [Node\Expr\Variable::class];
 	}
 
-	function run($fileName, Node $node, Node\Stmt\ClassLike $inside = null, Scope $scope = null) {
+	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Expr\Variable && $this->isUnsafeSuperGlobal($node->name)) {
 			$this->emitError(
 				$fileName,

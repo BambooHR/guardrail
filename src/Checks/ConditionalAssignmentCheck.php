@@ -36,7 +36,7 @@ class ConditionalAssignmentCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Stmt\If_) {
 			$assignment = null;
 			ForEachNode::run([$node->cond], function($node) use (&$assignment) {

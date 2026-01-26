@@ -96,5 +96,5 @@ abstract class BaseCheck extends ErrorConstants {
 	 *
 	 * @return void
 	 */
-	abstract public function run($fileName, Node $node, ClassLike $inside = null, Scope $scope = null);
+	abstract public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null);
 }
