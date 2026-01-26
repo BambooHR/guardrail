@@ -7,6 +7,7 @@ use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
 use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\Checks\ErrorConstants;
 
 class FakeOutput implements OutputInterface {
 
@@ -187,5 +188,9 @@ class TestBaseCheck extends TestSuiteSetup {
 
 		$expected = $expectedClass . $file . $line . $class . $message . " in imported code One:42";
 		$this->assertEquals($expected, $result);
+	}
+
+	public function testTraitImport() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('-trait.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed change Type Inference to non null" );
 	}
 }
