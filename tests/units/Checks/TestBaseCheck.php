@@ -177,9 +177,11 @@ class TestBaseCheck extends TestSuiteSetup {
 		$expectedClass = "BambooHR\Guardrail\Tests\Checks\FakeBaseCheck";
 
 		$node = $this->getMockBuilder(\PhpParser\Node::class)->getMock();
-		$node->expects($this->atLeastOnce())->method("getAttribute")->willReturn($trait);
-		$node->expects($this->atLeastOnce())->method("getLine")->willReturn(42);
-		$node->expects($this->atLeastOnce())->method("getAttribute")->willReturn(1);
+		$node->expects($this->exactly(2))
+			 ->method("getAttribute")
+			 ->willReturnOnConsecutiveCalls($trait, $line);
+
+		$node->expects($this->once())->method("getLine")->willReturn(42);
 
 		$result = $check->emitError($file, $node, $class, $message);
 
