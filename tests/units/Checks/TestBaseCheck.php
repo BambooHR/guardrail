@@ -9,185 +9,103 @@ use BambooHR\Guardrail\Checks\BaseCheck;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 
-class FakeOutput implements OutputInterface {
-
-	public function emitError($className, $file, $line, $type, $message = '') {
-		return $className . $file . $line . $type . $message;
-	}
-
-	public function output($verbose, $extraVerbose) {
-		return;
-	}
-
-	public function ttyContent(string $content): string {
-		return $content;
-	}
-
-	public function outputVerbose($string) {
-		return;
-	}
-
-	public function outputExtraVerbose($string) {
-		return;
-	}
-
-	public function incTests() {
-		return;
-	}
-
-	public function getErrorCount() {
-		return 0;
-	}
-
-	public function silenceType($name) {
-		return;
-	}
-
-	public function resumeType($name) {
-		return;
-	}
-
-	public function getErrorCounts() {
-		return [];
-	}
-
-	public function isTTY(): bool {
-		return false;
-	}
-}
-
-class FakeSymbolTable extends SymbolTable {
-	public function isDefinedClass($name) {
-		return false;
-	}
-
-	public function updateClass(\PhpParser\Node\Stmt\ClassLike $class) {
-		return;
-	}
-
-	public function removeFileFromIndex($name) {
-		return;
-	}
-
-	public function addClass($name, \PhpParser\Node\Stmt\ClassLike $class, $file) {
-		return;
-	}
-
-	public function addInterface($name, \PhpParser\Node\Stmt\Interface_ $interface, $file) {
-		return;
-	}
-
-	public function getClassFile($className) {
-		return "";
-	}
-
-	public function getTraitFile($traitName) {
-		return "";
-	}
-
-	public function addTrait($name, \PhpParser\Node\Stmt\Trait_ $trait, $file) {
-		return;
-	}
-
-	public function getInterfaceFile($interfaceName) {
-		return "";
-	}
-
-	public function getFunctionFile($traitName) {
-		return "";
-	}
-
-	public function getDefineFile($traitName) {
-		return;
-	}
-
-	public function addDefine($name, \PhpParser\Node $define, $file) {
-		return;
-	}
-
-	public function getClassesThatUseAnyTrait() {
-		return [];
-	}
-
-	public function classExistsAnyNamespace($name) {
-		return false;
-	}
-}
-
-class FakeBaseCheck extends BaseCheck {
-
-	public function __construct() {
-		parent::__construct(new FakeSymbolTable("Test"), new FakeOutput());
-	}
-
-	public function getCheckNodeTypes() {
-		return ['test'];
-	}
-
-	public function run($fileName, \PhpParser\Node $node, ?\PhpParser\Node\Stmt\ClassLike $inside = null, ?\BambooHR\Guardrail\Scope $scope = null) {
-	return;
-}
-}
-
 class TestBaseCheck extends TestSuiteSetup {
+
+	private $symbolTable;
+	private $output;
+	private $check;
+	private $node;
+
+	private function setupMocks() {
+		$this->node = $this->getMockBuilder(\PhpParser\Node::class)->getMock();
+		$this->symbolTable = $this->createMock(SymbolTable::class);
+		$this->output = $this->createMock(OutputInterface::class);
+		$this->check = $this->getMockBuilder(BaseCheck::class)
+			->setConstructorArgs([$this->symbolTable, $this->output])
+			->getMockForAbstractClass();
+	}
+
+	private function unsetMocks() {
+		$this->symbolTable = null;
+		$this->output = null;
+		$this->check = null;
+	}
+
 	public function testIncTests() {
-		$check = new FakeBaseCheck();
-		$this->assertNull($check->incTests());
+		$this->setupMocks();
+		$this->output->expects($this->once())->method('incTests');
+
+		$this->assertNull($this->check->incTests());
+		$this->unsetMocks();
 	}
 
 	public function testEmitErrorOnLine() {
-		$check = new FakeBaseCheck();
+		$this->setupMocks();
 		$file = "file";
 		$line = 1;
 		$class = "class";
 		$message = "message";
-		$expectedClass = "BambooHR\Guardrail\Tests\Checks\FakeBaseCheck";
+		$className = get_class($this->check);
 
-		$result = $check->emitErrorOnLine($file, $line, $class, $message);
+		$emitErrorResponse = "Error emitted";
 
-		$expected = $expectedClass . $file . $line . $class . $message;
-		$this->assertEquals($expected, $result);
+		$this->output->expects($this->once())->method('emitError')->with($className, $file, $line, $class, $message)->willReturn($emitErrorResponse);
 
+		$result = $this->check->emitErrorOnLine($file, $line, $class, $message);
+
+		$this->assertEquals($emitErrorResponse, $result);
+
+		$this->unsetMocks();
 	}
 	public function testEmitError() {
-		$check = new FakeBaseCheck();
+		$this->setupMocks();
 		$file = "file";
 		$line = 1;
 		$class = "class";
 		$message = "message";
-		$expectedClass = "BambooHR\Guardrail\Tests\Checks\FakeBaseCheck";
 
-		$node = $this->getMockBuilder(\PhpParser\Node::class)->getMock();
-		$node->expects($this->once())->method("getAttribute")->willReturn("");
-		$node->expects($this->once())->method("getLine")->willReturn($line);
+		$className = get_class($this->check);
 
-		$result = $check->emitError($file, $node, $class, $message);
+		$emitErrorResponse = "Error emitted";
 
-		$expected = $expectedClass . $file . $line . $class . $message;
-		$this->assertEquals($expected, $result);
+		$this->output->expects($this->once())->method('emitError')->with($className, $file, $line, $class, $message)->willReturn($emitErrorResponse);
+
+		$this->node->expects($this->once())->method("getAttribute")->willReturn("");
+		$this->node->expects($this->once())->method("getLine")->willReturn($line);
+
+		$result = $this->check->emitError($file, $this->node, $class, $message);
+
+		$this->assertEquals($emitErrorResponse, $result);
+
+		$this->unsetMocks();
 	}
 
 	public function testEmitErrorTrait() {
-		$check = new FakeBaseCheck();
+		$this->setupMocks();
 
-		$trait = "Test//One";
+		$trait = "Test//One::testTrait";
 		$file = "file";
 		$line = 1;
 		$class = "class";
 		$message = "message";
-		$expectedClass = "BambooHR\Guardrail\Tests\Checks\FakeBaseCheck";
+		$className = get_class($this->check);
 
-		$node = $this->getMockBuilder(\PhpParser\Node::class)->getMock();
-		$node->expects($this->exactly(2))
+		$emitErrorResponse = "Error emitted";
+		$sentMessage = "message in imported code trait:42";
+		$sentTrait = "Test/One::testTrait";
+
+		$this->symbolTable->expects($this->once())->method('removeBasePath')->with($sentTrait)->willReturn("trait");
+		$this->output->expects($this->once())->method('emitError')->with($className, $file, $line, $class, $sentMessage)->willReturn($emitErrorResponse);
+		$this->node->expects($this->exactly(2))
 			 ->method("getAttribute")
 			 ->willReturnOnConsecutiveCalls($trait, $line);
+		$this->node->expects($this->once())->method("getLine")->willReturn(42);
 
-		$node->expects($this->once())->method("getLine")->willReturn(42);
+		$result = $this->check->emitError($file, $this->node, $class, $message);
 
-		$result = $check->emitError($file, $node, $class, $message);
+		$this->assertEquals($emitErrorResponse, $result);
 
-		$expected = $expectedClass . $file . $line . $class . $message . " in imported code One:42";
-		$this->assertEquals($expected, $result);
+		$this->unsetMocks();
 	}
 
 	public function testTraitImport() {
