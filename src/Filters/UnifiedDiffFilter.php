@@ -95,10 +95,9 @@ class UnifiedDiffFilter implements FilterInterface {
 			for ($i = 0; $i < $totalLines; $i += $chunkSize) {
 				$chunk = array_slice($lineNumbers, $i, $chunkSize);
 				echo implode(",",
-					array_map(
-						fn($lineNumberPair) => $lineNumberPair[0] . "-" . $lineNumberPair[1],
-						$chunk
-					));
+						array_map(
+							fn($lineNumberPair) => $lineNumberPair[0] . "-" . $lineNumberPair[1],
+							$chunk)) . "\n";
 
 				// Flush output buffer to ensure content is sent to output
 				if ($i + $chunkSize < $totalLines) {
