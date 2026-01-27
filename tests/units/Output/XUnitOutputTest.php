@@ -54,4 +54,20 @@ class XUnitOutputTest extends TestCase {
 		];
 	}
 
+	public function testIncTests() : void {
+		$config = new TestConfig('', []);
+		$output = new XUnitOutput($config);
+
+		$errorCountBefore = $output->getErrorCount();
+		$countsBefore = $output->getCounts();
+
+		$output->incTests();
+
+		$errorCountAfter = $output->getErrorCount();
+		$countsAfter = $output->getCounts();
+
+		self::assertEquals($errorCountBefore, $errorCountAfter, 'incTests should not change error count');
+		self::assertEquals($countsBefore, $countsAfter, 'incTests should not change counts');
+	}
+
 }
