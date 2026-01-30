@@ -34,4 +34,3 @@ try {
 	echo "Error building: " . $exception->getMessage() . "\n";
 	exit(1);
 }
-

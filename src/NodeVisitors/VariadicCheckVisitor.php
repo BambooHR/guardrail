@@ -76,4 +76,3 @@ class VariadicCheckVisitor extends NodeVisitorAbstract {
 		return $visitor->getIsVariadic();
 	}
 }
-

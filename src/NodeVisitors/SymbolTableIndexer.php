@@ -278,4 +278,3 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		array_push($this->classStack, $node);
 	}
 }
-

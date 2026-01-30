@@ -204,4 +204,3 @@ class Grabber extends NodeVisitorAbstract {
 		return null;
 	}
 }
-
