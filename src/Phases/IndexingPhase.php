@@ -158,9 +158,9 @@ class IndexingPhase {
 		$indexPaths = $configArr['index'];
 		if (! Util::configDirectoriesAreValid($baseDirectory, $indexPaths)) {
 			$output->output(
-                "Invalid or missing paths in your index config section.",
-                "Invalid or missing paths in your index config section."
-            );
+				"Invalid or missing paths in your index config section.",
+				"Invalid or missing paths in your index config section."
+			);
 			exit;
 		}
 		$output->outputVerbose("Index directories are valid: Indexing starting.\n");

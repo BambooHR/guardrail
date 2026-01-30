@@ -159,9 +159,9 @@ class InterfaceCheck extends BaseCheck {
 		$isCovariant = $this->typeComparer->isCovariant($parentType, $childType);
 		if (!$isCovariant) {
 			$this->emitErrorOnLine(
-                $fileName,
-                $childMethod->getStartingLine(),
-                self::TYPE_SIGNATURE_RETURN,
+				$fileName,
+				$childMethod->getStartingLine(),
+				self::TYPE_SIGNATURE_RETURN,
 				"Child method return types do not match parent return types " . $className . "::" .
 				$childMethod->getName() . " : " . TypeComparer::typeToString($parentMethod->getComplexReturnType())
 					. " to " . TypeComparer::typeToString($childMethod->getComplexReturnType())

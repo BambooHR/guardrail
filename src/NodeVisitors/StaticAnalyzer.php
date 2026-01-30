@@ -220,8 +220,8 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		$this->file = $name;
 		$this->scopeStack = new ScopeStack(
 			$this->scopeStack->getOutput(),
-            $this->scopeStack->getMetricOutput(),
-            $config
+			$this->scopeStack->getMetricOutput(),
+			$config
 		);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->scopeStack->setCurrentFile($name);

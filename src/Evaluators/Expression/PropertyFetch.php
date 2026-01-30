@@ -72,7 +72,7 @@ class PropertyFetch implements ExpressionInterface
 			$types = [];
 			$unknown = false;
 			TypeComparer::forEachType(
-                $class,
+				$class,
 				function ($class) use ($propName, &$types, &$unknown, $table) {
 					$classDef = $table->getAbstractedClass($class);
 					if ($classDef) {

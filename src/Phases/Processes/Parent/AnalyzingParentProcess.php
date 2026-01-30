@@ -63,14 +63,14 @@ class AnalyzingParentProcess extends ProcessManager {
 			$red = $this->output->ttyContent("\33[31m");
 			$reset = $this->output->ttyContent("\33[0m");
 			printf(
-                "$white%d$reset/$white%d$reset, $white%d$reset/$white%d$reset MB ($white%d$reset%%), $white%d$reset KB/s $red%d$reset errors   \r",
-                $this->analyzedCount,
-                count($this->toProcess),
-                intdiv($this->bytes, 1048576), // 1024x1024
-                intdiv($this->totalBytes, 1048576),
-                intval(round(100 * $this->bytes / $this->totalBytes)),
-                $kbs,
-                $displayCount
+				"$white%d$reset/$white%d$reset, $white%d$reset/$white%d$reset MB ($white%d$reset%%), $white%d$reset KB/s $red%d$reset errors   \r",
+				$this->analyzedCount,
+				count($this->toProcess),
+				intdiv($this->bytes, 1048576), // 1024x1024
+				intdiv($this->totalBytes, 1048576),
+				intval(round(100 * $this->bytes / $this->totalBytes)),
+				$kbs,
+				$displayCount
 			);
 		} else {
 			$this->output->output(".", sprintf("%d - %s", $this->fileNumber - 1, $analyzedFileName));

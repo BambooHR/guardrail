@@ -647,11 +647,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			if ($class instanceof Interface_) {
 				$ret .= " E" .
 					implode(
-                        ",",
-                        array_map(
-                            fn($extends) => $this->types->add($extends),
-                            $class->extends
-                        )
+						",",
+						array_map(
+							fn($extends) => $this->types->add($extends),
+							$class->extends
+						)
 					);
 			} else {
 				$ret .= " E" . ($this->types->add($class->extends));
