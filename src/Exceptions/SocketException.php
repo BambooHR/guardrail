@@ -8,5 +8,4 @@ namespace BambooHR\Guardrail\Exceptions;
  */
 
 class SocketException extends \Exception {
-
 }

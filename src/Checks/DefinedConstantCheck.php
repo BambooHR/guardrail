@@ -22,7 +22,6 @@ use ReflectionExtension;
  * @package BambooHR\Guardrail\Checks
  */
 class DefinedConstantCheck extends BaseCheck {
-
 	/**
 	 * @var array
 	 */

@@ -15,7 +15,6 @@ use PhpParser\Node;
  * @package BambooHR\Guardrail\Abstractions
  */
 class Property {
-
 	/**
 	 * @var \PhpParser\Node
 	 */

@@ -12,7 +12,6 @@ namespace BambooHR\Guardrail\Output;
  * @package BambooHR\Guardrail\Output
  */
 interface OutputInterface {
-
 	/**
 	 * emitError
 	 *

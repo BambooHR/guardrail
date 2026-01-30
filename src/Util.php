@@ -30,7 +30,6 @@ use Webmozart\Glob\Glob;
  * @package BambooHR\Guardrail
  */
 class Util {
-
 	/**
 	 * finalPart
 	 *

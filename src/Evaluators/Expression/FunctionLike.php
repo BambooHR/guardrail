@@ -11,7 +11,6 @@ use PhpParser\Node;
 
 class FunctionLike implements ExpressionInterface
 {
-
 	function getInstanceType(): array {
 		return [Node\Expr\ArrowFunction::class, Node\Expr\Closure::class];
 	}

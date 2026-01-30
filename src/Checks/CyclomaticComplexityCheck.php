@@ -11,7 +11,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 
 class CyclomaticComplexityCheck extends BaseCheck {
-
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc, private MetricOutputInterface $metricOutput) {
 		parent::__construct($symbolTable, $doc);
 	}

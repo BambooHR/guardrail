@@ -19,7 +19,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class InstanceOfCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

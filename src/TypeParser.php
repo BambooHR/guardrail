@@ -15,7 +15,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\UnionType;
 
 class TypeParser {
-
 	function __construct(private \closure $resolver) { }
 
 	private function adjustTypeString($type) {

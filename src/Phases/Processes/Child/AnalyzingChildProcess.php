@@ -8,7 +8,6 @@ use BambooHR\Guardrail\Phases\AnalyzingPhase;
 use BambooHR\Guardrail\Phases\Processes\Parent\ProcessManager;
 
 class AnalyzingChildProcess extends ChildProcess {
-
 	function __construct(
 		private Config $config,
 		private AnalyzingPhase $analyzePhase,

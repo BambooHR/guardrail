@@ -23,7 +23,6 @@ use PhpParser\Node\Stmt\ClassMethod;
  * @package BambooHR\Guardrail\Checks
  */
 class ConstructorCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

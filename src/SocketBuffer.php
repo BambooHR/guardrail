@@ -5,7 +5,6 @@ namespace BambooHR\Guardrail;
 use BambooHR\Guardrail\Exceptions\SocketException;
 
 class SocketBuffer {
-
 	private $buffer = "";
 	private $messages = [];
 

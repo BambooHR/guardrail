@@ -35,7 +35,6 @@ use Throwable;
  * @package BambooHR\Guardrail\Phases
  */
 class IndexingPhase {
-
 	private IndexParentProcess $processManager;
 
 	private $parser = null;

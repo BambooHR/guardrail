@@ -21,7 +21,6 @@ use PhpParser\Node\Stmt\Return_;
  * @package BambooHR\Guardrail\Checks
  */
 class ReturnCheck extends BaseCheck {
-
 	private TypeComparer $typeComparer;
 	/**
 	 * ReturnCheck constructor.

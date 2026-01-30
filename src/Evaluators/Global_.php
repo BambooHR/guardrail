@@ -11,7 +11,6 @@ use PhpParser\Node\Expr\Variable;
 
 class Global_ implements OnEnterEvaluatorInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Stmt\Global_::class;
 	}

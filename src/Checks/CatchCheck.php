@@ -20,7 +20,6 @@ use PhpParser\NodeTraverser;
  * @package BambooHR\Guardrail\Checks
  */
 class CatchCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

@@ -13,7 +13,6 @@ use PhpParser\Node;
 
 class Exit_ implements ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Expr\Exit_::class;
 	}

@@ -23,7 +23,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  * the appropriate methods and properties.
  */
 class TraitImporter {
-
 	/** @var  SymbolTable */
 	private $index;
 

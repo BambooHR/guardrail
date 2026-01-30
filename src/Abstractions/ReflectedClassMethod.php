@@ -18,7 +18,6 @@ use PhpParser\Node\Name;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ReflectedClassMethod implements MethodInterface {
-
 	/**
 	 * @var \ReflectionMethod
 	 */

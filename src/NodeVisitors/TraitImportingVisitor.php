@@ -22,7 +22,6 @@ use PhpParser\NodeVisitorAbstract;
  * the appropriate methods and properties.
  */
 class TraitImportingVisitor extends NodeVisitorAbstract {
-
 	/** @var TraitImporter */
 	private $importer;
 

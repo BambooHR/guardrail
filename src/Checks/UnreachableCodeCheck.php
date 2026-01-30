@@ -16,7 +16,6 @@ use PhpParser\Node\Stmt\Function_;
  * @package BambooHR\Guardrail\Checks
  */
 class UnreachableCodeCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

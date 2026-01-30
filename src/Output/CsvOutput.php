@@ -4,7 +4,6 @@ namespace BambooHR\Guardrail\Output;
 
 class CsvOutput extends XUnitOutput
 {
-
 	private $errors = [];
 
 	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {

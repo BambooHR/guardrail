@@ -11,7 +11,6 @@ use PhpParser\Node\Name;
 
 interface PluginScopeInterface
 {
-
 	public function isStrict(): bool;
 	public function isStatic(): bool;
 	public function isGlobal(): bool;

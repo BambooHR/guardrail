@@ -28,7 +28,6 @@ use PhpParser\Node\Stmt\Trait_;
  * @package BambooHR\Guardrail\Checks
  */
 class MethodCall extends CallCheck {
-
 	/**
 	 * MethodCall constructor.
 	 *

@@ -18,7 +18,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class BackTickOperatorCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

@@ -12,7 +12,6 @@ use PhpParser\Node;
 
 class Catch_ implements OnEnterEvaluatorInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Stmt\Catch_::class;
 	}

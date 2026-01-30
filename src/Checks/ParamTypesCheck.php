@@ -24,7 +24,6 @@ use PhpParser\Node\Stmt\Function_;
  * @package BambooHR\Guardrail\Checks
  */
 class ParamTypesCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

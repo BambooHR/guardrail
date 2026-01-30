@@ -17,7 +17,6 @@ use BambooHR\Guardrail\Exceptions\InvalidConfigException;
  * @package BambooHR\Guardrail
  */
 class CommandLineRunner {
-
 	public const ERROR_MASK = E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING;
 	/**
 	 * usage

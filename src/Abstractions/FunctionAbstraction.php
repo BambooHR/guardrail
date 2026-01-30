@@ -23,7 +23,6 @@ use PhpParser\Node\Stmt\Function_ as AstFunction;
  * @package BambooHR\Guardrail\Abstractions
  */
 class FunctionAbstraction implements FunctionLikeInterface {
-
 	/**
 	 * @var AstFunction
 	 */

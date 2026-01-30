@@ -10,7 +10,6 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 
 class TypeStringTable implements \JsonSerializable {
-
 	private array $strings = [];
 	private array $ids = [];
 	static ?TypeParser $parser = null;

@@ -10,7 +10,6 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ElseIf_;
 
 class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
-
 	function getInstanceType(): array|string {
 		return [Node\Stmt\If_::class, Node\Stmt\Else_::class,Node\Stmt\ElseIf_::class];
 	}

@@ -29,7 +29,6 @@ use PhpParser\Node\Stmt\PropertyProperty;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ClassAbstraction implements ClassInterface {
-
 	/**
 	 * @var ClassLike
 	 */

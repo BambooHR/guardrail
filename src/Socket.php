@@ -5,7 +5,6 @@ namespace BambooHR\Guardrail;
 use BambooHR\Guardrail\Exceptions\SocketException;
 
 class Socket {
-
 	/* This function adapted from the PHP documentation on php.net */
 	/**
 	 * @param resource $fp

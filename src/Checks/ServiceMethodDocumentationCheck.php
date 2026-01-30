@@ -12,7 +12,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 
 class ServiceMethodDocumentationCheck extends BaseCheck {
-
 	function __construct($index, $output, private MetricOutputInterface $metricOutput) {
 		parent::__construct($index, $output);
 	}

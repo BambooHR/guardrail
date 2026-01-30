@@ -24,7 +24,6 @@ use PhpParser\NodeVisitorAbstract;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class DocBlockNameResolver extends NodeVisitorAbstract {
-
 	/** @var NameContext */
 	private $context;
 

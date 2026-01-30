@@ -15,7 +15,6 @@ namespace BambooHR\Guardrail;
  *
  */
 class ObjectCache {
-
 	/**
 	 * @var array
 	 */

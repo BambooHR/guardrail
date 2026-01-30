@@ -9,7 +9,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\Phases\Processes\Child\TraitIndexChildProcess;
 
 class TraitIndexingParent extends ProcessManager {
-
 	private $processedFiles = 0;
 	private int $fileNumber = 0;
 

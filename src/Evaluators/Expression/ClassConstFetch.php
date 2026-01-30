@@ -16,7 +16,6 @@ use PhpParser\Node\Stmt\Interface_;
 
 class ClassConstFetch implements ExpressionInterface
 {
-
 	function getInstanceType(): string {
 		return Node\Expr\ClassConstFetch::class;
 	}

@@ -11,7 +11,6 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 
 class ThrowsCheck extends BaseCheck {
-
 	function getCheckNodeTypes() {
 		return [Node\Expr\Throw_::class, Node\Stmt\Throw_::class,
 			Node\Expr\MethodCall::class,

@@ -69,7 +69,6 @@ use PhpParser\NodeVisitorAbstract;
  */
 class StaticAnalyzer extends NodeVisitorAbstract
 {
-
 	/** @var  SymbolTable */
 	private $index;
 

@@ -13,7 +13,6 @@ namespace BambooHR\Guardrail\Abstractions;
  * @package BambooHR\Guardrail\Abstractions
  */
 interface MethodInterface extends FunctionLikeInterface {
-
 	/**
 	 * isAbstract
 	 *

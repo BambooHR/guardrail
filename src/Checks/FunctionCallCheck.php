@@ -20,7 +20,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 
 class FunctionCallCheck extends CallCheck {
-
 	/**
 	 * FunctionCallCheck constructor.
 	 * @param SymbolTable     $symbolTable -

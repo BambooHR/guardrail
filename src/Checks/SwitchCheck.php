@@ -19,7 +19,6 @@ use PhpParser\Node\Stmt\Switch_;
  * @package BambooHR\Guardrail\Checks
  */
 class SwitchCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

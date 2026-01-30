@@ -9,7 +9,6 @@ use PhpParser\Node;
 
 class IncDec implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return [Node\Expr\PreDec::class, Node\Expr\PreInc::class, Node\Expr\PostInc::class, Node\Expr\PostDec::class];
 	}

@@ -21,7 +21,6 @@ use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ClassMethod implements MethodInterface {
-
 	/**
 	 * @var ParserClassMethod
 	 */

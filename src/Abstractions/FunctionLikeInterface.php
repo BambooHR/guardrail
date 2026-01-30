@@ -17,7 +17,6 @@ use PhpParser\Node\Name;
  * @package BambooHR\Guardrail\Abstractions
  */
 interface FunctionLikeInterface {
-
 	/**
 	 * getParameters
 	 *

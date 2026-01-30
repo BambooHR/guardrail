@@ -33,7 +33,6 @@ use ReflectionException;
  * Class SqliteSymbolTable
  */
 class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
-
 	/** @var array [$type][$name] = ['has_trait'=>,'data'=>,'file'=>] */
 	private $index = [
 		SymbolTable::TYPE_CLASS => [],

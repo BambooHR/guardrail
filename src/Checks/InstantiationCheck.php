@@ -20,7 +20,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class InstantiationCheck extends MethodCall {
-
 	/**
 	 * getCheckNodeTypes
 	 * @override

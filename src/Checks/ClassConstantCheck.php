@@ -22,7 +22,6 @@ use PhpParser\Node\Stmt\Interface_;
  * @package BambooHR\Guardrail\Checks
  */
 class ClassConstantCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

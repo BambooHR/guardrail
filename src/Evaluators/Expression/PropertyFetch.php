@@ -12,7 +12,6 @@ use PhpParser\Node;
 
 class PropertyFetch implements ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return [
 			Node\Expr\PropertyFetch::class,

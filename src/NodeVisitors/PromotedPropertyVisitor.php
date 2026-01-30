@@ -13,7 +13,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeVisitorAbstract;
 
 class PromotedPropertyVisitor extends NodeVisitorAbstract {
-
 	/**
 	 * enterNode
 	 *

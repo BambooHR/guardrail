@@ -17,7 +17,6 @@ use Webmozart\Glob\Glob;
  * @package BambooHR\Guardrail\Output
  */
 class XUnitOutput implements OutputInterface {
-
 	/** @var Config  */
 	protected $config;
 

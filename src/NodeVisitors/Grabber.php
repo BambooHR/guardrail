@@ -24,7 +24,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class Grabber extends NodeVisitorAbstract {
-
 	const FROM_NAME = 1;
 	const FROM_FQN = 2;
 

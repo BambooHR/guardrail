@@ -13,7 +13,6 @@ use PhpParser\Node;
 
 class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return [Node\Expr\Empty_::class, Node\Expr\BooleanNot::class, Node\Expr\Isset_::class];
 	}

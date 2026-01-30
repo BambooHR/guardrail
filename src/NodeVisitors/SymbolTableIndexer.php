@@ -27,7 +27,6 @@ use PhpParser\NodeVisitorAbstract;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class SymbolTableIndexer extends NodeVisitorAbstract {
-
 	/**
 	 * @var SymbolTable
 	 */

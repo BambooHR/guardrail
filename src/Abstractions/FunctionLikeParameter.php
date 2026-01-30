@@ -16,7 +16,6 @@ use PhpParser\Node\ComplexType;
  * @package BambooHR\Guardrail\Abstractions
  */
 class FunctionLikeParameter {
-
 	/**
 	 * @var Node
 	 */

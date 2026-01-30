@@ -12,7 +12,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class ClassStoredAsVariableCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

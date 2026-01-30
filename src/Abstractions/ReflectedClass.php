@@ -22,7 +22,6 @@ use PhpParser\Node\Scalar\String_;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ReflectedClass implements ClassInterface {
-
 	/**
 	 * @var \ReflectionClass
 	 */

@@ -19,7 +19,6 @@ use PhpParser\Node\Stmt\Continue_;
  * @package BambooHR\Guardrail\Checks
  */
 class BreakCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

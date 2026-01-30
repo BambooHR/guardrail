@@ -13,7 +13,6 @@ namespace BambooHR\Guardrail\Exceptions;
  * @package BambooHR\Guardrail\Exceptions
  */
 class UnknownTraitException extends \Exception {
-
 	/**
 	 * UnknownTraitException constructor.
 	 *

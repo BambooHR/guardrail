@@ -18,7 +18,6 @@ use PhpParser\Node\Stmt\Goto_;
  * @package BambooHR\Guardrail\Checks
  */
 class GotoCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

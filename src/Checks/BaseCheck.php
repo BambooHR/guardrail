@@ -19,7 +19,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 abstract class BaseCheck extends ErrorConstants {
-
 	/** @var SymbolTable */
 	protected $symbolTable;
 

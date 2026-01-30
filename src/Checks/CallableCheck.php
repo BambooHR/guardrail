@@ -27,7 +27,6 @@ use PhpParser\Node\Stmt\ClassLike;
  *
  */
 class CallableCheck extends BaseCheck {
-
 	/**
 	 * CallableCheck constructor.
 	 * @param SymbolTable     $symbolTable -

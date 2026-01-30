@@ -19,7 +19,6 @@ use PhpParser\Node\Name;
  * @package BambooHR\Guardrail
  */
 class Scope implements PluginScopeInterface {
-
 	/**
 	 * @var ScopeVar[]
 	 */

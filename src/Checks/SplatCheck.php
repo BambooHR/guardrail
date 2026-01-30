@@ -9,7 +9,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayItem;
 
 class SplatCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

@@ -8,7 +8,6 @@ use PhpParser\Node\Expr\Variable;
 
 class NodePatterns
 {
-
 	public static function getVariableOrPropertyName($node): ?string {
 		if ($node instanceof Variable && is_string($node->name)) {
 			return $node->name;

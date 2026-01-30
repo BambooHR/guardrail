@@ -11,7 +11,6 @@ use PhpParser\Node;
 
 class ShellExec implements ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return [Node\Expr\ShellExec::class, Node\Expr\Eval_::class];
 	}

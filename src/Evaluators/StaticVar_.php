@@ -10,7 +10,6 @@ use PhpParser\Node;
 
 class StaticVar_ implements OnEnterEvaluatorInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Stmt\StaticVar::class;
 	}

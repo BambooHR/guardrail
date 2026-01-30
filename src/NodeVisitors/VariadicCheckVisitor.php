@@ -21,7 +21,6 @@ use PhpParser\NodeVisitorAbstract;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class VariadicCheckVisitor extends NodeVisitorAbstract {
-
 	/**
 	 * @var bool
 	 */

@@ -18,7 +18,6 @@ use BambooHR\Guardrail\Util;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ReflectedFunction implements FunctionLikeInterface {
-
 	/**
 	 * @var \ReflectionFunction
 	 */

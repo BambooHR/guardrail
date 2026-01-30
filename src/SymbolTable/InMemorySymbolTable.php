@@ -20,7 +20,6 @@ use PhpParser\Node\Stmt\Trait_;
  * @package BambooHR\Guardrail\SymbolTable
  */
 class InMemorySymbolTable extends SymbolTable {
-
 	/**
 	 * @var array
 	 */

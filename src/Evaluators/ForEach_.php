@@ -12,7 +12,6 @@ use PhpParser\Node\Expr\Variable;
 
 class ForEach_ implements OnEnterEvaluatorInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Stmt\Foreach_::class;
 	}

@@ -10,7 +10,6 @@ use PhpParser\Node;
 
 class Return_ implements OnExitEvaluatorInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Stmt\Return_::class;
 	}

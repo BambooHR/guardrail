@@ -13,7 +13,6 @@ use PhpParser\Node\Stmt\Global_;
  * @package BambooHR\Guardrail\Checks
  */
 class AccessingSuperGlobalsCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
