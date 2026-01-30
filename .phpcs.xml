@@ -5,6 +5,10 @@
   <arg name="extensions" value="php"/>
 
   <!-- Include some specific sniffs -->
+  <rule ref="PSR12" >
+    <exclude name="Generic.WhiteSpace.DisallowTabIndent"/>
+    <exclude name="Generic.Files.LineLength"/>
+  </rule>
   <rule ref="Generic.PHP.DisallowShortOpenTag">
     <exclude name="Generic.PHP.DisallowShortOpenTag.EchoFound"/>
   </rule>
