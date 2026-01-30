@@ -88,7 +88,7 @@ abstract class SymbolTable {
 	 * Checks all parent classes and parent interfaces to see if $child is can be used in their place.
 	 *
 	 */
-	public function isParentClassOrInterface(string $potentialParent, string $child):bool {
+	public function isParentClassOrInterface(string $potentialParent, string $child): bool {
 		if (strcasecmp($potentialParent, "object") == 0) {
 			return true;
 		}
@@ -301,7 +301,7 @@ abstract class SymbolTable {
 	 *
 	 * @return string
 	 */
-	public function adjustBasePath(string  $fileName):string {
+	public function adjustBasePath(string  $fileName): string {
 		if (strpos($fileName, "phar://") === 0) {
 			$fileName = substr($fileName, 7);
 		} else if (!empty($fileName) && strpos($fileName, "/") !== 0) {
@@ -314,7 +314,7 @@ abstract class SymbolTable {
 	 * @param string $fileName A potentially absolute path
 	 * @return string
 	 */
-	public function removeBasePath(string $fileName):string {
+	public function removeBasePath(string $fileName): string {
 		if ($this->basePath !== "" && strpos($fileName, $this->basePath) === 0) {
 			return substr($fileName, strlen($this->basePath) + 1);
 		} else {

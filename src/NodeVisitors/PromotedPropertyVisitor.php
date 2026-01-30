@@ -45,7 +45,7 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 		return null;
 	}
 
-	public function buildAssign(Node\Param $param):Node\Expr {
+	public function buildAssign(Node\Param $param): Node\Expr {
 		$attrs = $param->getAttributes();
 		return new Node\Expr\Assign(
 			new Node\Expr\PropertyFetch(new Node\Expr\Variable("this", $attrs), new Node\Identifier($param->var->name, $attrs), $attrs),

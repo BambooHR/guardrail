@@ -80,7 +80,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @param string                      $type
 	 * @return bool
 	 */
-	function isInsideConditionalDeclaration(Function_|Class_|Interface_|FuncCall|Enum_ $declarationNode, string $type):bool {
+	function isInsideConditionalDeclaration(Function_|Class_|Interface_|FuncCall|Enum_ $declarationNode, string $type): bool {
 		$found = false;
 		foreach ($this->nodeStack as $node) {
 			if ($node instanceof Node\Stmt\If_) {
@@ -122,7 +122,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		}
 	}
 
-	function isInternalDefine($name):bool {
+	function isInternalDefine($name): bool {
 		static $internalDefines = null;
 		if ($internalDefines === null) {
 			$temp = get_defined_constants(true);

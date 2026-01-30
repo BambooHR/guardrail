@@ -17,7 +17,7 @@ class TypeComparer
 
 	function __construct(private SymbolTable $symbolTable) { }
 
-	static public function identifierFromName(string $str):Identifier {
+	static public function identifierFromName(string $str): Identifier {
 		static $identifier = [];
 		if (!array_key_exists($str, $identifier)) {
 			$identifier[$str] = new Identifier($str);
@@ -45,7 +45,7 @@ class TypeComparer
 		}
 	}
 
-	private static function normalizeUnionType(UnionType $type):UnionType {
+	private static function normalizeUnionType(UnionType $type): UnionType {
 		// First, sort any intersections inside the union.
 		foreach ($type->types as $subType) {
 			if ($subType instanceof Node\IntersectionType) {
@@ -57,14 +57,14 @@ class TypeComparer
 	}
 
 
-	private static function normalizeIntersectionType(IntersectionType $type):IntersectionType {
+	private static function normalizeIntersectionType(IntersectionType $type): IntersectionType {
 		usort($type->types, function($a, $b) {
 			return strcmp(strval($a), strval($b));
 		});
 		return $type;
 	}
 
-	public static function normalizeType(ComplexType|Identifier|Name|null $type):ComplexType|Identifier|Name|null {
+	public static function normalizeType(ComplexType|Identifier|Name|null $type): ComplexType|Identifier|Name|null {
 		if ($type instanceof Node\NullableType) {
 			$type = new UnionType([self::identifierFromName("null"), $type->type]);
 		}
@@ -77,7 +77,7 @@ class TypeComparer
 		return $type;
 	}
 
-	public static function nameFromName(string $str):Name {
+	public static function nameFromName(string $str): Name {
 		static $name = [];
 		if (!array_key_exists($str, $name)) {
 			$name[$str] = new Name($str);
@@ -85,7 +85,7 @@ class TypeComparer
 		return $name[$str];
 	}
 
-	static function isExactMatch(ComplexType|Identifier|Name|null $a, ComplexType|Identifier|Name|null $b):bool {
+	static function isExactMatch(ComplexType|Identifier|Name|null $a, ComplexType|Identifier|Name|null $b): bool {
 		if ($a == null && $b == null) {
 			return true;
 		}
@@ -206,7 +206,7 @@ class TypeComparer
 	 * Does not produce a name if there are any Array lookups in the chain or if the end isn't a string identifier.
 	 *
 	 */
-	static function getChainedPropertyFetchName(Node $rootNode):?string {
+	static function getChainedPropertyFetchName(Node $rootNode): ?string {
 		if (($rootNode instanceof Node\Expr\PropertyFetch  || $rootNode instanceof Node\Expr\NullsafePropertyFetch)
 			&& $rootNode->name instanceof Identifier
 		) {
@@ -219,7 +219,7 @@ class TypeComparer
 		}
 	}
 
-	static function typeToString(ComplexType|Name|Identifier|null $type):string {
+	static function typeToString(ComplexType|Name|Identifier|null $type): string {
 		if ($type === null) {
 			return "(unknown)";
 		} else if ($type instanceof Name) {
@@ -286,7 +286,7 @@ class TypeComparer
 	 * @return bool
 	 *
 	 */
-	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false, $nullChecks=true ) : bool {
+	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false, $nullChecks=true ): bool {
 		if ($nullChecks) {
 			if (is_null($target)) {
 				return true;
@@ -414,7 +414,7 @@ class TypeComparer
 		return false;
 	}
 
-	static function ifAnyTypeIsNull($node):bool {
+	static function ifAnyTypeIsNull($node): bool {
 		return self::ifAnyType($node, fn($type)=>self::isNamedIdentifier($type, "null"));
 	}
 
@@ -444,7 +444,7 @@ class TypeComparer
 		});
 	}
 
-	function isTraversable(ComplexType|Identifier|Name|null $type):bool {
+	function isTraversable(ComplexType|Identifier|Name|null $type): bool {
 		if (is_null($type)) {
 			return true;
 		}
@@ -501,7 +501,7 @@ class TypeComparer
 		}
 	}
 
-	static function isNamedIdentifier(?Node $node, string $name):bool {
+	static function isNamedIdentifier(?Node $node, string $name): bool {
 		return ($node instanceof Node\Identifier || $node instanceof Node\Name) && strcasecmp(strval($node), $name) == 0;
 	}
 }

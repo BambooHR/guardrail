@@ -121,7 +121,7 @@ class TypeParser {
 		throw new DocBlockParserException("Invalid type name: \"$type\"");
 	}
 
-	function parse(string $type):Name|Identifier|Node\ComplexType|null {
+	function parse(string $type): Name|Identifier|Node\ComplexType|null {
 		$i = 0;
 		$this->skipWs($type, $i);
 

@@ -17,7 +17,7 @@ class IndexParentProcess extends ProcessManager {
 		$this->start = microtime(true);
 	}
 
-	function init(\Iterator $itr):void {
+	function init(\Iterator $itr): void {
 		$this->itr = $itr;
 	}
 
@@ -43,7 +43,7 @@ class IndexParentProcess extends ProcessManager {
 			}
 		}
 	}
-	function handleClientMessage(\Socket $socket, $message, string ...$params):int {
+	function handleClientMessage(\Socket $socket, $message, string ...$params): int {
 		assert( $message == "INDEXED" );
 
 		[$size, $fileName, $childProcessNumber] = $params;

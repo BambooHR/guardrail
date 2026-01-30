@@ -19,7 +19,7 @@ class TypeStringTable implements \JsonSerializable {
 		self::$parser = new TypeParser(fn($typeName)=>new Name\FullyQualified(strval($typeName)));
 	}
 
-	function add(ComplexType|Identifier|Name $type):int {
+	function add(ComplexType|Identifier|Name $type): int {
 		//$type = TypeComparer::normalizeType($type);
 		$typeString = TypeComparer::typeToString($type);
 
@@ -31,7 +31,7 @@ class TypeStringTable implements \JsonSerializable {
 		return $this->strings[$typeString];
 	}
 
-	function getString(int $index):ComplexType|Name|Identifier {
+	function getString(int $index): ComplexType|Name|Identifier {
 		if (strcasecmp($this->ids[$index], "mixed") == 0) {
 			return TypeComparer::identifierFromName("mixed");
 		}
@@ -51,7 +51,7 @@ class TypeStringTable implements \JsonSerializable {
 		return $this->strings;
 	}
 
-	static function fromArray($arr):TypeStringTable {
+	static function fromArray($arr): TypeStringTable {
 		$ret = new TypeStringTable();
 		$ret->strings = $arr;
 		$ret->ids = array_flip($arr);

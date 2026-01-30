@@ -38,23 +38,23 @@ class ScopeStack implements ScopeInterface {
 		return $this->metricOutput;
 	}
 
-	function pushClass(Node\Stmt\ClassLike $class):void {
+	function pushClass(Node\Stmt\ClassLike $class): void {
 		$this->classes[] = $class;
 	}
 
-	function popClass():Node\Stmt\ClassLike {
+	function popClass(): Node\Stmt\ClassLike {
 		return array_pop($this->classes);
 	}
 
-	function getParentNodes():array {
+	function getParentNodes(): array {
 		return $this->parentNodes;
 	}
 
-	function getParent():Node {
+	function getParent(): Node {
 		return $this->parentNodes[array_key_last($this->parentNodes)];
 	}
 
-	function pushParentNode(Node $node):void {
+	function pushParentNode(Node $node): void {
 		$this->parentNodes[] = $node;
 	}
 
@@ -62,7 +62,7 @@ class ScopeStack implements ScopeInterface {
 		array_pop($this->parentNodes );
 	}
 
-	function pushScope(PluginScopeInterface $scope):void {
+	function pushScope(PluginScopeInterface $scope): void {
 		$this->scopes[] = $scope;
 	}
 
@@ -73,15 +73,15 @@ class ScopeStack implements ScopeInterface {
 		$this->scopes[$count - 1] = $tmp;
 	}
 
-	function popScope():PluginScopeInterface {
+	function popScope(): PluginScopeInterface {
 		return array_pop($this->scopes);
 	}
 
-	function getCurrentScope():Scope {
+	function getCurrentScope(): Scope {
 		return end($this->scopes);
 	}
 
-	function getCurrentClass():?Node\Stmt\ClassLike {
+	function getCurrentClass(): ?Node\Stmt\ClassLike {
 		if (count($this->classes) == 0) {
 			return null;
 		} else {
@@ -94,7 +94,7 @@ class ScopeStack implements ScopeInterface {
 		// TODO: Implement isStatic() method.
 	}
 
-	public function isStrict():bool {
+	public function isStrict(): bool {
 		return $this->getCurrentScope()->isStrict();
 	}
 	public function isGlobal(): bool {
@@ -134,7 +134,7 @@ class ScopeStack implements ScopeInterface {
 		return $this->getCurrentScope()->getInsideFunction()?->getAttribute('function-scope')?->getUnusedVars() ?? [];
 	}
 
-	public function getUsedVars():array {
+	public function getUsedVars(): array {
 		return $this->getCurrentScope()->getInsideFunction()?->getAttribute('function-scope')?->getUnusedVars() ?? [];
 	}
 

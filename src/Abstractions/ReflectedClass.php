@@ -78,7 +78,7 @@ class ReflectedClass implements ClassInterface {
 		return $this->refl->isAbstract();
 	}
 
-	public function getConstantExpr($name):null|Name|Identifier {
+	public function getConstantExpr($name): null|Name|Identifier {
 		if ($this->refl->hasConstant($name)) {
 			$constant = $this->refl->getConstant($name);
 			if (is_int($constant)) {

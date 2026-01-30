@@ -38,11 +38,11 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isStatic():bool {
+	public function isStatic(): bool {
 		return $this->isStatic;
 	}
 
-	public function isStrict():bool {
+	public function isStrict(): bool {
 		return $this->isStrict;
 	}
 
@@ -51,7 +51,7 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return bool
 	 */
-	public function isGlobal():bool {
+	public function isGlobal(): bool {
 		return $this->isGlobal;
 	}
 
@@ -60,7 +60,7 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return FunctionLike
 	 */
-	public function getInsideFunction():?FunctionLike {
+	public function getInsideFunction(): ?FunctionLike {
 		return $this->inside;
 	}
 
@@ -73,7 +73,7 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return void
 	 */
-	public function setVarType($name, Name|Identifier|ComplexType|null $type, $line):void {
+	public function setVarType($name, Name|Identifier|ComplexType|null $type, $line): void {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
@@ -103,7 +103,7 @@ class Scope implements PluginScopeInterface {
 	 * @param ScopeVar $ref  -
 	 * @return void
 	 */
-	public function setVarReference($name, ScopeVar $ref):void {
+	public function setVarReference($name, ScopeVar $ref): void {
 		$this->vars[$name] = $ref;
 	}
 
@@ -115,7 +115,7 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return void
 	 */
-	public function setVarWritten($name, $line):void {
+	public function setVarWritten($name, $line): void {
 
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
@@ -133,7 +133,7 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return void
 	 */
-	public function setVarUsed($name):void {
+	public function setVarUsed($name): void {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
@@ -147,7 +147,7 @@ class Scope implements PluginScopeInterface {
 	/**
 	 * @return void
 	 */
-	public function dump($typeChanged=false, $used=false, $modified=false):void {
+	public function dump($typeChanged=false, $used=false, $modified=false): void {
 		if (!$typeChanged && !$used && !$modified) {
 			$typeChanged = $used = $modified = true;
 		}
@@ -165,7 +165,7 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return void
 	 */
-	public function markAllVarsUsed():void {
+	public function markAllVarsUsed(): void {
 		foreach ($this->vars as $var) {
 			$var->used = true;
 		}
@@ -176,7 +176,7 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return array
 	 */
-	public function getUnusedVars():array {
+	public function getUnusedVars(): array {
 		$ret = [];
 		foreach ($this->vars as $key => $var) {
 			if (!$var->used) {
@@ -186,14 +186,14 @@ class Scope implements PluginScopeInterface {
 		return $ret;
 	}
 
-	public function getUsedVars():array {
+	public function getUsedVars(): array {
 		return array_filter( $this->vars, fn($var)=>$var->used);
 	}
 
 	/**
 	 * @return ScopeVar[]
 	 */
-	public function getTypeChangedVars():array {
+	public function getTypeChangedVars(): array {
 		$ret = [];
 		foreach ($this->vars as $key => $var) {
 			if ($var->typeChanged) {
@@ -210,11 +210,11 @@ class Scope implements PluginScopeInterface {
 	 *
 	 * @return mixed|string
 	 */
-	function getVarType($name):Name|Identifier|ComplexType|null {
+	function getVarType($name): Name|Identifier|ComplexType|null {
 		return isset($this->vars[$name]) ? $this->vars[$name]->type : null;
 	}
 
-	function getVarExists(string $name):bool {
+	function getVarExists(string $name): bool {
 		return isset($this->vars[$name]);
 	}
 
@@ -240,7 +240,7 @@ class Scope implements PluginScopeInterface {
 	 * @param string $name The name of the object.
 	 * @return ScopeVar|null
 	 */
-	function getVarObject($name):?ScopeVar {
+	function getVarObject($name): ?ScopeVar {
 		return (isset($this->vars[$name]) ? $this->vars[$name] : null);
 	}
 
@@ -248,7 +248,7 @@ class Scope implements PluginScopeInterface {
 	 * @param Scope $other -
 	 * @return void
 	 */
-	public function merge(PluginScopeInterface $other):void {
+	public function merge(PluginScopeInterface $other): void {
 		// See if any new vars were added to the scope or if existing ones were changed.
 		foreach ($other->vars as $name => $otherVar) {
 			if (!isset($this->vars[$name])) {

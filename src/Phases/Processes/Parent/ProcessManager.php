@@ -29,7 +29,7 @@ abstract class ProcessManager {
 	 * @param callable $childProcess a closure to run inside the child process.
 	 * @return resource
 	 */
-	function createChild(ChildProcess $childProcess):\Socket {
+	function createChild(ChildProcess $childProcess): \Socket {
 		$pair = [];
 		if (!socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $pair)) {
 			echo "socket_create_pair failed. Reason: " . socket_strerror(socket_last_error()) . "\n";
@@ -116,10 +116,10 @@ abstract class ProcessManager {
 		}
 	}
 
-	function dispatchMessage(\Socket $socket,$msg):int {
+	function dispatchMessage(\Socket $socket,$msg): int {
 		list($message,$details) = explode(" ", $msg, 2);
 		return $this->handleClientMessage( $socket, $message, ...explode(" ", $details));
 	}
 
-	abstract function handleClientMessage(\Socket $socket, string $message,string ... $params):int;
+	abstract function handleClientMessage(\Socket $socket, string $message,string ... $params): int;
 }

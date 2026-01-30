@@ -42,7 +42,7 @@ class Util {
 		return property_exists($parts, "parts") && is_array($parts->parts) ? $parts->parts[count($parts->parts) - 1] : $parts;
 	}
 
-	static function mapClassName(string $name, string $selfName, string $staticName):string {
+	static function mapClassName(string $name, string $selfName, string $staticName): string {
 		if (strcasecmp($name, 'static') == 0) {
 			return $staticName;
 		} else if (strcasecmp($name, 'self') == 0) {
@@ -65,7 +65,7 @@ class Util {
 	}
 
 
-	static function getPhpAttribute(string $name, array $attrGroups):?Attribute {
+	static function getPhpAttribute(string $name, array $attrGroups): ?Attribute {
 		foreach ($attrGroups as $attrGroup) {
 			/** @var AttributeGroup $attrGroup */
 			foreach ($attrGroup->attrs as $attribute) {
@@ -87,7 +87,7 @@ class Util {
 		return self::isScalarType($name) || strcasecmp($name, "mixed") == 0 || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name, "resource") == 0 || strcasecmp($name, "object") == 0;
 	}
 
-	static public function isSelfOrStaticType(string $name):bool {
+	static public function isSelfOrStaticType(string $name): bool {
 		return strcasecmp($name, "self") == 0 || strcasecmp($name, "static") == 0;
 	}
 
@@ -226,7 +226,7 @@ class Util {
 		return null;
 	}
 
-	static public function findAllInterfaces(string $className, SymbolTable $symbolTable):array {
+	static public function findAllInterfaces(string $className, SymbolTable $symbolTable): array {
 		$interfaces = [];
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
@@ -268,7 +268,7 @@ class Util {
 	 *
 	 * @return array First param is the abstracted method, second param is the class it was declared in.
 	 */
-	static public function findAbstractedProperty(string $className, string $name, SymbolTable $symbolTable):?Property {
+	static public function findAbstractedProperty(string $className, string $name, SymbolTable $symbolTable): ?Property {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
@@ -328,7 +328,7 @@ class Util {
 
 	}
 
-	static public function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren):array {
+	static public function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren): array {
 		$ret = [];
 		foreach ($potentialChildren as $potentialChild) {
 			if ($table->isParentClassOrInterface($parent, $potentialChild)) {

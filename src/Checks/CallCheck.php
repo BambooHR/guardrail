@@ -70,7 +70,7 @@ abstract class CallCheck extends BaseCheck {
 	 * @param string $name
 	 * @return int
 	 */
-	static function findParam(array $params, string $name):int {
+	static function findParam(array $params, string $name): int {
 		foreach ($params as $index => $param) {
 			if (strcasecmp($param->getName(), $name) == 0) {
 				return $index;

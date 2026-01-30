@@ -17,11 +17,11 @@ use PhpParser\Node;
  */
 interface Scope extends PluginScopeInterface {
 	/** @return Node[] */
-	function getParentNodes():array;
+	function getParentNodes(): array;
 
-	function getCurrentFile():string;
+	function getCurrentFile(): string;
 
-	public function setVarUsed($name):void;
+	public function setVarUsed($name): void;
 
 	public function getConfig(): Config;
 }

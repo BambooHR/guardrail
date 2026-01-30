@@ -8,5 +8,5 @@ use PhpParser\Node;
 
 interface OnEnterEvaluatorInterface extends EvaluatorInterface
 {
-	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack):void;
+	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void;
 }

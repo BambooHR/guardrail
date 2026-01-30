@@ -36,7 +36,7 @@ interface OutputInterface {
 	 */
 	function output($verbose, $extraVerbose);
 
-	function ttyContent(string $content):string;
+	function ttyContent(string $content): string;
 
 	/**
 	 * outputVerbose

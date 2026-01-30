@@ -87,7 +87,7 @@ interface ClassInterface {
 	 */
 	public function hasConstant($name);
 
-	public function getConstantExpr($name):null|Expr|Identifier|Name;
+	public function getConstantExpr($name): null|Expr|Identifier|Name;
 
 	/**
 	 * isInterface
@@ -96,7 +96,7 @@ interface ClassInterface {
 	 */
 	public function isInterface();
 
-	public function isEnum():bool;
+	public function isEnum(): bool;
 
-	public function isReadOnly():bool;
+	public function isReadOnly(): bool;
 }

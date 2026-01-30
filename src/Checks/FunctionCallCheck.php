@@ -209,7 +209,7 @@ class FunctionCallCheck extends CallCheck {
 	}
 
 
-	private function isMatchingFunctionExistsCond(Expr $cond, string $name):bool {
+	private function isMatchingFunctionExistsCond(Expr $cond, string $name): bool {
 		if ($cond instanceof Expr\BinaryOp\BooleanAnd || $cond instanceof Expr\BinaryOp\BooleanOr) {
 			return $this->isMatchingFunctionExistsCond($cond->left, $name) || $this->isMatchingFunctionExistsCond($cond->right, $name);
 		}

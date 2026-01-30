@@ -137,7 +137,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 	}
 
-	function findInstance($class):?ExpressionInterface {
+	function findInstance($class): ?ExpressionInterface {
 		static $cache = [];
 		if (isset($cache[$class])) {
 			return $cache[$class];

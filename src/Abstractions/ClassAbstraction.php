@@ -148,11 +148,11 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name):bool {
+	public function hasConstant($name): bool {
 		return $this->getConstantExpr($name) ? true : false;
 	}
 
-	public function getConstantExpr($name):null|Expr|Name|Identifier {
+	public function getConstantExpr($name): null|Expr|Name|Identifier {
 
 		if ($this->isEnum()) {
 			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);

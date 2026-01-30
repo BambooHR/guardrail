@@ -71,7 +71,7 @@ class ThrowsCheck extends BaseCheck {
 		return false;
 	}
 
-	function parentCatches($parents, $throws):bool {
+	function parentCatches($parents, $throws): bool {
 		foreach (array_reverse($parents) as $parent) {
 			if ($parent instanceof Node\Stmt\TryCatch) {
 				foreach ($parent->catches as $catch) {

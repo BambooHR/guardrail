@@ -198,7 +198,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	private function processNodeImplements(string $fileName, Class_|Interface_ $node):void {
+	private function processNodeImplements(string $fileName, Class_|Interface_ $node): void {
 		$arr = Util::findAllInterfaces(strval($node->namespacedName), $this->symbolTable);
 		foreach ($arr as $name) {
 			$interface = $this->symbolTable->getAbstractedClass($name);
@@ -210,7 +210,7 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 
-	private function processNodeExtends(string $fileName, Class_ $node):void {
+	private function processNodeExtends(string $fileName, Class_ $node): void {
 		$class = new AbstractedClass_($node);
 		$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 		if (!$parentClass) {
@@ -229,14 +229,14 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 
-	private function processNodeImplementsInterface(string $fileName, Class_|Interface_ $node, ClassInterface $interface):void {
+	private function processNodeImplementsInterface(string $fileName, Class_|Interface_ $node, ClassInterface $interface): void {
 		$methods = $interface->getMethodNames();
 		foreach ($methods as $methodName) {
 			$this->processInterfaceMethod($node, $methodName, $fileName, $interface);
 		}
 	}
 
-	public function processInterfaceMethod(Class_|Interface_ $node, string $interfaceMethod, string $fileName, ClassInterface $interface) : void {
+	public function processInterfaceMethod(Class_|Interface_ $node, string $interfaceMethod, string $fileName, ClassInterface $interface): void {
 		$classMethod = Util::findAbstractedMethod($node->namespacedName, $interfaceMethod, $this->symbolTable);
 		if (!$classMethod) {
 			if ($node instanceof Node\Stmt\Class_ && !$node->isAbstract()) {

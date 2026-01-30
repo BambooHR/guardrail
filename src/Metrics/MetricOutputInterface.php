@@ -3,5 +3,5 @@
 namespace BambooHR\Guardrail\Metrics;
 
 interface MetricOutputInterface {
-	function emitMetric(MetricInterface $metric):void;
+	function emitMetric(MetricInterface $metric): void;
 }

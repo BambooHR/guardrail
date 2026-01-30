@@ -62,7 +62,7 @@ class AnalyzingPhase {
 	function __construct() { }
 
 
-	function getTimingResults():array {
+	function getTimingResults(): array {
 		return $this->timingResults;
 	}
 
@@ -277,7 +277,7 @@ class AnalyzingPhase {
 	 * Swaps every other entry from the start of the list with every other entry from the end of the list.
 	 * The intention is to even out I/O not doing all the big files at once.
 	 */
-	function reshuffle(array $partialList):array {
+	function reshuffle(array $partialList): array {
 		$last = count($partialList) - 1;
 		for ($i = 0; $i < $last >> 1; $i += 2) {
 			$tmp = $partialList[$i];

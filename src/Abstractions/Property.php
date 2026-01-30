@@ -58,7 +58,7 @@ class Property {
 		return $this->name;
 	}
 
-	public function getClass():ClassInterface {
+	public function getClass(): ClassInterface {
 		return $this->cls;
 	}
 

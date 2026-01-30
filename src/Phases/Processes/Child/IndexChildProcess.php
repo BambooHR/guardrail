@@ -10,7 +10,7 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 class IndexChildProcess extends ChildProcess {
 	function __construct(private int $processNumber, private SymbolTable $symbolTable, private IndexingPhase $indexingPhase) { }
 
-	function init(\Socket $socket):void {
+	function init(\Socket $socket): void {
 		parent::init($socket);
 		if ($this->symbolTable instanceof PersistantSymbolTable) {
 			$this->symbolTable->connect($this->processNumber + 1 );

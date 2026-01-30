@@ -55,7 +55,7 @@ class ClassConstFetch implements ExpressionInterface
 	}
 
 
-	private static function relativeClassName(?ClassLike $inside, string $name):string {
+	private static function relativeClassName(?ClassLike $inside, string $name): string {
 		switch (strtolower($name)) {
 			case 'self':
 			case 'static':

@@ -563,7 +563,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return false;
 	}
 
-	function serializeFunction(Function_ $function):string {
+	function serializeFunction(Function_ $function): string {
 		$ret = "F" . $function->namespacedName . ($function->returnsByRef() ? "&" : "");
 		$ret .= $this->serializeParams($function->params);
 		if ($function->returnType !== null || $function->getAttribute("namespacedReturn") !== null) {
@@ -586,7 +586,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 
-	function serializeProperty(Property $prop):string {
+	function serializeProperty(Property $prop): string {
 		$ret = "";
 		$flags = $prop->flags;
 		$type = $prop->type;
@@ -600,7 +600,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $ret;
 	}
 
-	function serializeMethod(ClassMethod $method):string {
+	function serializeMethod(ClassMethod $method): string {
 		$ret = "M" . $method->name .
 			($method->returnsByRef() ? "&" : " ") .
 			($method->flags !== 0 ? strval($method->flags) : "") .
@@ -624,7 +624,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $ret;
 	}
 
-	function serializeConst(ClassConst $classConst):string {
+	function serializeConst(ClassConst $classConst): string {
 		$flags = $classConst->flags;
 		$ret = "";
 		foreach ($classConst->consts as $const) {
@@ -636,7 +636,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $ret;
 	}
 
-	function serializeClass(ClassLike $class):string {
+	function serializeClass(ClassLike $class): string {
 		if ($class instanceof Interface_) {
 			$ret = "I" . ($this->types->add($class->namespacedName));
 		} else if ($class instanceof Node\Stmt\Enum_) {
@@ -676,7 +676,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $ret;
 	}
 
-	function unserializeClass(string $serializedClass):ClassLike {
+	function unserializeClass(string $serializedClass): ClassLike {
 		preg_match('/^([IEC])([0-9]+)( [0-9]+)?( E([0-9,]+))?( I([0-9,]+))?\{([^}]*)}$/', $serializedClass, $matches);
 		$type = $matches[1];
 		$name = $this->types->getString($matches[2]);
@@ -719,7 +719,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 	}
 
-	function unserializeMethod(string $serializedMethod):ClassMethod {
+	function unserializeMethod(string $serializedMethod): ClassMethod {
 		preg_match('/^M([^ &]+)([ &])?([0-9]+)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?$/', $serializedMethod, $matches);
 		$name = $matches[1];
 		$returnsByRef = isset($matches[2]) && $matches[2] == "&";
@@ -751,7 +751,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $method;
 	}
 
-	function unserializeProperty(string $serializedProperty):Property {
+	function unserializeProperty(string $serializedProperty): Property {
 		preg_match('/^(P)([^$@]+)?(?:@([0-9]+))?\\$([^ ]*)( [0-9]+)?$/', $serializedProperty, $matches);
 		$type = !empty(trim($matches[2])) ? $this->types->getString(intval(trim($matches[2]))) : null;
 		$name = $matches[4];
@@ -764,7 +764,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $prop;
 	}
 
-	function unserializeConst(string $serializedConstant):ClassConst {
+	function unserializeConst(string $serializedConstant): ClassConst {
 		preg_match('/^(C)([^ ]+)( [0-9]+( [0-9]+)?)?$/', $serializedConstant, $matches);
 		$name = $matches[2];
 		$flags = !empty($matches[4]) ? intval(trim($matches[4])) : 0;
@@ -776,7 +776,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 
-	function unserializeFunction(string $serializedFunction):Function_ {
+	function unserializeFunction(string $serializedFunction): Function_ {
 		preg_match('/^F([^ &]+)(&)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?;$/', $serializedFunction, $matches);
 		$name = new Node\Name\FullyQualified($matches[1]);
 		$returnsByRef = $matches[2] == "&";
@@ -814,7 +814,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @param array $parts
 	 * @return array
 	 */
-	public function unserializeClassMembers(array $parts) : array {
+	public function unserializeClassMembers(array $parts): array {
 		$stmts = [];
 		foreach ($parts as $part) {
 			if (strlen($part) == 0) {
@@ -851,7 +851,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @param array $parts
 	 * @return array
 	 */
-	public function unserializeParams(array $parts) : array {
+	public function unserializeParams(array $parts): array {
 		$params = [];
 		$matches = [];
 		foreach ($parts as $part) {
@@ -898,7 +898,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @param Node\Param[] $params
 	 * @return string
 	 */
-	public function serializeParams(array $params) : string {
+	public function serializeParams(array $params): string {
 		$ret = "(";
 		$index = 0;
 		foreach ($params as $param) {

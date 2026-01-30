@@ -73,7 +73,7 @@ class XUnitOutput implements OutputInterface {
 		$this->isTTY = posix_isatty(STDOUT );
 	}
 
-	public function isTTY():bool {
+	public function isTTY(): bool {
 		return $this->isTTY;
 	}
 
@@ -94,7 +94,7 @@ class XUnitOutput implements OutputInterface {
 
 	}
 
-	private function escapeText(string $text):string {
+	private function escapeText(string $text): string {
 		return str_replace(["&",'"'], ["&nbsp;", "&#34;"], $text );
 	}
 
@@ -201,7 +201,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	private function fileMatchesArrayOrString($fileName, $haystack) : bool {
+	private function fileMatchesArrayOrString($fileName, $haystack): bool {
 		if (is_array($haystack)) {
 			return $this->fileExistsInArray($fileName, $haystack);
 		} else {
@@ -215,7 +215,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	private function fileExistsInArray($fileName, array $entryArray) : bool {
+	private function fileExistsInArray($fileName, array $entryArray): bool {
 		foreach ($entryArray as $entryItem) {
 			if (Glob::match("/" . $fileName, "/" . $entryItem)) {
 				return true;
@@ -295,7 +295,7 @@ class XUnitOutput implements OutputInterface {
 		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $name: $message\n");
 	}
 
-	public function ttyContent($content):string {
+	public function ttyContent($content): string {
 		return $this->isTTY ? $content : "";
 	}
 

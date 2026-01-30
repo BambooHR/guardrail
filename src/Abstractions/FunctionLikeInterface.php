@@ -83,5 +83,5 @@ interface FunctionLikeInterface {
 	 */
 	public function isVariadic();
 
-	public function getThrowsList():array;
+	public function getThrowsList(): array;
 }

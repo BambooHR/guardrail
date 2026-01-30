@@ -25,7 +25,7 @@ class Cast implements ExpressionInterface {
 	}
 
 
-	function lookupCastType($expr):?Node\Identifier {
+	function lookupCastType($expr): ?Node\Identifier {
 		if ($expr instanceof CastExp\Int_) {
 			return TypeComparer::identifierFromName("int");
 		}

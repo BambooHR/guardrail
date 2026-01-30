@@ -214,7 +214,7 @@ class MethodCall extends CallCheck {
 		return $match;
 	}
 
-	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall|Expr\NullsafeMethodCall $node):bool {
+	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall|Expr\NullsafeMethodCall $node): bool {
 		$match = false;
 		if ($cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&

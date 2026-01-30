@@ -75,7 +75,7 @@ class AnalyzingParentProcess extends ProcessManager {
 		}
 	}
 
-	public function handleClientMessage(\Socket $socket, string $message, string ...$params):int {
+	public function handleClientMessage(\Socket $socket, string $message, string ...$params): int {
 		$details = ($params[0] ?? "");
 		switch ($message) {
 			case 'VERBOSE':

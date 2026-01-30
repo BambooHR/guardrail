@@ -12,14 +12,14 @@ class TraitIndexChildProcess extends ChildProcess {
 	function __construct(private SymbolTable\SymbolTable $symbolTable) {
 	}
 
-	function init(\Socket $socket):void {
+	function init(\Socket $socket): void {
 		parent::init($socket);
 		if ($this->symbolTable instanceof PersistantSymbolTable) {
 			$this->symbolTable->connect(0 );
 		}
 	}
 
-	function runCommand(string $command, string ...$params):int {
+	function runCommand(string $command, string ...$params): int {
 		switch ($command) {
 			case "TRAIT":
 				$className = $params[0];

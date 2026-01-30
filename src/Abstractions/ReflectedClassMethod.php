@@ -46,7 +46,7 @@ class ReflectedClassMethod implements MethodInterface {
 		return $this->refl->isStatic();
 	}
 
-	function getClass():ClassInterface {
+	function getClass(): ClassInterface {
 		return $this->class;
 	}
 
@@ -190,14 +190,14 @@ class ReflectedClassMethod implements MethodInterface {
 		}
 	}
 
-	public function getAttributes(string $name):array {
+	public function getAttributes(string $name): array {
 		$attributes = $this->refl->getAttributes($name);
 		return array_map( function($attr) {
 			return new Attribute(new Name($attr->getName()));
 		}, $attributes);
 	}
 
-	function getThrowsList():array {
+	function getThrowsList(): array {
 		return [];
 	}
 }
