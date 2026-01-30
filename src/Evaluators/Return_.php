@@ -15,6 +15,5 @@ class Return_ implements OnExitEvaluatorInterface
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-
 	}
 }

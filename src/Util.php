@@ -324,7 +324,6 @@ class Util {
 	 * @return void
 	 */
 	static public function callIsCompatible(ClassMethod $method, MethodCall $call) {
-
 	}
 
 	static public function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren): array {

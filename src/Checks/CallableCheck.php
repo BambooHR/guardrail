@@ -45,7 +45,6 @@ class CallableCheck extends BaseCheck {
 	 */
 	function getCheckNodeTypes() {
 		return [];
-
 	}
 
 	/**

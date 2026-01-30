@@ -12,7 +12,6 @@ class AnalyzingChildProcess extends ChildProcess {
 		private Config $config,
 		private AnalyzingPhase $analyzePhase,
 	) {
-
 	}
 
 	function init(\Socket $socket): void {

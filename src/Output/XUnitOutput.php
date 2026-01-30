@@ -90,7 +90,6 @@ class XUnitOutput implements OutputInterface {
 			$this->suites[$className] = $suite;
 		}
 		return $this->suites[$className];
-
 	}
 
 	private function escapeText(string $text): string {

@@ -293,7 +293,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		if ($node instanceof FunctionLike) {
 			$this->updateFunctionEmit($node, $this->scopeStack, "pop");
 		}
-
 	}
 
 	/**

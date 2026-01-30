@@ -201,7 +201,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function getClassOrInterfaceData($name) {
 		return $this->getData($name);
-
 	}
 
 	/**
@@ -237,14 +236,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	public function begin() {
-
 	}
 
 	/**
 	 * @return void
 	 */
 	public function commit() {
-
 	}
 
 	/**
@@ -715,7 +712,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		}
 		$cls->namespacedName = $name;
 		return $cls;
-
 	}
 
 	function unserializeMethod(string $serializedMethod): ClassMethod {

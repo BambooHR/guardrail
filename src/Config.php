@@ -188,7 +188,6 @@ class Config {
 			$this->forceIndex = true;
 			$this->symbolTable = new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable($this->getBasePath());
 		}
-
 	}
 
 	/**

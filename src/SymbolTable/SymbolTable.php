@@ -135,7 +135,6 @@ abstract class SymbolTable {
 
 	/** @return void */
 	public function commit() {
-
 	}
 
 	/**
