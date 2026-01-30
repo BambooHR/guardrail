@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php 
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -9,7 +11,6 @@ use PhpParser\Builder\Property;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeVisitorAbstract;
-
 
 class PromotedPropertyVisitor extends NodeVisitorAbstract {
 

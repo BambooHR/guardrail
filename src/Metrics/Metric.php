@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Metrics;
+<?php 
+
+namespace BambooHR\Guardrail\Metrics;
 
 class Metric implements MetricInterface {
 	private $file;

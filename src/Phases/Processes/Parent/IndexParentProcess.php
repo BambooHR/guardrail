@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Phases\Processes\Parent;
+<?php 
+
+namespace BambooHR\Guardrail\Phases\Processes\Parent;
 
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Output\OutputInterface;

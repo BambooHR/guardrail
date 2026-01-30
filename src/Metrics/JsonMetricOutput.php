@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Metrics;
+<?php 
+
+namespace BambooHR\Guardrail\Metrics;
 
 class JsonMetricOutput implements MetricOutputInterface {
 	private $fileHandle = null;

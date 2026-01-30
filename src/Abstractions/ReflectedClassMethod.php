@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php 
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\Util;
 use PhpParser\Node\Attribute;

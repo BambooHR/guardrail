@@ -1,10 +1,11 @@
-<?php namespace BambooHR\Guardrail;
+<?php 
+
+namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
-
 
 use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;

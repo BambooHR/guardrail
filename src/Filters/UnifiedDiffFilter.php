@@ -7,7 +7,6 @@
 
 namespace BambooHR\Guardrail\Filters;
 
-
 use const DIRECTORY_SEPARATOR;
 
 class UnifiedDiffFilter implements FilterInterface {

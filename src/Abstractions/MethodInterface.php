@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php 
+
+namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.

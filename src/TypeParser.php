@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail;
+<?php 
+
+namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR
@@ -11,7 +13,6 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
 use PhpParser\Node\UnionType;
-
 
 class TypeParser {
 

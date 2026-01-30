@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php 
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -6,7 +8,6 @@
  */
 
 use BambooHR\Guardrail\EnumCodeAugmenter;
-
 use BambooHR\Guardrail\Output\OutputInterface;
 use PhpParser\Builder\Param;
 use PhpParser\Node;

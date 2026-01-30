@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Phases;
+<?php 
+
+namespace BambooHR\Guardrail\Phases;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR.

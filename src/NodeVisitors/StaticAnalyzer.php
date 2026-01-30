@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php 
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR.

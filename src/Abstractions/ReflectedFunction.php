@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php 
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeComparer;

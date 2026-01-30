@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Scope;
+<?php 
+
+namespace BambooHR\Guardrail\Scope;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -10,7 +12,6 @@ use PhpParser\Node\ComplexType;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-
 
 /**
  * Class Scope

@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators;
@@ -6,7 +7,6 @@ namespace BambooHR\Guardrail\Evaluators;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
-
 use PhpParser\Node\Stmt\ElseIf_;
 
 class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {

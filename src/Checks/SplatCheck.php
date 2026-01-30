@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Checks;
 
-
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeComparer;
 use MongoDB\BSON\Type;

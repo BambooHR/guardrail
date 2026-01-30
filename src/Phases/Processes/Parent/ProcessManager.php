@@ -8,7 +8,6 @@
 
 namespace BambooHR\Guardrail\Phases\Processes\Parent;
 
-
 use BambooHR\Guardrail\Exceptions\SocketException;
 use BambooHR\Guardrail\Phases\Processes\Child\ChildProcess;
 use BambooHR\Guardrail\SocketBuffer;

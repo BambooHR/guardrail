@@ -11,7 +11,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\ClassLike;
 
-
 /**
  * Class CallableCheck
  * @package BambooHR\Guardrail\Checks

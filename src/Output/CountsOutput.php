@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Output;
 
-
 class CountsOutput extends XUnitOutput {
 	/**
 	 * @var array

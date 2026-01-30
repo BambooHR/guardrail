@@ -1,10 +1,11 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php 
+
+namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassLike;
-
 
 /**
  * Class ClassStoredAsVariableCheck

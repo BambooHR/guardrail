@@ -7,7 +7,6 @@
 
 namespace BambooHR\Guardrail\Filters;
 
-
 interface FilterInterface {
 	/**
 	 * @param string $fileName   The file being tested

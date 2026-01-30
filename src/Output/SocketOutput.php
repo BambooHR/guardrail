@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Output;
 
-
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Metrics\MetricInterface;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;

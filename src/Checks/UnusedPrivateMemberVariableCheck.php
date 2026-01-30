@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php 
+
+namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\NodeVisitors\PropertyUsageVisitor;
 use BambooHR\Guardrail\Output\OutputInterface;
