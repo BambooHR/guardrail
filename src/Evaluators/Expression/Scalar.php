@@ -13,13 +13,11 @@ use PhpParser\Node\Scalar as ScalarExp;
 class Scalar implements ExpressionInterface
 {
 
-	function getInstanceType(): string
-	{
+	function getInstanceType(): string {
 		return Node\Scalar::class;
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		/** @var ScalarExp $expr */
 		$expr = $node;
 		return self::inferScalar($expr);

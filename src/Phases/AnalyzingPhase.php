@@ -134,8 +134,8 @@ class AnalyzingPhase {
 	 * @return bool
 	 */
 	static public function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
-		if ($node instanceof Node\Stmt\Declare_ && $node->stmts!==null) {
-			foreach($node->stmts as $child) {
+		if ($node instanceof Node\Stmt\Declare_ && $node->stmts !== null) {
+			foreach ($node->stmts as $child) {
 				if (!self::checkForSafeautoloadNode($file, $child, $output)) {
 					return false;
 				}
@@ -195,7 +195,7 @@ class AnalyzingPhase {
 			$table->connect(0);
 		}
 
-		$metricOutput=new JsonMetricOutput($config->getMetricOutputFile());
+		$metricOutput = new JsonMetricOutput($config->getMetricOutputFile());
 
 		$pm = new AnalyzingParentProcess($toProcess, $totalBytes, $output, $metricOutput);
 		$pm->run($this, $config);
@@ -223,8 +223,8 @@ class AnalyzingPhase {
 			exit;
 		}
 
-		$white=$output->ttyContent("\33[97m");
-		$reset=$output->ttyContent("\33[0m");
+		$white = $output->ttyContent("\33[97m");
+		$reset = $output->ttyContent("\33[0m");
 		$output->outputVerbose("Test directories are valid: Starting Analysis\n");
 		$toProcess = [];
 		if ($config->hasFileList()) {
@@ -276,11 +276,11 @@ class AnalyzingPhase {
 	 * The intention is to even out I/O not doing all the big files at once.
 	 */
 	function reshuffle(array $partialList):array {
-		$last=count($partialList)-1;
-		for($i=0;$i < $last >> 1; $i+=2) {
-			$tmp=$partialList[$i];
-			$partialList[$i]=$partialList[$last-$i];
-			$partialList[$last-$i] = $tmp;
+		$last = count($partialList) - 1;
+		for ($i = 0; $i < $last >> 1; $i += 2) {
+			$tmp = $partialList[$i];
+			$partialList[$i] = $partialList[$last - $i];
+			$partialList[$last - $i] = $tmp;
 		}
 		return $partialList;
 	}
@@ -292,8 +292,7 @@ class AnalyzingPhase {
 	 *
 	 * @return int
 	 */
-	public function analyzeString(string $name, string $fileData, Config $config): int
-	{
+	public function analyzeString(string $name, string $fileData, Config $config): int {
 		try {
 			$stmts = $this->parser->parse($fileData);
 			if ($stmts) {
@@ -322,7 +321,7 @@ class AnalyzingPhase {
 
 	/**
 	 * @param Config $config
-	 * @param array $toProcess
+	 * @param array  $toProcess
 	 * @return array
 	 */
 	public function partition(Config $config, array $toProcess): array {

@@ -13,8 +13,7 @@ use PhpParser\Node;
 class PropertyFetch implements ExpressionInterface
 {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return [
 			Node\Expr\PropertyFetch::class,
 			Node\Expr\NullsafePropertyFetch::class,
@@ -22,8 +21,7 @@ class PropertyFetch implements ExpressionInterface
 		];
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		// Fetching a property doesn't assert anything until we cast it to a bool
 		// in which case it asserts that null is no longer an option.
 		$parent = $scopeStack->getParent();
@@ -40,9 +38,9 @@ class PropertyFetch implements ExpressionInterface
 			/** @var Node\Expr\PropertyFetch $expr */
 			$expr = $node;
 
-			$resolvedType =null;
+			$resolvedType = null;
 			$chainedName = TypeComparer::getChainedPropertyFetchName($expr);
-			if( $chainedName && $scopeStack->getVarType($chainedName)) {
+			if ( $chainedName && $scopeStack->getVarType($chainedName)) {
 				$resolvedType = $scopeStack->getVarType($chainedName);
 			}
 
@@ -50,7 +48,7 @@ class PropertyFetch implements ExpressionInterface
 			if (!$resolvedType) {
 				$resolvedType = $this->getProperty($class, $expr->name, $table);
 			}
-			if ($class!==null && $resolvedType!==null && $node instanceof Node\Expr\NullsafePropertyFetch) {
+			if ($class !== null && $resolvedType !== null && $node instanceof Node\Expr\NullsafePropertyFetch) {
 				$hadNullClass = TypeComparer::ifAnyTypeIsNull($class);
 				if ($hadNullClass) {
 					// Add null to the list of potential types if the class to the left of ?-> is potentially null
@@ -63,7 +61,7 @@ class PropertyFetch implements ExpressionInterface
 			/** @var Node\Expr\StaticPropertyFetch $staticPropertyFetch */
 			$staticPropertyFetch = $node;
 			if ($staticPropertyFetch->class instanceof Node\Name && $staticPropertyFetch->name instanceof Node\Identifier) {
-				return $this->getProperty($staticPropertyFetch->class,$staticPropertyFetch->name, $table);
+				return $this->getProperty($staticPropertyFetch->class, $staticPropertyFetch->name, $table);
 			}
 		}
 		return null;
@@ -73,16 +71,16 @@ class PropertyFetch implements ExpressionInterface
 		$propName = strval($name);
 		if ($propName != "") {
 			$types = [];
-			$unknown= false;
+			$unknown = false;
 			TypeComparer::forEachType($class,
 				function ($class) use ($propName, &$types, &$unknown, $table) {
 					$classDef = $table->getAbstractedClass($class);
 					if ($classDef) {
-						$prop= Util::findAbstractedProperty($class, $propName, $table);
+						$prop = Util::findAbstractedProperty($class, $propName, $table);
 						if ($prop) {
 							$types[] = $prop->getType();
 						} else {
-							$unknown=true;
+							$unknown = true;
 						}
 					}
 				}
@@ -98,11 +96,10 @@ class PropertyFetch implements ExpressionInterface
 
 	/**
 	 * @param Node\Expr\PropertyFetch $expr
-	 * @param ScopeStack $scopeStack
+	 * @param ScopeStack              $scopeStack
 	 * @return mixed|Node\ComplexType|Node\Identifier|Node\Name|string|null
 	 */
-	public function getClass(Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch $expr, ScopeStack $scopeStack): mixed
-	{
+	public function getClass(Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch $expr, ScopeStack $scopeStack): mixed {
 		// 1. See if our scope has an inferred symbolic type.  ie: "$foo->bar->baz=int"
 		$scopeName = TypeComparer::getChainedPropertyFetchName($expr->var);
 		$scope = $scopeStack->getCurrentScope();
@@ -111,7 +108,7 @@ class PropertyFetch implements ExpressionInterface
 		}
 
 		// 2. See if we have inferred what $expr is
-		$inferred= $expr->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		$inferred = $expr->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		return $inferred;
 	}
 }

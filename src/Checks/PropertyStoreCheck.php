@@ -60,7 +60,7 @@ class PropertyStoreCheck extends BaseCheck {
 
 			$targetObject = $node->var->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			$valueType = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			$nodeVarName=strval($node->var->name);
+			$nodeVarName = strval($node->var->name);
 
 			$types = [];
 			TypeComparer::forEachType($targetObject, function($individualType) use ($nodeVarName, $fileName, $node, $inside,  &$types) {
@@ -81,9 +81,9 @@ class PropertyStoreCheck extends BaseCheck {
 				}
 			});
 
-			$targetType=TypeComparer::getUniqueTypes(...$types);
+			$targetType = TypeComparer::getUniqueTypes(...$types);
 			if (!$this->typeComparer->isCompatibleWithTarget($targetType, $valueType, $scope?->isStrict())) {
-				if($targetType instanceof Node\Identifier && util::isScalarType(strval($targetType))) {
+				if ($targetType instanceof Node\Identifier && util::isScalarType(strval($targetType))) {
 					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH_SCALAR;
 				} else {
 					$errorType = ErrorConstants::TYPE_ASSIGN_MISMATCH;

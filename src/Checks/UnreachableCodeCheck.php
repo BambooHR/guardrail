@@ -63,7 +63,7 @@ class UnreachableCodeCheck extends BaseCheck {
 	public function checkForUnreachableNode(array $statements) {
 		do {
 			$previous = array_shift($statements);
-		} while( $previous instanceof Node\Stmt\Nop);
+		} while ( $previous instanceof Node\Stmt\Nop);
 		foreach ($statements as $statement) {
 			if (!$statement instanceof Node\Stmt\Nop)
 				if (Util::allBranchesExit([$previous])) {

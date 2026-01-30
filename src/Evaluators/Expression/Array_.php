@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators\Expression;
 

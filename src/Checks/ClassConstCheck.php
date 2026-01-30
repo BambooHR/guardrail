@@ -14,7 +14,7 @@ class ClassConstCheck extends BaseCheck {
 	private $comparer;
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc) {
 		parent::__construct($symbolTable, $doc);
-		$this->comparer=new TypeComparer($symbolTable);
+		$this->comparer = new TypeComparer($symbolTable);
 	}
 
 	function getCheckNodeTypes() {
@@ -23,7 +23,7 @@ class ClassConstCheck extends BaseCheck {
 
 	function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ClassConst) {
-			foreach($node->consts as $const) {
+			foreach ($node->consts as $const) {
 				/** @var Node\Const_ $const */
 				$constValue = $const->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR );
 				if ($node->type && $constValue) {

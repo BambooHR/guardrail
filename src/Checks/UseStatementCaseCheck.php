@@ -39,7 +39,7 @@ class UseStatementCaseCheck extends BaseCheck {
 			/** @var AbstractionClass */
 			if ($type) {
 				$class = $this->symbolTable->getAbstractedClass($type);
-				if($class) {
+				if ($class) {
 					$className = $class->getName();
 				}
 			}

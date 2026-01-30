@@ -10,7 +10,7 @@ abstract class ChildProcess {
 	private \Socket $socket;
 
 	function init(\Socket $socket):void {
-		$this->socket=$socket;
+		$this->socket = $socket;
 	}
 
 	function send(string $message) {
@@ -25,7 +25,7 @@ abstract class ChildProcess {
 			$buffer->read($this->socket);
 			foreach ($buffer->getMessages() as $receive) {
 				$elements = explode(" ", $receive, 2);
-				if (count($elements)==2) {
+				if (count($elements) == 2) {
 					list($command, $params) = $elements;
 					$params = explode(" ", $params);
 				} else {
@@ -33,7 +33,7 @@ abstract class ChildProcess {
 					$params = [];
 				}
 
-				if(ProcessManager::CLOSE_CONNECTION == $this->runCommand($command, ...$params)) {
+				if (ProcessManager::CLOSE_CONNECTION == $this->runCommand($command, ...$params)) {
 					return ProcessManager::CLOSE_CONNECTION;
 				}
 			}

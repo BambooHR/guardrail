@@ -20,7 +20,7 @@ class TraitIndexChildProcess extends ChildProcess {
 	}
 
 	function runCommand(string $command, string ...$params):int {
-		switch($command) {
+		switch ($command) {
 			case "TRAIT":
 				$className = $params[0];
 				$class = $this->symbolTable->getClass($className);

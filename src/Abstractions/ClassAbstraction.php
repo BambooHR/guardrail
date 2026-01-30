@@ -135,7 +135,7 @@ class ClassAbstraction implements ClassInterface {
 	 */
 	public function getMethod($name) {
 		$method = $this->class->getMethod($name);
-		return $method ? new ClassMethod($this,$method) : null;
+		return $method ? new ClassMethod($this, $method) : null;
 	}
 
 	/**
@@ -153,9 +153,9 @@ class ClassAbstraction implements ClassInterface {
 
 		if ($this->isEnum()) {
 			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
-			foreach($constants as $enumOption) {
+			foreach ($constants as $enumOption) {
 				/** @var EnumCase $enumOption */
-				if (strcasecmp($enumOption->name,$name)==0) {
+				if (strcasecmp($enumOption->name, $name) == 0) {
 					return $this->class->namespacedName;
 				}
 			}
@@ -165,15 +165,15 @@ class ClassAbstraction implements ClassInterface {
 			if ($constList instanceof ClassConst) {
 				foreach ($constList->consts as $const) {
 					if (strcasecmp($const->name, $name) == 0) {
-						if($const->value instanceof LNumber) {
+						if ($const->value instanceof LNumber) {
 							return TypeComparer::identifierFromName("int");
 						} else if ($const->value instanceof String_) {
 							return TypeComparer::identifierFromName("string");
 						} else if (
 							$const->value instanceof Expr\ConstFetch &&
 							(
-								strcasecmp($const->value->name,"true")==0 ||
-								strcasecmp($const->value->name,"false")==0
+								strcasecmp($const->value->name, "true") == 0 ||
+								strcasecmp($const->value->name, "false") == 0
 							)
 						) {
 							return TypeComparer::identifierFromName("bool");
@@ -182,8 +182,8 @@ class ClassAbstraction implements ClassInterface {
 					}
 				}
 			} else {
-				if($constList instanceof EnumCase) {
-					if (strcasecmp($constList->name, $name)==0) {
+				if ($constList instanceof EnumCase) {
+					if (strcasecmp($constList->name, $name) == 0) {
 						return $this->class->namespacedName;
 					}
 				}
@@ -237,7 +237,7 @@ class ClassAbstraction implements ClassInterface {
 						//if (Config::shouldUseDocBlockForProperties() && empty($type)) {
 						//	$type = Scope::nameFromName($propertyProperty->namespacedType);
 						//}
-						return new Property($this,$propertyProperty->name, $type, $access, $prop->isStatic(), $prop->isReadOnly());
+						return new Property($this, $propertyProperty->name, $type, $access, $prop->isStatic(), $prop->isReadOnly());
 					}
 				}
 			}

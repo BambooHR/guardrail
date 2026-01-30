@@ -25,7 +25,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		// First pass registers &$parameters as a local value.
 		// Second pass (for consistency with other evaluators) sets the return value of the function.
-		$this->onExit($node,$table,$scopeStack, 1);
+		$this->onExit($node, $table, $scopeStack, 1);
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack, int $pass=2): ?Node {
@@ -38,13 +38,13 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 
 		if ($call instanceof Node\Expr\StaticCall) {
-			return $this->onStaticCall($call, $table, $scopeStack,$pass);
+			return $this->onStaticCall($call, $table, $scopeStack, $pass);
 		} else if ($call instanceof Node\Expr\FuncCall) {
-			return $this->onFunctionCall($call, $table, $scopeStack,$pass);
+			return $this->onFunctionCall($call, $table, $scopeStack, $pass);
 		} else if ($call instanceof Node\Expr\New_) {
-			return $this->onNew($call, $table, $scopeStack,$pass);
+			return $this->onNew($call, $table, $scopeStack, $pass);
 		} else if ($call instanceof Node\Expr\MethodCall || $call instanceof Node\Expr\NullsafeMethodCall) {
-			return $this->onMethodCall($call, $table, $scopeStack,$pass);
+			return $this->onMethodCall($call, $table, $scopeStack, $pass);
 		} else if ($call instanceof Node\Expr\Closure) {
 			return TypeComparer::identifierFromName("Closure");
 		}
@@ -76,11 +76,11 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	}
 
 	function onFunctionCall(Node\Expr\FuncCall $call, SymbolTable $table, ScopeStack $scopeStack,$pass): ?Node {
-		if (count($call->args)==1 && $call->args[0] instanceof Node\VariadicPlaceholder) {
+		if (count($call->args) == 1 && $call->args[0] instanceof Node\VariadicPlaceholder) {
 			return TypeComparer::identifierFromName("callable");
 		}
 		if ($call->name instanceof Node\Name) {
-			if ($pass==2) {
+			if ($pass == 2) {
 				if (strcasecmp($call->name, "assert") == 0 &&
 					count($call->args) == 1
 				) {
@@ -104,8 +104,8 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 
 			$function = $table->getAbstractedFunction(strval($call->name));
 
- 			if ($function) {
-				 if ($pass==1) {
+			if ($function) {
+				 if ($pass == 1) {
 					 $this->addReferenceParametersToLocalScope($scopeStack, $call->args, $function->getParameters());
 				 } else {
 					 return $this->resolveReturnType($function, $call->args);
@@ -121,11 +121,11 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		if (
 			Config::shouldUseDocBlockGenerics() &&
 			$docRet instanceof Name &&
-			strcasecmp($docRet,"T")==0
+			strcasecmp($docRet, "T") == 0
 		) {
 			//echo "Returns ".$function->getName()."() returns T\n";
 			$params = $function->getParameters();
-			foreach ($params as $index=>$param) {
+			foreach ($params as $index => $param) {
 			//	echo " Index: $index ".TypeComparer::typeToString($param->getType())."\n";
 				if ($param->getType() instanceof Name) {
 					$type = $param->getType();
@@ -196,7 +196,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 					$earlier = $func->args[0]->value;
 					$this->tagScopeAsType($func, $scopeStack, $varName, $type);
 					$falseScope = $func->getAttribute('assertsFalse');
-					TypeComparer::removeNullInferences($earlier, $table , $falseScope, $earlier->getLine());
+					TypeComparer::removeNullInferences($earlier, $table, $falseScope, $earlier->getLine());
 					$func->setAttribute('assertsFalse', $falseScope);
 				}
 			}
@@ -222,23 +222,23 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		/** @var Node\Expr\CallLike $node */
 
 		$trueScope->setVarType($name, TypeComparer::identifierFromName($type), $node->getLine());
-		$falseVarType = $falseScope->getVarType($name)??$node->args[0]->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		$falseVarType = $falseScope->getVarType($name) ?? $node->args[0]->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		$falseScope->setVarType($name, TypeComparer::removeNamedOption($falseVarType, $type), $node->getLine());
 		$node->setAttribute('assertsTrue', $trueScope);
 		$node->setAttribute('assertsFalse', $falseScope);
 	}
 
 	function onStaticCall(Node\Expr\StaticCall $call, SymbolTable $table, ScopeStack $scopeStack, $pass): ?Node {
-		if (count($call->args)==1 && $call->args[0] instanceof Node\VariadicPlaceholder) {
+		if (count($call->args) == 1 && $call->args[0] instanceof Node\VariadicPlaceholder) {
 			return TypeComparer::identifierFromName("callable");
 		}
 		if ($call->class instanceof Node\Name && gettype($call->name) == "string") {
 			$method = $table->getAbstractedMethod(strval($call->class), strval($call->name));
 			if ($method) {
-				if ($pass==1) {
+				if ($pass == 1) {
 					$params = $method->getParameters();
 					$this->addReferenceParametersToLocalScope($scopeStack, $call->getArgs(), $params);
-	 			} else {
+				} else {
 					$returnType = $this->resolveReturnType($method, $call->args);
 					return self::mapReturnType($call->class, $returnType);
 				}
@@ -261,19 +261,18 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	}
 
 	function onMethodCall(Node\Expr\MethodCall | Node\Expr\NullsafeMethodCall $node, SymbolTable $table, ScopeStack $scopeStack, $pass): ?Node {
-		if (count($node->args)==1 && $node->args[0] instanceof Node\VariadicPlaceholder) {
+		if (count($node->args) == 1 && $node->args[0] instanceof Node\VariadicPlaceholder) {
 			return TypeComparer::identifierFromName("callable");
 		}
 		if ($node->name instanceof Node\Identifier) {
 			$type = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if (empty($type)) {
 				if ($node->var instanceof New_) {
-					$type = $this->onNew($node->var, $table, $scopeStack,2);
+					$type = $this->onNew($node->var, $table, $scopeStack, 2);
 				} else if (!empty($node->var->name) && $node->var->name == "this") {
 					$class = $scopeStack->getCurrentClass();
 					$type = $class?->namespacedName ?: $class?->name;
-				}
-				else if ($node->var instanceof Variable) {
+				} else if ($node->var instanceof Variable) {
 					$type = $scopeStack->getCurrentScope()->getVarType($node->var->name);
 				}
 			}
@@ -287,13 +286,13 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 					// 2. You can't simultaneously be an instanceof 2 classes unless on is the parent of the other.
 					// 3. Therefore, determine which type is the class and use it to get the return value.
 					$useType = null;
-					foreach($type->types as $iType) {
+					foreach ($type->types as $iType) {
 						if ($iType instanceof Name && $table->isDefinedClass(strval($iType))) {
 							$useType = $iType;
 						}
 					}
-					if(is_null($useType)) {
-						$useType=$type->types[0];
+					if (is_null($useType)) {
+						$useType = $type->types[0];
 					}
 				} else {
 					$useType = $type;
@@ -301,16 +300,16 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 				if ($useType instanceof Node\Name || $useType instanceof Node\Identifier) {
 					$method = $table->getAbstractedMethod(strval($useType), strval($node->name));
 					if ($method) {
-						if ($pass==1) {
+						if ($pass == 1) {
 							$this->addReferenceParametersToLocalScope($scopeStack, $node->args, $method->getParameters());
 						} else {
 							$returnType = $this->resolveReturnType($method, $node->args);
-							$retTypes[]=self::mapReturnType($useType, $returnType);
+							$retTypes[] = self::mapReturnType($useType, $returnType);
 						}
 					}
 				}
 			}
-			if ($pass==2) {
+			if ($pass == 2) {
 				return TypeComparer::getUniqueTypes(...$retTypes);
 			}
 		}

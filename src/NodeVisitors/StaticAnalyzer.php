@@ -88,8 +88,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	/**
 	 * @return array
 	 */
-	function getTimingsAndCounts()
-	{
+	function getTimingsAndCounts() {
 		return [$this->timings, $this->counts];
 	}
 
@@ -110,12 +109,12 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	/**
 	 * StaticAnalyzer constructor.
 	 *
-	 * @param SymbolTable $index The index
-	 * @param OutputInterface $output Instance if OutputInterface
-	 * @param Config $config The config
+	 * @param SymbolTable           $index        The index
+	 * @param OutputInterface       $output       Instance if OutputInterface
+	 * @param MetricOutputInterface $metricOutput Instance of MetricOutputInterface
+	 * @param Config                $config       The config
 	 */
-	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config)
-	{
+	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config) {
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output, $metricOutput, $config);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
@@ -180,8 +179,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		}
 	}
 
-	public function getEvaluator(Node $node): ?Ev\EvaluatorInterface
-	{
+	public function getEvaluator(Node $node): ?Ev\EvaluatorInterface {
 		static $instances = null;
 		if (!$instances) {
 			$instances = [];
@@ -194,7 +192,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			$type = $instance->getInstanceType();
 			if (is_array($type)) {
 
-				foreach($type as $type2) {
+				foreach ($type as $type2) {
 					if ($node instanceof $type2) {
 						return $instance;
 					}
@@ -214,13 +212,12 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	/**
 	 * setFile
 	 *
-	 * @param string $name The name
+	 * @param string $name   The name
 	 * @param Config $config
 	 *
 	 * @return void
 	 */
-	public function setFile($name, Config $config)
-	{
+	public function setFile($name, Config $config) {
 		$this->file = $name;
 		$this->scopeStack = new ScopeStack(
 			$this->scopeStack->getOutput(), $this->scopeStack->getMetricOutput(), $config
@@ -236,8 +233,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 *
 	 * @return null
 	 */
-	public function enterNode(Node $node)
-	{
+	public function enterNode(Node $node) {
 		if ($node instanceof Trait_) {
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
@@ -275,8 +271,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 * @guardrail-ignore Standard.VariableFunctionCall
 	 * @return void
 	 */
-	public function leaveNode(Node $node)
-	{
+	public function leaveNode(Node $node) {
 		if ($node instanceof Trait_) {
 			return;
 		}
@@ -303,8 +298,9 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	/**
 	 * updateFunctionEmit
 	 *
-	 * @param Node\FunctionLike $func      Instance of FunctionLike
-	 * @param string            $pushOrPop Push | Pop
+	 * @param Node\FunctionLike $func       Instance of FunctionLike
+	 * @param ScopeStack        $scopeStack Instance of ScopeStack
+	 * @param string            $pushOrPop  Push | Pop
 	 *
 	 * @return void
 	 */

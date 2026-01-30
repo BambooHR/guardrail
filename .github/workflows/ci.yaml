@@ -19,6 +19,9 @@ jobs:
       - name: Unit Tests
         run: cd tests; ../vendor/bin/phpunit; cd ..
 
+      - name: PHP Code Sniffer
+        run: vendor/bin/phpcs --standard=./.phpcs.xml src/
+
       - name: Static Index
         run: php src/bin/guardrail.php -i -j self.json
 
