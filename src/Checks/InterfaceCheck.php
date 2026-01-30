@@ -161,7 +161,7 @@ class InterfaceCheck extends BaseCheck {
 			$this->emitErrorOnLine($fileName, $childMethod->getStartingLine(), self::TYPE_SIGNATURE_RETURN,
 				"Child method return types do not match parent return types " . $className . "::" .
 				$childMethod->getName() . " : " . TypeComparer::typeToString($parentMethod->getComplexReturnType())
-					." to ". TypeComparer::typeToString($childMethod->getComplexReturnType())
+					. " to " . TypeComparer::typeToString($childMethod->getComplexReturnType())
 			);
 		}
 	}

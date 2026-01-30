@@ -211,7 +211,7 @@ class TypeComparer
 			&& $rootNode->name instanceof Identifier
 		) {
 			$left = self::getChainedPropertyFetchName($rootNode->var);
-			return $left ? ($left."->".$rootNode->name) : null;
+			return $left ? ($left . "->" . $rootNode->name) : null;
 		} elseif ($rootNode instanceof Node\Expr\Variable && is_string($rootNode->name)) {
 			return strval($rootNode->name);
 		} else {
@@ -225,22 +225,22 @@ class TypeComparer
 		} elseif ($type instanceof Name) {
 			$vars = $type->getAttribute('templates', []);
 			if (count($vars) > 0) {
-				return $type."<".implode(",", $vars).">";
+				return $type . "<" . implode(",", $vars) . ">";
 			} else {
 				return strval($type);
 			}
 		} elseif ($type instanceof Identifier) {
 			return strval($type);
 		} elseif ($type instanceof Node\NullableType) {
-			return "null|".strval($type->type);
+			return "null|" . strval($type->type);
 		} elseif ($type instanceof UnionType) {
 			return implode("|", array_map(fn($type)=>self::typeToString($type), $type->types));
 
 		} elseif ($type instanceof IntersectionType) {
-			return "(".implode("&", array_map(fn($type)=>self::typeToString($type), $type->types )).")";
+			return "(" . implode("&", array_map(fn($type)=>self::typeToString($type), $type->types )) . ")";
 		} else {
 			// Should be unreachable
-			return "ERROR(".get_class($type).")";
+			return "ERROR(" . get_class($type) . ")";
 		}
 	}
 

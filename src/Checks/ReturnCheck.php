@@ -68,7 +68,7 @@ class ReturnCheck extends BaseCheck {
 			$returnIsNever = TypeComparer::isNamedIdentifier($returnType, "never");
 			if ($returnIsVoid || $returnIsNever) {
 				if ($node->expr != null) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a ".TypeComparer::typeToString($returnType)." function $functionName");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a " . TypeComparer::typeToString($returnType) . " function $functionName");
 					return;
 				}
 			} elseif ($returnType && $node->expr == null) {

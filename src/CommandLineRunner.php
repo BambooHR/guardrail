@@ -75,8 +75,8 @@ where: -p #/#                               = Define the number of partitions an
 		error_reporting(self::ERROR_MASK);
 
 		set_exception_handler( function(\Throwable $exception) {
-			echo "Uncaught exception : ".$exception->getMessage()."\n";
-			echo $exception->getTraceAsString()."\n";
+			echo "Uncaught exception : " . $exception->getMessage() . "\n";
+			echo $exception->getTraceAsString() . "\n";
 			exit(1);
 		});
 

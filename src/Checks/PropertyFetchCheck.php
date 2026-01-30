@@ -129,7 +129,7 @@ class PropertyFetchCheck extends BaseCheck {
 			if (!$hasGet) {
 				$callingClass = $inside ? strval($inside->namespacedName) : "";
 				if ($access === "private" && strcasecmp($declaredIn, $callingClass) !== 0) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property $declaredIn->" . $node->name. " from ".
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property $declaredIn->" . $node->name . " from " .
 											  (!$inside ? "outside a class" : $callingClass ));
 
 				} elseif (
@@ -143,7 +143,7 @@ class PropertyFetchCheck extends BaseCheck {
 						)
 					)
 				) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property $declaredIn->" . $node->name . " from ".
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property $declaredIn->" . $node->name . " from " .
 											  (!$inside ? "outside a class" : $callingClass ));
 				}
 			}

@@ -53,7 +53,7 @@ class BinaryOperator implements ExpressionInterface {
 				TypeComparer::identifierFromName("int"),
 			"/" =>
 				new Node\UnionType([TypeComparer::identifierFromName("int"), TypeComparer::identifierFromName("float")]),
-			default => throw new \InvalidArgumentException("Unknown binary operator ". $sigil)
+			default => throw new \InvalidArgumentException("Unknown binary operator " . $sigil)
 		};
 	}
 

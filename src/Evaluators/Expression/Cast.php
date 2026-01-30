@@ -21,7 +21,7 @@ class Cast implements ExpressionInterface {
 		if ($expr) {
 			return $expr;
 		}
-		throw new  InvalidArgumentException("Unknown cast type ".get_class($node));
+		throw new  InvalidArgumentException("Unknown cast type " . get_class($node));
 	}
 
 

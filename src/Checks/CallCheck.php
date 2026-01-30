@@ -54,13 +54,13 @@ abstract class CallCheck extends BaseCheck {
 						$this->checkParam($fileName, $node, $name, $scope, $arg, $params[$index2], $templates);
 					}
 				} else {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Unable to find named parameter ".$arg->name->name);
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Unable to find named parameter " . $arg->name->name);
 				}
 			}
 		}
 		foreach ($params as $index => $param) {
 			if (!$covered[$index] && !$param->isOptional()) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "$name: required parameter ".$param->getName()." was not passed");
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "$name: required parameter " . $param->getName() . " was not passed");
 			}
 		}
 	}
@@ -139,8 +139,8 @@ abstract class CallCheck extends BaseCheck {
 					}
 					$this->emitError($fileName, $node,
 						$nullOnlyError ? ErrorConstants::TYPE_SIGNATURE_TYPE_NULL : ErrorConstants::TYPE_SIGNATURE_TYPE,
-						"Incompatible type passed to $name parameter \$$variableName ".
-						"expected ".TypeComparer::typeToString($expectedType). ", passed $typeStr".($scope?->isStrict() ? " STRICT" : "")
+						"Incompatible type passed to $name parameter \$$variableName " .
+						"expected " . TypeComparer::typeToString($expectedType) . ", passed $typeStr" . ($scope?->isStrict() ? " STRICT" : "")
 					);
 				}
 			}

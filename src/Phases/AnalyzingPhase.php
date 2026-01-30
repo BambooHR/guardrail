@@ -266,9 +266,9 @@ class AnalyzingPhase {
 		list($partialList, $partitionNumber, $sizes) = $this->partition($config, $toProcess);
 		//$partialList = $this->reshuffle($partialList);
 
-		$output->outputVerbose("Partition sizes: " . $white . implode("$reset,$white ", $sizes)."$reset\n");
+		$output->outputVerbose("Partition sizes: " . $white . implode("$reset,$white ", $sizes) . "$reset\n");
 
-		$output->outputVerbose("Partition " . $white.($partitionNumber + 1).$reset . " analyzing " . $white.number_format(count($partialList) ). $reset." files (" . $white.number_format($sizes[$partitionNumber] ).$reset. " bytes)\n");
+		$output->outputVerbose("Partition " . $white . ($partitionNumber + 1) . $reset . " analyzing " . $white . number_format(count($partialList) ) . $reset . " files (" . $white . number_format($sizes[$partitionNumber] ) . $reset . " bytes)\n");
 		return $this->phase2($config, $output, $partialList, $sizes[$partitionNumber]);
 	}
 

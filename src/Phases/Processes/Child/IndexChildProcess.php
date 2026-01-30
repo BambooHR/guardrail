@@ -28,7 +28,7 @@ class IndexChildProcess extends ChildProcess {
 			case "INDEX":
 				$file = $params[0];
 				$size = $this->indexingPhase->indexFile($file);
-				$this->send("INDEXED $size $file ".($this->processNumber + 1)."\n");
+				$this->send("INDEXED $size $file " . ($this->processNumber + 1) . "\n");
 				return ProcessManager::READ_CONNECTION;
 			default:
 				echo "Unexpected internal command:  $command\n";

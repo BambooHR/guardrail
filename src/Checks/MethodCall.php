@@ -112,7 +112,7 @@ class MethodCall extends CallCheck {
 					}
 				} elseif ($classNameOb instanceof Node\Name) {
 					if (!$this->inspectIndividualName($classNameOb, $fileName, $node, $methodName, $scope, $inside)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of ".strval($classNameOb)."::$methodName");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of " . strval($classNameOb) . "::$methodName");
 					}
 				} else {
 					if ($classNameOb != null && !TypeComparer::isNamedIdentifier($classNameOb, "mixed") && !TypeComparer::isNamedIdentifier($classNameOb, "object")) {

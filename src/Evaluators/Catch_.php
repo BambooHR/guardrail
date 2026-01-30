@@ -34,7 +34,7 @@ class Catch_ implements OnEnterEvaluatorInterface
 						$scopeStack->getCurrentFile(),
 						$node->getLine(),
 						ErrorConstants::TYPE_EXCEPTION_DUPLICATE_VARIABLE,
-						"Catch overwrites existing variable (\$$name ".TypeComparer::typeToString($oldType).") as $newTypes"
+						"Catch overwrites existing variable (\$$name " . TypeComparer::typeToString($oldType) . ") as $newTypes"
 					);
 				}
 			}

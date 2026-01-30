@@ -151,7 +151,7 @@ class Scope implements PluginScopeInterface {
 		if (!$typeChanged && !$used && !$modified) {
 			$typeChanged = $used = $modified = true;
 		}
-		echo "Scope: ". "TYPES: " . intval($typeChanged)." USED: ".intval($used)." MODIFIED: ".intval($modified)." ".($this->getInsideFunction() && get_class($this->getInsideFunction()))."\n";
+		echo "Scope: " . "TYPES: " . intval($typeChanged) . " USED: " . intval($used) . " MODIFIED: " . intval($modified) . " " . ($this->getInsideFunction() && get_class($this->getInsideFunction())) . "\n";
 		foreach ($this->vars as $name => $var) {
 			if (($typeChanged && $var->typeChanged) || ($used && $var->used) || ($modified && $var->modified)) {
 				echo "  Name $name, Type " . TypeComparer::typeToString($var->type) . " " . ($var->used ? "used" : "not used") . "\n";

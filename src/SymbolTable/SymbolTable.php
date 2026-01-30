@@ -170,7 +170,7 @@ abstract class SymbolTable {
 
 	function getAbstractedProperty(ClassInterface $class, $propertyName) {
 
-		$cacheName = $propertyName."@".$class->getName();
+		$cacheName = $propertyName . "@" . $class->getName();
 		$ob = $this->cache->get("AProp:" . $cacheName);
 		if ($ob) {
 			return $ob;

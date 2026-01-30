@@ -572,11 +572,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$ret .= ($this->types->add($function->returnType));
 			}
 			if ($function->getAttribute("namespacedReturn") !== null) {
-				$ret .= "@".($this->types->add($function->getAttribute("namespacedReturn")));
+				$ret .= "@" . ($this->types->add($function->getAttribute("namespacedReturn")));
 			}
 		}
 		if (count($function->getAttribute("throws", [])) > 0) {
-			$ret .= "T".implode(",", array_map(fn($type)=>$this->types->add($type), $function->getAttribute("throws")));
+			$ret .= "T" . implode(",", array_map(fn($type)=>$this->types->add($type), $function->getAttribute("throws")));
 		}
 		if ($function->getAttribute("variadic_implementation")) {
 			$ret .= "V";
@@ -591,9 +591,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$flags = $prop->flags;
 		$type = $prop->type;
 		foreach ($prop->props as $propProp) {
-			$ret .= "P" .($type ? $this->types->add($type) : "");
+			$ret .= "P" . ($type ? $this->types->add($type) : "");
 			if ($prop->getAttribute("namespacedType")) {
-				$ret .= "@".$this->types->add($prop->getAttribute("namespacedType"));
+				$ret .= "@" . $this->types->add($prop->getAttribute("namespacedType"));
 			}
 			$ret .= '$' . $propProp->name . ($flags !== 0 ? " " . ($flags) : "") . ";";
 		}
@@ -611,11 +611,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$ret .= $this->types->add($method->returnType);
 			}
 			if ($method->getAttribute('namespacedReturn')) {
-				$ret .= "@".$this->types->add($method->getAttribute('namespacedReturn'));
+				$ret .= "@" . $this->types->add($method->getAttribute('namespacedReturn'));
 			}
 		}
 		if (count($method->getAttribute('throws', [])) > 0) {
-			$ret .= "T".implode(",", array_map(fn($type)=>$this->types->add($type), $method->getAttribute('throws')));
+			$ret .= "T" . implode(",", array_map(fn($type)=>$this->types->add($type), $method->getAttribute('throws')));
 		}
 		if ($method->getAttribute('variadic_implementation')) {
 			$ret .= "V";
@@ -629,8 +629,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$ret = "";
 		foreach ($classConst->consts as $const) {
 			$ret .= "C" . $const->name .
-				($classConst->type ? " ".$this->types->add($classConst->type) : "") .
-				($flags != 0 ? " ".$flags : "") .
+				($classConst->type ? " " . $this->types->add($classConst->type) : "") .
+				($flags != 0 ? " " . $flags : "") .
 				";";
 		}
 		return $ret;
@@ -642,7 +642,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		} elseif ($class instanceof Node\Stmt\Enum_) {
 			$ret = "E" . ($this->types->add($class->namespacedName));
 		} else {
-			$ret = "C" . ($this->types->add($class->namespacedName)) . ($class->flags ? " ".$class->flags : "");
+			$ret = "C" . ($this->types->add($class->namespacedName)) . ($class->flags ? " " . $class->flags : "");
 		}
 		if (!empty($class->extends)) {
 			if ($class instanceof Interface_) {
@@ -933,9 +933,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				} elseif ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "false") == 0) {
 					$ret .= "false";
 				} elseif ($param->default instanceof Node\Expr\ClassConstFetch && $param->default->class instanceof Node\Name && $param->default->name instanceof Node\Identifier) {
-					$ret .= $param->default->class."::".$param->default->name;
+					$ret .= $param->default->class . "::" . $param->default->name;
 				} elseif ($param->default instanceof Node\Expr\ConstFetch && $param->default->name instanceof Node\Name) {
-					$ret .= "::".$param->default->name;
+					$ret .= "::" . $param->default->name;
 				} else {
 					$ret .= "unknown";
 				}

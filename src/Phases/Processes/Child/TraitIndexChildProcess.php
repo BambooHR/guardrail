@@ -24,7 +24,7 @@ class TraitIndexChildProcess extends ChildProcess {
 			case "TRAIT":
 				$className = $params[0];
 				$class = $this->symbolTable->getClass($className);
-				$this->send("TRAITED ".$className." ".base64_encode(serialize(JsonSymbolTable::stripMethodContents($class)))."\n");
+				$this->send("TRAITED " . $className . " " . base64_encode(serialize(JsonSymbolTable::stripMethodContents($class))) . "\n");
 				return ProcessManager::READ_CONNECTION;
 			case "DONE":
 				$this->symbolTable->commit();

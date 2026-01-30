@@ -29,7 +29,7 @@ class ClassConstCheck extends BaseCheck {
 				if ($node->type && $constValue) {
 					if (!$this->comparer->isCompatibleWithTarget($node->type, $constValue, forceStrict: true)) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_CONST_TYPE,
-							 "Type mismatch between declared type (".
+							 "Type mismatch between declared type (" .
 							 TypeComparer::typeToString($node->type) . ") and constant value (" .
 							 TypeComparer::typeToString($constValue) . ")"
 						);

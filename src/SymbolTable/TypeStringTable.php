@@ -41,7 +41,7 @@ class TypeStringTable implements \JsonSerializable {
 			return new Identifier("mixed");
 		}
 		if (!$type) {
-			echo "Unable to parse: ".$this->ids[$index]."\n";
+			echo "Unable to parse: " . $this->ids[$index] . "\n";
 			return new Identifier("mixed");
 		}
 		return $type;

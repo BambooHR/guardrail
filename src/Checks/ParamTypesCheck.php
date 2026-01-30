@@ -128,7 +128,7 @@ class ParamTypesCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_OVERRIDE_BASE_CLASS, "Attempt to override a method in a base class");
 				} else {
 					if (!Util::findAbstractedMethod($inside->extends, $node->name, $this->symbolTable)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Impossible #[Override].  No method named ".$node->name."() found in ".$inside->extends." or any parent class.");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Impossible #[Override].  No method named " . $node->name . "() found in " . $inside->extends . " or any parent class.");
 					}
 				}
 			}

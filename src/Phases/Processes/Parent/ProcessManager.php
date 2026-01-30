@@ -79,7 +79,7 @@ abstract class ProcessManager {
 					try {
 						$this->buffers[$index]->read($socket);
 					} catch (SocketException $socketException) {
-						echo "Socket error: ".$socketException->getMessage(). "\n";
+						echo "Socket error: " . $socketException->getMessage() . "\n";
 						unset($this->connections[$index]);
 						unset($this->buffers[$index]);
 						exit(1);

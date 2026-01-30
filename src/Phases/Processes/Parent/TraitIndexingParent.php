@@ -22,13 +22,13 @@ class TraitIndexingParent extends ProcessManager {
 
 		for ($this->fileNumber = 0; $this->fileNumber < $processCount; ++$this->fileNumber) {
 			$socket = $this->createChild(new TraitIndexChildProcess($this->symbolTable));
-			Socket::writeComplete($socket, "TRAIT ".$this->children[$this->fileNumber]."\n");
-			$this->output->outputExtraVerbose(($this->fileNumber + 1) .":".$this->children[$this->fileNumber]."\n");
+			Socket::writeComplete($socket, "TRAIT " . $this->children[$this->fileNumber] . "\n");
+			$this->output->outputExtraVerbose(($this->fileNumber + 1) . ":" . $this->children[$this->fileNumber] . "\n");
 		}
 	}
 
 	function run() {
-		$this->output->outputVerbose("\n\nImporting & reindexing ".count($this->children)." classes that use a trait\n");
+		$this->output->outputVerbose("\n\nImporting & reindexing " . count($this->children) . " classes that use a trait\n");
 		$this->start = microtime(true);
 		$classes = $this->symbolTable->getClassesThatUseAnyTrait();
 		$this->symbolTable->begin();
@@ -43,14 +43,14 @@ class TraitIndexingParent extends ProcessManager {
 
 	function handleClientMessage(\Socket $socket, string $message, string ...$params): int {
 		assert($message == "TRAITED");
-		$this->output->outputExtraVerbose("Updating class ".$params[0]. " with ".strlen($params[1])." bytes of data\n");
+		$this->output->outputExtraVerbose("Updating class " . $params[0] . " with " . strlen($params[1]) . " bytes of data\n");
 		$class = unserialize(base64_decode($params[1]));
 		$this->symbolTable->updateClass($class);
 		$this->processedFiles++;
 		$this->showStatus();
 		if ($this->fileNumber < count($this->children)) {
-			$this->output->outputExtraVerbose( ($this->fileNumber + 1).":".$this->children[$this->fileNumber]."\n");
-			Socket::writeComplete($socket, "TRAIT " . $this->children[$this->fileNumber]."\n" );
+			$this->output->outputExtraVerbose( ($this->fileNumber + 1) . ":" . $this->children[$this->fileNumber] . "\n");
+			Socket::writeComplete($socket, "TRAIT " . $this->children[$this->fileNumber] . "\n" );
 			$this->fileNumber++;
 			return ProcessManager::READ_CONNECTION;
 		} else {
