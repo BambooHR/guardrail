@@ -207,8 +207,7 @@ class ReflectedClass implements ClassInterface {
 		if ($this->refl->hasConstant($name)) {
 			$constant = $this->refl->getConstant($name);
 			return Util::valueToExpression($constant);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
