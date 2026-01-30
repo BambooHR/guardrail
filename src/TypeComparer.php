@@ -58,7 +58,7 @@ class TypeComparer
 
 
 	private static function normalizeIntersectionType(IntersectionType $type): IntersectionType {
-		usort($type->types, function($a, $b) {
+		usort($type->types, function ($a, $b) {
 			return strcmp(strval($a), strval($b));
 		});
 		return $type;
@@ -295,7 +295,7 @@ class TypeComparer
 
 		// Many target options, many values.  Every value option must match at least one target.
 		$ret = self::ifEveryType($value, fn($valueType) =>
-			self::ifAnyType($target, function($targetType) use ($forceStrict, $valueType) {
+			self::ifAnyType($target, function ($targetType) use ($forceStrict, $valueType) {
 				if ($targetType instanceof IntersectionType) {
 					$types = $targetType->types;
 				} else {
@@ -365,7 +365,7 @@ class TypeComparer
 
 	static function removeNamedOption(ComplexType|Identifier|Name|null $a, string $name): ComplexType|Identifier|Name|null {
 		$ret = [];
-		self::forEachType($a, function($el) use ($name, &$ret) {
+		self::forEachType($a, function ($el) use ($name, &$ret) {
 			if (!self::isNamedIdentifier($el, $name)) {
 				$ret[] = $el;
 			}
@@ -428,7 +428,7 @@ class TypeComparer
 	}
 
 	static function forEachAnyEveryType($node, callable $fn) {
-		self::forEachType($node, function($type) use ($fn) {
+		self::forEachType($node, function ($type) use ($fn) {
 			if ($type instanceof IntersectionType) {
 				foreach ($type->types as $iType) {
 					call_user_func($fn, $iType);
@@ -443,7 +443,7 @@ class TypeComparer
 		if (is_null($type)) {
 			return true;
 		}
-		return self::ifEveryType($type, function($subType) {
+		return self::ifEveryType($type, function ($subType) {
 			if ($subType) {
 				if ($subType instanceof Node\Name or $subType instanceof Node\Identifier) {
 					$typeStr = strval($subType);

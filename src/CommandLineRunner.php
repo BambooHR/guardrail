@@ -73,7 +73,7 @@ where: -p #/#                               = Define the number of partitions an
 		date_default_timezone_set("UTC");
 		error_reporting(self::ERROR_MASK);
 
-		set_exception_handler(function(\Throwable $exception) {
+		set_exception_handler(function (\Throwable $exception) {
 			echo "Uncaught exception : " . $exception->getMessage() . "\n";
 			echo $exception->getTraceAsString() . "\n";
 			exit(1);

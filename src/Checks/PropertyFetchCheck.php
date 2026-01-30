@@ -66,7 +66,7 @@ class PropertyFetchCheck extends BaseCheck {
 				}
 			}
 
-			TypeComparer::forEachType($type, function($type) use ($node, $fileName, $inside) {
+			TypeComparer::forEachType($type, function ($type) use ($node, $fileName, $inside) {
 				if ($type instanceof Node\Identifier || $type instanceof Node\Name) {
 					$typeStr = strval($type);
 					if ($typeStr && !$this->symbolTable->ignoreType($typeStr)) {

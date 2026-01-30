@@ -83,7 +83,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		$found = false;
 		foreach ($this->nodeStack as $node) {
 			if ($node instanceof Node\Stmt\If_) {
-				ForEachNode::run([...$node->stmts], function($stmt) use (&$found, $declarationNode) {
+				ForEachNode::run([...$node->stmts], function ($stmt) use (&$found, $declarationNode) {
 					if ($stmt === $declarationNode) {
 						$found = true;
 					}

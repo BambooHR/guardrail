@@ -63,7 +63,7 @@ class PropertyStoreCheck extends BaseCheck {
 			$nodeVarName = strval($node->var->name);
 
 			$types = [];
-			TypeComparer::forEachType($targetObject, function($individualType) use ($nodeVarName, $fileName, $node, $inside, &$types) {
+			TypeComparer::forEachType($targetObject, function ($individualType) use ($nodeVarName, $fileName, $node, $inside, &$types) {
 				if ($individualType instanceof Node\Identifier || $individualType instanceof Node\Name) {
 					$typeStr = strval($individualType);
 					if ($this->symbolTable->isDefinedClass($typeStr)) {

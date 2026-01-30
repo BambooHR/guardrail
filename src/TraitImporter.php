@@ -145,7 +145,7 @@ class TraitImporter {
 				throw new \BambooHR\Guardrail\Exceptions\UnknownTraitException($traitName, $use->getLine());
 			}
 			$fileName = $this->index->getTraitFile($traitName);
-			$apply = function(Node $node) use ($fileName, $line) {
+			$apply = function (Node $node) use ($fileName, $line) {
 				$node->setAttribute('importedFromTrait', $fileName);
 				$node->setAttribute('importedOnLine', $line);
 			};

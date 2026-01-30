@@ -33,7 +33,7 @@ class ThrowsCheck extends BaseCheck {
 		} elseif ($node instanceof Node\Expr\MethodCall && $node->name instanceof Node\Identifier) {
 			$type = $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if ($type) {
-				TypeComparer::forEachType($type, function($typeNode) use ($node, $scope, $fileName) {
+				TypeComparer::forEachType($type, function ($typeNode) use ($node, $scope, $fileName) {
 					if ($typeNode instanceof Node\IntersectionType) {
 						$methods = [];
 						foreach ($typeNode->types as $subType) {
