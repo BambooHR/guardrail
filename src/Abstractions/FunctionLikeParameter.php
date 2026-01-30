@@ -43,7 +43,7 @@ class FunctionLikeParameter {
 	/**
 	 * FunctionLikeParameter constructor.
 	 *
-	 * @param Node $type      The type
+	 * @param Node   $type      The type
 	 * @param string $name      The name
 	 * @param bool   $optional  Is it optional
 	 * @param bool   $reference Is it a reference

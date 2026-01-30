@@ -13,13 +13,11 @@ use PhpParser\Node;
 
 class ArrayDimFetch implements ExpressionInterface
 {
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return \PhpParser\Node\Expr\ArrayDimFetch::class;
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		/** @var Node\Expr\ArrayDimFetch $fetch */
 		$fetch = $node;
 		if ($fetch->dim == null) {
@@ -27,7 +25,7 @@ class ArrayDimFetch implements ExpressionInterface
 			if ($type instanceof Node\Identifier &&
 				$type->getAttribute('templates') &&
 				count($type->getAttribute('templates')) > 0 &&
-				strcasecmp($type,"array")==0
+				strcasecmp($type, "array") == 0
 			) {
 				return $type->getAttribute('templates')[0];
 			}
@@ -36,10 +34,10 @@ class ArrayDimFetch implements ExpressionInterface
 				if ($table->isParentClassOrInterface("ArrayAccess", $type)) {
 					//$class= $table->getClass($type);
 					$method = Util::findAbstractedMethod($type, "offsetGet", $table);
-					if ($type->getAttribute('templates') && count($type->getAttribute('templates'))>0) {
+					if ($type->getAttribute('templates') && count($type->getAttribute('templates')) > 0) {
 						$arrayType = $type->getAttribute('templates')[0];
-						$returnType=$method->getDocBlockReturnType();
-						return $this->substituteTemplateVars(['T'=> $arrayType], $returnType);
+						$returnType = $method->getDocBlockReturnType();
+						return $this->substituteTemplateVars(['T' => $arrayType], $returnType);
 					}
 
 				}
@@ -55,8 +53,8 @@ class ArrayDimFetch implements ExpressionInterface
 			if (isset($vars[strval($value)])) {
 				return $vars[strval($value)];
 			} else if ($value->getAttribute('templates')) {
-				$templates=$value->getAttribute('templates');
-				if (count($templates)==1) {
+				$templates = $value->getAttribute('templates');
+				if (count($templates) == 1) {
 					return new Node\Name($value, ["templates" => [$templates[0]]]);
 				}
 			}

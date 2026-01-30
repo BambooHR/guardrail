@@ -40,4 +40,14 @@ class AccessingSuperGlobalsTest extends TestSuiteSetup {
 	public function testRunAccessingSuperGlobalVariableOnly() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
 	}
+
+	/**
+	 * testRunAccessingSuperGlobalExpression
+	 *
+	 * @return void
+	 * @rapid-unit Checks:AccessingSuperGlobals:Using variable expression in global statement emits an error
+	 */
+	public function testRunAccessingSuperGlobalExpression() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_GLOBAL_EXPRESSION_ACCESSED));
+	}
 }

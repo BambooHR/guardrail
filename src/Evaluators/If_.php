@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators;
 
@@ -10,13 +11,11 @@ use PhpParser\Node\Stmt\ElseIf_;
 
 class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return [Node\Stmt\If_::class, Node\Stmt\Else_::class,Node\Stmt\ElseIf_::class];
 	}
 
-	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
-	{
+	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\If_) {
 			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
 			$scopeStack->pushScope($thenBranch);
@@ -35,8 +34,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 		}
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\If_) {
 			if ($node->else == null &&
 				count($node->elseifs) == 0 &&
@@ -53,15 +51,14 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$cond = $scopeStack->popScope();
 				$scopeStack->getCurrentScope()->merge($cond);
 
-				for($count=0; $count<count($node->elseifs); ++$count) {
+				for ($count = 0; $count < count($node->elseifs); ++$count) {
 					$scopeStack->getCurrentScope()->merge($scopeStack->popScope());
 				}
 			}
 		}
 	}
 
-	static function pushIfScope($node, ScopeStack $scopeStack)
-	{
+	static function pushIfScope($node, ScopeStack $scopeStack) {
 		$cond = self::getIfCond($node);
 
 		// If there is an asserts true, then use it over the state on the stack.

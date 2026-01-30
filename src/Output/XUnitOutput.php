@@ -106,7 +106,7 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	public function getErrorCounts() {
-		return ["total"=>$this->totalErrors, "displayed"=>$this->displayedErrors];
+		return ["total" => $this->totalErrors, "displayed" => $this->displayedErrors];
 	}
 
 	/**

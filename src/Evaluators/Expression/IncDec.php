@@ -10,13 +10,11 @@ use PhpParser\Node;
 class IncDec implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 {
 
-	function getInstanceType(): array|string
-	{
+	function getInstanceType(): array|string {
 		return [Node\Expr\PreDec::class, Node\Expr\PreInc::class, Node\Expr\PostInc::class, Node\Expr\PostDec::class];
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		return $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 	}
 }

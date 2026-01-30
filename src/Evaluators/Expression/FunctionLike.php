@@ -12,13 +12,11 @@ use PhpParser\Node;
 class FunctionLike implements ExpressionInterface
 {
 
-	function getInstanceType(): array
-	{
+	function getInstanceType(): array {
 		return [Node\Expr\ArrowFunction::class, Node\Expr\Closure::class];
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node
-	{
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		\BambooHR\Guardrail\Evaluators\FunctionLike::handleUnusedVars($scopeStack);
 		$closureScope = $scopeStack->popScope();
 
@@ -27,14 +25,14 @@ class FunctionLike implements ExpressionInterface
 				fn(Node\Expr\ClosureUse $closureUse):string => $closureUse->var->name,
 				$node->uses
 			);
-			foreach($closureScope->getUsedVars() as $var) {
+			foreach ($closureScope->getUsedVars() as $var) {
 				/** @var Scope\ScopeVar $var */
 				if ($scopeStack->getVarExists($var->name) && $var->used && in_array($var->name, $uses)) {
 					$scopeStack->setVarUsed($var->name);
 				}
 			}
-		} else if($node instanceof Node\Expr\ArrowFunction) {
-			foreach($closureScope->getUsedVars() as $var) {
+		} else if ($node instanceof Node\Expr\ArrowFunction) {
+			foreach ($closureScope->getUsedVars() as $var) {
 				/** @var Scope\ScopeVar $var */
 				if ($scopeStack->getVarExists($var->name) && $var->used) {
 					$scopeStack->setVarUsed($var->name);

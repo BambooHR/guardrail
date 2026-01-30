@@ -56,10 +56,11 @@ class InterfaceCheck extends BaseCheck {
 	/**
 	 * checkMethod
 	 *
-	 * @param string          $fileName     The file name
-	 * @param Class_          $class        Instance of ClassAbstraction
-	 * @param MethodInterface $method       Instance of MethodInterface
-	 * @param MethodInterface $parentMethod Instance of MethodInterface
+	 * @param string              $fileName     The file name
+	 * @param Class_ | Interface_ $class        Instance of ClassAbstraction
+	 * @param Node\FunctionLike   $astNode      Instance of FunctionLike
+	 * @param MethodInterface     $method       Instance of MethodInterface
+	 * @param MethodInterface     $parentMethod Instance of MethodInterface
 	 *
 	 * @guardrail-ignore Standard.Unknown.Property
 	 *
@@ -216,8 +217,8 @@ class InterfaceCheck extends BaseCheck {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ILLEGAL_ENUM, "Enums can not be extended");
 		}
 
-		foreach($node->stmts as $stmt) {
-			if ($stmt instanceof Node\Stmt\ClassMethod && $stmt->name!="__construct") {
+		foreach ($node->stmts as $stmt) {
+			if ($stmt instanceof Node\Stmt\ClassMethod && $stmt->name != "__construct") {
 				$method = Util::findAbstractedMethod($node->extends, $stmt->name, $this->symbolTable);
 				if ($method) {
 					$this->checkMethod($fileName, $node, $stmt, $class->getMethod($stmt->name), $method);
@@ -228,7 +229,7 @@ class InterfaceCheck extends BaseCheck {
 
 	private function processNodeImplementsInterface(string $fileName, Class_|Interface_ $node, ClassInterface $interface):void {
 		$methods = $interface->getMethodNames();
-		foreach($methods as $methodName) {
+		foreach ($methods as $methodName) {
 			$this->processInterfaceMethod($node, $methodName, $fileName, $interface);
 		}
 	}
@@ -249,4 +250,3 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 }
-

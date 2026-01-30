@@ -80,13 +80,10 @@ where: -p #/#                               = Define the number of partitions an
 
 		set_error_handler([__CLASS__, 'handleErrors'], self::ERROR_MASK);
 
-
 		if (!extension_loaded("pcntl")) {
 			echo "Guardrail requires the pcntl extension, which is not loaded.\n";
 			exit(1);
 		}
-
-
 
 		try {
 			$config = new Config($argv);
@@ -95,7 +92,7 @@ where: -p #/#                               = Define the number of partitions an
 			exit(1);
 		}
 
-		$output = match($config->getOutputFormat()) {
+		$output = match ($config->getOutputFormat()) {
 			'text'   => new \BambooHR\Guardrail\Output\ConsoleOutput($config),
 			'counts' => new \BambooHR\Guardrail\Output\CountsOutput($config),
 			'csv'    => new \BambooHR\Guardrail\Output\CsvOutput($config),
@@ -122,7 +119,7 @@ where: -p #/#                               = Define the number of partitions an
 
 			if ($config->shouldOutputTimings()) {
 				$timings = $analyzer->getTimingResults();
-				$totalTime = array_sum( array_column($timings,'time'));
+				$totalTime = array_sum( array_column($timings, 'time'));
 				foreach ($timings as $class => $values) {
 					$time = $values['time'];
 					$count = $values['count'];
@@ -135,14 +132,14 @@ where: -p #/#                               = Define the number of partitions an
 		}
 	}
 
-    /**
-     * @return void
-     * @param int    $errno
-     * @param string $errstr
-     * @param string $errfile
-     * @param int    $errline
-     */
-    public static function handleErrors(int $errno, string $errstr, string $errfile, int $errline): void {
+	/**
+	 * @return void
+	 * @param int    $errno
+	 * @param string $errstr
+	 * @param string $errfile
+	 * @param int    $errline
+	 */
+	public static function handleErrors(int $errno, string $errstr, string $errfile, int $errline): void {
 		// Get the current error reporting level
 		$currentErrorReporting = error_reporting();
 

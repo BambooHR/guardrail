@@ -16,29 +16,28 @@ class TypeStringTable implements \JsonSerializable {
 	static ?TypeParser $parser = null;
 
 	function __construct() {
-		self::$parser=new TypeParser(fn($typeName)=>new Name\FullyQualified(strval($typeName)));
+		self::$parser = new TypeParser(fn($typeName)=>new Name\FullyQualified(strval($typeName)));
 	}
 
 	function add(ComplexType|Identifier|Name $type):int {
 		//$type = TypeComparer::normalizeType($type);
 		$typeString = TypeComparer::typeToString($type);
 
-		if(!isset($this->strings[$typeString])) {
-			$count=count($this->strings)+1;
+		if (!isset($this->strings[$typeString])) {
+			$count = count($this->strings) + 1;
 			$this->strings[$typeString] = $count;
-			$this->ids[$count]= $typeString;
+			$this->ids[$count] = $typeString;
 		}
 		return $this->strings[$typeString];
 	}
 
 	function getString(int $index):ComplexType|Name|Identifier {
-		if (strcasecmp($this->ids[$index], "mixed")==0) {
+		if (strcasecmp($this->ids[$index], "mixed") == 0) {
 			return TypeComparer::identifierFromName("mixed");
 		}
 		try {
 			$type = self::$parser->parse($this->ids[$index]);
-		}
-		catch(DocBlockParserException $ex) {
+		} catch (DocBlockParserException $ex) {
 			return new Identifier("mixed");
 		}
 		if (!$type) {

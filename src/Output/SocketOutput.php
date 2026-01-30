@@ -13,8 +13,8 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 
 	/**
 	 * SocketOutput constructor.
-	 * @param Config   $config The application config
-	 * @param \Socket  $socket A connection to a pipe
+	 * @param Config  $config The application config
+	 * @param \Socket $socket A connection to a pipe
 	 */
 	function __construct(Config $config, $socket) {
 		parent::__construct($config);
@@ -30,7 +30,7 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 	 * @return void
 	 */
 	function emitError($className, $file, $line, $type, $message = "") {
-		if (($this->silenced[$type]??0) > 0) {
+		if (($this->silenced[$type] ?? 0) > 0) {
 			return;
 		}
 		$arr = [

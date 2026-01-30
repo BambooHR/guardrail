@@ -77,7 +77,7 @@ class ReflectedClass implements ClassInterface {
 	}
 
 	public function getConstantExpr($name):null|Name|Identifier {
-		if($this->refl->hasConstant($name)) {
+		if ($this->refl->hasConstant($name)) {
 			$constant = $this->refl->getConstant($name);
 			if (is_int($constant)) {
 				return TypeComparer::identifierFromName("int");
@@ -193,7 +193,7 @@ class ReflectedClass implements ClassInterface {
 	}
 
 	public function isReadOnly(): bool {
-		if (method_exists($this->refl,"isReadOnly")) {
+		if (method_exists($this->refl, "isReadOnly")) {
 			return $this->refl->isReadOnly();
 		}
 		return false;

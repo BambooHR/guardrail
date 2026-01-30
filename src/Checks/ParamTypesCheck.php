@@ -43,11 +43,11 @@ class ParamTypesCheck extends BaseCheck {
 	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name , ?ClassLike $inside=null) {
 		$return = true;
 
-		if ($name instanceof Node\NullableType && TypeComparer::isNamedIdentifier($name->type,"null")) {
+		if ($name instanceof Node\NullableType && TypeComparer::isNamedIdentifier($name->type, "null")) {
 			return false;
 		}
 		TypeComparer::forEachAnyEveryType($name, function($name2) use ($inside, &$return) {
-			if($name2===null) {
+			if ($name2 === null) {
 				return;
 			}
 			$nameLower = strtolower($name2);
@@ -57,7 +57,7 @@ class ParamTypesCheck extends BaseCheck {
 			if ($nameLower != "" && !Util::isLegalNonObject($nameLower)) {
 				$class = $this->symbolTable->isDefinedClass($nameLower);
 				if (!$class && !$this->symbolTable->ignoreType($nameLower)) {
-					$return=false;
+					$return = false;
 					return;
 				}
 			}
@@ -111,7 +111,7 @@ class ParamTypesCheck extends BaseCheck {
 
 			if ($node->getReturnType()) {
 				$returnType = $node->getReturnType();
-				if (!TypeComparer::isNamedIdentifier($returnType,"never") && !$this->isAllowed($returnType, $inside)) {
+				if (!TypeComparer::isNamedIdentifier($returnType, "never") && !$this->isAllowed($returnType, $inside)) {
 					$returnType = TypeComparer::typeToString($returnType);
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$returnType' in return value of $displayName");
 				}
@@ -125,7 +125,7 @@ class ParamTypesCheck extends BaseCheck {
 				if (!$inside->extends) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_OVERRIDE_BASE_CLASS, "Attempt to override a method in a base class");
 				} else {
-					if (!Util::findAbstractedMethod($inside->extends,$node->name,$this->symbolTable)) {
+					if (!Util::findAbstractedMethod($inside->extends, $node->name, $this->symbolTable)) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Impossible #[Override].  No method named ".$node->name."() found in ".$inside->extends." or any parent class.");
 					}
 				}

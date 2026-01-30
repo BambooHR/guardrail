@@ -34,7 +34,7 @@ class SplatCheck extends BaseCheck {
 		if ($node instanceof ArrayItem) {
 			if ($node->unpack) {
 				$type = $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-				$tc=new TypeComparer($this->symbolTable);
+				$tc = new TypeComparer($this->symbolTable);
 				if (!$tc->isTraversable($type)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SPLAT_MISMATCH, "Can't use ... here.  Value is not an array or traversable.");
 				}

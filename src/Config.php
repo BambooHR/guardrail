@@ -218,7 +218,7 @@ class Config {
 		return self::$useDocBlockForReturnValue;
 	}
 
-	static function shouldUseDocBlockForInlineVars():bool{
+	static function shouldUseDocBlockForInlineVars():bool {
 		return self::$useDocBlockForInlineVars;
 	}
 

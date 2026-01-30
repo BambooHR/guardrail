@@ -62,8 +62,8 @@ class ReturnCheck extends BaseCheck {
 			$functionName = $this->getFunctionName($insideFunc, $inside);
 			$returnType = $insideFunc->getReturnType();
 
-			$returnIsVoid = TypeComparer::isNamedIdentifier($returnType,"void");
-			$returnIsNever = TypeComparer::isNamedIdentifier($returnType,"never");
+			$returnIsVoid = TypeComparer::isNamedIdentifier($returnType, "void");
+			$returnIsNever = TypeComparer::isNamedIdentifier($returnType, "never");
 			if ($returnIsVoid || $returnIsNever) {
 				if ($node->expr != null) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a ".TypeComparer::typeToString($returnType)." function $functionName");
@@ -81,7 +81,7 @@ class ReturnCheck extends BaseCheck {
 				return;
 			}
 
-			if (TypeComparer::isNamedIdentifier($returnType,"self") && $inside) {
+			if (TypeComparer::isNamedIdentifier($returnType, "self") && $inside) {
 				$returnType = $inside->namespacedName;
 			}
 
@@ -99,7 +99,7 @@ class ReturnCheck extends BaseCheck {
 
 	/**
 	 * @param Node\FunctionLike $insideFunc The method we're inside of
-	 * @param ?ClassLike $inside The class we're inside of (if any)
+	 * @param ?ClassLike        $inside     The class we're inside of (if any)
 	 *
 	 * @return string
 	 */

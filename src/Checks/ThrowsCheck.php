@@ -28,22 +28,22 @@ class ThrowsCheck extends BaseCheck {
 				if (!$this->parentCatches($scope?->getParentNodes(), $throws) &&
 					!$this->isDocumentedThrow($scope?->getInsideFunction(), $throws)
 				) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNDOCUMENTED_EXCEPTION,"Undocumented exception ($throws) thrown");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNDOCUMENTED_EXCEPTION, "Undocumented exception ($throws) thrown");
 				}
 			}
 		} else if ($node instanceof Node\Expr\MethodCall && $node->name instanceof Node\Identifier) {
-			$type=$node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			$type = $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if ($type) {
 				TypeComparer::forEachType($type, function($typeNode) use ($node,$scope, $fileName) {
 					if ($typeNode instanceof Node\IntersectionType) {
 						$methods = [];
-						foreach($typeNode->types as $subType) {
+						foreach ($typeNode->types as $subType) {
 							$method[] = Util::findAbstractedMethod($subType, $node->name, $this->symbolTable );
 						}
 					} else {
 						$methods = [Util::findAbstractedMethod(strval($typeNode), $node->name, $this->symbolTable)];
 					}
-					foreach($methods as $method) {
+					foreach ($methods as $method) {
 						if ($method) {
 							$throws = $method->getThrowsList();
 							foreach ($throws as $throw) {
@@ -76,12 +76,12 @@ class ThrowsCheck extends BaseCheck {
 			if ($parent instanceof Node\Stmt\TryCatch) {
 				foreach ($parent->catches as $catch) {
 					foreach ($catch->types as $type) {
-						if ($this->symbolTable->isParentClassOrInterface($type,$throws)) {
+						if ($this->symbolTable->isParentClassOrInterface($type, $throws)) {
 							return true;
 						}
 					}
 				}
-			} else if($parent instanceof Node\FunctionLike) {
+			} else if ($parent instanceof Node\FunctionLike) {
 				return false;
 			}
 		}

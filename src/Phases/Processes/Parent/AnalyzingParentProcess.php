@@ -44,10 +44,10 @@ class AnalyzingParentProcess extends ProcessManager {
 	}
 
 	function acceptTimings(array $timingResults) {
-		list($timings,$counts)=$timingResults;
-		foreach($counts as $name=>$count) {
-			$this->timingResults[1][$name] = ($this->timingResults[1][$name]??0) + $count;
-			$this->timingResults[0][$name] = ($this->timingResults[0][$name]??0) + $timings[$name];
+		list($timings,$counts) = $timingResults;
+		foreach ($counts as $name => $count) {
+			$this->timingResults[1][$name] = ($this->timingResults[1][$name] ?? 0) + $count;
+			$this->timingResults[0][$name] = ($this->timingResults[0][$name] ?? 0) + $timings[$name];
 		}
 	}
 	function getTimings() {
@@ -56,8 +56,8 @@ class AnalyzingParentProcess extends ProcessManager {
 
 
 	public function displayStatusUpdate(string $analyzedFileName): void {
-		$kbs=intval( intdiv($this->bytes, 1024) / (microtime(true)-$this->start) ?: 1.0);
-		["total"=>$errors, "displayed"=>$displayCount] =  $this->output->getErrorCounts();
+		$kbs = intval( intdiv($this->bytes, 1024) / (microtime(true) - $this->start) ?: 1.0);
+		["total" => $errors, "displayed" => $displayCount] = $this->output->getErrorCounts();
 		if ($this->output->isTTY()) {
 			$white = $this->output->ttyContent("\33[97m");
 			$red = $this->output->ttyContent("\33[31m");
@@ -76,7 +76,7 @@ class AnalyzingParentProcess extends ProcessManager {
 	}
 
 	public function handleClientMessage(\Socket $socket, string $message, string ...$params):int {
-		$details=($params[0] ?? "");
+		$details = ($params[0] ?? "");
 		switch ($message) {
 			case 'VERBOSE':
 				$this->output->outputVerbose($details);
@@ -90,7 +90,6 @@ class AnalyzingParentProcess extends ProcessManager {
 				break;
 			case 'ERROR' :
 				$vars = unserialize(base64_decode($details));
-
 
 				$this->output->emitError(
 					$vars['className'],
@@ -111,8 +110,7 @@ class AnalyzingParentProcess extends ProcessManager {
 				} else {
 					try {
 						Socket::writeComplete($socket, "TIMINGS\n");
-					}
-					catch(SocketException) {
+					} catch (SocketException) {
 						$this->output->outputVerbose("Internal protocol error.\n");
 						return ProcessManager::CLOSE_CONNECTION;
 					}
@@ -120,7 +118,7 @@ class AnalyzingParentProcess extends ProcessManager {
 				break;
 			case 'TIMINGS':
 				$this->acceptTimings( json_decode(base64_decode($details), true) );
-				Socket::writeComplete($socket,"DONE\n");
+				Socket::writeComplete($socket, "DONE\n");
 				return ProcessManager::CLOSE_CONNECTION;
 
 			case 'METRIC':
