@@ -5,9 +5,6 @@ use BambooHR\Guardrail\Util;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\DNumber;
-use PhpParser\Node\Scalar\LNumber;
-use PhpParser\Node\Scalar\String_;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -197,5 +194,21 @@ class ReflectedClass implements ClassInterface {
 			return $this->refl->isReadOnly();
 		}
 		return false;
+	}
+
+	public function getAttributes(): array {
+		return array_map(
+			fn($attribute) => new ReflectedAttribute($attribute),
+			$this->refl->getAttributes()
+		);
+	}
+
+	public function getConstantValueExpression(string $name): ?Expr {
+		if ($this->refl->hasConstant($name)) {
+			$constant = $this->refl->getConstant($name);
+			return Util::valueToExpression($constant);
+		} else {
+			return null;
+		}
 	}
 }
