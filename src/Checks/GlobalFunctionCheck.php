@@ -96,10 +96,10 @@ class GlobalFunctionCheck extends BaseCheck {
 
 		foreach ($parents as $parent) {
 			if (
-                $parent instanceof Node\Stmt\If_ ||
+				$parent instanceof Node\Stmt\If_ ||
 				$parent instanceof Node\Stmt\ElseIf_ ||
 				$parent instanceof Node\Stmt\Else_
-            ) {
+			) {
 				return true;
 			}
 		}

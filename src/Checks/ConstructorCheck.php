@@ -69,12 +69,12 @@ class ConstructorCheck extends BaseCheck {
 		if ($node instanceof ClassMethod) {
 			if ($inside instanceof Class_) {
 				if (
-                    strcasecmp($node->name, "__construct") == 0 &&
+					strcasecmp($node->name, "__construct") == 0 &&
 					$inside->extends
 				) {
 					$ob = Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable);
 					if (
-                        $ob &&
+						$ob &&
 						!$ob->isAbstract() &&
 						!self::containsConstructorCall($node->stmts)
 					) {

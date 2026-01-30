@@ -36,7 +36,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\If_) {
 			if (
-                $node->else == null &&
+				$node->else == null &&
 				count($node->elseifs) == 0 &&
 				( end($node->stmts) instanceof Node\Stmt\Return_ || end($node->stmts) instanceof Node\Stmt\Throw_ || end($node->stmts) instanceof Node\Stmt\Continue_)
 			) {

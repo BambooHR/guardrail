@@ -23,7 +23,7 @@ class ArrayDimFetch implements ExpressionInterface
 		if ($fetch->dim == null) {
 			$type = $fetch->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if (
-                $type instanceof Node\Identifier &&
+				$type instanceof Node\Identifier &&
 				$type->getAttribute('templates') &&
 				count($type->getAttribute('templates')) > 0 &&
 				strcasecmp($type, "array") == 0

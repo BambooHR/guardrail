@@ -25,7 +25,7 @@ class ThrowsCheck extends BaseCheck {
 			$throws = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if ($throws instanceof Node\Name) {
 				if (
-                    !$this->parentCatches($scope?->getParentNodes(), $throws) &&
+					!$this->parentCatches($scope?->getParentNodes(), $throws) &&
 					!$this->isDocumentedThrow($scope?->getInsideFunction(), $throws)
 				) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNDOCUMENTED_EXCEPTION, "Undocumented exception ($throws) thrown");
@@ -48,9 +48,9 @@ class ThrowsCheck extends BaseCheck {
 							$throws = $method->getThrowsList();
 							foreach ($throws as $throw) {
 								if (
-                                    !$this->parentCatches($scope?->getParentNodes(), $throw) &&
+									!$this->parentCatches($scope?->getParentNodes(), $throw) &&
 									!$this->isDocumentedThrow($scope?->getInsideFunction(), $throw)
-                                ) {
+								) {
 									$this->emitError($fileName, $node, ErrorConstants::TYPE_UNDOCUMENTED_EXCEPTION, "Undocumented exception ($throw) thrown by " . TypeComparer::typeToString($typeNode) . "::" . $node->name);
 								}
 							}

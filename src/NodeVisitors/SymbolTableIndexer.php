@@ -159,7 +159,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			$defineName = strval($node->namespacedName);
 			$this->index->addDefine($defineName, $node, $this->filename);
 		} elseif (
-            $node instanceof FuncCall &&
+			$node instanceof FuncCall &&
 			$node->name instanceof Node\Name &&
 			strcasecmp($node->name->toString(), 'define') == 0 &&
 			count($node->args) >= 1
