@@ -73,7 +73,7 @@ class TraitImporter {
 			} else if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
 				foreach ($adaptation->insteadof as $name) {
-					unset($methods[strval($adaptation->method)][$name]);
+					unset($methods[strval($adaptation->method)][strval($name)]);
 				}
 			}
 		}
