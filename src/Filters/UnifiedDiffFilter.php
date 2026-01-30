@@ -36,7 +36,7 @@ class UnifiedDiffFilter implements FilterInterface {
 		foreach ($lines as $line) {
 			if (preg_match('!^\+\+\+ (\S+)!', $line, $fileNameArr)) {
 				$parts = explode(DIRECTORY_SEPARATOR, $fileNameArr[1], $ignoreParts + 1);
-				$fileName = array_pop( $parts );
+				$fileName = array_pop($parts);
 			} elseif (preg_match("!^@@ -\d+(,\d+)? \+(\d+)(,(\d+))?!", $line, $lineNumbers)) {
 				$start = $lineNumbers[2];
 				if (isset($lineNumbers[4])) {
@@ -77,7 +77,7 @@ class UnifiedDiffFilter implements FilterInterface {
 	 * @return UnifiedDiffFilter
 	 */
 	static function importFile($fileName, $ignoreParts = 1) {
-		return new UnifiedDiffFilter( self::parse( file( $fileName ), $ignoreParts ) );
+		return new UnifiedDiffFilter(self::parse(file($fileName), $ignoreParts));
 	}
 
 	/**
@@ -87,7 +87,8 @@ class UnifiedDiffFilter implements FilterInterface {
 		foreach ($this->filter as $fileName => $lineNumbers) {
 
 			echo "Filter: $fileName: " .
-				implode(",",
+				implode(
+                    ",",
 					array_map(
 						fn($lineNumberPair) => $lineNumberPair[0] . "-" . $lineNumberPair[1],
 						$lineNumbers

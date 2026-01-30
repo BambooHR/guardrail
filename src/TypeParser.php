@@ -33,7 +33,7 @@ class TypeParser {
 		if ($type && strval($type) != "") {
 			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type)) {
 				return new Node\Identifier($type);
-			} elseif (str_starts_with($type, "\\" )) {
+			} elseif (str_starts_with($type, "\\")) {
 				return new Name\FullyQualified(substr($type, 1), ["templates" => $templateVars]);
 			} elseif ($type == "T" || $type == "class-string") {
 				return new Name\FullyQualified($type, ["templates" => $templateVars]);

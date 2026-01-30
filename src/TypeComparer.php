@@ -99,16 +99,12 @@ class TypeComparer
 		if ($a instanceof IntersectionType && $b instanceof IntersectionType) {
 			self::ifEveryType($a, fn($aType) =>
 			self::ifAnyType($b, fn($bType) =>
-			self::isExactMatch($aType, $bType)
-			)
-			);
+			self::isExactMatch($aType, $bType)));
 		}
 		if ($a instanceof UnionType && $b instanceof UnionType) {
 			self::ifEveryType($a, fn($aType) =>
 			self::ifAnyType($b, fn($bType) =>
-			self::isExactMatch($aType, $bType)
-			)
-			);
+			self::isExactMatch($aType, $bType)));
 			return true;
 		}
 		return false;
@@ -237,7 +233,7 @@ class TypeComparer
 			return implode("|", array_map(fn($type)=>self::typeToString($type), $type->types));
 
 		} elseif ($type instanceof IntersectionType) {
-			return "(" . implode("&", array_map(fn($type)=>self::typeToString($type), $type->types )) . ")";
+			return "(" . implode("&", array_map(fn($type)=>self::typeToString($type), $type->types)) . ")";
 		} else {
 			// Should be unreachable
 			return "ERROR(" . get_class($type) . ")";
@@ -317,8 +313,7 @@ class TypeComparer
 					}
 				}
 				return true;
-			})
-		);
+			}));
 		return $ret;
 	}
 
@@ -388,7 +383,7 @@ class TypeComparer
 			$types = $node->types;
 		}
 		foreach ($types as $type) {
-			if (!call_user_func( $fn, $type )) {
+			if (!call_user_func($fn, $type)) {
 				return false;
 			}
 		}

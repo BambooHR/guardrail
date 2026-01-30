@@ -26,7 +26,7 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 
 		/** @var Node\Expr\Assign $assign */
 		$assign = $node;
-		$valueType = $assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR );
+		$valueType = $assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		$this->setValueType($assign->var, $valueType, $scopeStack);
 	//	echo "Assigning value type: ".($assign->var->name)."$valueType\n";
 	//	$scopeStack->dump();

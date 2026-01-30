@@ -44,7 +44,7 @@ class IndexParentProcess extends ProcessManager {
 		}
 	}
 	function handleClientMessage(\Socket $socket, $message, string ...$params): int {
-		assert( $message == "INDEXED" );
+		assert($message == "INDEXED");
 
 		[$size, $fileName, $childProcessNumber] = $params;
 		$this->bytes += intval($size);

@@ -49,7 +49,7 @@ abstract class ProcessManager {
 			$childProcess->init($pair[0]);
 			$childProcess->run();
 			socket_close($pair[0]);
-			exit( 0 );
+			exit(0);
 		}
 	}
 	function getPidForSocket($socket) {
@@ -88,7 +88,7 @@ abstract class ProcessManager {
 			}
 			foreach ($this->buffers as $index => $buffer) {
 				$messages = $buffer->getMessages();
-				$this->dispatchClientMessages( $index, $messages);
+				$this->dispatchClientMessages($index, $messages);
 			}
 		}
 	}
@@ -118,7 +118,7 @@ abstract class ProcessManager {
 
 	function dispatchMessage(\Socket $socket, $msg): int {
 		list($message,$details) = explode(" ", $msg, 2);
-		return $this->handleClientMessage( $socket, $message, ...explode(" ", $details));
+		return $this->handleClientMessage($socket, $message, ...explode(" ", $details));
 	}
 
 	abstract function handleClientMessage(\Socket $socket, string $message, string ...$params): int;

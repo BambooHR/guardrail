@@ -186,7 +186,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
-		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
+		if ( ($node instanceof Class_ && isset($node->namespacedName)) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		}
 		array_pop($this->nodeStack);

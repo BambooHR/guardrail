@@ -39,7 +39,7 @@ class ForEachNode extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function enterNode(Node $node) {
-		call_user_func( $this->callBack, $node );
+		call_user_func($this->callBack, $node);
 		return null;
 	}
 

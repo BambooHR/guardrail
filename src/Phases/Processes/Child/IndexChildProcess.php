@@ -13,7 +13,7 @@ class IndexChildProcess extends ChildProcess {
 	function init(\Socket $socket): void {
 		parent::init($socket);
 		if ($this->symbolTable instanceof PersistantSymbolTable) {
-			$this->symbolTable->connect($this->processNumber + 1 );
+			$this->symbolTable->connect($this->processNumber + 1);
 		}
 	}
 

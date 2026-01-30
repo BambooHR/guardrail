@@ -68,7 +68,7 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 			$prop->makeReadonly();
 		}
 		if ($param->type) {
-			$prop->setType( $param->type );
+			$prop->setType($param->type);
 		}
 
 		$propNode = $prop->getNode();

@@ -153,7 +153,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 * @return bool
 	 */
 	public function isExtensionConstant($name) {
-		return isset( $this->reflectedConstants[strval($name)] );
+		return isset($this->reflectedConstants[strval($name)]);
 	}
 
 	/**

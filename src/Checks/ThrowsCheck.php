@@ -37,7 +37,7 @@ class ThrowsCheck extends BaseCheck {
 					if ($typeNode instanceof Node\IntersectionType) {
 						$methods = [];
 						foreach ($typeNode->types as $subType) {
-							$method[] = Util::findAbstractedMethod($subType, $node->name, $this->symbolTable );
+							$method[] = Util::findAbstractedMethod($subType, $node->name, $this->symbolTable);
 						}
 					} else {
 						$methods = [Util::findAbstractedMethod(strval($typeNode), $node->name, $this->symbolTable)];

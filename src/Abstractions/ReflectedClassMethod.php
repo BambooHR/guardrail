@@ -137,8 +137,8 @@ class ReflectedClassMethod implements MethodInterface {
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
 		foreach ($params as $param) {
-			$type = Util::reflectionTypeToPhpParserType( $param->getType() );
-			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $param->isPassedByReference(), method_exists($param, "allowsNull") ? $param->allowsNull() : false);
+			$type = Util::reflectionTypeToPhpParserType($param->getType());
+			$ret[] = new FunctionLikeParameter($type, $param->name, $param->isOptional(), $param->isPassedByReference(), method_exists($param, "allowsNull") ? $param->allowsNull() : false);
 		}
 		return $ret;
 	}
@@ -191,7 +191,7 @@ class ReflectedClassMethod implements MethodInterface {
 
 	public function getAttributes(string $name): array {
 		$attributes = $this->refl->getAttributes($name);
-		return array_map( function($attr) {
+		return array_map(function($attr) {
 			return new Attribute(new Name($attr->getName()));
 		}, $attributes);
 	}

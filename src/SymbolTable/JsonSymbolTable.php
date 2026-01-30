@@ -60,7 +60,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		parent::__construct($basePath);
 		$this->types = new TypeStringTable();
 		$this->fileName = $fileName;
-		$this->parser = new TypeParser( fn($typeString)=>new Node\Name\FullyQualified($typeString));
+		$this->parser = new TypeParser(fn($typeString)=>new Node\Name\FullyQualified($typeString));
 	}
 
 	/**
@@ -157,7 +157,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 						break;
 						case self::TYPE_CLASS:
 						case self::TYPE_INTERFACE:
-							$this->addType($name, $entryString['file'], $type, isset($entryString['has_trait']), $this->serializeClass( $table->unserializeClass($entryString['data'])));
+							$this->addType($name, $entryString['file'], $type, isset($entryString['has_trait']), $this->serializeClass($table->unserializeClass($entryString['data'])));
 							break;
 						case self::TYPE_FUNCTION:
 							$this->addType($name, $entryString['file'], $type, 0, $this->serializeFunction($table->unserializeFunction($entryString['data'])));
@@ -646,11 +646,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		if (!empty($class->extends)) {
 			if ($class instanceof Interface_) {
 				$ret .= " E" .
-					implode(",",
-							array_map(
-								fn($extends) => $this->types->add($extends),
-								$class->extends
-							)
+					implode(
+                        ",",
+                        array_map(
+                            fn($extends) => $this->types->add($extends),
+                            $class->extends
+                        )
 					);
 			} else {
 				$ret .= " E" . ($this->types->add($class->extends));
@@ -741,7 +742,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			$method->setAttribute('namespacedReturn', $this->types->getString(intval($matches[6])));
 		}
 		if (!empty($matches[7])) {
-			$types = array_map( fn($match) => $this->types->getString(intval($match)), explode(",", $matches[7]));
+			$types = array_map(fn($match) => $this->types->getString(intval($match)), explode(",", $matches[7]));
 			$method->setAttribute('throws', $types);
 		}
 		if (!empty($matches[8])) {
@@ -754,9 +755,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		preg_match('/^(P)([^$@]+)?(?:@([0-9]+))?\\$([^ ]*)( [0-9]+)?$/', $serializedProperty, $matches);
 		$type = !empty(trim($matches[2])) ? $this->types->getString(intval(trim($matches[2]))) : null;
 		$name = $matches[4];
-		$flags = isset( $matches[5]) ? intval(trim($matches[5])) : 0;
+		$flags = isset($matches[5]) ? intval(trim($matches[5])) : 0;
 		$props = [new Node\Stmt\PropertyProperty($name)];
-		$prop = new Property($flags, $props, type: $type );
+		$prop = new Property($flags, $props, type: $type);
 		if (!empty($matches[3])) {
 			$prop->setAttribute('DocBlockName', $this->types->getString(intval($matches[3])));
 		}
@@ -800,7 +801,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			$func->setAttribute('namespacedReturn', $this->types->getString(intval($matches[5])));
 		}
 		if (!empty($matches[6])) {
-			$types = array_map( fn($match) => $this->types->getString(intval($match)), explode(",", $matches[6]));
+			$types = array_map(fn($match) => $this->types->getString(intval($match)), explode(",", $matches[6]));
 			$func->setAttribute('throws', $types);
 		}
 		if (!empty($matches[7])) {

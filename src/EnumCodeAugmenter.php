@@ -18,7 +18,7 @@ class EnumCodeAugmenter {
 			$enum->stmts[] = new Node\Stmt\ClassMethod("values", ["returnType" => "array"]);
 			$property = new Property("value");
 			$property->makeReadonly();
-			$property->setType( $enum->scalarType );
+			$property->setType($enum->scalarType);
 			$enum->stmts[] = $property->getNode();
 
 			$enumName = $enum->namespacedName->toString();

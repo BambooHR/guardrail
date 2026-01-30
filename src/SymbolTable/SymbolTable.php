@@ -246,7 +246,7 @@ abstract class SymbolTable {
 		}
 		$ob = $this->cache->get("Trait:" . $name);
 		if (!$ob) {
-			$ob = Grabber::getClassFromFile( $this, $file, $name, Trait_::class);
+			$ob = Grabber::getClassFromFile($this, $file, $name, Trait_::class);
 			if ($ob) {
 				$this->cache->add("Trait:" . $name, $ob);
 			}

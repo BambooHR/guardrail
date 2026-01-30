@@ -186,7 +186,7 @@ class Scope implements PluginScopeInterface {
 	}
 
 	public function getUsedVars(): array {
-		return array_filter( $this->vars, fn($var)=>$var->used);
+		return array_filter($this->vars, fn($var)=>$var->used);
 	}
 
 	/**

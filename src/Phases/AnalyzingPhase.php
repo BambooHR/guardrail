@@ -77,7 +77,7 @@ class AnalyzingPhase {
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
 
 		$traverser3 = new NodeTraverser;
-		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config ));
+		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config));
 
 		$this->output = $output;
 
@@ -101,7 +101,7 @@ class AnalyzingPhase {
 			$ret[$class]['count'] = ($ret[$class]['count'] ?? 0) + $counts[$class];
 		}
 
-		uasort( $ret, fn($first, $second) => $second['time'] <=> $first['time'] );
+		uasort($ret, fn($first, $second) => $second['time'] <=> $first['time']);
 		$this->timingResults  = $ret;
 	}
 
@@ -268,7 +268,7 @@ class AnalyzingPhase {
 
 		$output->outputVerbose("Partition sizes: " . $white . implode("$reset,$white ", $sizes) . "$reset\n");
 
-		$output->outputVerbose("Partition " . $white . ($partitionNumber + 1) . $reset . " analyzing " . $white . number_format(count($partialList) ) . $reset . " files (" . $white . number_format($sizes[$partitionNumber] ) . $reset . " bytes)\n");
+		$output->outputVerbose("Partition " . $white . ($partitionNumber + 1) . $reset . " analyzing " . $white . number_format(count($partialList)) . $reset . " files (" . $white . number_format($sizes[$partitionNumber]) . $reset . " bytes)\n");
 		return $this->phase2($config, $output, $partialList, $sizes[$partitionNumber]);
 	}
 

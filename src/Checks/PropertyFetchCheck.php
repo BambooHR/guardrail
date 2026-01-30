@@ -70,7 +70,7 @@ class PropertyFetchCheck extends BaseCheck {
 				if ($type instanceof Node\Identifier || $type instanceof Node\Name) {
 					$typeStr = strval($type);
 					if ($typeStr && !$this->symbolTable->ignoreType($typeStr)) {
-						if ($this->symbolTable->isParentClassOrInterface("SimpleXMLElement", $typeStr )) {
+						if ($this->symbolTable->isParentClassOrInterface("SimpleXMLElement", $typeStr)) {
 							// SimpleXMLElement has arbitrary properties based on the XML that was parsed.
 							return;
 						}

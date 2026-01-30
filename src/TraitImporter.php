@@ -151,12 +151,12 @@ class TraitImporter {
 			};
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
-					$props = unserialize( serialize( $stmt ) );
+					$props = unserialize(serialize($stmt));
 					ForEachNode::run([$props], $apply);
 					$properties[] = $props;
 				} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 					// Make a deep copy of the node
-					$method = unserialize( serialize( $stmt ) );
+					$method = unserialize(serialize($stmt));
 					ForEachNode::run([$method], $apply);
 					$methods[strval($stmt->name)][$traitName] = $method;
 				}
@@ -180,7 +180,7 @@ class TraitImporter {
 	 */
 	public function resolveTraits(TraitUse $use, ClassLike $class) {
 		[$methods, $properties] = $this->indexTrait($use);
-		$this->resolveAdaptations($use->adaptations, $methods );
-		return array_merge( array_values($properties), $this->importMethods($class, $methods));
+		$this->resolveAdaptations($use->adaptations, $methods);
+		return array_merge(array_values($properties), $this->importMethods($class, $methods));
 	}
 }

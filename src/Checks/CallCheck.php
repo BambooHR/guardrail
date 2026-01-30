@@ -137,7 +137,9 @@ abstract class CallCheck extends BaseCheck {
 						$typeWithOutNull = TypeComparer::removeNullOption($type);
 						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope?->isStrict());
 					}
-					$this->emitError($fileName, $node,
+					$this->emitError(
+                        $fileName,
+                        $node,
 						$nullOnlyError ? ErrorConstants::TYPE_SIGNATURE_TYPE_NULL : ErrorConstants::TYPE_SIGNATURE_TYPE,
 						"Incompatible type passed to $name parameter \$$variableName " .
 						"expected " . TypeComparer::typeToString($expectedType) . ", passed $typeStr" . ($scope?->isStrict() ? " STRICT" : "")

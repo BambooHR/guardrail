@@ -25,8 +25,8 @@ class Catch_ implements OnEnterEvaluatorInterface
 
 			if ($scope->getVarExists($name)) {
 				$oldType = $scope->getVarType($name);
-				$allPreviousTypesAreExceptions = !$oldType || TypeComparer::ifEveryType($oldType, fn($type)=>$table->isParentClassOrInterface("exception", strval($type) ));
-				$newTypes = implode( ",", array_map( fn($type)=>TypeComparer::typeToString($type), $node->types));
+				$allPreviousTypesAreExceptions = !$oldType || TypeComparer::ifEveryType($oldType, fn($type)=>$table->isParentClassOrInterface("exception", strval($type)));
+				$newTypes = implode(",", array_map(fn($type)=>TypeComparer::typeToString($type), $node->types));
 				if (!$allPreviousTypesAreExceptions) {
 					$scopeStack->getOutput()->emitError(
 						__CLASS__,

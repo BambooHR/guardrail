@@ -143,7 +143,7 @@ class Grabber extends NodeVisitorAbstract {
 		$grabber = new Grabber($className, $classType, $fromVar);
 		$traverser = new NodeTraverser;
 		$traverser->addVisitor($grabber);
-		$traverser->traverse( $stmts );
+		$traverser->traverse($stmts);
 		return $grabber->getFoundClass();
 	}
 
@@ -176,7 +176,7 @@ class Grabber extends NodeVisitorAbstract {
 			$traverser->addVisitor($resolver = new NameResolver());
 			$traverser->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 			$traverser->addVisitor(new PromotedPropertyVisitor());
-			$stmts = $traverser->traverse( $stmts );
+			$stmts = $traverser->traverse($stmts);
 
 			if ($classType == Class_::class) {
 				try {

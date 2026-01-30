@@ -59,7 +59,7 @@ class ScopeStack implements ScopeInterface {
 	}
 
 	function popParentNode() {
-		array_pop($this->parentNodes );
+		array_pop($this->parentNodes);
 	}
 
 	function pushScope(PluginScopeInterface $scope): void {

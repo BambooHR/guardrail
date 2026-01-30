@@ -33,7 +33,7 @@ class Variable implements ExpressionInterface {
 					$var = NodePatterns::getVariableOrPropertyName($expr);
 					if ($var) {
 						$varScope = $scopeStack->getCurrentScope();
-						$varScope->setVarType($var, TypeComparer::removeNullOption( $varScope->getVarType($var)), $node->getLine());
+						$varScope->setVarType($var, TypeComparer::removeNullOption($varScope->getVarType($var)), $node->getLine());
 						$node->setAttribute('assertsTrue', $varScope);
 					}
 				}

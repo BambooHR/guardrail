@@ -46,6 +46,6 @@ class InstanceOf_ implements ExpressionInterface {
 			}
 		}
 
-		return TypeComparer::identifierFromName("bool" );
+		return TypeComparer::identifierFromName("bool");
 	}
 }

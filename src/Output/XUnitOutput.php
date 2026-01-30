@@ -69,7 +69,7 @@ class XUnitOutput implements OutputInterface {
 		$this->emitErrors = $config->getOutputLevel() == 1;
 		$this->emitList = $config->getEmitList();
 
-		$this->isTTY = posix_isatty(STDOUT );
+		$this->isTTY = posix_isatty(STDOUT);
 	}
 
 	public function isTTY(): bool {
@@ -94,7 +94,7 @@ class XUnitOutput implements OutputInterface {
 	}
 
 	private function escapeText(string $text): string {
-		return str_replace(["&",'"'], ["&nbsp;", "&#34;"], $text );
+		return str_replace(["&",'"'], ["&nbsp;", "&#34;"], $text);
 	}
 
 	/**
@@ -120,7 +120,7 @@ class XUnitOutput implements OutputInterface {
 		$failures = $this->doc->getElementsByTagName("failure");
 		foreach ($failures as $failure) {
 			$type = $failure->getAttribute('type');
-			$count[$type] = isset( $count[$type] ) ? $count[$type] + 1 : 1;
+			$count[$type] = isset($count[$type]) ? $count[$type] + 1 : 1;
 		}
 		return $count;
 	}
@@ -272,7 +272,7 @@ class XUnitOutput implements OutputInterface {
 		if (!isset($this->files[$className][$fileName])) {
 			$case = $suite->addTestCase();
 			$case->setName($fileName);
-			$case->setClassname( $className );
+			$case->setClassname($className);
 			if (!isset($this->files[$className])) {
 				$this->files[$className] = [];
 			}
@@ -282,7 +282,7 @@ class XUnitOutput implements OutputInterface {
 		}
 
 		$message .= " on line " . $lineNumber;
-		$case->addFailure( $this->escapeText($name . ":" . $message), "error");
+		$case->addFailure($this->escapeText($name . ":" . $message), "error");
 		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}

@@ -167,7 +167,7 @@ class ReflectedClass implements ClassInterface {
 					$access = "public";
 				}
 				$type = Util::reflectionTypeToPhpParserType($prop->getType());
-				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY );
+				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY);
 			}
 			return null;
 		} catch (\ReflectionException) {

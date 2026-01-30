@@ -94,7 +94,7 @@ class IndexingPhase {
 		// If the $fileName is in our phar then make it a relative path so that files that we index don't
 		// depend on the phar file existing in a particular directory.
 		if (strpos($name, "phar://") === 0) {
-			$name = str_replace(Phar::running(), "", $name );
+			$name = str_replace(Phar::running(), "", $name);
 			while ($name[0] == '/') {
 				$name = substr($name, 1);
 			}
@@ -136,7 +136,7 @@ class IndexingPhase {
 				$output->outputVerbose(".");
 			}
 			if ($config->getOutputLevel() == 2) {
-				$output->outputExtraVerbose( sprintf("%d - %s\n", $fileNumber, $itr->current()) );
+				$output->outputExtraVerbose(sprintf("%d - %s\n", $fileNumber, $itr->current()));
 			}
 		}
 		$this->processManager->loopWhileConnections();
@@ -157,13 +157,15 @@ class IndexingPhase {
 		$baseDirectory = $config->getBasePath();
 		$indexPaths = $configArr['index'];
 		if (! Util::configDirectoriesAreValid($baseDirectory, $indexPaths)) {
-			$output->output("Invalid or missing paths in your index config section.",
-				"Invalid or missing paths in your index config section.");
+			$output->output(
+                "Invalid or missing paths in your index config section.",
+                "Invalid or missing paths in your index config section."
+            );
 			exit;
 		}
 		$output->outputVerbose("Index directories are valid: Indexing starting.\n");
 
-		$this->indexList($config, $output, $this->getFileList($indexPaths) );
+		$this->indexList($config, $output, $this->getFileList($indexPaths));
 
 		$output->outputVerbose("Merging indexes\n");
 		$table = $config->getSymbolTable();

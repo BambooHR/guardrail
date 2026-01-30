@@ -15,7 +15,7 @@ class TraitIndexChildProcess extends ChildProcess {
 	function init(\Socket $socket): void {
 		parent::init($socket);
 		if ($this->symbolTable instanceof PersistantSymbolTable) {
-			$this->symbolTable->connect(0 );
+			$this->symbolTable->connect(0);
 		}
 	}
 

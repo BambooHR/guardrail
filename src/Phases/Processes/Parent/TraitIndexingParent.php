@@ -48,8 +48,8 @@ class TraitIndexingParent extends ProcessManager {
 		$this->processedFiles++;
 		$this->showStatus();
 		if ($this->fileNumber < count($this->children)) {
-			$this->output->outputExtraVerbose( ($this->fileNumber + 1) . ":" . $this->children[$this->fileNumber] . "\n");
-			Socket::writeComplete($socket, "TRAIT " . $this->children[$this->fileNumber] . "\n" );
+			$this->output->outputExtraVerbose(($this->fileNumber + 1) . ":" . $this->children[$this->fileNumber] . "\n");
+			Socket::writeComplete($socket, "TRAIT " . $this->children[$this->fileNumber] . "\n");
 			$this->fileNumber++;
 			return ProcessManager::READ_CONNECTION;
 		} else {
@@ -61,9 +61,10 @@ class TraitIndexingParent extends ProcessManager {
 		if ($this->output->isTTY()) {
 			if (count($this->children) > 0) {
 				$this->output->outputVerbose(
-					sprintf("Indexing used traits %d/%d %d%%\r",
-							$this->processedFiles,
-							count($this->children),
+					sprintf(
+                        "Indexing used traits %d/%d %d%%\r",
+                        $this->processedFiles,
+                        count($this->children),
 						round(100 * $this->processedFiles / max(1, count($this->children)))
 					)
 				);

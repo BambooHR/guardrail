@@ -146,7 +146,7 @@ class ParamTypesCheck extends BaseCheck {
 	 */
 	public function checkForNestedFunction($fileName, Node\FunctionLike $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		$self = $this;
-		ForEachNode::run( $node->getStmts(), function($statement) use ($self, $fileName, $node) {
+		ForEachNode::run($node->getStmts(), function($statement) use ($self, $fileName, $node) {
 			if ($statement instanceof Node\Stmt\Function_) {
 				$self->emitError($fileName, $node, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION, "Function declaration detected inside another function or method");
 			}

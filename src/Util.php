@@ -171,7 +171,7 @@ class Util {
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
 			);
-			return new IntersectionType( [$subtypes] );
+			return new IntersectionType([$subtypes]);
 		} elseif ($type == null) {
 			return null;
 		} else {

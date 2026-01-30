@@ -197,7 +197,7 @@ class MethodCall extends CallCheck {
 	 */
 	private function checkForMethodExists(Expr\MethodCall|Expr\NullsafeMethodCall $node, array $stmts): bool {
 		$match = false;
-		ForEachNode::run( $stmts, function($candidate) use (&$match, $node) {
+		ForEachNode::run($stmts, function($candidate) use (&$match, $node) {
 			if (
 				(
 					$candidate instanceof Node\Stmt\If_ &&
@@ -223,7 +223,7 @@ class MethodCall extends CallCheck {
 			$node->name instanceof Node\Identifier &&
 			$cond->args[1]->value->value === $node->name->name
 		) {
-			ForEachNode::run( $trueNodes, function($inner) use (&$match, $node) {
+			ForEachNode::run($trueNodes, function($inner) use (&$match, $node) {
 				if ($node === $inner) {
 					$match = true;
 				}

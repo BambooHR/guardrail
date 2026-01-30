@@ -177,7 +177,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 					}
 					break;
 			}
-			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $isPassedByReference, $isNullable);
+			$ret[] = new FunctionLikeParameter($type, $param->name, $param->isOptional(), $isPassedByReference, $isNullable);
 		}
 		return $ret;
 	}
