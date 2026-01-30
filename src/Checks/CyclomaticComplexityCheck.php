@@ -97,7 +97,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 		if ($node->stmts) {
 			if ($node instanceof Node\Stmt\ClassMethod) {
 				$this->checkStatements($fileName, $inside, $node, $node->stmts);
-			} else if ($node instanceof Node\Stmt\Function_) {
+			} elseif ($node instanceof Node\Stmt\Function_) {
 				$this->checkStatements($fileName, $inside, $node, $node->stmts);
 			}
 		}

@@ -57,7 +57,7 @@ class PropertyFetch implements ExpressionInterface
 			}
 
 			return $resolvedType;
-		} else if ($node instanceof Node\Expr\StaticPropertyFetch) {
+		} elseif ($node instanceof Node\Expr\StaticPropertyFetch) {
 			/** @var Node\Expr\StaticPropertyFetch $staticPropertyFetch */
 			$staticPropertyFetch = $node;
 			if ($staticPropertyFetch->class instanceof Node\Name && $staticPropertyFetch->name instanceof Node\Identifier) {

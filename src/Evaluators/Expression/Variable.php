@@ -25,7 +25,7 @@ class Variable implements ExpressionInterface {
 			$varName = $expr->name;
 			if ($varName == "this" && $class) {
 				$returnType = $class->namespacedName ?: $class->name;
-			} else if ($varName == "_GET" || $varName == "_POST" || $varName == "_COOKIE" || $varName == "_REQUEST") {
+			} elseif ($varName == "_GET" || $varName == "_POST" || $varName == "_COOKIE" || $varName == "_REQUEST") {
 				$returnType = TypeComparer::identifierFromName("array");
 			} else {
 				$parent = $scopeStack->getParent();

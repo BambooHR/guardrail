@@ -170,9 +170,9 @@ class ClassAbstraction implements ClassInterface {
 					if (strcasecmp($const->name, $name) == 0) {
 						if ($const->value instanceof LNumber) {
 							return TypeComparer::identifierFromName("int");
-						} else if ($const->value instanceof String_) {
+						} elseif ($const->value instanceof String_) {
 							return TypeComparer::identifierFromName("string");
-						} else if (
+						} elseif (
 							$const->value instanceof Expr\ConstFetch &&
 							(
 								strcasecmp($const->value->name, "true") == 0 ||

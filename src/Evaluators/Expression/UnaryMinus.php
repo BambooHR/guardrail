@@ -24,7 +24,7 @@ class UnaryMinus implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 				return $type;
 			}
 			return new Node\UnionType([TypeComparer::identifierFromName("int"), TypeComparer::identifierFromName("float")]);
-		} else if ($node instanceof Node\Expr\BitwiseNot) {
+		} elseif ($node instanceof Node\Expr\BitwiseNot) {
 			return TypeComparer::identifierFromName("int");
 		}
 		return null;

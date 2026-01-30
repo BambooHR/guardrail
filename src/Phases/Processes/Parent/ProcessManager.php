@@ -37,7 +37,7 @@ abstract class ProcessManager {
 		$pid = pcntl_fork();
 		if ($pid == -1) {
 			// error
-		} else if ($pid) {
+		} elseif ($pid) {
 			// Server side, $pid=client pid
 			$this->connections[$pid] = $pair[1];
 			$this->buffers[$pid] = new SocketBuffer();

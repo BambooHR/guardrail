@@ -143,14 +143,14 @@ class AnalyzingPhase {
 				}
 			}
 			return true;
-		} else if ($node instanceof Namespace_) {
+		} elseif ($node instanceof Namespace_) {
 			foreach ($node->stmts as $child) {
 				if (!self::checkForSafeAutoloadNode($file, $child, $output)) {
 					return false;
 				}
 			}
 			return true;
-		} else if (
+		} elseif (
 			$node instanceof Nop ||
 			$node instanceof Class_ ||
 			$node instanceof Interface_ ||

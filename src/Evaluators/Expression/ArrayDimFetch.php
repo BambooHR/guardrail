@@ -52,7 +52,7 @@ class ArrayDimFetch implements ExpressionInterface
 		if ($value instanceof Node\Name) {
 			if (isset($vars[strval($value)])) {
 				return $vars[strval($value)];
-			} else if ($value->getAttribute('templates')) {
+			} elseif ($value->getAttribute('templates')) {
 				$templates = $value->getAttribute('templates');
 				if (count($templates) == 1) {
 					return new Node\Name($value, ["templates" => [$templates[0]]]);

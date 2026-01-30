@@ -83,9 +83,9 @@ class ReflectedClass implements ClassInterface {
 			$constant = $this->refl->getConstant($name);
 			if (is_int($constant)) {
 				return TypeComparer::identifierFromName("int");
-			} else if (is_bool($constant)) {
+			} elseif (is_bool($constant)) {
 				return TypeComparer::identifierFromName("bool");
-			} else if (is_string($constant)) {
+			} elseif (is_string($constant)) {
 				return TypeComparer::identifierFromName("string");
 			} else {
 				return TypeComparer::identifierFromName("mixed");
@@ -162,7 +162,7 @@ class ReflectedClass implements ClassInterface {
 
 				if ($modifiers & \ReflectionProperty::IS_PRIVATE) {
 					$access = "private";
-				} else if ($modifiers & \ReflectionProperty::IS_PROTECTED) {
+				} elseif ($modifiers & \ReflectionProperty::IS_PROTECTED) {
 					$access = "protected";
 				} else {
 					$access = "public";

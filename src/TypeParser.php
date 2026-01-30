@@ -34,9 +34,9 @@ class TypeParser {
 		if ($type && strval($type) != "") {
 			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type)) {
 				return new Node\Identifier($type);
-			} else if (str_starts_with($type, "\\" )) {
+			} elseif (str_starts_with($type, "\\" )) {
 				return new Name\FullyQualified(substr($type, 1), ["templates" => $templateVars]);
-			} else if ($type == "T" || $type == "class-string") {
+			} elseif ($type == "T" || $type == "class-string") {
 				return new Name\FullyQualified($type, ["templates" => $templateVars]);
 			} else {
 				$var = call_user_func($this->resolver, new Name($type));
@@ -77,7 +77,7 @@ class TypeParser {
 					}
 				}
 				return $parent;
-			} else if (!empty($matches[3])) {
+			} elseif (!empty($matches[3])) {
 				$templateVars = array_map($this->generateNameOrIdentifier(...), explode(",", $matches[3]));
 			} else {
 				$templateVars = [];
@@ -129,7 +129,7 @@ class TypeParser {
 		$this->skipWs($type, $i);
 		if ($i >= strlen($type)) {
 			return $intType;
-		} else if ($type[$i] != "|") {
+		} elseif ($type[$i] != "|") {
 			throw new DocBlockParserException("Expected \"|\" in type name in \"$type\"");
 		}
 		$types = [ $intType ];

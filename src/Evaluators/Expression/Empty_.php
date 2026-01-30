@@ -31,13 +31,13 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 					$node->setAttribute('assertsFalse', $falseScope);
 				}
 			}
-		} else if ($node instanceof Node\Expr\Empty_) {
+		} elseif ($node instanceof Node\Expr\Empty_) {
 			// Empty doesn't mean much when true, but when !empty() it means that null is not an option.
 			$varName = $this->getVarName($node->expr);
 			if ($varName) {
 				$node->setAttribute('assertsFalse', $this->buildNotNullChainScope($scopeStack, $varName, $node));
 			}
-		} else if ($node instanceof Node\Expr\BooleanNot) {
+		} elseif ($node instanceof Node\Expr\BooleanNot) {
 			/** @var Node\Expr\BooleanNot $not */
 			$not = $node;
 			if ($not->expr->hasAttribute('assertsTrue')) {

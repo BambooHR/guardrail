@@ -215,7 +215,7 @@ class InterfaceCheck extends BaseCheck {
 		$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 		if (!$parentClass) {
 			$this->emitError($fileName, $node->extends, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unable to find parent " . $node->extends);
-		} else if ($parentClass->isEnum()) {
+		} elseif ($parentClass->isEnum()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ILLEGAL_ENUM, "Enums can not be extended");
 		}
 

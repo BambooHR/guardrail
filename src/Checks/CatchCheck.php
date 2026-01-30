@@ -54,7 +54,7 @@ class CatchCheck extends BaseCheck {
 							$this->emitError($fileName, $node, ErrorConstants::TYPE_EXCEPTION_BASE, "Catching the base Exception class without subsequently throwing may be too broad");
 						}
 					}
-				} else if (!$this->symbolTable->isDefinedClass($name)) {
+				} elseif (!$this->symbolTable->isDefinedClass($name)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Attempt to catch unknown type: $name");
 				} else {
 					if (!$this->symbolTable->isParentClassOrInterface("throwable", $name)) {
@@ -75,7 +75,7 @@ class CatchCheck extends BaseCheck {
 			if ($node instanceof Node\Stmt\Throw_) {
 				$throws = true;
 				return NodeTraverser::STOP_TRAVERSAL;
-			} else if ($node instanceof Node\Stmt\TryCatch) {
+			} elseif ($node instanceof Node\Stmt\TryCatch) {
 				// We don't care about nested try/catches
 				return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 			}

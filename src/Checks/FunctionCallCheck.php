@@ -78,7 +78,7 @@ class FunctionCallCheck extends CallCheck {
 
 		if ($node instanceof Node\Expr\Eval_) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
-		} else if ($node instanceof FuncCall) {
+		} elseif ($node instanceof FuncCall) {
 			if ($node->name instanceof Name) {
 				$namespacedName = $node->name->hasAttribute('namespacedName') ? $node->name->getAttribute('namespacedName')->toString() : "";
 				$name = $node->name->toString();
@@ -104,7 +104,7 @@ class FunctionCallCheck extends CallCheck {
 					}
 					$params = $func->getParameters();
 					$this->checkParams($fileName, $node, $name, $scope, $node->args, $params);
-				} else if (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
+				} elseif (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}
 			} else {

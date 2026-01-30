@@ -40,7 +40,7 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 			if (!isset($overrides[$var->name])) {
 				$scope->setVarType($var->name, TypeComparer::getUniqueTypes($valueType), $var->getLine());
 			}
-		} else if ($var instanceof Node\Expr\PropertyFetch) {
+		} elseif ($var instanceof Node\Expr\PropertyFetch) {
 			$varName = TypeComparer::getChainedPropertyFetchName($var);
 			if ($varName !== null) {
 				$scope->setVarType($varName, TypeComparer::getUniqueTypes($valueType), $var->getLine());
@@ -53,7 +53,7 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 			$varName = strval($var->name);
 			$var->setAttribute('assignment', true);
 			$scope->setVarWritten($varName, $var->getLine());
-		} else if ($var instanceof List_ || $var instanceof Node\Expr\Array_) {
+		} elseif ($var instanceof List_ || $var instanceof Node\Expr\Array_) {
 			// We're not going to examine a potentially complex right side of the assignment, so just set all vars to unknown.
 			foreach ($var->items as $innerVar) {
 				if ($innerVar) {
@@ -70,13 +70,13 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 						} else {
 							$scope->setVarUsed($value->name);
 						}
-					} else if ($innerVar->key instanceof Node\Scalar\String_ && $value instanceof Variable) {
+					} elseif ($innerVar->key instanceof Node\Scalar\String_ && $value instanceof Variable) {
 						// list("key1"=>$a, "key2"=>$b) or ["key1"=>$a, "key2"=>$b]
 						$scope->setVarUsed($value->name);
 					}
 				}
 			}
-		} else if ($var instanceof Node\Expr\ArrayDimFetch) {
+		} elseif ($var instanceof Node\Expr\ArrayDimFetch) {
 			$subVar = $var;
 			do {
 				$subVar = $subVar->var ?? null;

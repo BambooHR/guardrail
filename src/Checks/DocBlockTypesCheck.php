@@ -92,7 +92,7 @@ class DocBlockTypesCheck extends BaseCheck {
 			if ($typeName) {
 				if ($typeName == "type" || strrpos($typeName, "\\type") == strlen($typeName) - 5) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_DOC_BLOCK_TYPE, $message);
-				} else if (!Util::isScalarType($typeName) && !$this->symbolTable->isDefinedClass($typeName)) {
+				} elseif (!Util::isScalarType($typeName) && !$this->symbolTable->isDefinedClass($typeName)) {
 					$this->emitError($fileName, $node, $class, $message);
 				}
 			}

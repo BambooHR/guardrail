@@ -37,7 +37,7 @@ class UnifiedDiffFilter implements FilterInterface {
 			if (preg_match('!^\+\+\+ (\S+)!', $line, $fileNameArr)) {
 				$parts = explode(DIRECTORY_SEPARATOR, $fileNameArr[1], $ignoreParts + 1);
 				$fileName = array_pop( $parts );
-			} else if (preg_match("!^@@ -\d+(,\d+)? \+(\d+)(,(\d+))?!", $line, $lineNumbers)) {
+			} elseif (preg_match("!^@@ -\d+(,\d+)? \+(\d+)(,(\d+))?!", $line, $lineNumbers)) {
 				$start = $lineNumbers[2];
 				if (isset($lineNumbers[4])) {
 					$end = $start + $lineNumbers[4] - 1;
@@ -62,7 +62,7 @@ class UnifiedDiffFilter implements FilterInterface {
 			[$min, $max] = $lineNumbers[$mid];
 			if ($lineNumber >= $min && $lineNumber <= $max) {
 				return true;
-			} else if ($min < $lineNumber) {
+			} elseif ($min < $lineNumber) {
 				$left = $mid + 1;
 			} else {
 				$right = $mid - 1;

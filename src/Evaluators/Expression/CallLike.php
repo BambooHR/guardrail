@@ -39,13 +39,13 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 
 		if ($call instanceof Node\Expr\StaticCall) {
 			return $this->onStaticCall($call, $table, $scopeStack, $pass);
-		} else if ($call instanceof Node\Expr\FuncCall) {
+		} elseif ($call instanceof Node\Expr\FuncCall) {
 			return $this->onFunctionCall($call, $table, $scopeStack, $pass);
-		} else if ($call instanceof Node\Expr\New_) {
+		} elseif ($call instanceof Node\Expr\New_) {
 			return $this->onNew($call, $table, $scopeStack, $pass);
-		} else if ($call instanceof Node\Expr\MethodCall || $call instanceof Node\Expr\NullsafeMethodCall) {
+		} elseif ($call instanceof Node\Expr\MethodCall || $call instanceof Node\Expr\NullsafeMethodCall) {
 			return $this->onMethodCall($call, $table, $scopeStack, $pass);
-		} else if ($call instanceof Node\Expr\Closure) {
+		} elseif ($call instanceof Node\Expr\Closure) {
 			return TypeComparer::identifierFromName("Closure");
 		}
 		throw new \InvalidArgumentException("Unknown call type " . get_class($call));
@@ -250,7 +250,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	static function mapReturnType(Node $selfClass, ?Node $complexType): ?Node {
 		if (TypeComparer::isNamedIdentifier($complexType, "self") || TypeComparer::isNamedIdentifier($complexType, "static")) {
 			return $selfClass;
-		} else if ($complexType instanceof Node\UnionType) {
+		} elseif ($complexType instanceof Node\UnionType) {
 			$types = [];
 			TypeComparer::forEachType($complexType, function ($type) use (&$types, $selfClass) {
 				$types[] = (TypeComparer::isNamedIdentifier($type, "self") || TypeComparer::isNamedIdentifier($type, "static")) ? $selfClass : $type;
@@ -269,10 +269,10 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 			if (empty($type)) {
 				if ($node->var instanceof New_) {
 					$type = $this->onNew($node->var, $table, $scopeStack, 2);
-				} else if (!empty($node->var->name) && $node->var->name == "this") {
+				} elseif (!empty($node->var->name) && $node->var->name == "this") {
 					$class = $scopeStack->getCurrentClass();
 					$type = $class?->namespacedName ?: $class?->name;
-				} else if ($node->var instanceof Variable) {
+				} elseif ($node->var instanceof Variable) {
 					$type = $scopeStack->getCurrentScope()->getVarType($node->var->name);
 				}
 			}

@@ -31,7 +31,7 @@ class FunctionLike implements ExpressionInterface
 					$scopeStack->setVarUsed($var->name);
 				}
 			}
-		} else if ($node instanceof Node\Expr\ArrowFunction) {
+		} elseif ($node instanceof Node\Expr\ArrowFunction) {
 			foreach ($closureScope->getUsedVars() as $var) {
 				/** @var Scope\ScopeVar $var */
 				if ($scopeStack->getVarExists($var->name) && $var->used) {
