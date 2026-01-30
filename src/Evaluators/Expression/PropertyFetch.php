@@ -39,7 +39,7 @@ class PropertyFetch implements ExpressionInterface
 
 			$resolvedType = null;
 			$chainedName = TypeComparer::getChainedPropertyFetchName($expr);
-			if ( $chainedName && $scopeStack->getVarType($chainedName)) {
+			if ($chainedName && $scopeStack->getVarType($chainedName)) {
 				$resolvedType = $scopeStack->getVarType($chainedName);
 			}
 

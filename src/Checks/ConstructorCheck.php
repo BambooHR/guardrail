@@ -47,7 +47,6 @@ class ConstructorCheck extends BaseCheck {
 					strcasecmp($node->name, "__construct") == 0 &&
 					$node->class instanceof Name &&
 					strcasecmp(strval($node->class), "parent") == 0
-
 				) {
 					$found = true;
 				}
@@ -69,11 +68,13 @@ class ConstructorCheck extends BaseCheck {
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ClassMethod) {
 			if ($inside instanceof Class_) {
-				if (strcasecmp($node->name, "__construct") == 0 &&
+				if (
+                    strcasecmp($node->name, "__construct") == 0 &&
 					$inside->extends
 				) {
 					$ob = Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable);
-					if ($ob &&
+					if (
+                        $ob &&
 						!$ob->isAbstract() &&
 						!self::containsConstructorCall($node->stmts)
 					) {

@@ -68,7 +68,7 @@ class ReflectedClassMethod implements MethodInterface {
 	}
 
 	public function getComplexReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
+		if (method_exists($this->refl, "getReturnType")) {
 			return Util::reflectionTypeToPhpParserType($this->refl->getReturnType());
 		}
 		return null;
@@ -148,7 +148,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @return bool
 	 */
 	public function hasNullableReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
+		if (method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			if ($type) {
 				return $type->allowsNull();

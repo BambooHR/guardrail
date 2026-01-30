@@ -72,7 +72,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return bool
 	 */
 	public function hasNullableReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
+		if (method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			if ($type) {
 				return $type->allowsNull();

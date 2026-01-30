@@ -203,7 +203,8 @@ class TypeComparer
 	 *
 	 */
 	static function getChainedPropertyFetchName(Node $rootNode): ?string {
-		if (($rootNode instanceof Node\Expr\PropertyFetch  || $rootNode instanceof Node\Expr\NullsafePropertyFetch)
+		if (
+            ($rootNode instanceof Node\Expr\PropertyFetch  || $rootNode instanceof Node\Expr\NullsafePropertyFetch)
 			&& $rootNode->name instanceof Identifier
 		) {
 			$left = self::getChainedPropertyFetchName($rootNode->var);

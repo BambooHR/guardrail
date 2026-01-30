@@ -98,8 +98,10 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	private function isControllerClass(?ClassLike $inside, Node $node): bool {
 		if ($inside instanceof Class_) {
 			$parentClass = $inside->extends?->toString();
-			if ($parentClass !== null && (
-				str_contains($parentClass, self::BASE_CONTROLLER) || (str_contains($parentClass, self::BAMBOO_API) && $node->name->name === 'handle'))) {
+			if (
+                $parentClass !== null && (
+				str_contains($parentClass, self::BASE_CONTROLLER) || (str_contains($parentClass, self::BAMBOO_API) && $node->name->name === 'handle'))
+            ) {
 				return true;
 			}
 			if ($inside->extends instanceof Node\Name) {

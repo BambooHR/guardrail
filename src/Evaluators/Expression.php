@@ -160,8 +160,10 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			}
 		}
 
-		if (!is_a($class, Node\Expr\ArrayItem::class, true) &&
-		!is_a($class, Node\Expr\ClosureUse::class, true)) {
+		if (
+            !is_a($class, Node\Expr\ArrayItem::class, true) &&
+            !is_a($class, Node\Expr\ClosureUse::class, true)
+        ) {
 			throw new \InvalidArgumentException("Unknown expression $class");
 		}
 		return null;

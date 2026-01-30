@@ -215,7 +215,8 @@ class MethodCall extends CallCheck {
 
 	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall|Expr\NullsafeMethodCall $node): bool {
 		$match = false;
-		if ($cond instanceof Expr\FuncCall &&
+		if (
+            $cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&
 			$cond->name->toString() == "method_exists" &&
 			count($cond->args) >= 2 &&
@@ -234,7 +235,8 @@ class MethodCall extends CallCheck {
 
 
 	function inspectIndividualName(Node\Name $classNameOb, string $fileName, Expr\MethodCall|Expr\NullsafeMethodCall $node, string $methodName, Scope $scope, ?ClassLike $inside): bool {
-		if ($classNameOb instanceof Node\Name &&
+		if (
+            $classNameOb instanceof Node\Name &&
 			$classNameOb == "T" &&
 			$classNameOb->getAttribute('templates') &&
 			$classNameOb->getAttribute('templates')[0]

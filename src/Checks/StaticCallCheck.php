@@ -79,7 +79,8 @@ class StaticCallCheck extends CallCheck {
 			$method = Util::findAbstractedMethod($name, $name, $this->symbolTable);
 		}
 		if (! $method) {
-			if (! Util::findAbstractedMethod($name, "__callStatic", $this->symbolTable) &&
+			if (
+                ! Util::findAbstractedMethod($name, "__callStatic", $this->symbolTable) &&
 				(! $possibleDynamic || ! Util::findAbstractedMethod($name, "__call", $this->symbolTable))
 			) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Unable to find method.  $name::" . $node->name);

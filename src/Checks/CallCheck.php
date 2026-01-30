@@ -115,7 +115,8 @@ abstract class CallCheck extends BaseCheck {
 			}
 			if ($expectedType && (!($expectedType instanceof Node\Name) || strcasecmp($expectedType, "T") != 0)) {
 				// Reference mismatch
-				if ($param->isReference() &&
+				if (
+                    $param->isReference() &&
 					!(
 						$arg->value instanceof Variable ||
 						$arg->value instanceof Expr\ArrayDimFetch ||

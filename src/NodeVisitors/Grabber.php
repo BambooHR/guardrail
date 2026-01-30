@@ -93,7 +93,8 @@ class Grabber extends NodeVisitorAbstract {
 	 */
 	public function enterNode(Node $node) {
 		$class = $node::class;
-		if (strcasecmp($class, $this->classType) == 0 ||
+		if (
+            strcasecmp($class, $this->classType) == 0 ||
 			(strcasecmp($class, Node\Stmt\Enum_::class) == 0 && strcasecmp($this->classType, Class_::class) == 0)
 		) {
 			$var = ($this->fromVar == self::FROM_FQN ? strval($node->namespacedName) : strval($node->name));

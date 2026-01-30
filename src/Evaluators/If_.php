@@ -20,7 +20,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$scopeStack->pushScope($thenBranch);
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
-		} elseif ( $node instanceof Node\Stmt\ElseIf_) {
+		} elseif ($node instanceof Node\Stmt\ElseIf_) {
 			$scopeStack->swapTopTwoScopes();
 
 			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
@@ -28,14 +28,15 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
-		} elseif ( $node instanceof Node\Stmt\Else_) {
+		} elseif ($node instanceof Node\Stmt\Else_) {
 			$scopeStack->swapTopTwoScopes();
 		}
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\If_) {
-			if ($node->else == null &&
+			if (
+                $node->else == null &&
 				count($node->elseifs) == 0 &&
 				( end($node->stmts) instanceof Node\Stmt\Return_ || end($node->stmts) instanceof Node\Stmt\Throw_ || end($node->stmts) instanceof Node\Stmt\Continue_)
 			) {

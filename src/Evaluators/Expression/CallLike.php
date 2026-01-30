@@ -80,11 +80,13 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 		if ($call->name instanceof Node\Name) {
 			if ($pass == 2) {
-				if (strcasecmp($call->name, "assert") == 0 &&
+				if (
+                    strcasecmp($call->name, "assert") == 0 &&
 					count($call->args) == 1
 				) {
 					$var = $call->args[0]->value;
-					if ($var instanceof Instanceof_ &&
+					if (
+                        $var instanceof Instanceof_ &&
 						$var->expr instanceof Variable &&
 						is_string($var->expr->name) &&
 						$var->class instanceof Node\Name
@@ -159,7 +161,8 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	}
 
 	function checkForVariableCastedCall(Node\Expr\FuncCall $func, ScopeStack $scope) {
-		if ($func->name instanceof Name &&
+		if (
+            $func->name instanceof Name &&
 			count($func->args) == 1 &&
 			$func->args[0]->value instanceof Variable &&
 			is_string($func->args[0]->value->name)
@@ -173,7 +176,8 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	}
 
 	function checkForPropertyCastedCall(Node\Expr\FuncCall $func, SymbolTable $table, ScopeStack $scopeStack) {
-		if ($func->name instanceof Name &&
+		if (
+            $func->name instanceof Name &&
 			count($func->args) == 1 &&
 			(
 				$func->args[0]->value instanceof Node\Expr\PropertyFetch ||

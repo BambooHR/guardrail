@@ -158,7 +158,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		} elseif ($node instanceof Node\Const_ && count($this->classStack) == 0) {
 			$defineName = strval($node->namespacedName);
 			$this->index->addDefine($defineName, $node, $this->filename);
-		} elseif ($node instanceof FuncCall &&
+		} elseif (
+            $node instanceof FuncCall &&
 			$node->name instanceof Node\Name &&
 			strcasecmp($node->name->toString(), 'define') == 0 &&
 			count($node->args) >= 1
@@ -186,7 +187,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
-		if ( ($node instanceof Class_ && isset($node->namespacedName)) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
+		if (($node instanceof Class_ && isset($node->namespacedName)) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		}
 		array_pop($this->nodeStack);

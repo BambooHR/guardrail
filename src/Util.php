@@ -477,7 +477,7 @@ class Util {
 			}
 			$stmts = $case->stmts;
 			// Remove the trailing break (if found) and just look for a return the statement prior
-			while ( ($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
+			while (($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
 				$stmts = array_slice($stmts, 0, -1);
 			}
 			if ($stmts && !self::allBranchesExit($stmts)) {

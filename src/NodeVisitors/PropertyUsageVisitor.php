@@ -52,7 +52,8 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 			// Don't look for usage in nested classes.
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
-		if ($node instanceof Node\Expr\PropertyFetch &&
+		if (
+            $node instanceof Node\Expr\PropertyFetch &&
 			$node->var instanceof Node\Expr\Variable &&
 			$node->var->name === 'this'
 		) {
@@ -64,7 +65,8 @@ class PropertyUsageVisitor extends NodeVisitorAbstract {
 			}
 		}
 
-		if ($node instanceof Node\Expr\FuncCall &&
+		if (
+            $node instanceof Node\Expr\FuncCall &&
 			$node->name == "get_object_vars" &&
 			count($node->args) >= 1 &&
 			$node->args[0]->value instanceof Node\Expr\Variable &&
