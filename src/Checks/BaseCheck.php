@@ -47,7 +47,7 @@ abstract class BaseCheck extends ErrorConstants {
 	 *
 	 * @return mixed
 	 */
-	public function emitError($file, \PhpParser\Node $node, $class, $message="") {
+	public function emitError($file, \PhpParser\Node $node, $class, $message = "") {
 		$trait = $node->getAttribute("importedFromTrait");
 		if ($trait) {
 			$trait = str_replace("//", "/", $trait);
@@ -68,7 +68,7 @@ abstract class BaseCheck extends ErrorConstants {
 	 *
 	 * @return mixed
 	 */
-	public function emitErrorOnLine($file, $lineNumber, $class, $message="") {
+	public function emitErrorOnLine($file, $lineNumber, $class, $message = "") {
 		return $this->doc->emitError(get_class($this), $file, $lineNumber, $class, $message);
 	}
 

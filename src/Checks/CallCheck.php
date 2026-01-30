@@ -27,7 +27,7 @@ abstract class CallCheck extends BaseCheck {
 	 * @param FunctionLikeParameter[] $params
 	 * @return void
 	 */
-	protected function checkParams($fileName, $node, $name, ?Scope $scope, array $args, array $params, array $templates=[]) {
+	protected function checkParams($fileName, $node, $name, ?Scope $scope, array $args, array $params, array $templates = []) {
 		$named = false;
 		$covered = array_fill(0, count($params), 0);
 		foreach ($args as $index => $arg) {

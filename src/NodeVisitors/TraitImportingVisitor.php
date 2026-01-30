@@ -37,7 +37,7 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 	 *
 	 * @param SymbolTable $index Instance of SymbolTable
 	 */
-	public function __construct( SymbolTable $index) {
+	public function __construct(SymbolTable $index) {
 		$this->importer  = new TraitImporter($index);
 	}
 

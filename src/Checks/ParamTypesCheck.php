@@ -42,7 +42,7 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name , ?ClassLike $inside=null) {
+	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name, ?ClassLike $inside = null) {
 		$return = true;
 
 		if ($name instanceof Node\NullableType && TypeComparer::isNamedIdentifier($name->type, "null")) {
@@ -79,7 +79,7 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 
 		if ($node instanceof Function_) {
 			$this->checkForNestedFunction($fileName, $node, $inside, $scope);

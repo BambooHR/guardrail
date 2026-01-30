@@ -43,7 +43,7 @@ class InstantiationCheck extends MethodCall {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof New_) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();

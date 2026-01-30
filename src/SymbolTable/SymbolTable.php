@@ -301,7 +301,7 @@ abstract class SymbolTable {
 	 *
 	 * @return string
 	 */
-	public function adjustBasePath(string  $fileName): string {
+	public function adjustBasePath(string $fileName): string {
 		if (strpos($fileName, "phar://") === 0) {
 			$fileName = substr($fileName, 7);
 		} elseif (!empty($fileName) && strpos($fileName, "/") !== 0) {

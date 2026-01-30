@@ -213,11 +213,11 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	}
 
 	private function emitTypeMismatchError(
-		string                $fileName,
+		string $fileName,
 		Node\Stmt\ClassMethod $node,
-		?Node\Stmt\ClassLike  $inside,
-		string                $propertyName,
-		string                $errorMessage
+		?Node\Stmt\ClassLike $inside,
+		string $propertyName,
+		string $errorMessage
 	): void {
 		$this->emitErrorOnLine($fileName, $node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,

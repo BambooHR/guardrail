@@ -39,7 +39,7 @@ class InstanceOfCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Instanceof_) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();

@@ -151,8 +151,8 @@ class InterfaceCheck extends BaseCheck {
 	private function assertParentChildReturnTypesMatch(
 		MethodInterface $childMethod,
 		MethodInterface $parentMethod,
-		string          $fileName,
-		string          $className
+		string $fileName,
+		string $className
 	) {
 		$parentType = $parentMethod->getComplexReturnType();
 		$childType = $childMethod->getComplexReturnType();

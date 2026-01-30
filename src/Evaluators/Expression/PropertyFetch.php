@@ -67,7 +67,7 @@ class PropertyFetch implements ExpressionInterface
 		return null;
 	}
 
-	public function getProperty($class, Node\Identifier $name,SymbolTable $table) {
+	public function getProperty($class, Node\Identifier $name, SymbolTable $table) {
 		$propName = strval($name);
 		if ($propName != "") {
 			$types = [];

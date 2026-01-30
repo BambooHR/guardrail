@@ -286,7 +286,7 @@ class TypeComparer
 	 * @return bool
 	 *
 	 */
-	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false, $nullChecks=true ): bool {
+	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict = false, $nullChecks = true): bool {
 		if ($nullChecks) {
 			if (is_null($target)) {
 				return true;

@@ -38,7 +38,7 @@ class Util {
 	 *
 	 * @return "mixed"
 	 */
-	static public function finalPart( $parts ) {
+	static public function finalPart($parts) {
 		return property_exists($parts, "parts") && is_array($parts->parts) ? $parts->parts[count($parts->parts) - 1] : $parts;
 	}
 
@@ -324,7 +324,7 @@ class Util {
 	 *
 	 * @return void
 	 */
-	static public function callIsCompatible(ClassMethod $method,MethodCall $call) {
+	static public function callIsCompatible(ClassMethod $method, MethodCall $call) {
 
 	}
 

@@ -53,7 +53,7 @@ class StaticCallCheck extends CallCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof StaticCall) {
 			$this->checkStaticCall($fileName, $node, $inside, $scope);
 		}

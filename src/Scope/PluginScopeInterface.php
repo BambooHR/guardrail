@@ -20,7 +20,7 @@ interface PluginScopeInterface
 	public function setVarReference($name, ScopeVar $ref): void;
 	public function setVarWritten($name, $line): void;
 	public function setVarUsed($name): void;
-	public function dump($typeChanged=false, $used=false, $modified=false): void;
+	public function dump($typeChanged = false, $used = false, $modified = false): void;
 	public function markAllVarsUsed(): void;
 	public function getUnusedVars(): array;
 	public function getUsedVars(): array;

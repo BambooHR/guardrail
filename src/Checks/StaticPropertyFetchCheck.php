@@ -51,7 +51,7 @@ class StaticPropertyFetchCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Expr\StaticPropertyFetch) {
 			$class = $node->class;
 			if ($class == "self" || $class == "static") {

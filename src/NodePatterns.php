@@ -31,7 +31,7 @@ class NodePatterns
 		return false;
 	}
 
-	public static function parentNodeExpectsBool(Node $parent, Node $child ): bool {
+	public static function parentNodeExpectsBool(Node $parent, Node $child): bool {
 		return (
 			$parent instanceof Node\Expr\BinaryOp\BooleanAnd ||
 			$parent instanceof Node\Expr\BinaryOp\BooleanOr ||

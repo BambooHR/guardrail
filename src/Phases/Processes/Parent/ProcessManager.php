@@ -116,10 +116,10 @@ abstract class ProcessManager {
 		}
 	}
 
-	function dispatchMessage(\Socket $socket,$msg): int {
+	function dispatchMessage(\Socket $socket, $msg): int {
 		list($message,$details) = explode(" ", $msg, 2);
 		return $this->handleClientMessage( $socket, $message, ...explode(" ", $details));
 	}
 
-	abstract function handleClientMessage(\Socket $socket, string $message,string ... $params): int;
+	abstract function handleClientMessage(\Socket $socket, string $message, string ...$params): int;
 }

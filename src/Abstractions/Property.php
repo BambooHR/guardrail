@@ -41,7 +41,7 @@ class Property {
 	 *
 
 	 */
-	public function __construct(private ClassInterface $cls, string $name,?\PhpParser\Node $type, string $access, bool $isStatic, bool $isReadOnly) {
+	public function __construct(private ClassInterface $cls, string $name, ?\PhpParser\Node $type, string $access, bool $isStatic, bool $isReadOnly) {
 		$this->name = $name;
 		$this->access = $access;
 		$this->type = $type;

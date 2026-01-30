@@ -28,7 +28,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		$this->onExit($node, $table, $scopeStack, 1);
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack, int $pass=2): ?Node {
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack, int $pass = 2): ?Node {
 		/** @var Node\Expr\CallLike $call */
 		$call = $node;
 
@@ -51,7 +51,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		throw new \InvalidArgumentException("Unknown call type " . get_class($call));
 	}
 
-	function onNew(Node $node, SymbolTable $table, ScopeStack $scopeStack, $pass ): ?Node {
+	function onNew(Node $node, SymbolTable $table, ScopeStack $scopeStack, $pass): ?Node {
 		/** @var Node\Expr\New_ $expr */
 		$expr = $node;
 		$inside = $scopeStack->getCurrentClass();
@@ -75,7 +75,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 	}
 
-	function onFunctionCall(Node\Expr\FuncCall $call, SymbolTable $table, ScopeStack $scopeStack,$pass): ?Node {
+	function onFunctionCall(Node\Expr\FuncCall $call, SymbolTable $table, ScopeStack $scopeStack, $pass): ?Node {
 		if (count($call->args) == 1 && $call->args[0] instanceof Node\VariadicPlaceholder) {
 			return TypeComparer::identifierFromName("callable");
 		}

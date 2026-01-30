@@ -30,7 +30,7 @@ class TypeParser {
 		return $type;
 	}
 
-	private function generateNameOrIdentifier($type, array $templateVars=[]) {
+	private function generateNameOrIdentifier($type, array $templateVars = []) {
 		if ($type && strval($type) != "") {
 			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type)) {
 				return new Node\Identifier($type);

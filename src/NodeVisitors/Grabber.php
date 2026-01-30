@@ -55,7 +55,7 @@ class Grabber extends NodeVisitorAbstract {
 	 * @param string $classType        The class type
 	 * @param int    $fromVar          The variable for from type
 	 */
-	public function __construct( $searchingForName = "", $classType = Class_::class, $fromVar = self::FROM_FQN ) {
+	public function __construct($searchingForName = "", $classType = Class_::class, $fromVar = self::FROM_FQN) {
 		if ($searchingForName) {
 			$this->initForSearch($searchingForName, $classType, $fromVar);
 		}
@@ -70,7 +70,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	public function initForSearch( $searchingForName, $classType = Class_::class, $fromVar = "fqn") {
+	public function initForSearch($searchingForName, $classType = Class_::class, $fromVar = "fqn") {
 		$this->searchingForName = $searchingForName;
 		$this->classType = $classType;
 		$this->foundClass = null;
@@ -140,7 +140,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return null|Class_|Interface_|Trait_
 	 */
-	static public function getClassFromStmts( SymbolTable $table, $stmts, $className, $classType=Class_::class, $fromVar=self::FROM_FQN) {
+	static public function getClassFromStmts(SymbolTable $table, $stmts, $className, $classType = Class_::class, $fromVar = self::FROM_FQN) {
 		$grabber = new Grabber($className, $classType, $fromVar);
 		$traverser = new NodeTraverser;
 		$traverser->addVisitor($grabber);
@@ -158,7 +158,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return Interface_|Trait_|null|Class_
 	 */
-	static public function getClassFromFile( SymbolTable $table, $fileName, $className, $classType=Class_::class ) {
+	static public function getClassFromFile(SymbolTable $table, $fileName, $className, $classType = Class_::class) {
 		static $lastFile = "";
 		static $lastContents;
 		if ($lastFile == $fileName) {

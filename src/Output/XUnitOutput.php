@@ -153,7 +153,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	public function shouldEmit($fileName, $name, $lineNumber, float|int|null $metric=null) {
+	public function shouldEmit($fileName, $name, $lineNumber, float|int|null $metric = null) {
 		if (isset($this->silenced[$name]) && $this->silenced[$name] > 0) {
 			return false;
 		}
@@ -261,7 +261,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return void
 	 */
-	public function emitError($className, $fileName, $lineNumber, $name, $message="") {
+	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
 
 		++$this->totalErrors;
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {

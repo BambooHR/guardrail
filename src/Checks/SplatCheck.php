@@ -29,7 +29,7 @@ class SplatCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside=null, ?Scope $scope = null) {
+	public function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ArrayItem) {
 			if ($node->unpack) {
 				$type = $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);

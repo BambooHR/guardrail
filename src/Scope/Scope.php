@@ -147,7 +147,7 @@ class Scope implements PluginScopeInterface {
 	/**
 	 * @return void
 	 */
-	public function dump($typeChanged=false, $used=false, $modified=false): void {
+	public function dump($typeChanged = false, $used = false, $modified = false): void {
 		if (!$typeChanged && !$used && !$modified) {
 			$typeChanged = $used = $modified = true;
 		}
