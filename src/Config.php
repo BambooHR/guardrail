@@ -120,7 +120,7 @@ class Config {
 						case "DocBlockReturns":
 							self::$useDocBlockForReturnValue = true;
 							break;
-						case "DocBlockParams" :
+						case "DocBlockParams":
 							self::$useDocBlockForParameters = true;
 							break;
 						case "DocBlockProperties":

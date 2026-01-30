@@ -163,7 +163,6 @@ class ReflectedFunction implements FunctionLikeInterface {
 					}
 					break;
 				case 1:
-
 					if ($name == "usort" || $name == "uksort" || $name == "uasort") {
 						$type = TypeComparer::identifierFromName("callable");
 					}

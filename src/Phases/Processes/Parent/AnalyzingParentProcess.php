@@ -90,7 +90,7 @@ class AnalyzingParentProcess extends ProcessManager {
 				$vars = unserialize($details);
 				$this->output->output($vars['v'], $vars['ev']);
 				break;
-			case 'ERROR' :
+			case 'ERROR':
 				$vars = unserialize(base64_decode($details));
 
 				$this->output->emitError(
