@@ -154,7 +154,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 					switch ($type) {
 						case self::TYPE_TRAIT:
 							$this->addType($name, $entryString['file'], $type, isset($entryString['has_trait']));
-						    break;
+							break;
 						case self::TYPE_CLASS:
 						case self::TYPE_INTERFACE:
 							$this->addType($name, $entryString['file'], $type, isset($entryString['has_trait']), $this->serializeClass($table->unserializeClass($entryString['data'])));
