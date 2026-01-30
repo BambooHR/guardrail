@@ -239,7 +239,6 @@ class MethodCall extends CallCheck {
 			$classNameOb->getAttribute('templates') &&
 			$classNameOb->getAttribute('templates')[0]
 		) {
-
 			$classNameOb = $classNameOb->getAttribute('templates')[0];
 		}
 
@@ -263,7 +262,6 @@ class MethodCall extends CallCheck {
 				!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $typeClassName) &&
 				!$this->wrappedByMethodExistsCheck($node, $scope)
 			) {
-
 				return false;
 			}
 			return true;

@@ -168,7 +168,6 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 */
 	private function processDocBlockReturn($node, $str) {
 		if ($str && preg_match('/@return +([-A-Z0-9_|\\\\<>,]+(\[])*)( +\\$([A-Z0-9_]+))?/i', $str, $matchArray)) {
-
 			$returnType = $matchArray[1];
 			try {
 				$v = $this->parser->parse($returnType);

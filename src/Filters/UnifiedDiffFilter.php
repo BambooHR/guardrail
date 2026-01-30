@@ -85,7 +85,6 @@ class UnifiedDiffFilter implements FilterInterface {
 	 */
 	function display() {
 		foreach ($this->filter as $fileName => $lineNumbers) {
-
 			echo "Filter: $fileName: " .
 				implode(
                     ",",

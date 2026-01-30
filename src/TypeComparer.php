@@ -231,7 +231,6 @@ class TypeComparer
 			return "null|" . strval($type->type);
 		} elseif ($type instanceof UnionType) {
 			return implode("|", array_map(fn($type)=>self::typeToString($type), $type->types));
-
 		} elseif ($type instanceof IntersectionType) {
 			return "(" . implode("&", array_map(fn($type)=>self::typeToString($type), $type->types)) . ")";
 		} else {

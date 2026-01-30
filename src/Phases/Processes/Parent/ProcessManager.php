@@ -58,7 +58,6 @@ abstract class ProcessManager {
 
 	function loopWhileConnections() {
 		while (count($this->connections) > 0) {
-
 			$none = null;
 			do {
 				$childPid = pcntl_wait($status, WNOHANG);

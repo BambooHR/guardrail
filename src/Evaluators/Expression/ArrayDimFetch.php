@@ -39,7 +39,6 @@ class ArrayDimFetch implements ExpressionInterface
 						$returnType = $method->getDocBlockReturnType();
 						return $this->substituteTemplateVars(['T' => $arrayType], $returnType);
 					}
-
 				}
 			}
 			return TypeComparer::identifierFromName("array");

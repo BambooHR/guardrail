@@ -96,7 +96,6 @@ class Grabber extends NodeVisitorAbstract {
 		if (strcasecmp($class, $this->classType) == 0 ||
 			(strcasecmp($class, Node\Stmt\Enum_::class) == 0 && strcasecmp($this->classType, Class_::class) == 0)
 		) {
-
 			$var = ($this->fromVar == self::FROM_FQN ? strval($node->namespacedName) : strval($node->name));
 			if (strcasecmp($var, $this->searchingForName) == 0) {
 				$this->foundClass = $node;
@@ -183,7 +182,6 @@ class Grabber extends NodeVisitorAbstract {
 					$traverser = new NodeTraverser;
 					$traverser->addVisitor(new TraitImportingVisitor($table));
 					$stmts = $traverser->traverse($stmts);
-
 				} catch (UnknownTraitException $exception) {
 					echo "[$className] Unknown trait! " . $exception->getMessage() . "\n";
 					// Ignore these for now.

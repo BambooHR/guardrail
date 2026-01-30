@@ -57,7 +57,6 @@ class PropertyStoreCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Expr\Assign && $node->var instanceof PropertyFetch && $node->var->name instanceof Node\Identifier) {
-
 			$targetObject = $node->var->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			$valueType = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			$nodeVarName = strval($node->var->name);

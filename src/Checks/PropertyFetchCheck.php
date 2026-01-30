@@ -43,7 +43,6 @@ class PropertyFetchCheck extends BaseCheck {
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) {
-
 			$chainedName = NodePatterns::getVariableOrPropertyName($node);
 
 			if (!$chainedName) {
@@ -130,7 +129,6 @@ class PropertyFetchCheck extends BaseCheck {
 				if ($access === "private" && strcasecmp($declaredIn, $callingClass) !== 0) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property $declaredIn->" . $node->name . " from " .
 											  (!$inside ? "outside a class" : $callingClass ));
-
 				} elseif (
 					$access == "protected" &&
 					(

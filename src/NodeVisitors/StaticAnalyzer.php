@@ -191,7 +191,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		foreach ($instances as $instance) {
 			$type = $instance->getInstanceType();
 			if (is_array($type)) {
-
 				foreach ($type as $type2) {
 					if ($node instanceof $type2) {
 						return $instance;

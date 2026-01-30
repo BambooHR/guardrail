@@ -66,7 +66,6 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 		if ($node instanceof Class_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		} elseif ($node instanceof Node\Stmt\TraitUse) {
-
 			$class = end($this->classStack);
 			assert($class);
 			$traits = $this->importer->resolveTraits($node, $class);

@@ -17,7 +17,6 @@ class ShellExec implements ExpressionInterface
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		if ($node instanceof Node\Expr\ShellExec) {
-
 			return TypeComparer::identifierFromName("string");
 		} else {
 			return null;

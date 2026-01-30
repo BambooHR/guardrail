@@ -100,7 +100,6 @@ class ParamTypesCheck extends BaseCheck {
 
 		if ($node instanceof Node\FunctionLike) {
 			foreach ($node->getParams() as $index => $param) {
-
 				if ($param->type) {
 					$name = $param->type;
 					if (!$this->isAllowed($name, $inside)) {

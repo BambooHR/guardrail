@@ -62,11 +62,9 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 					if ($innerVar->key == null && $value && $value instanceof Variable && gettype($value->name) == "string") {
 						//list() = or [$a,$b] = OR // return list($a, $b)
 						if (!$scope->getVarExists($value->name)) {
-
 							$value->setAttribute('assignment', true);
 							$scope->setVarType(strval($value->name), null, $innerVar->getLine());
 							$scope->setVarWritten(strval($value->name), $innerVar->getLine());
-
 						} else {
 							$scope->setVarUsed($value->name);
 						}

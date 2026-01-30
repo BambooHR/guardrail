@@ -712,7 +712,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				'implements' => $implements,
 				'stmts' => $stmts,
 				'flags' => $flags]);
-
 		}
 		$cls->namespacedName = $name;
 		return $cls;

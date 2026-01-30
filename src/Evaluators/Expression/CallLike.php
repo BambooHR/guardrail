@@ -57,7 +57,6 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		$inside = $scopeStack->getCurrentClass();
 
 		if ($expr->class instanceof Name) {
-
 			$className = $expr->class;
 
 			if (strcasecmp($className, "self") == 0) {
@@ -185,7 +184,6 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 			$type = $this->getCastedCallType(strtolower($func->name));
 
 			if (!is_null($type) && !is_null($varName)) {
-
 				// The end node of the chain gets a specific type
 
 				// If the last node in the chain is a specific type, then no node in the chain is null.
