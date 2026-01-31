@@ -103,12 +103,12 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	private function importVarType(Property $prop) {
 		$comment = $prop->getDocComment();
 		if ($comment && preg_match('/@var +([-A-Z0-9_|\\\\()]+)/i', $comment, $matchArray)) {
-            try {
-                $prop->props[0]->setAttribute("namespacedType", $this->parser->parse($matchArray[1]));
-            } catch (DocBlockParserException $exception) {
-                // Skip it.
-            }
-        }
+			try {
+				$prop->props[0]->setAttribute("namespacedType", $this->parser->parse($matchArray[1]));
+			} catch (DocBlockParserException $exception) {
+				// Skip it.
+			}
+		}
 	}
 
 	/**

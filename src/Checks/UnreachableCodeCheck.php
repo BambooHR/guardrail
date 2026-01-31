@@ -72,7 +72,7 @@ class UnreachableCodeCheck extends BaseCheck {
 				} else {
 					$previous = $statement;
 				}
-            }
+			}
 		}
 		return null;
 	}
