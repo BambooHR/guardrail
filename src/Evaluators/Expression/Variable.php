@@ -17,7 +17,7 @@ class Variable implements ExpressionInterface {
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		$expr = $node;
 		$returnType = null;
-		if ($expr instanceOf Node\Expr\Variable && is_string($expr->name)) {
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			if (!$expr->hasAttribute('assignment') && $scopeStack->getVarExists($expr->name)) {
 				$scopeStack->setVarUsed($expr->name);
 			}

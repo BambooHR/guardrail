@@ -28,7 +28,7 @@ class ClassConstFetch implements ExpressionInterface
 		}
 
 		// Class constants can point to other class constants, so follow the chain.
-		while ($expr instanceOf Node\Expr\ClassConstFetch && $expr->class instanceof Node\Name) {
+		while ($expr instanceof Node\Expr\ClassConstFetch && $expr->class instanceof Node\Name) {
 			if ($expr->name == "class") {
 				return TypeComparer::identifierFromName("string");
 			} else {
