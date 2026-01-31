@@ -43,7 +43,7 @@ class FunctionCallCheck extends CallCheck {
 	/**
 	 * @var array
 	 */
-	static private $dangerous = [
+	private static $dangerous = [
 		'exec' => true,
 		'shell_exec' => true,
 		'proc_open' => true,
@@ -56,7 +56,7 @@ class FunctionCallCheck extends CallCheck {
 	/**
 	 * @var array
 	 */
-	static private $debug = [
+	private static $debug = [
 		'print_r' => true,
 		'debug_print_backtrace' => true,
 		'debug_backtrace' => true,

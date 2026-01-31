@@ -33,7 +33,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @var array
 	 */
-	static private $methodVisibilityLevels = [
+	private static $methodVisibilityLevels = [
 		'private' => 0,
 		'protected' => 1,
 		'public' => 2,

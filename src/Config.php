@@ -94,20 +94,20 @@ class Config {
 	private $filterFileName = "";
 
 	/** @var bool */
-	static private $useDocBlockForProperties = false;
+	private static $useDocBlockForProperties = false;
 
 	/** @var bool */
-	static private $useDocBlockForReturnValue = false;
+	private static $useDocBlockForReturnValue = false;
 
 	/** @var bool */
-	static private $useDocBlockForParameters = false;
+	private static $useDocBlockForParameters = false;
 
 	/** @var bool */
-	static private $useDocBlockForInlineVars = false;
+	private static $useDocBlockForInlineVars = false;
 
-	static private $useDocBlockTypedArrays = false;
+	private static $useDocBlockTypedArrays = false;
 
-	static private $useDocBlockGenerics = false;
+	private static $useDocBlockGenerics = false;
 
 	/**
 	 * @return void

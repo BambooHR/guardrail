@@ -30,7 +30,7 @@ class DefinedConstantCheck extends BaseCheck {
 	/**
 	 * @var array
 	 */
-	static private $phpConstants = [
+	private static $phpConstants = [
 		"PHP_VERSION" => 1,
 		"PHP_MAJOR_VERSION" => 1,
 		"PHP_MINOR_VERSION" => 1,
