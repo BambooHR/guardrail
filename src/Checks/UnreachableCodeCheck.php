@@ -66,12 +66,13 @@ class UnreachableCodeCheck extends BaseCheck {
 			$previous = array_shift($statements);
 		} while ($previous instanceof Node\Stmt\Nop);
 		foreach ($statements as $statement) {
-			if (!$statement instanceof Node\Stmt\Nop)
+			if (!$statement instanceof Node\Stmt\Nop) {
 				if (Util::allBranchesExit([$previous])) {
 					return $statement;
 				} else {
 					$previous = $statement;
 				}
+            }
 		}
 		return null;
 	}
