@@ -18,7 +18,7 @@ try {
 	$baseDir = dirname(dirname(__DIR__));
 	echo "Building relative to $baseDir\n";
 	$it = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS);
-	$it2 = new class($it) extends \RecursiveFilterIterator {
+	$it2 = new class ($it) extends \RecursiveFilterIterator {
 		function accept(): bool {
 			return $this->current()->getExtension() !== "phar";
 		}
