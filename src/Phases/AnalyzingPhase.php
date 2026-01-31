@@ -68,7 +68,7 @@ class AnalyzingPhase {
 
 
 	function initParser(Config $config, XUnitOutput & MetricOutputInterface $output) {
-		$traverser1 = new NodeTraverser;
+		$traverser1 = new NodeTraverser();
 		$traverser1->addVisitor($resolver = new NameResolver());
 		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 		$traverser1->addVisitor(new PromotedPropertyVisitor());
@@ -76,13 +76,13 @@ class AnalyzingPhase {
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
 
-		$traverser3 = new NodeTraverser;
+		$traverser3 = new NodeTraverser();
 		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config));
 
 		$this->output = $output;
 
 		$this->traversers = [$traverser1, $traverser2, $traverser3];
-		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		$this->parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
 	}
 
 	function getAnalyzer() {

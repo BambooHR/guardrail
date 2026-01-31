@@ -152,7 +152,7 @@ class Config {
 		$this->parseArgv($argv);
 
 		if (!$this->configFileName) {
-			throw new InvalidConfigException;
+			throw new InvalidConfigException();
 		}
 
 		$this->basePath = dirname(realpath($this->configFileName)) . "/";
@@ -161,7 +161,7 @@ class Config {
 		$jsonConfigValid = Util::jsonFileContentIsValid($fullPath);
 		if (true !== $jsonConfigValid['success']) {
 			echo $jsonConfigValid['message'] . "\n";
-			throw new InvalidConfigException;
+			throw new InvalidConfigException();
 		}
 
 		$this->config = json_decode(file_get_contents($this->configFileName), true);
@@ -305,7 +305,7 @@ class Config {
 
 				case '--format':
 					if (++$argCount >= count($argv) || !in_array($argv[$argCount], ["csv","xunit", "text", "counts"])) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					$this->format = $argv[$argCount];
 					break;
@@ -331,12 +331,12 @@ class Config {
 				case '-p':
 					$params = [];
 					if ($argCount + 1 >= count($argv) || !preg_match('/^([0-9]+)\\/([0-9]+)$/', $argv[$argCount + 1], $params)) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					++$argCount;
 					list(, $this->partitionNumber, $this->partitions) = $params;
 					if ($this->partitionNumber < 1 || $this->partitionNumber > $this->partitions) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					break;
 				case '-v':
@@ -344,31 +344,31 @@ class Config {
 					break;
 				case '-n':
 					if ($argCount + 1 >= count($argv)) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					$this->processes = intval($argv[++$argCount]);
 					break;
 				case '-f':
 					if ($argCount + 1 >= count($argv)) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					$this->fileList = [$argv[++$argCount]];
 					break;
 				case '-o':
 					if ($argCount + 1 >= count($argv)) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					$this->outputFile = $argv[++$argCount];
 					break;
 				case '--metric-output':
 					if ($argCount + 1 >= count($argv)) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					$this->metricOutputFile = $argv[++$argCount];
 					break;
 				case '--symbol-table-output':
 					if ($argCount + 1 >= count($argv)) {
-						throw new InvalidConfigException;
+						throw new InvalidConfigException();
 					}
 					$this->symbolTableOutputFile = $argv[++$argCount];
 					break;
@@ -385,7 +385,7 @@ class Config {
 					break;
 				case '-h':
 				case '--help':
-					throw new InvalidConfigException;
+					throw new InvalidConfigException();
 					break;
 				default:
 					switch ($nextArg) {
@@ -396,7 +396,7 @@ class Config {
 							$this->fileList = explode("\n", file_get_contents($argv[$argCount]));
 							break;
 						default:
-							throw new InvalidConfigException;
+							throw new InvalidConfigException();
 					}
 					$nextArg++;
 			}
@@ -405,7 +405,7 @@ class Config {
 			$this->forceIndex = true;
 		}
 		if (count($argv) < 2) {
-			throw new InvalidConfigException;
+			throw new InvalidConfigException();
 		}
 	}
 

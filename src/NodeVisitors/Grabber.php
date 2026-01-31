@@ -141,7 +141,7 @@ class Grabber extends NodeVisitorAbstract {
 	 */
 	public static function getClassFromStmts(SymbolTable $table, $stmts, $className, $classType = Class_::class, $fromVar = self::FROM_FQN) {
 		$grabber = new Grabber($className, $classType, $fromVar);
-		$traverser = new NodeTraverser;
+		$traverser = new NodeTraverser();
 		$traverser->addVisitor($grabber);
 		$traverser->traverse($stmts);
 		return $grabber->getFoundClass();
@@ -164,7 +164,7 @@ class Grabber extends NodeVisitorAbstract {
 			$stmts = $lastContents;
 		} else {
 			$contents = file_get_contents($fileName);
-			$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+			$parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
 			try {
 				$stmts = $parser->parse($contents);
 			} catch (Error $error) {
@@ -172,7 +172,7 @@ class Grabber extends NodeVisitorAbstract {
 				return null;
 			}
 
-			$traverser = new NodeTraverser;
+			$traverser = new NodeTraverser();
 			$traverser->addVisitor($resolver = new NameResolver());
 			$traverser->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 			$traverser->addVisitor(new PromotedPropertyVisitor());
@@ -180,7 +180,7 @@ class Grabber extends NodeVisitorAbstract {
 
 			if ($classType == Class_::class) {
 				try {
-					$traverser = new NodeTraverser;
+					$traverser = new NodeTraverser();
 					$traverser->addVisitor(new TraitImportingVisitor($table));
 					$stmts = $traverser->traverse($stmts);
 				} catch (UnknownTraitException $exception) {

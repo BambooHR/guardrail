@@ -184,7 +184,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		if (!$instances) {
 			$instances = [];
 			foreach (self::EVALUATORS as $className) {
-				$instances[] = new $className;
+				$instances[] = new $className();
 			}
 		}
 

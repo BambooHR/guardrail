@@ -43,7 +43,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 
 	function __construct() {
 		foreach (self::EXPRESSION_CLASSES as $className) {
-			$this->instances[] = new $className;
+			$this->instances[] = new $className();
 		}
 	}
 

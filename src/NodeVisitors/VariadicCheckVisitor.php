@@ -69,7 +69,7 @@ class VariadicCheckVisitor extends NodeVisitorAbstract {
 		if (!is_array($stmts)) {
 			return false;
 		}
-		$visitor = new self;
+		$visitor = new self();
 		$traverser = new NodeTraverser();
 		$traverser->addVisitor($visitor);
 		$traverser->traverse($stmts);
