@@ -260,7 +260,7 @@ class TypeComparer
 	}
 
 	function isCovariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value) {
-			if (is_null($value)) {
+        if (is_null($value)) {
 			if (is_null($target)) {
 				return true;
 			}

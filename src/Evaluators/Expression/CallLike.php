@@ -106,11 +106,11 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 			$function = $table->getAbstractedFunction(strval($call->name));
 
 			if ($function) {
-				 if ($pass == 1) {
-					 $this->addReferenceParametersToLocalScope($scopeStack, $call->args, $function->getParameters());
-				 } else {
-					 return $this->resolveReturnType($function, $call->args);
-				 }
+                if ($pass == 1) {
+                    $this->addReferenceParametersToLocalScope($scopeStack, $call->args, $function->getParameters());
+                } else {
+                    return $this->resolveReturnType($function, $call->args);
+                }
 			}
 		}
 
