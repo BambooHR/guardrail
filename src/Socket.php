@@ -5,7 +5,6 @@ namespace BambooHR\Guardrail;
 use BambooHR\Guardrail\Exceptions\SocketException;
 
 class Socket {
-
 	/* This function adapted from the PHP documentation on php.net */
 	/**
 	 * @param resource $fp
@@ -33,7 +32,7 @@ class Socket {
 	 * @return false|mixed
 	 * @guardrail-ignore Standard.VariableFunctionCall:Variable
 	 */
-	static public function retryOnFalse($callable, $retries) {
+	public static function retryOnFalse($callable, $retries) {
 		$succeeded = false;
 		$tries = 0;
 		while ($succeeded === false && $tries < $retries) {

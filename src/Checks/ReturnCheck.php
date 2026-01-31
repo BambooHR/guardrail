@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -19,7 +21,6 @@ use PhpParser\Node\Stmt\Return_;
  * @package BambooHR\Guardrail\Checks
  */
 class ReturnCheck extends BaseCheck {
-
 	private TypeComparer $typeComparer;
 	/**
 	 * ReturnCheck constructor.
@@ -66,10 +67,10 @@ class ReturnCheck extends BaseCheck {
 			$returnIsNever = TypeComparer::isNamedIdentifier($returnType, "never");
 			if ($returnIsVoid || $returnIsNever) {
 				if ($node->expr != null) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a ".TypeComparer::typeToString($returnType)." function $functionName");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a " . TypeComparer::typeToString($returnType) . " function $functionName");
 					return;
 				}
-			} else if ($returnType && $node->expr == null) {
+			} elseif ($returnType && $node->expr == null) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return without a value in function $functionName");
 				return;
 			}
@@ -107,9 +108,9 @@ class ReturnCheck extends BaseCheck {
 		$functionName = "";
 		if ($insideFunc instanceof Node\Stmt\Function_) {
 			$functionName = strval($insideFunc->name);
-		} else if ($insideFunc instanceof Node\Expr\Closure || $insideFunc instanceof Node\Expr\ArrowFunction) {
+		} elseif ($insideFunc instanceof Node\Expr\Closure || $insideFunc instanceof Node\Expr\ArrowFunction) {
 			$functionName = "anonymous function";
-		} else if ($insideFunc instanceof Node\Stmt\ClassMethod) {
+		} elseif ($insideFunc instanceof Node\Stmt\ClassMethod) {
 			$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
 			$functionName = "$class::" . strval($insideFunc->name);
 		}

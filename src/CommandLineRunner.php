@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail;
+<?php
+
+namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -15,7 +17,6 @@ use BambooHR\Guardrail\Exceptions\InvalidConfigException;
  * @package BambooHR\Guardrail
  */
 class CommandLineRunner {
-
 	public const ERROR_MASK = E_WARNING | E_ERROR | E_USER_ERROR | E_USER_WARNING;
 	/**
 	 * usage
@@ -72,9 +73,9 @@ where: -p #/#                               = Define the number of partitions an
 		date_default_timezone_set("UTC");
 		error_reporting(self::ERROR_MASK);
 
-		set_exception_handler( function(\Throwable $exception) {
-			echo "Uncaught exception : ".$exception->getMessage()."\n";
-			echo $exception->getTraceAsString()."\n";
+		set_exception_handler(function (\Throwable $exception) {
+			echo "Uncaught exception : " . $exception->getMessage() . "\n";
+			echo $exception->getTraceAsString() . "\n";
 			exit(1);
 		});
 
@@ -119,11 +120,11 @@ where: -p #/#                               = Define the number of partitions an
 
 			if ($config->shouldOutputTimings()) {
 				$timings = $analyzer->getTimingResults();
-				$totalTime = array_sum( array_column($timings, 'time'));
+				$totalTime = array_sum(array_column($timings, 'time'));
 				foreach ($timings as $class => $values) {
 					$time = $values['time'];
 					$count = $values['count'];
-					printf("%-60s %4.1f s %4.1f%% %10s calls %5.2f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000 );
+					printf("%-60s %4.1f s %4.1f%% %10s calls %5.2f ms/call \n", $class, $time, $time / $totalTime * 100, number_format($count, 0), $time / $count * 1000);
 				}
 
 				printf("Total = %d:%04.1f CPU time\n", intval($totalTime / 60), $totalTime - floor($totalTime / 60) * 60);

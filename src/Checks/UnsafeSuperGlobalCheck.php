@@ -6,7 +6,6 @@ use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 
 class UnsafeSuperGlobalCheck extends BaseCheck {
-
 	/**
 	 * @return string[]
 	 */

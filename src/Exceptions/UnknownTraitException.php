@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Exceptions;
+<?php
+
+namespace BambooHR\Guardrail\Exceptions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -11,7 +13,6 @@
  * @package BambooHR\Guardrail\Exceptions
  */
 class UnknownTraitException extends \Exception {
-
 	/**
 	 * UnknownTraitException constructor.
 	 *

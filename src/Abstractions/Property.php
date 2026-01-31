@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use PhpParser\Node;
 
@@ -13,7 +15,6 @@ use PhpParser\Node;
  * @package BambooHR\Guardrail\Abstractions
  */
 class Property {
-
 	/**
 	 * @var \PhpParser\Node
 	 */
@@ -39,7 +40,7 @@ class Property {
 	 *
 
 	 */
-	public function __construct(private ClassInterface $cls, string $name,?\PhpParser\Node $type, string $access, bool $isStatic, bool $isReadOnly) {
+	public function __construct(private ClassInterface $cls, string $name, ?\PhpParser\Node $type, string $access, bool $isStatic, bool $isReadOnly) {
 		$this->name = $name;
 		$this->access = $access;
 		$this->type = $type;
@@ -56,7 +57,7 @@ class Property {
 		return $this->name;
 	}
 
-	public function getClass():ClassInterface {
+	public function getClass(): ClassInterface {
 		return $this->cls;
 	}
 

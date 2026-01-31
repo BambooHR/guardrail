@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators\Expression;
@@ -12,7 +13,6 @@ use PhpParser\Node;
 
 class Exit_ implements ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Expr\Exit_::class;
 	}

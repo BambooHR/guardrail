@@ -38,9 +38,9 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 		$isStatic = true;
 		if ($func instanceof ClassMethod) {
 			$isStatic = $func->isStatic();
-		} else if ($func instanceof Closure) {
+		} elseif ($func instanceof Closure) {
 			$isStatic = $func->static;
-		} else if ($func instanceof Node\Expr\ArrowFunction) {
+		} elseif ($func instanceof Node\Expr\ArrowFunction) {
 			$isStatic = $func->static;
 		}
 

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, Jonathan Gardiner and BambooHR.
@@ -19,7 +21,6 @@ use PhpParser\Node\Stmt\ClassMethod as ParserClassMethod;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ClassMethod implements MethodInterface {
-
 	/**
 	 * @var ParserClassMethod
 	 */
@@ -38,7 +39,7 @@ class ClassMethod implements MethodInterface {
 		$this->method = $method;
 	}
 
-	public function getClass():ClassInterface {
+	public function getClass(): ClassInterface {
 		return $this->class;
 	}
 
@@ -53,7 +54,7 @@ class ClassMethod implements MethodInterface {
 		return $this->method->returnType && $this->method->returnType instanceof NullableType;
 	}
 
-	public function getThrowsList():array {
+	public function getThrowsList(): array {
 		return $this->method->getAttribute('throws', []);
 	}
 

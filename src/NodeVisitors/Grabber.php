@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -22,7 +24,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class Grabber extends NodeVisitorAbstract {
-
 	const FROM_NAME = 1;
 	const FROM_FQN = 2;
 
@@ -53,7 +54,7 @@ class Grabber extends NodeVisitorAbstract {
 	 * @param string $classType        The class type
 	 * @param int    $fromVar          The variable for from type
 	 */
-	public function __construct( $searchingForName = "", $classType = Class_::class, $fromVar = self::FROM_FQN ) {
+	public function __construct($searchingForName = "", $classType = Class_::class, $fromVar = self::FROM_FQN) {
 		if ($searchingForName) {
 			$this->initForSearch($searchingForName, $classType, $fromVar);
 		}
@@ -68,7 +69,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return void
 	 */
-	public function initForSearch( $searchingForName, $classType = Class_::class, $fromVar = "fqn") {
+	public function initForSearch($searchingForName, $classType = Class_::class, $fromVar = "fqn") {
 		$this->searchingForName = $searchingForName;
 		$this->classType = $classType;
 		$this->foundClass = null;
@@ -92,10 +93,10 @@ class Grabber extends NodeVisitorAbstract {
 	 */
 	public function enterNode(Node $node) {
 		$class = $node::class;
-		if (strcasecmp($class, $this->classType) == 0 ||
+		if (
+			strcasecmp($class, $this->classType) == 0 ||
 			(strcasecmp($class, Node\Stmt\Enum_::class) == 0 && strcasecmp($this->classType, Class_::class) == 0)
 		) {
-
 			$var = ($this->fromVar == self::FROM_FQN ? strval($node->namespacedName) : strval($node->name));
 			if (strcasecmp($var, $this->searchingForName) == 0) {
 				$this->foundClass = $node;
@@ -113,7 +114,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return array
 	 */
-	static public function filterByType($stmts, string|array $type) {
+	public static function filterByType($stmts, string|array $type) {
 		$ret = [];
 		if (is_string($type)) {
 			$type = [$type];
@@ -138,11 +139,11 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return null|Class_|Interface_|Trait_
 	 */
-	static public function getClassFromStmts( SymbolTable $table, $stmts, $className, $classType=Class_::class, $fromVar=self::FROM_FQN) {
+	public static function getClassFromStmts(SymbolTable $table, $stmts, $className, $classType = Class_::class, $fromVar = self::FROM_FQN) {
 		$grabber = new Grabber($className, $classType, $fromVar);
-		$traverser = new NodeTraverser;
+		$traverser = new NodeTraverser();
 		$traverser->addVisitor($grabber);
-		$traverser->traverse( $stmts );
+		$traverser->traverse($stmts);
 		return $grabber->getFoundClass();
 	}
 
@@ -156,14 +157,14 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return Interface_|Trait_|null|Class_
 	 */
-	static public function getClassFromFile( SymbolTable $table, $fileName, $className, $classType=Class_::class ) {
+	public static function getClassFromFile(SymbolTable $table, $fileName, $className, $classType = Class_::class) {
 		static $lastFile = "";
 		static $lastContents;
 		if ($lastFile == $fileName) {
 			$stmts = $lastContents;
 		} else {
 			$contents = file_get_contents($fileName);
-			$parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+			$parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
 			try {
 				$stmts = $parser->parse($contents);
 			} catch (Error $error) {
@@ -171,18 +172,17 @@ class Grabber extends NodeVisitorAbstract {
 				return null;
 			}
 
-			$traverser = new NodeTraverser;
+			$traverser = new NodeTraverser();
 			$traverser->addVisitor($resolver = new NameResolver());
 			$traverser->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 			$traverser->addVisitor(new PromotedPropertyVisitor());
-			$stmts = $traverser->traverse( $stmts );
+			$stmts = $traverser->traverse($stmts);
 
 			if ($classType == Class_::class) {
 				try {
-					$traverser = new NodeTraverser;
+					$traverser = new NodeTraverser();
 					$traverser->addVisitor(new TraitImportingVisitor($table));
 					$stmts = $traverser->traverse($stmts);
-
 				} catch (UnknownTraitException $exception) {
 					echo "[$className] Unknown trait! " . $exception->getMessage() . "\n";
 					// Ignore these for now.
@@ -203,4 +203,3 @@ class Grabber extends NodeVisitorAbstract {
 		return null;
 	}
 }
-

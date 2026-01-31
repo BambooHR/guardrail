@@ -8,7 +8,6 @@ use PhpParser\Node;
 
 class ExpressionStatement implements OnExitEvaluatorInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Stmt\Expression::class;
 	}

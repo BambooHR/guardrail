@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Scope;
 
-
 use BambooHR\Guardrail\TypeComparer;
 
 class ScopeVar {

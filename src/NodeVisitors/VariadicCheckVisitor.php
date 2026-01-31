@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -19,7 +21,6 @@ use PhpParser\NodeVisitorAbstract;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class VariadicCheckVisitor extends NodeVisitorAbstract {
-
 	/**
 	 * @var bool
 	 */
@@ -68,11 +69,10 @@ class VariadicCheckVisitor extends NodeVisitorAbstract {
 		if (!is_array($stmts)) {
 			return false;
 		}
-		$visitor = new self;
+		$visitor = new self();
 		$traverser = new NodeTraverser();
 		$traverser->addVisitor($visitor);
 		$traverser->traverse($stmts);
 		return $visitor->getIsVariadic();
 	}
 }
-

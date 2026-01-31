@@ -17,7 +17,7 @@ class Variable implements ExpressionInterface {
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		$expr = $node;
 		$returnType = null;
-		if ($expr instanceOf Node\Expr\Variable && is_string($expr->name)) {
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			if (!$expr->hasAttribute('assignment') && $scopeStack->getVarExists($expr->name)) {
 				$scopeStack->setVarUsed($expr->name);
 			}
@@ -25,7 +25,7 @@ class Variable implements ExpressionInterface {
 			$varName = $expr->name;
 			if ($varName == "this" && $class) {
 				$returnType = $class->namespacedName ?: $class->name;
-			} else if ($varName == "_GET" || $varName == "_POST" || $varName == "_COOKIE" || $varName == "_REQUEST") {
+			} elseif ($varName == "_GET" || $varName == "_POST" || $varName == "_COOKIE" || $varName == "_REQUEST") {
 				$returnType = TypeComparer::identifierFromName("array");
 			} else {
 				$parent = $scopeStack->getParent();
@@ -33,7 +33,7 @@ class Variable implements ExpressionInterface {
 					$var = NodePatterns::getVariableOrPropertyName($expr);
 					if ($var) {
 						$varScope = $scopeStack->getCurrentScope();
-						$varScope->setVarType($var, TypeComparer::removeNullOption( $varScope->getVarType($var)), $node->getLine());
+						$varScope->setVarType($var, TypeComparer::removeNullOption($varScope->getVarType($var)), $node->getLine());
 						$node->setAttribute('assertsTrue', $varScope);
 					}
 				}

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\SymbolTable;
+<?php
+
+namespace BambooHR\Guardrail\SymbolTable;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -86,7 +88,7 @@ abstract class SymbolTable {
 	 * Checks all parent classes and parent interfaces to see if $child is can be used in their place.
 	 *
 	 */
-	public function isParentClassOrInterface(string $potentialParent, string $child):bool {
+	public function isParentClassOrInterface(string $potentialParent, string $child): bool {
 		if (strcasecmp($potentialParent, "object") == 0) {
 			return true;
 		}
@@ -133,7 +135,6 @@ abstract class SymbolTable {
 
 	/** @return void */
 	public function commit() {
-
 	}
 
 	/**
@@ -151,7 +152,7 @@ abstract class SymbolTable {
 			$tmp = $this->getClassOrInterface($name);
 			if ($tmp) {
 				$ob = new AbstractionClass($tmp);
-			} else if (strpos($name, "\\") === false) {
+			} elseif (strpos($name, "\\") === false) {
 				try {
 					$refl = new ReflectionClass($name);
 					$ob = new ReflectedClass($refl);
@@ -168,7 +169,7 @@ abstract class SymbolTable {
 
 	function getAbstractedProperty(ClassInterface $class, $propertyName) {
 
-		$cacheName = $propertyName."@".$class->getName();
+		$cacheName = $propertyName . "@" . $class->getName();
 		$ob = $this->cache->get("AProp:" . $cacheName);
 		if ($ob) {
 			return $ob;
@@ -244,7 +245,7 @@ abstract class SymbolTable {
 		}
 		$ob = $this->cache->get("Trait:" . $name);
 		if (!$ob) {
-			$ob = Grabber::getClassFromFile( $this, $file, $name, Trait_::class);
+			$ob = Grabber::getClassFromFile($this, $file, $name, Trait_::class);
 			if ($ob) {
 				$this->cache->add("Trait:" . $name, $ob);
 			}
@@ -299,10 +300,10 @@ abstract class SymbolTable {
 	 *
 	 * @return string
 	 */
-	public function adjustBasePath(string  $fileName):string {
+	public function adjustBasePath(string $fileName): string {
 		if (strpos($fileName, "phar://") === 0) {
 			$fileName = substr($fileName, 7);
-		} else if (!empty($fileName) && strpos($fileName, "/") !== 0) {
+		} elseif (!empty($fileName) && strpos($fileName, "/") !== 0) {
 			$fileName = $this->basePath . "/" . $fileName;
 		}
 		return $fileName;
@@ -312,7 +313,7 @@ abstract class SymbolTable {
 	 * @param string $fileName A potentially absolute path
 	 * @return string
 	 */
-	public function removeBasePath(string $fileName):string {
+	public function removeBasePath(string $fileName): string {
 		if ($this->basePath !== "" && strpos($fileName, $this->basePath) === 0) {
 			return substr($fileName, strlen($this->basePath) + 1);
 		} else {

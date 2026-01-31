@@ -12,7 +12,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 
 class ServiceMethodDocumentationCheck extends BaseCheck {
-
 	function __construct($index, $output, private MetricOutputInterface $metricOutput) {
 		parent::__construct($index, $output);
 	}
@@ -71,7 +70,9 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	}
 
 	private function emitMissingDocBlockError(string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
-		$this->emitErrorOnLine($fileName, $node->getLine(),
+		$this->emitErrorOnLine(
+			$fileName,
+			$node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 			"Method: {$node->name?->name}, Class: {$inside?->name?->name} - All public Service methods must have a DocBlock."
 		);
@@ -109,7 +110,9 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 
 	private function validateParameters($actualParams, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
 		if (count($docCommentParams) > count($actualParams)) {
-			$this->emitErrorOnLine($fileName, $node->getLine(),
+			$this->emitErrorOnLine(
+				$fileName,
+				$node->getLine(),
 				ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 				"Method: {$node->name->name}, Class: {$inside?->name?->name} - There are extra parameters in your DocBlock that are not present in the method signature."
 			);
@@ -131,7 +134,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		$actualParamAttribute = $actualParam->getAttribute('inferrer-type');
 		if ($this->isComplexType($actualParamAttribute)) {
 			$this->validateComplexType($actualParamAttribute->types, $docCommentParam['type'], $fileName, $node, $inside, $actualParamName);
-		} else if ($actualParamAttribute instanceof Node\NullableType) {
+		} elseif ($actualParamAttribute instanceof Node\NullableType) {
 			$this->validateNullableType($actualParamAttribute, $docCommentParam['type'], $fileName, $node, $inside, $actualParamName);
 		} else {
 			$actualParamType = $actualParamAttribute?->name ?? $actualParamAttribute?->toString();
@@ -196,30 +199,34 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	private function validateSimpleType($actualParamType, $docCommentParamType, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside, string $paramName): void {
 		if (is_array($docCommentParamType)) {
 			$this->emitTypeMismatchError($fileName, $node, $inside, $paramName, 'Multiple DocBlock Param Types specified for only one actual param type.');
-		} else if (($actualParamType === 'array' && str_ends_with($docCommentParamType, '[]') && !str_starts_with($docCommentParamType, '?'))) {
+		} elseif (($actualParamType === 'array' && str_ends_with($docCommentParamType, '[]') && !str_starts_with($docCommentParamType, '?'))) {
 			return;
-		} else if (in_array($actualParamType, self::BLOCKED_SERVICE_DOCUMENTATION_TYPES)) {
+		} elseif (in_array($actualParamType, self::BLOCKED_SERVICE_DOCUMENTATION_TYPES)) {
 			$this->emitTypeMismatchError($fileName, $node, $inside, $paramName, 'The following Types are not allowed: ' . implode(', ', self::NULLABLE_BLOCKED_SERVICE_DOCUMENTATION_TYPES) . ', or null');
-		} else if (($actualParamType !== $docCommentParamType && !str_ends_with($actualParamType, "\\$docCommentParamType"))) {
+		} elseif (($actualParamType !== $docCommentParamType && !str_ends_with($actualParamType, "\\$docCommentParamType"))) {
 			$this->emitTypeMismatchError($fileName, $node, $inside, $paramName, "DocBlock does not match method signature.");
 		}
 	}
 
 	private function emitParameterMismatchError(string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside, string $paramName): void {
-		$this->emitErrorOnLine($fileName, $node->getLine(),
+		$this->emitErrorOnLine(
+			$fileName,
+			$node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 			"Method: {$node->name->name}, Class: {$inside?->name?->name} - DocBlock does not contain matching parameter: $paramName"
 		);
 	}
 
 	private function emitTypeMismatchError(
-		string                $fileName,
+		string $fileName,
 		Node\Stmt\ClassMethod $node,
-		?Node\Stmt\ClassLike  $inside,
-		string                $propertyName,
-		string                $errorMessage
+		?Node\Stmt\ClassLike $inside,
+		string $propertyName,
+		string $errorMessage
 	): void {
-		$this->emitErrorOnLine($fileName, $node->getLine(),
+		$this->emitErrorOnLine(
+			$fileName,
+			$node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 			"Method: {$node->name?->name}, Class: {$inside?->name?->name}, Property: $propertyName - $errorMessage"
 		);
@@ -248,7 +255,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		$actualReturn = $node->getReturnType();
 		if ($this->isComplexType($actualReturn)) {
 			$this->validateComplexType($actualReturn->types, $docCommentReturn, $fileName, $node, $inside, $propertyName);
-		} else if ($actualReturn instanceof Node\NullableType) {
+		} elseif ($actualReturn instanceof Node\NullableType) {
 			$this->validateNullableType($actualReturn, $docCommentReturn, $fileName, $node, $inside, $propertyName);
 		} else {
 			$this->validateSimpleType($actualReturn?->name ?? $actualReturn?->toString() ?? null, $docCommentReturn, $fileName, $node, $inside, $propertyName);
@@ -285,7 +292,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	private function extractDocGetVariableType($variableType) {
 		if (str_contains($variableType, '|')) {
 			$variableType = array_map('trim', explode('|', $variableType));
-		} else if (str_contains($variableType, '&')) {
+		} elseif (str_contains($variableType, '&')) {
 			$variableType = array_map('trim', explode('&', $variableType));
 		}
 

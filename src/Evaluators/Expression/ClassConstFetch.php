@@ -16,7 +16,6 @@ use PhpParser\Node\Stmt\Interface_;
 
 class ClassConstFetch implements ExpressionInterface
 {
-
 	function getInstanceType(): string {
 		return Node\Expr\ClassConstFetch::class;
 	}
@@ -29,7 +28,7 @@ class ClassConstFetch implements ExpressionInterface
 		}
 
 		// Class constants can point to other class constants, so follow the chain.
-		while ($expr instanceOf Node\Expr\ClassConstFetch && $expr->class instanceof Node\Name) {
+		while ($expr instanceof Node\Expr\ClassConstFetch && $expr->class instanceof Node\Name) {
 			if ($expr->name == "class") {
 				return TypeComparer::identifierFromName("string");
 			} else {
@@ -47,7 +46,7 @@ class ClassConstFetch implements ExpressionInterface
 
 		if ($expr instanceof Scalar) {
 			return \BambooHR\Guardrail\Evaluators\Expression\Scalar::inferScalar($expr);
-		} else if ($expr instanceof Node\Expr\Array_) {
+		} elseif ($expr instanceof Node\Expr\Array_) {
 			return TypeComparer::identifierFromName("array");
 		} else {
 			return null;
@@ -55,7 +54,7 @@ class ClassConstFetch implements ExpressionInterface
 	}
 
 
-	private static function relativeClassName(?ClassLike $inside, string $name):string {
+	private static function relativeClassName(?ClassLike $inside, string $name): string {
 		switch (strtolower($name)) {
 			case 'self':
 			case 'static':
@@ -69,7 +68,7 @@ class ClassConstFetch implements ExpressionInterface
 				}
 				if ($inside instanceof Class_) {
 					$name = strval($inside->extends);
-				} else if ($inside instanceof Interface_) {
+				} elseif ($inside instanceof Interface_) {
 					$name = strval($inside->extends);
 				} else {
 					$name = "";

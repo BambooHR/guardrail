@@ -10,7 +10,6 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Enum_;
 
 class EnumCheck extends BaseCheck {
-
 	function getCheckNodeTypes() {
 		return [Enum_::class];
 	}

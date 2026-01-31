@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -51,7 +53,7 @@ class StaticCallCheck extends CallCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope = null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof StaticCall) {
 			$this->checkStaticCall($fileName, $node, $inside, $scope);
 		}
@@ -77,7 +79,8 @@ class StaticCallCheck extends CallCheck {
 			$method = Util::findAbstractedMethod($name, $name, $this->symbolTable);
 		}
 		if (! $method) {
-			if (! Util::findAbstractedMethod($name, "__callStatic", $this->symbolTable) &&
+			if (
+				! Util::findAbstractedMethod($name, "__callStatic", $this->symbolTable) &&
 				(! $possibleDynamic || ! Util::findAbstractedMethod($name, "__call", $this->symbolTable))
 			) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Unable to find method.  $name::" . $node->name);

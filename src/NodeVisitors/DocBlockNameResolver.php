@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR
@@ -22,7 +24,6 @@ use PhpParser\NodeVisitorAbstract;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class DocBlockNameResolver extends NodeVisitorAbstract {
-
 	/** @var NameContext */
 	private $context;
 
@@ -102,12 +103,12 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	private function importVarType(Property $prop) {
 		$comment = $prop->getDocComment();
 		if ($comment && preg_match('/@var +([-A-Z0-9_|\\\\()]+)/i', $comment, $matchArray)) {
-				try {
-					$prop->props[0]->setAttribute("namespacedType", $this->parser->parse($matchArray[1]));
-				} catch (DocBlockParserException $exception) {
-					// Skip it.
-				}
+			try {
+				$prop->props[0]->setAttribute("namespacedType", $this->parser->parse($matchArray[1]));
+			} catch (DocBlockParserException $exception) {
+				// Skip it.
 			}
+		}
 	}
 
 	/**
@@ -167,7 +168,6 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 */
 	private function processDocBlockReturn($node, $str) {
 		if ($str && preg_match('/@return +([-A-Z0-9_|\\\\<>,]+(\[])*)( +\\$([A-Z0-9_]+))?/i', $str, $matchArray)) {
-
 			$returnType = $matchArray[1];
 			try {
 				$v = $this->parser->parse($returnType);
@@ -210,6 +210,4 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		}
 		return $vars;
 	}
-
-
 }

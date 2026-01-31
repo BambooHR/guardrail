@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -18,7 +20,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 
 class FunctionCallCheck extends CallCheck {
-
 	/**
 	 * FunctionCallCheck constructor.
 	 * @param SymbolTable     $symbolTable -
@@ -42,7 +43,7 @@ class FunctionCallCheck extends CallCheck {
 	/**
 	 * @var array
 	 */
-	static private $dangerous = [
+	private static $dangerous = [
 		'exec' => true,
 		'shell_exec' => true,
 		'proc_open' => true,
@@ -55,7 +56,7 @@ class FunctionCallCheck extends CallCheck {
 	/**
 	 * @var array
 	 */
-	static private $debug = [
+	private static $debug = [
 		'print_r' => true,
 		'debug_print_backtrace' => true,
 		'debug_backtrace' => true,
@@ -76,7 +77,7 @@ class FunctionCallCheck extends CallCheck {
 
 		if ($node instanceof Node\Expr\Eval_) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_SECURITY_DANGEROUS, "Call to dangerous function eval()");
-		} else if ($node instanceof FuncCall) {
+		} elseif ($node instanceof FuncCall) {
 			if ($node->name instanceof Name) {
 				$namespacedName = $node->name->hasAttribute('namespacedName') ? $node->name->getAttribute('namespacedName')->toString() : "";
 				$name = $node->name->toString();
@@ -102,7 +103,7 @@ class FunctionCallCheck extends CallCheck {
 					}
 					$params = $func->getParameters();
 					$this->checkParams($fileName, $node, $name, $scope, $node->args, $params);
-				} else if (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
+				} elseif (!$this->wrappedByFunctionsExistsCheck($node, $name, $scope)) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_FUNCTION, "Call to unknown function $name");
 				}
 			} else {
@@ -207,7 +208,7 @@ class FunctionCallCheck extends CallCheck {
 	}
 
 
-	private function isMatchingFunctionExistsCond(Expr $cond, string $name):bool {
+	private function isMatchingFunctionExistsCond(Expr $cond, string $name): bool {
 		if ($cond instanceof Expr\BinaryOp\BooleanAnd || $cond instanceof Expr\BinaryOp\BooleanOr) {
 			return $this->isMatchingFunctionExistsCond($cond->left, $name) || $this->isMatchingFunctionExistsCond($cond->right, $name);
 		}

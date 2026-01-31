@@ -1,10 +1,11 @@
-<?php namespace BambooHR\Guardrail;
+<?php
+
+namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
  * Apache 2.0 License
  */
-
 
 use BambooHR\Guardrail\Abstractions\Property;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -29,7 +30,6 @@ use Webmozart\Glob\Glob;
  * @package BambooHR\Guardrail
  */
 class Util {
-
 	/**
 	 * finalPart
 	 *
@@ -37,14 +37,14 @@ class Util {
 	 *
 	 * @return "mixed"
 	 */
-	static public function finalPart( $parts ) {
+	public static function finalPart($parts) {
 		return property_exists($parts, "parts") && is_array($parts->parts) ? $parts->parts[count($parts->parts) - 1] : $parts;
 	}
 
-	static function mapClassName(string $name, string $selfName, string $staticName):string {
+	static function mapClassName(string $name, string $selfName, string $staticName): string {
 		if (strcasecmp($name, 'static') == 0) {
 			return $staticName;
-		} else if (strcasecmp($name, 'self') == 0) {
+		} elseif (strcasecmp($name, 'self') == 0) {
 			return $selfName;
 		} else {
 			return $name;
@@ -58,13 +58,13 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function isScalarType($name) {
+	public static function isScalarType($name) {
 		$name = strtolower($name);
 		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float' || $name == "false" || $name == "true";
 	}
 
 
-	static function getPhpAttribute(string $name, array $attrGroups):?Attribute {
+	static function getPhpAttribute(string $name, array $attrGroups): ?Attribute {
 		foreach ($attrGroups as $attrGroup) {
 			/** @var AttributeGroup $attrGroup */
 			foreach ($attrGroup->attrs as $attribute) {
@@ -82,11 +82,11 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function isLegalNonObject($name) {
+	public static function isLegalNonObject($name) {
 		return self::isScalarType($name) || strcasecmp($name, "mixed") == 0 || strcasecmp($name, "callable") == 0 || strcasecmp($name, "iterable") == 0 || strcasecmp($name, "array") == 0 || strcasecmp($name, "void") == 0 || strcasecmp($name, "null") == 0 || strcasecmp($name, "resource") == 0 || strcasecmp($name, "object") == 0;
 	}
 
-	static public function isSelfOrStaticType(string $name):bool {
+	public static function isSelfOrStaticType(string $name): bool {
 		return strcasecmp($name, "self") == 0 || strcasecmp($name, "static") == 0;
 	}
 
@@ -97,7 +97,7 @@ class Util {
 	 *
 	 * @return string
 	 */
-	static public function methodSignatureString(ClassMethod $method) {
+	public static function methodSignatureString(ClassMethod $method) {
 		$ret = [];
 		foreach ($method->params as $param) {
 			$ret[] = $param->type ? static::finalPart($param->type) : '$' . $param->name;
@@ -112,7 +112,7 @@ class Util {
 	 *
 	 * @return string
 	 */
-	static public function getMethodAccessLevel(ClassMethod $level) {
+	public static function getMethodAccessLevel(ClassMethod $level) {
 		if ($level->isPublic()) {
 			return "public";
 		}
@@ -135,7 +135,7 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function matchesGlobs($basePath, $path, $globArr) {
+	public static function matchesGlobs($basePath, $path, $globArr) {
 		foreach ($globArr as $glob) {
 			if ($glob[0] == '/') {
 				if (Glob::match($path, $glob)) {
@@ -150,14 +150,14 @@ class Util {
 		return false;
 	}
 
-	static public function reflectionTypeToPhpParserType(?\ReflectionType $type) {
+	public static function reflectionTypeToPhpParserType(?\ReflectionType $type) {
 		if ($type instanceof \ReflectionNamedType) {
 			if ($type->isBuiltin()) {
 				return TypeComparer::identifierFromName($type->getName());
 			} else {
 				return TypeComparer::nameFromName($type->getName());
 			}
-		} else if ($type instanceof \ReflectionUnionType) {
+		} elseif ($type instanceof \ReflectionUnionType) {
 			$subtypes = array_map(
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
@@ -166,13 +166,13 @@ class Util {
 				$subtypes[] = TypeComparer::identifierFromName("null");
 			}
 			return TypeComparer::getUniqueTypes($subtypes);
-		} else if ($type instanceof \ReflectionIntersectionType) {
+		} elseif ($type instanceof \ReflectionIntersectionType) {
 			$subtypes = array_map(
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
 			);
-			return new IntersectionType( [$subtypes] );
-		} else if ($type == null) {
+			return new IntersectionType([$subtypes]);
+		} elseif ($type == null) {
 			return null;
 		} else {
 			throw new \InvalidArgumentException();
@@ -187,7 +187,7 @@ class Util {
 	 *
 	 * @return bool|string
 	 */
-	static public function removeInitialPath($path, $name) {
+	public static function removeInitialPath($path, $name) {
 		if (strpos($name, $path) === 0) {
 			$name = substr($name, strlen($path));
 			while ($name[0] == "/") {
@@ -208,7 +208,7 @@ class Util {
 	 *
 	 * @return null|\BambooHR\Guardrail\Abstractions\ClassAbstraction|\BambooHR\Guardrail\Abstractions\ClassMethod|\BambooHR\Guardrail\Abstractions\ReflectedClassMethod
 	 */
-	static public function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
+	public static function findAbstractedMethod($className, $name, SymbolTable $symbolTable) {
 		$className = strval($className);
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
@@ -225,7 +225,7 @@ class Util {
 		return null;
 	}
 
-	static public function findAllInterfaces(string $className, SymbolTable $symbolTable):array {
+	public static function findAllInterfaces(string $className, SymbolTable $symbolTable): array {
 		$interfaces = [];
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
@@ -267,7 +267,7 @@ class Util {
 	 *
 	 * @return array First param is the abstracted method, second param is the class it was declared in.
 	 */
-	static public function findAbstractedProperty(string $className, string $name, SymbolTable $symbolTable):?Property {
+	public static function findAbstractedProperty(string $className, string $name, SymbolTable $symbolTable): ?Property {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
@@ -293,7 +293,7 @@ class Util {
 	 *
 	 * @return Abstractions\ClassMethod|null
 	 */
-	static public function findAbstractedSignature($className, $name, SymbolTable $symbolTable) {
+	public static function findAbstractedSignature($className, $name, SymbolTable $symbolTable) {
 		while ($className) {
 			$class = $symbolTable->getAbstractedClass($className);
 			if (!$class) {
@@ -323,11 +323,10 @@ class Util {
 	 *
 	 * @return void
 	 */
-	static public function callIsCompatible(ClassMethod $method,MethodCall $call) {
-
+	public static function callIsCompatible(ClassMethod $method, MethodCall $call) {
 	}
 
-	static public function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren):array {
+	public static function getFilteredChildClasses(SymbolTable $table, string $parent, string ...$potentialChildren): array {
 		$ret = [];
 		foreach ($potentialChildren as $potentialChild) {
 			if ($table->isParentClassOrInterface($parent, $potentialChild)) {
@@ -345,7 +344,7 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function configDirectoriesAreValid($baseDirectory, $paths) {
+	public static function configDirectoriesAreValid($baseDirectory, $paths) {
 		if (is_object($baseDirectory) || !is_array($paths) || empty($paths)) {
 			throw new \InvalidArgumentException('The config data is bad');
 		}
@@ -367,7 +366,7 @@ class Util {
 	 *
 	 * @return string
 	 */
-	static public function fullDirectoryPath($baseDirectory, $path) {
+	public static function fullDirectoryPath($baseDirectory, $path) {
 		$baseDirectory = substr($baseDirectory, -1) === '/' ? $baseDirectory : $baseDirectory . '/';
 		return strpos($path, "/") === 0 ? $path : $baseDirectory . $path;
 	}
@@ -379,7 +378,7 @@ class Util {
 	 *
 	 * @return array
 	 */
-	static public function jsonFileContentIsValid($jsonFile) {
+	public static function jsonFileContentIsValid($jsonFile) {
 		$status = ['success' => true, 'message' => 'json is valid'];
 		if (!file_exists($jsonFile)) {
 			throw new \InvalidArgumentException('File does not exist.');
@@ -399,18 +398,18 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static public function allBranchesExit(array $stmts) {
+	public static function allBranchesExit(array $stmts) {
 		$lastStatement = self::getLastStatement($stmts);
 
 		if (!$lastStatement) {
 			return false;
-		} else if ($lastStatement instanceof Expression && $lastStatement->expr instanceof Exit_) {
+		} elseif ($lastStatement instanceof Expression && $lastStatement->expr instanceof Exit_) {
 			return true;
-		} else if ($lastStatement instanceof Return_) {
+		} elseif ($lastStatement instanceof Return_) {
 			return true;
-		} else if ($lastStatement instanceof If_) {
+		} elseif ($lastStatement instanceof If_) {
 			return self::allIfBranchesExit($lastStatement);
-		} else if ($lastStatement instanceof Switch_) {
+		} elseif ($lastStatement instanceof Switch_) {
 			return self::allSwitchCasesExit($lastStatement);
 		} else {
 			return false;
@@ -424,7 +423,7 @@ class Util {
 	 *
 	 * @return mixed|null
 	 */
-	static public function getLastStatement(array $stmts) {
+	public static function getLastStatement(array $stmts) {
 		for (end($stmts); key($stmts) !== null; prev($stmts)) {
 			$currentElement = current($stmts);
 			if (!$currentElement instanceof Nop) {
@@ -441,7 +440,7 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static protected function allIfBranchesExit(If_ $lastStatement) {
+	protected static function allIfBranchesExit(If_ $lastStatement) {
 		if (!$lastStatement->else && !$lastStatement->elseifs) {
 			return false;
 		}
@@ -469,7 +468,7 @@ class Util {
 	 *
 	 * @return bool
 	 */
-	static protected function allSwitchCasesExit(Switch_ $lastStatement) {
+	protected static function allSwitchCasesExit(Switch_ $lastStatement) {
 		$hasDefault = false;
 		foreach ($lastStatement->cases as $case) {
 			if (!$case->cond) {
@@ -477,7 +476,7 @@ class Util {
 			}
 			$stmts = $case->stmts;
 			// Remove the trailing break (if found) and just look for a return the statement prior
-			while ( ($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
+			while (($last = end($stmts)) instanceof Break_ || $last instanceof Nop) {
 				$stmts = array_slice($stmts, 0, -1);
 			}
 			if ($stmts && !self::allBranchesExit($stmts)) {
@@ -498,6 +497,3 @@ class Util {
 		];
 	}
 }
-
-
-

@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators;
@@ -9,7 +10,6 @@ use PhpParser\Node;
 
 class Declare_ implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 {
-
 	function getInstanceType(): string {
 		return Node\Stmt\Declare_::class;
 	}

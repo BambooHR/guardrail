@@ -8,8 +8,7 @@ use PhpParser\Node\Expr\Variable;
 
 class NodePatterns
 {
-
-	public static function getVariableOrPropertyName($node):?string {
+	public static function getVariableOrPropertyName($node): ?string {
 		if ($node instanceof Variable && is_string($node->name)) {
 			return $node->name;
 		} else {
@@ -18,9 +17,10 @@ class NodePatterns
 	}
 
 
-	public static function parentIgnoresNulls(array $parentNodes, Node $child):bool {
+	public static function parentIgnoresNulls(array $parentNodes, Node $child): bool {
 		foreach ($parentNodes as $node) {
-			if ($node instanceof Node\Expr\Isset_ ||
+			if (
+				$node instanceof Node\Expr\Isset_ ||
 				$node instanceof Node\Expr\Empty_ ||
 				($node instanceof Node\Expr\BinaryOp\Coalesce && $node->left === $child) ||
 				($node instanceof Node\Expr\Assign && $node->var === $child)
@@ -31,7 +31,7 @@ class NodePatterns
 		return false;
 	}
 
-	public static function parentNodeExpectsBool(Node $parent, Node $child ):bool {
+	public static function parentNodeExpectsBool(Node $parent, Node $child): bool {
 		return (
 			$parent instanceof Node\Expr\BinaryOp\BooleanAnd ||
 			$parent instanceof Node\Expr\BinaryOp\BooleanOr ||
@@ -39,5 +39,4 @@ class NodePatterns
 			($parent instanceof Node\Expr\Ternary && $parent->cond == $child)
 		);
 	}
-
 }

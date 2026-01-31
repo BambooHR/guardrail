@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators\Expression;
@@ -45,6 +46,6 @@ class InstanceOf_ implements ExpressionInterface {
 			}
 		}
 
-		return TypeComparer::identifierFromName("bool" );
+		return TypeComparer::identifierFromName("bool");
 	}
 }

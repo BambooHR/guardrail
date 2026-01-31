@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -27,7 +29,6 @@ use PhpParser\Node\Stmt\PropertyProperty;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ClassAbstraction implements ClassInterface {
-
 	/**
 	 * @var ClassLike
 	 */
@@ -146,11 +147,11 @@ class ClassAbstraction implements ClassInterface {
 	 *
 	 * @return bool
 	 */
-	public function hasConstant($name):bool {
+	public function hasConstant($name): bool {
 		return $this->getConstantExpr($name) ? true : false;
 	}
 
-	public function getConstantExpr($name):null|Expr|Name|Identifier {
+	public function getConstantExpr($name): null|Expr|Name|Identifier {
 
 		if ($this->isEnum()) {
 			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
@@ -168,9 +169,9 @@ class ClassAbstraction implements ClassInterface {
 					if (strcasecmp($const->name, $name) == 0) {
 						if ($const->value instanceof LNumber) {
 							return TypeComparer::identifierFromName("int");
-						} else if ($const->value instanceof String_) {
+						} elseif ($const->value instanceof String_) {
 							return TypeComparer::identifierFromName("string");
-						} else if (
+						} elseif (
 							$const->value instanceof Expr\ConstFetch &&
 							(
 								strcasecmp($const->value->name, "true") == 0 ||

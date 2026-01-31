@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Output;
 
-
 class CountsOutput extends XUnitOutput {
 	/**
 	 * @var array
@@ -38,13 +37,13 @@ class CountsOutput extends XUnitOutput {
 	public function renderResults() {
 		echo "\n";
 		echo " Count | Type\n";
-		arsort( $this->errors, SORT_NUMERIC );
+		arsort($this->errors, SORT_NUMERIC);
 		echo "-------+----------------------------------------------------------------\n";
 		foreach ($this->errors as $className => $errors) {
 			if ($this->config->getOutputFile()) {
 				file_put_contents($this->config->getOutputFile(), sprintf("%6d | %s\n", $errors, $className), FILE_APPEND);
 			} else {
-				printf("%6d | %s\n", $errors, $className );
+				printf("%6d | %s\n", $errors, $className);
 			}
 		}
 	}

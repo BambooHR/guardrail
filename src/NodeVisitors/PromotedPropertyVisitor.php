@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -10,9 +12,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeVisitorAbstract;
 
-
 class PromotedPropertyVisitor extends NodeVisitorAbstract {
-
 	/**
 	 * enterNode
 	 *
@@ -44,7 +44,7 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 		return null;
 	}
 
-	public function buildAssign(Node\Param $param):Node\Expr {
+	public function buildAssign(Node\Param $param): Node\Expr {
 		$attrs = $param->getAttributes();
 		return new Node\Expr\Assign(
 			new Node\Expr\PropertyFetch(new Node\Expr\Variable("this", $attrs), new Node\Identifier($param->var->name, $attrs), $attrs),
@@ -68,7 +68,7 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 			$prop->makeReadonly();
 		}
 		if ($param->type) {
-			$prop->setType( $param->type );
+			$prop->setType($param->type);
 		}
 
 		$propNode = $prop->getNode();

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -21,7 +23,6 @@ use PhpParser\Node\Stmt\ClassMethod;
  * @package BambooHR\Guardrail\Checks
  */
 class ConstructorCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -38,7 +39,7 @@ class ConstructorCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	static public function containsConstructorCall(?array $stmts = null) {
+	public static function containsConstructorCall(?array $stmts = null) {
 		$found = false;
 		ForEachNode::run($stmts, function (Node $node) use (&$found) {
 			if ($node instanceof StaticCall) {
@@ -46,7 +47,6 @@ class ConstructorCheck extends BaseCheck {
 					strcasecmp($node->name, "__construct") == 0 &&
 					$node->class instanceof Name &&
 					strcasecmp(strval($node->class), "parent") == 0
-
 				) {
 					$found = true;
 				}
@@ -68,11 +68,13 @@ class ConstructorCheck extends BaseCheck {
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ClassMethod) {
 			if ($inside instanceof Class_) {
-				if (strcasecmp($node->name, "__construct") == 0 &&
+				if (
+					strcasecmp($node->name, "__construct") == 0 &&
 					$inside->extends
 				) {
 					$ob = Util::findAbstractedMethod($inside->extends, "__construct", $this->symbolTable);
-					if ($ob &&
+					if (
+						$ob &&
 						!$ob->isAbstract() &&
 						!self::containsConstructorCall($node->stmts)
 					) {

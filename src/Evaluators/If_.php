@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators;
@@ -6,11 +7,9 @@ namespace BambooHR\Guardrail\Evaluators;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
-
 use PhpParser\Node\Stmt\ElseIf_;
 
 class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
-
 	function getInstanceType(): array|string {
 		return [Node\Stmt\If_::class, Node\Stmt\Else_::class,Node\Stmt\ElseIf_::class];
 	}
@@ -21,7 +20,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$scopeStack->pushScope($thenBranch);
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
-		} elseif ( $node instanceof Node\Stmt\ElseIf_) {
+		} elseif ($node instanceof Node\Stmt\ElseIf_) {
 			$scopeStack->swapTopTwoScopes();
 
 			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
@@ -29,14 +28,15 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
-		} elseif ( $node instanceof Node\Stmt\Else_) {
+		} elseif ($node instanceof Node\Stmt\Else_) {
 			$scopeStack->swapTopTwoScopes();
 		}
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\If_) {
-			if ($node->else == null &&
+			if (
+				$node->else == null &&
 				count($node->elseifs) == 0 &&
 				( end($node->stmts) instanceof Node\Stmt\Return_ || end($node->stmts) instanceof Node\Stmt\Throw_ || end($node->stmts) instanceof Node\Stmt\Continue_)
 			) {
@@ -79,7 +79,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 		$scopeStack->swapTopTwoScopes();
 	}
 
-	static public function getIfCond(Node $node) {
+	public static function getIfCond(Node $node) {
 		if ($node instanceof Node\Expr\Ternary) {
 			return $node->cond;
 		}

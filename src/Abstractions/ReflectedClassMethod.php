@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\Util;
 use PhpParser\Node\Attribute;
@@ -16,7 +18,6 @@ use PhpParser\Node\Name;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ReflectedClassMethod implements MethodInterface {
-
 	/**
 	 * @var \ReflectionMethod
 	 */
@@ -44,7 +45,7 @@ class ReflectedClassMethod implements MethodInterface {
 		return $this->refl->isStatic();
 	}
 
-	function getClass():ClassInterface {
+	function getClass(): ClassInterface {
 		return $this->class;
 	}
 
@@ -67,7 +68,7 @@ class ReflectedClassMethod implements MethodInterface {
 	}
 
 	public function getComplexReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
+		if (method_exists($this->refl, "getReturnType")) {
 			return Util::reflectionTypeToPhpParserType($this->refl->getReturnType());
 		}
 		return null;
@@ -136,8 +137,8 @@ class ReflectedClassMethod implements MethodInterface {
 		$params = $this->refl->getParameters();
 		/** @var \ReflectionParameter $param */
 		foreach ($params as $param) {
-			$type = Util::reflectionTypeToPhpParserType( $param->getType() );
-			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $param->isPassedByReference(), method_exists($param, "allowsNull") ? $param->allowsNull() : false);
+			$type = Util::reflectionTypeToPhpParserType($param->getType());
+			$ret[] = new FunctionLikeParameter($type, $param->name, $param->isOptional(), $param->isPassedByReference(), method_exists($param, "allowsNull") ? $param->allowsNull() : false);
 		}
 		return $ret;
 	}
@@ -147,7 +148,7 @@ class ReflectedClassMethod implements MethodInterface {
 	 * @return bool
 	 */
 	public function hasNullableReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
+		if (method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			if ($type) {
 				return $type->allowsNull();
@@ -188,14 +189,14 @@ class ReflectedClassMethod implements MethodInterface {
 		}
 	}
 
-	public function getAttributes(string $name):array {
+	public function getAttributes(string $name): array {
 		$attributes = $this->refl->getAttributes($name);
-		return array_map( function($attr) {
+		return array_map(function ($attr) {
 			return new Attribute(new Name($attr->getName()));
 		}, $attributes);
 	}
 
-	function getThrowsList():array {
+	function getThrowsList(): array {
 		return [];
 	}
 }

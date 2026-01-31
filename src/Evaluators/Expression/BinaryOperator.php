@@ -26,7 +26,7 @@ class BinaryOperator implements ExpressionInterface {
 
 		if ($sigil == "&&" && $expr instanceof BinaryOp\BooleanAnd) {
 			$this->mergeAndScope($expr, $scopeStack);
-		} else if ($sigil == "||" && $expr instanceof BinaryOp\BooleanOr) {
+		} elseif ($sigil == "||" && $expr instanceof BinaryOp\BooleanOr) {
 			$this->mergeOrScope($expr);
 		}
 
@@ -53,7 +53,7 @@ class BinaryOperator implements ExpressionInterface {
 				TypeComparer::identifierFromName("int"),
 			"/" =>
 				new Node\UnionType([TypeComparer::identifierFromName("int"), TypeComparer::identifierFromName("float")]),
-			default => throw new \InvalidArgumentException("Unknown binary operator ". $sigil)
+			default => throw new \InvalidArgumentException("Unknown binary operator " . $sigil)
 		};
 	}
 

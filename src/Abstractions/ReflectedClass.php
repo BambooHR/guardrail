@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
@@ -20,7 +22,6 @@ use PhpParser\Node\Scalar\String_;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ReflectedClass implements ClassInterface {
-
 	/**
 	 * @var \ReflectionClass
 	 */
@@ -76,14 +77,14 @@ class ReflectedClass implements ClassInterface {
 		return $this->refl->isAbstract();
 	}
 
-	public function getConstantExpr($name):null|Name|Identifier {
+	public function getConstantExpr($name): null|Name|Identifier {
 		if ($this->refl->hasConstant($name)) {
 			$constant = $this->refl->getConstant($name);
 			if (is_int($constant)) {
 				return TypeComparer::identifierFromName("int");
-			} else if (is_bool($constant)) {
+			} elseif (is_bool($constant)) {
 				return TypeComparer::identifierFromName("bool");
-			} else if (is_string($constant)) {
+			} elseif (is_string($constant)) {
 				return TypeComparer::identifierFromName("string");
 			} else {
 				return TypeComparer::identifierFromName("mixed");
@@ -160,13 +161,13 @@ class ReflectedClass implements ClassInterface {
 
 				if ($modifiers & \ReflectionProperty::IS_PRIVATE) {
 					$access = "private";
-				} else if ($modifiers & \ReflectionProperty::IS_PROTECTED) {
+				} elseif ($modifiers & \ReflectionProperty::IS_PROTECTED) {
 					$access = "protected";
 				} else {
 					$access = "public";
 				}
 				$type = Util::reflectionTypeToPhpParserType($prop->getType());
-				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY );
+				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY);
 			}
 			return null;
 		} catch (\ReflectionException) {

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\SymbolTable;
+<?php
+
+namespace BambooHR\Guardrail\SymbolTable;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -18,7 +20,6 @@ use PhpParser\Node\Stmt\Trait_;
  * @package BambooHR\Guardrail\SymbolTable
  */
 class InMemorySymbolTable extends SymbolTable {
-
 	/**
 	 * @var array
 	 */

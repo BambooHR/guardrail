@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractionClass;
 use BambooHR\Guardrail\Scope;

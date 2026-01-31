@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators;
@@ -11,7 +12,6 @@ use PhpParser\Node\Expr\Variable;
 
 class ForEach_ implements OnEnterEvaluatorInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Stmt\Foreach_::class;
 	}

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -16,7 +18,6 @@ use PhpParser\Node\Stmt\Goto_;
  * @package BambooHR\Guardrail\Checks
  */
 class GotoCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

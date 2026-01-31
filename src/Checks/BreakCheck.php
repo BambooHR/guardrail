@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -17,7 +19,6 @@ use PhpParser\Node\Stmt\Continue_;
  * @package BambooHR\Guardrail\Checks
  */
 class BreakCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -42,7 +43,7 @@ class BreakCheck extends BaseCheck {
 			if ($node->num != null) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_BREAK_NUMBER, "Usage of unsafe \"break [expression]\" form");
 			}
-		} else if ($node instanceof Continue_) {
+		} elseif ($node instanceof Continue_) {
 			if ($node->num != null) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_BREAK_NUMBER, "Usage of unsafe \"continue [expression]\" form");
 			}

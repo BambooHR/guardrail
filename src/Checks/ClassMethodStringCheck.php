@@ -9,7 +9,6 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 
-
 class ClassMethodStringCheck extends BaseCheck {
 	/**
 	 * @return string[]

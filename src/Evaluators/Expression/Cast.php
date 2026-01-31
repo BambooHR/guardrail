@@ -21,11 +21,11 @@ class Cast implements ExpressionInterface {
 		if ($expr) {
 			return $expr;
 		}
-		throw new  InvalidArgumentException("Unknown cast type ".get_class($node));
+		throw new  InvalidArgumentException("Unknown cast type " . get_class($node));
 	}
 
 
-	function lookupCastType($expr):?Node\Identifier {
+	function lookupCastType($expr): ?Node\Identifier {
 		if ($expr instanceof CastExp\Int_) {
 			return TypeComparer::identifierFromName("int");
 		}

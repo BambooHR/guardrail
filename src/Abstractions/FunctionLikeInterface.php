@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Identifier;
@@ -15,7 +17,6 @@ use PhpParser\Node\Name;
  * @package BambooHR\Guardrail\Abstractions
  */
 interface FunctionLikeInterface {
-
 	/**
 	 * getParameters
 	 *
@@ -81,5 +82,5 @@ interface FunctionLikeInterface {
 	 */
 	public function isVariadic();
 
-	public function getThrowsList():array;
+	public function getThrowsList(): array;
 }

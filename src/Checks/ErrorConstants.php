@@ -8,8 +8,6 @@ namespace BambooHR\Guardrail\Checks;
  * @package BambooHR\Guardrail\Checks
  */
 class ErrorConstants {
-
-
 	const TYPE_ASSIGN_MISMATCH = 'Standard.Assign.Type';
 	const TYPE_ASSIGN_MISMATCH_SCALAR = 'Standard.Assign.ScalarType';
 	const TYPE_ACCESS_VIOLATION = 'Standard.Access.Violation';

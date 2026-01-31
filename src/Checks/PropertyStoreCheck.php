@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -21,8 +23,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class PropertyStoreCheck extends BaseCheck {
-
-
 	private TypeComparer $typeComparer;
 
 	/**
@@ -55,15 +55,14 @@ class PropertyStoreCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Expr\Assign && $node->var instanceof PropertyFetch && $node->var->name instanceof Node\Identifier) {
-
 			$targetObject = $node->var->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			$valueType = $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			$nodeVarName = strval($node->var->name);
 
 			$types = [];
-			TypeComparer::forEachType($targetObject, function($individualType) use ($nodeVarName, $fileName, $node, $inside,  &$types) {
+			TypeComparer::forEachType($targetObject, function ($individualType) use ($nodeVarName, $fileName, $node, $inside, &$types) {
 				if ($individualType instanceof Node\Identifier || $individualType instanceof Node\Name) {
 					$typeStr = strval($individualType);
 					if ($this->symbolTable->isDefinedClass($typeStr)) {
