@@ -8,6 +8,15 @@
   <rule ref="PSR12" >
     <exclude name="Generic.WhiteSpace.DisallowTabIndent"/>
     <exclude name="Generic.Files.LineLength"/>
+    <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.BraceOnSameLine"/>
+    <exclude name="PSR2.Classes.ClassDeclaration.OpenBraceNewLine"/>
+    <exclude name="Squiz.WhiteSpace.ScopeClosingBrace"/>
+    <exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
+    <!--May be fixed in the future-->
+    <exclude name="Squiz.Scope.MethodScope.Missing"/>
+    <exclude name="PSR12.Properties.ConstantVisibility"/>
+    <exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
+
   </rule>
   <rule ref="Generic.PHP.DisallowShortOpenTag">
     <exclude name="Generic.PHP.DisallowShortOpenTag.EchoFound"/>
