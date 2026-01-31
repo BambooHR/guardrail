@@ -210,6 +210,4 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 		}
 		return $vars;
 	}
-
-
 }

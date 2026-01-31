@@ -39,6 +39,4 @@ class SplatCheck extends BaseCheck {
 			}
 		}
 	}
-
-
 }

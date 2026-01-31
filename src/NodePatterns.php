@@ -39,5 +39,4 @@ class NodePatterns
 			($parent instanceof Node\Expr\Ternary && $parent->cond == $child)
 		);
 	}
-
 }

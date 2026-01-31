@@ -71,5 +71,4 @@ class TraitIndexingParent extends ProcessManager {
 			}
 		}
 	}
-
 }

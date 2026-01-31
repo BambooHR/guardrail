@@ -42,5 +42,4 @@ class ClassStoredAsVariableCheck extends BaseCheck {
 			}
 		}
 	}
-
 }
