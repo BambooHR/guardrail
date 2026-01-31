@@ -132,7 +132,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	static public function emitPatternMatches($name, $pattern) {
+	public static function emitPatternMatches($name, $pattern) {
 		if (substr($pattern, -2) == '.*') {
 			$start = substr($pattern, 0, -2);
 			return (strpos($name, $start) === 0);

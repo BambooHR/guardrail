@@ -135,7 +135,7 @@ class AnalyzingPhase {
 	 *
 	 * @return bool
 	 */
-	static public function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
+	public static function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
 		if ($node instanceof Node\Stmt\Declare_ && $node->stmts !== null) {
 			foreach ($node->stmts as $child) {
 				if (!self::checkForSafeautoloadNode($file, $child, $output)) {

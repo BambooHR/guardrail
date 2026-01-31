@@ -114,7 +114,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return array
 	 */
-	static public function filterByType($stmts, string|array $type) {
+	public static function filterByType($stmts, string|array $type) {
 		$ret = [];
 		if (is_string($type)) {
 			$type = [$type];
@@ -139,7 +139,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return null|Class_|Interface_|Trait_
 	 */
-	static public function getClassFromStmts(SymbolTable $table, $stmts, $className, $classType = Class_::class, $fromVar = self::FROM_FQN) {
+	public static function getClassFromStmts(SymbolTable $table, $stmts, $className, $classType = Class_::class, $fromVar = self::FROM_FQN) {
 		$grabber = new Grabber($className, $classType, $fromVar);
 		$traverser = new NodeTraverser;
 		$traverser->addVisitor($grabber);
@@ -157,7 +157,7 @@ class Grabber extends NodeVisitorAbstract {
 	 *
 	 * @return Interface_|Trait_|null|Class_
 	 */
-	static public function getClassFromFile(SymbolTable $table, $fileName, $className, $classType = Class_::class) {
+	public static function getClassFromFile(SymbolTable $table, $fileName, $className, $classType = Class_::class) {
 		static $lastFile = "";
 		static $lastContents;
 		if ($lastFile == $fileName) {

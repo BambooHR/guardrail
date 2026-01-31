@@ -32,7 +32,7 @@ class Socket {
 	 * @return false|mixed
 	 * @guardrail-ignore Standard.VariableFunctionCall:Variable
 	 */
-	static public function retryOnFalse($callable, $retries) {
+	public static function retryOnFalse($callable, $retries) {
 		$succeeded = false;
 		$tries = 0;
 		while ($succeeded === false && $tries < $retries) {

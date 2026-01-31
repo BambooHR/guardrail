@@ -7,7 +7,7 @@ use PhpParser\Builder\Property;
 use PhpParser\Builder\Param;
 
 class EnumCodeAugmenter {
-	static public function addEnumPropsAndMethods(Node\Stmt\Enum_ $enum) {
+	public static function addEnumPropsAndMethods(Node\Stmt\Enum_ $enum) {
 		$isBacked = !is_null($enum->scalarType);
 		$property = new Property("name");
 		$property->setType(new Node\Identifier("string"));

@@ -35,7 +35,7 @@ class SwitchCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	static protected function endWithBreak(array $stmts) {
+	protected static function endWithBreak(array $stmts) {
 		$lastStatement = Util::getLastStatement($stmts);
 		return
 			$lastStatement == null ||

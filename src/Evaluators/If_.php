@@ -79,7 +79,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 		$scopeStack->swapTopTwoScopes();
 	}
 
-	static public function getIfCond(Node $node) {
+	public static function getIfCond(Node $node) {
 		if ($node instanceof Node\Expr\Ternary) {
 			return $node->cond;
 		}

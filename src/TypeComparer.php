@@ -17,7 +17,7 @@ class TypeComparer
 
 	function __construct(private SymbolTable $symbolTable) { }
 
-	static public function identifierFromName(string $str): Identifier {
+	public static function identifierFromName(string $str): Identifier {
 		static $identifier = [];
 		if (!array_key_exists($str, $identifier)) {
 			$identifier[$str] = new Identifier($str);
@@ -25,7 +25,7 @@ class TypeComparer
 		return $identifier[$str];
 	}
 
-	static private function compareUnionElements(Name|Identifier|IntersectionType $a, Name|Identifier|IntersectionType $b) {
+	private static function compareUnionElements(Name|Identifier|IntersectionType $a, Name|Identifier|IntersectionType $b) {
 		$aType = $a instanceof IntersectionType ? 1 : 0;
 		$bType = $b instanceof IntersectionType ? 1 : 0;
 		if ($aType != $bType) {

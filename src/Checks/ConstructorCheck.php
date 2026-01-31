@@ -39,7 +39,7 @@ class ConstructorCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	static public function containsConstructorCall(?array $stmts = null) {
+	public static function containsConstructorCall(?array $stmts = null) {
 		$found = false;
 		ForEachNode::run($stmts, function (Node $node) use (&$found) {
 			if ($node instanceof StaticCall) {
