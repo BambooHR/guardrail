@@ -505,7 +505,7 @@ class Util {
 		];
 	}
 
-	static public function valueToExpression(mixed $value): ?Expr {
+	public static function valueToExpression(mixed $value): ?Expr {
 		return match (gettype($value)) {
 			'boolean' => new ConstFetch(new Name($value ? 'true' : 'false')),
 			'integer' => new LNumber($value),
@@ -517,7 +517,7 @@ class Util {
 		};
 	}
 
-	static private function arrayToExpression(array $values): ?Expr {
+	private static function arrayToExpression(array $values): ?Expr {
 		$items = [];
 		foreach ($values as $key => $value) {
 			$itemValue = self::valueToExpression($value);
