@@ -64,7 +64,7 @@ class ReflectedClassTest extends TestCase {
 		$this->assertEquals($expectedNode, $reflectedClass->getConstantValueExpression($constantName));
 	}
 
-	public function constantValueProvider(): array {
+	static public function constantValueProvider(): array {
 		return [
 			'string' => ['TEST_STRING', new String_("string value")],
 			'integer' => ['TEST_INT', new LNumber(42)],
