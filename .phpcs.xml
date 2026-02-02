@@ -12,22 +12,14 @@
     <exclude name="PSR2.Classes.ClassDeclaration.OpenBraceNewLine"/>
     <exclude name="Squiz.WhiteSpace.ScopeClosingBrace"/>
     <exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
+    <exclude name="Generic.PHP.DisallowShortOpenTag.EchoFound"/>
     <!--May be fixed in the future-->
     <exclude name="Squiz.Scope.MethodScope.Missing"/>
     <exclude name="PSR12.Properties.ConstantVisibility"/>
     <exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
-
   </rule>
-  <rule ref="Generic.PHP.DisallowShortOpenTag">
-    <exclude name="Generic.PHP.DisallowShortOpenTag.EchoFound"/>
-  </rule>
-  <rule ref="Generic.Formatting.DisallowMultipleStatements"/>
   <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
-  <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
   <rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>
-  <rule ref="Squiz.Classes.ValidClassName"/>
-  <rule ref="Generic.Functions.FunctionCallArgumentSpacing"/>
-  <rule ref="Generic.PHP.LowerCaseConstant"/>
   <rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
   <rule ref="PEAR.Commenting.FunctionComment">
     <exclude name="PEAR.Commenting.FunctionComment.Missing"/>
