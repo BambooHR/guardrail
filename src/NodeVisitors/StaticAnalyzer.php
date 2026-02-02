@@ -6,6 +6,7 @@
  */
 
 use BambooHR\Guardrail\Checks\AccessingSuperGlobalsCheck;
+use BambooHR\Guardrail\Checks\AttributeCheck;
 use BambooHR\Guardrail\Checks\BackTickOperatorCheck;
 use BambooHR\Guardrail\Checks\BreakCheck;
 use BambooHR\Guardrail\Checks\CatchCheck;
@@ -48,7 +49,6 @@ use BambooHR\Guardrail\Checks\UseStatementCaseCheck;
 use BambooHR\Guardrail\Checks\OpenApiAttributeDocumentationCheck;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators as Ev;
-use BambooHR\Guardrail\Evaluators\ExpressionInterface;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope\Scope;
@@ -163,6 +163,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new OpenApiAttributeDocumentationCheck($this->index, $output, $metricOutput),
 			new ServiceMethodDocumentationCheck($this->index, $output, $metricOutput),
 			//new ClassStoredAsVariableCheck($this->index, $output)
+			new AttributeCheck($this->index, $output),
 		];
 
 		$checkers = array_merge($checkers, $config->getPlugins($this->index, $output));
