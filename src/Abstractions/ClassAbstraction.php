@@ -12,7 +12,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\Stmt\Case_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
@@ -248,5 +247,57 @@ class ClassAbstraction implements ClassInterface {
 
 	public function isEnum(): bool {
 		return $this->class instanceof Enum_;
+	}
+
+	public function getAttributes(): array {
+		$attributes = [];
+		foreach ($this->class->attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				$attributes[] = new AttributeAbstraction($attr);
+			}
+		}
+		return $attributes;
+	}
+
+	public function getConstantValueExpression(string $name): ?Expr {
+		$expr = $this->getRegularConstantValueExpression($name);
+		if ($expr) {
+			return $expr;
+		}
+
+		if ($this->class instanceof Enum_) {
+			return $this->getEnumCaseValueExpression($name);
+		}
+
+		return null;
+	}
+
+	private function getRegularConstantValueExpression(string $name): ?Expr {
+		foreach ($this->class->getConstants() as $classConsts) {
+			foreach ($classConsts->consts as $const) {
+				if ($const->name->toString() == $name) {
+					return $const->value;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private function getEnumCaseValueExpression(string $name): ?Expr {
+		foreach ($this->class->stmts as $stmt) {
+			if ($stmt instanceof EnumCase && $stmt->name->toString() == $name) {
+				if ($stmt->expr) {
+					return $stmt->expr;
+				} else {
+					return new Expr\ClassConstFetch(
+						new Name($this->getName()),
+						new Identifier($name)
+					);
+				}
+			}
+		}
+
+		return null;
 	}
 }
