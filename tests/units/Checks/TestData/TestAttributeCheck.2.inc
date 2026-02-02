@@ -1,0 +1,5 @@
+<?php
+
+#[UndefinedAttribute]
+class TestClassForUndefinedAttribute {
+}
