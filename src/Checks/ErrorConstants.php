@@ -82,6 +82,11 @@ class ErrorConstants {
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
+
+	const TYPE_ATTRIBUTE_NOT_ATTRIBUTE = 'Standard.Attribute.NotAttribute';
+	const TYPE_ATTRIBUTE_WRONG_TARGET = 'Standard.Attribute.WrongTarget';
+	const TYPE_ATTRIBUTE_NOT_REPEATABLE = 'Standard.Attribute.NotRepeatable';
+
 	const TYPE_OPEN_API_ATTRIBUTE_DOCUMENTATION_CHECK = 'Standard.OpenApiAttribute.Documentation';
 	const TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY = 'Standard.OpenApiAttribute.MissingRequiredExtensionProperty';
 	const TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK = 'Standard.ServiceMethod.Documentation';

@@ -98,4 +98,11 @@ interface ClassInterface {
 	public function isEnum(): bool;
 
 	public function isReadOnly(): bool;
+
+	/**
+	 * @return AttributeInterface[]
+	 */
+	public function getAttributes(): array;
+
+	public function getConstantValueExpression(string $name): ?Expr;
 }
