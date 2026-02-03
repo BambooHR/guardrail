@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
@@ -17,7 +19,6 @@ use PhpParser\Node\Name;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ReflectedClass implements ClassInterface {
-
 	/**
 	 * @var \ReflectionClass
 	 */
@@ -73,7 +74,7 @@ class ReflectedClass implements ClassInterface {
 		return $this->refl->isAbstract();
 	}
 
-	public function getConstantExpr($name):null|Name|Identifier {
+	public function getConstantExpr($name): null|Name|Identifier {
 		if ($this->refl->hasConstant($name)) {
 			$constant = $this->refl->getConstant($name);
 			if (is_int($constant)) {
@@ -163,7 +164,7 @@ class ReflectedClass implements ClassInterface {
 					$access = "public";
 				}
 				$type = Util::reflectionTypeToPhpParserType($prop->getType());
-				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY );
+				return new Property($this, $prop->getName(), $type, $access, $modifiers & \ReflectionProperty::IS_STATIC, $modifiers & \ReflectionProperty::IS_READONLY);
 			}
 			return null;
 		} catch (\ReflectionException) {

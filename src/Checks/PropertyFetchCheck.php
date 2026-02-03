@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -20,7 +22,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class PropertyFetchCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -40,9 +41,8 @@ class PropertyFetchCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof PropertyFetch || $node instanceof Node\Expr\NullsafePropertyFetch) {
-
 			$chainedName = NodePatterns::getVariableOrPropertyName($node);
 
 			if (!$chainedName) {
@@ -65,11 +65,11 @@ class PropertyFetchCheck extends BaseCheck {
 				}
 			}
 
-			TypeComparer::forEachType($type, function($type) use ($node, $fileName, $inside) {
+			TypeComparer::forEachType($type, function ($type) use ($node, $fileName, $inside) {
 				if ($type instanceof Node\Identifier || $type instanceof Node\Name) {
 					$typeStr = strval($type);
 					if ($typeStr && !$this->symbolTable->ignoreType($typeStr)) {
-						if ($this->symbolTable->isParentClassOrInterface("SimpleXMLElement", $typeStr )) {
+						if ($this->symbolTable->isParentClassOrInterface("SimpleXMLElement", $typeStr)) {
 							// SimpleXMLElement has arbitrary properties based on the XML that was parsed.
 							return;
 						}
@@ -127,9 +127,8 @@ class PropertyFetchCheck extends BaseCheck {
 			if (!$hasGet) {
 				$callingClass = $inside ? strval($inside->namespacedName) : "";
 				if ($access === "private" && strcasecmp($declaredIn, $callingClass) !== 0) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property $declaredIn->" . $node->name. " from ".
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property $declaredIn->" . $node->name . " from " .
 											  (!$inside ? "outside a class" : $callingClass ));
-
 				} else if (
 					$access == "protected" &&
 					(
@@ -141,7 +140,7 @@ class PropertyFetchCheck extends BaseCheck {
 						)
 					)
 				) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property $declaredIn->" . $node->name . " from ".
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch protected property $declaredIn->" . $node->name . " from " .
 											  (!$inside ? "outside a class" : $callingClass ));
 				}
 			}

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\SymbolTable;
+<?php
+
+namespace BambooHR\Guardrail\SymbolTable;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -31,7 +33,6 @@ use ReflectionException;
  * Class SqliteSymbolTable
  */
 class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
-
 	/** @var array [$type][$name] = ['has_trait'=>,'data'=>,'file'=>] */
 	private $index = [
 		SymbolTable::TYPE_CLASS => [],
@@ -59,7 +60,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		parent::__construct($basePath);
 		$this->types = new TypeStringTable();
 		$this->fileName = $fileName;
-		$this->parser = new TypeParser( fn($typeString)=>new Node\Name\FullyQualified($typeString));
+		$this->parser = new TypeParser(fn($typeString)=>new Node\Name\FullyQualified($typeString));
 	}
 
 	/**
@@ -153,10 +154,10 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 					switch ($type) {
 						case self::TYPE_TRAIT:
 							$this->addType($name, $entryString['file'], $type, isset($entryString['has_trait']));
-						break;
+							break;
 						case self::TYPE_CLASS:
 						case self::TYPE_INTERFACE:
-							$this->addType($name, $entryString['file'], $type, isset($entryString['has_trait']), $this->serializeClass( $table->unserializeClass($entryString['data'])));
+							$this->addType($name, $entryString['file'], $type, isset($entryString['has_trait']), $this->serializeClass($table->unserializeClass($entryString['data'])));
 							break;
 						case self::TYPE_FUNCTION:
 							$this->addType($name, $entryString['file'], $type, 0, $this->serializeFunction($table->unserializeFunction($entryString['data'])));
@@ -200,7 +201,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 */
 	public function getClassOrInterfaceData($name) {
 		return $this->getData($name);
-
 	}
 
 	/**
@@ -236,14 +236,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	public function begin() {
-
 	}
 
 	/**
 	 * @return void
 	 */
 	public function commit() {
-
 	}
 
 	/**
@@ -561,7 +559,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return false;
 	}
 
-	function serializeFunction(Function_ $function):string {
+	function serializeFunction(Function_ $function): string {
 		$ret = "F" . $function->namespacedName . ($function->returnsByRef() ? "&" : "");
 		$ret .= $this->serializeParams($function->params);
 		if ($function->returnType !== null || $function->getAttribute("namespacedReturn") !== null) {
@@ -570,11 +568,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$ret .= ($this->types->add($function->returnType));
 			}
 			if ($function->getAttribute("namespacedReturn") !== null) {
-				$ret .= "@".($this->types->add($function->getAttribute("namespacedReturn")));
+				$ret .= "@" . ($this->types->add($function->getAttribute("namespacedReturn")));
 			}
 		}
 		if (count($function->getAttribute("throws", [])) > 0) {
-			$ret .= "T".implode(",", array_map(fn($type)=>$this->types->add($type), $function->getAttribute("throws")));
+			$ret .= "T" . implode(",", array_map(fn($type)=>$this->types->add($type), $function->getAttribute("throws")));
 		}
 		if ($function->getAttribute("variadic_implementation")) {
 			$ret .= "V";
@@ -584,21 +582,21 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 
-	function serializeProperty(Property $prop):string {
+	function serializeProperty(Property $prop): string {
 		$ret = "";
 		$flags = $prop->flags;
 		$type = $prop->type;
 		foreach ($prop->props as $propProp) {
-			$ret .= "P" .($type ? $this->types->add($type) : "");
+			$ret .= "P" . ($type ? $this->types->add($type) : "");
 			if ($prop->getAttribute("namespacedType")) {
-				$ret .= "@".$this->types->add($prop->getAttribute("namespacedType"));
+				$ret .= "@" . $this->types->add($prop->getAttribute("namespacedType"));
 			}
 			$ret .= '$' . $propProp->name . ($flags !== 0 ? " " . ($flags) : "") . ";";
 		}
 		return $ret;
 	}
 
-	function serializeMethod(ClassMethod $method):string {
+	function serializeMethod(ClassMethod $method): string {
 		$ret = "M" . $method->name .
 			($method->returnsByRef() ? "&" : " ") .
 			($method->flags !== 0 ? strval($method->flags) : "") .
@@ -609,11 +607,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$ret .= $this->types->add($method->returnType);
 			}
 			if ($method->getAttribute('namespacedReturn')) {
-				$ret .= "@".$this->types->add($method->getAttribute('namespacedReturn'));
+				$ret .= "@" . $this->types->add($method->getAttribute('namespacedReturn'));
 			}
 		}
 		if (count($method->getAttribute('throws', [])) > 0) {
-			$ret .= "T".implode(",", array_map(fn($type)=>$this->types->add($type), $method->getAttribute('throws')));
+			$ret .= "T" . implode(",", array_map(fn($type)=>$this->types->add($type), $method->getAttribute('throws')));
 		}
 		if ($method->getAttribute('variadic_implementation')) {
 			$ret .= "V";
@@ -622,34 +620,35 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $ret;
 	}
 
-	function serializeConst(ClassConst $classConst):string {
+	function serializeConst(ClassConst $classConst): string {
 		$flags = $classConst->flags;
 		$ret = "";
 		foreach ($classConst->consts as $const) {
 			$ret .= "C" . $const->name .
-				($classConst->type ? " ".$this->types->add($classConst->type) : "") .
-				($flags != 0 ? " ".$flags : "") .
+				($classConst->type ? " " . $this->types->add($classConst->type) : "") .
+				($flags != 0 ? " " . $flags : "") .
 				";";
 		}
 		return $ret;
 	}
 
-	function serializeClass(ClassLike $class):string {
+	function serializeClass(ClassLike $class): string {
 		if ($class instanceof Interface_) {
 			$ret = "I" . ($this->types->add($class->namespacedName));
 		} else if ($class instanceof Node\Stmt\Enum_) {
 			$ret = "E" . ($this->types->add($class->namespacedName));
 		} else {
-			$ret = "C" . ($this->types->add($class->namespacedName)) . ($class->flags ? " ".$class->flags : "");
+			$ret = "C" . ($this->types->add($class->namespacedName)) . ($class->flags ? " " . $class->flags : "");
 		}
 		if (!empty($class->extends)) {
 			if ($class instanceof Interface_) {
 				$ret .= " E" .
-					implode(",",
-							array_map(
-								fn($extends) => $this->types->add($extends),
-								$class->extends
-							)
+					implode(
+						",",
+						array_map(
+							fn($extends) => $this->types->add($extends),
+							$class->extends
+						)
 					);
 			} else {
 				$ret .= " E" . ($this->types->add($class->extends));
@@ -674,7 +673,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $ret;
 	}
 
-	function unserializeClass(string $serializedClass):ClassLike {
+	function unserializeClass(string $serializedClass): ClassLike {
 		preg_match('/^([IEC])([0-9]+)( [0-9]+)?( E([0-9,]+))?( I([0-9,]+))?\{([^}]*)}$/', $serializedClass, $matches);
 		$type = $matches[1];
 		$name = $this->types->getString($matches[2]);
@@ -710,14 +709,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				'implements' => $implements,
 				'stmts' => $stmts,
 				'flags' => $flags]);
-
 		}
 		$cls->namespacedName = $name;
 		return $cls;
-
 	}
 
-	function unserializeMethod(string $serializedMethod):ClassMethod {
+	function unserializeMethod(string $serializedMethod): ClassMethod {
 		preg_match('/^M([^ &]+)([ &])?([0-9]+)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?$/', $serializedMethod, $matches);
 		$name = $matches[1];
 		$returnsByRef = isset($matches[2]) && $matches[2] == "&";
@@ -740,7 +737,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			$method->setAttribute('namespacedReturn', $this->types->getString(intval($matches[6])));
 		}
 		if (!empty($matches[7])) {
-			$types = array_map( fn($match) => $this->types->getString(intval($match)), explode(",", $matches[7]));
+			$types = array_map(fn($match) => $this->types->getString(intval($match)), explode(",", $matches[7]));
 			$method->setAttribute('throws', $types);
 		}
 		if (!empty($matches[8])) {
@@ -749,20 +746,20 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $method;
 	}
 
-	function unserializeProperty(string $serializedProperty):Property {
+	function unserializeProperty(string $serializedProperty): Property {
 		preg_match('/^(P)([^$@]+)?(?:@([0-9]+))?\\$([^ ]*)( [0-9]+)?$/', $serializedProperty, $matches);
 		$type = !empty(trim($matches[2])) ? $this->types->getString(intval(trim($matches[2]))) : null;
 		$name = $matches[4];
-		$flags = isset( $matches[5]) ? intval(trim($matches[5])) : 0;
+		$flags = isset($matches[5]) ? intval(trim($matches[5])) : 0;
 		$props = [new Node\Stmt\PropertyProperty($name)];
-		$prop = new Property($flags, $props, type: $type );
+		$prop = new Property($flags, $props, type: $type);
 		if (!empty($matches[3])) {
 			$prop->setAttribute('DocBlockName', $this->types->getString(intval($matches[3])));
 		}
 		return $prop;
 	}
 
-	function unserializeConst(string $serializedConstant):ClassConst {
+	function unserializeConst(string $serializedConstant): ClassConst {
 		preg_match('/^(C)([^ ]+)( [0-9]+( [0-9]+)?)?$/', $serializedConstant, $matches);
 		$name = $matches[2];
 		$flags = !empty($matches[4]) ? intval(trim($matches[4])) : 0;
@@ -774,7 +771,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 
-	function unserializeFunction(string $serializedFunction):Function_ {
+	function unserializeFunction(string $serializedFunction): Function_ {
 		preg_match('/^F([^ &]+)(&)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?;$/', $serializedFunction, $matches);
 		$name = new Node\Name\FullyQualified($matches[1]);
 		$returnsByRef = $matches[2] == "&";
@@ -799,7 +796,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			$func->setAttribute('namespacedReturn', $this->types->getString(intval($matches[5])));
 		}
 		if (!empty($matches[6])) {
-			$types = array_map( fn($match) => $this->types->getString(intval($match)), explode(",", $matches[6]));
+			$types = array_map(fn($match) => $this->types->getString(intval($match)), explode(",", $matches[6]));
 			$func->setAttribute('throws', $types);
 		}
 		if (!empty($matches[7])) {
@@ -812,7 +809,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @param array $parts
 	 * @return array
 	 */
-	public function unserializeClassMembers(array $parts) : array {
+	public function unserializeClassMembers(array $parts): array {
 		$stmts = [];
 		foreach ($parts as $part) {
 			if (strlen($part) == 0) {
@@ -849,7 +846,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @param array $parts
 	 * @return array
 	 */
-	public function unserializeParams(array $parts) : array {
+	public function unserializeParams(array $parts): array {
 		$params = [];
 		$matches = [];
 		foreach ($parts as $part) {
@@ -896,7 +893,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @param Node\Param[] $params
 	 * @return string
 	 */
-	public function serializeParams(array $params) : string {
+	public function serializeParams(array $params): string {
 		$ret = "(";
 		$index = 0;
 		foreach ($params as $param) {
@@ -931,9 +928,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				} else if ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "false") == 0) {
 					$ret .= "false";
 				} else if ($param->default instanceof Node\Expr\ClassConstFetch && $param->default->class instanceof Node\Name && $param->default->name instanceof Node\Identifier) {
-					$ret .= $param->default->class."::".$param->default->name;
+					$ret .= $param->default->class . "::" . $param->default->name;
 				} else if ($param->default instanceof Node\Expr\ConstFetch && $param->default->name instanceof Node\Name) {
-					$ret .= "::".$param->default->name;
+					$ret .= "::" . $param->default->name;
 				} else {
 					$ret .= "unknown";
 				}

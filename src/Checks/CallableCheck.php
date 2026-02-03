@@ -11,7 +11,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\ClassLike;
 
-
 /**
  * Class CallableCheck
  * @package BambooHR\Guardrail\Checks
@@ -28,7 +27,6 @@ use PhpParser\Node\Stmt\ClassLike;
  *
  */
 class CallableCheck extends BaseCheck {
-
 	/**
 	 * CallableCheck constructor.
 	 * @param SymbolTable     $symbolTable -
@@ -47,7 +45,6 @@ class CallableCheck extends BaseCheck {
 	 */
 	function getCheckNodeTypes() {
 		return [];
-
 	}
 
 	/**
@@ -73,7 +70,7 @@ class CallableCheck extends BaseCheck {
 			}
 		} else {
 			$classType = $object->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			TypeComparer::forEachType($classType, function($childClassType) use ($fileName, $callableArray) {
+			TypeComparer::forEachType($classType, function ($childClassType) use ($fileName, $callableArray) {
 				if ($childClassType && ($childClassType instanceof Node\Identifier || $childClassType instanceof Node\Name)) {
 					$this->checkClassType(strval($childClassType), $fileName, $callableArray);
 				}

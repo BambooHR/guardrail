@@ -8,7 +8,6 @@
 
 namespace BambooHR\Guardrail\Phases\Processes\Parent;
 
-
 use BambooHR\Guardrail\Exceptions\SocketException;
 use BambooHR\Guardrail\Phases\Processes\Child\ChildProcess;
 use BambooHR\Guardrail\SocketBuffer;
@@ -30,7 +29,7 @@ abstract class ProcessManager {
 	 * @param callable $childProcess a closure to run inside the child process.
 	 * @return resource
 	 */
-	function createChild(ChildProcess $childProcess):\Socket {
+	function createChild(ChildProcess $childProcess): \Socket {
 		$pair = [];
 		if (!socket_create_pair(AF_UNIX, SOCK_STREAM, 0, $pair)) {
 			echo "socket_create_pair failed. Reason: " . socket_strerror(socket_last_error()) . "\n";
@@ -50,7 +49,7 @@ abstract class ProcessManager {
 			$childProcess->init($pair[0]);
 			$childProcess->run();
 			socket_close($pair[0]);
-			exit( 0 );
+			exit(0);
 		}
 	}
 	function getPidForSocket($socket) {
@@ -59,7 +58,6 @@ abstract class ProcessManager {
 
 	function loopWhileConnections() {
 		while (count($this->connections) > 0) {
-
 			$none = null;
 			do {
 				$childPid = pcntl_wait($status, WNOHANG);
@@ -80,7 +78,7 @@ abstract class ProcessManager {
 					try {
 						$this->buffers[$index]->read($socket);
 					} catch (SocketException $socketException) {
-						echo "Socket error: ".$socketException->getMessage(). "\n";
+						echo "Socket error: " . $socketException->getMessage() . "\n";
 						unset($this->connections[$index]);
 						unset($this->buffers[$index]);
 						exit(1);
@@ -89,7 +87,7 @@ abstract class ProcessManager {
 			}
 			foreach ($this->buffers as $index => $buffer) {
 				$messages = $buffer->getMessages();
-				$this->dispatchClientMessages( $index, $messages);
+				$this->dispatchClientMessages($index, $messages);
 			}
 		}
 	}
@@ -117,10 +115,10 @@ abstract class ProcessManager {
 		}
 	}
 
-	function dispatchMessage(\Socket $socket,$msg):int {
+	function dispatchMessage(\Socket $socket, $msg): int {
 		list($message,$details) = explode(" ", $msg, 2);
-		return $this->handleClientMessage( $socket, $message, ...explode(" ", $details));
+		return $this->handleClientMessage($socket, $message, ...explode(" ", $details));
 	}
 
-	abstract function handleClientMessage(\Socket $socket, string $message,string ... $params):int;
+	abstract function handleClientMessage(\Socket $socket, string $message, string ...$params): int;
 }

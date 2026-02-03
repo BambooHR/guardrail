@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -11,7 +13,6 @@
  * @package BambooHR\Guardrail\Abstractions
  */
 interface MethodInterface extends FunctionLikeInterface {
-
 	/**
 	 * isAbstract
 	 *
@@ -41,6 +42,5 @@ interface MethodInterface extends FunctionLikeInterface {
 
 	public function getComplexReturnType();
 
-	public function getAttributes(string $name):array;
-
+	public function getAttributes(string $name): array;
 }

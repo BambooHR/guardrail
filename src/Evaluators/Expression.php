@@ -43,7 +43,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 
 	function __construct() {
 		foreach (self::EXPRESSION_CLASSES as $className) {
-			$this->instances[] = new $className;
+			$this->instances[] = new $className();
 		}
 	}
 
@@ -137,7 +137,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 	}
 
-	function findInstance($class):?ExpressionInterface {
+	function findInstance($class): ?ExpressionInterface {
 		static $cache = [];
 		if (isset($cache[$class])) {
 			return $cache[$class];
@@ -160,8 +160,10 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			}
 		}
 
-		if (!is_a($class, Node\Expr\ArrayItem::class, true) &&
-		!is_a($class, Node\Expr\ClosureUse::class, true)) {
+		if (
+			!is_a($class, Node\Expr\ArrayItem::class, true) &&
+			!is_a($class, Node\Expr\ClosureUse::class, true)
+		) {
 			throw new \InvalidArgumentException("Unknown expression $class");
 		}
 		return null;

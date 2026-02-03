@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\NodeVisitors\PropertyUsageVisitor;
 use BambooHR\Guardrail\Output\OutputInterface;
@@ -30,7 +32,7 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 
 		$this->usedPropertyVisitor = new PropertyUsageVisitor();
 		$this->traverser = new NodeTraverser();
-		$this->traverser->addVisitor( $this->usedPropertyVisitor );
+		$this->traverser->addVisitor($this->usedPropertyVisitor);
 	}
 
 	/**

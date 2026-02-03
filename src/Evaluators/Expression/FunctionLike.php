@@ -11,7 +11,6 @@ use PhpParser\Node;
 
 class FunctionLike implements ExpressionInterface
 {
-
 	function getInstanceType(): array {
 		return [Node\Expr\ArrowFunction::class, Node\Expr\Closure::class];
 	}
@@ -22,7 +21,7 @@ class FunctionLike implements ExpressionInterface
 
 		if ($node instanceof Node\Expr\Closure) {
 			$uses = array_map(
-				fn(Node\Expr\ClosureUse $closureUse):string => $closureUse->var->name,
+				fn(Node\Expr\ClosureUse $closureUse): string => $closureUse->var->name,
 				$node->uses
 			);
 			foreach ($closureScope->getUsedVars() as $var) {

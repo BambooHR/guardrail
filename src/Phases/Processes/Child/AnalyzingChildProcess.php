@@ -8,12 +8,10 @@ use BambooHR\Guardrail\Phases\AnalyzingPhase;
 use BambooHR\Guardrail\Phases\Processes\Parent\ProcessManager;
 
 class AnalyzingChildProcess extends ChildProcess {
-
 	function __construct(
 		private Config $config,
 		private AnalyzingPhase $analyzePhase,
 	) {
-
 	}
 
 	function init(\Socket $socket): void {
@@ -24,7 +22,7 @@ class AnalyzingChildProcess extends ChildProcess {
 	function runCommand(string $command, string ...$params) {
 		if ($command == "TIMINGS") {
 			$arr = $this->analyzePhase->getAnalyzer()->getTimingsAndCounts();
-			$this->send("TIMINGS " . base64_encode(json_encode($arr)). "\n");
+			$this->send("TIMINGS " . base64_encode(json_encode($arr)) . "\n");
 			return ProcessManager::READ_CONNECTION;
 		} else if ($command == "DONE") {
 			return ProcessManager::CLOSE_CONNECTION;

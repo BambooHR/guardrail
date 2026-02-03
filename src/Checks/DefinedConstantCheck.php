@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -20,7 +22,6 @@ use ReflectionExtension;
  * @package BambooHR\Guardrail\Checks
  */
 class DefinedConstantCheck extends BaseCheck {
-
 	/**
 	 * @var array
 	 */
@@ -29,7 +30,7 @@ class DefinedConstantCheck extends BaseCheck {
 	/**
 	 * @var array
 	 */
-	static private $phpConstants = [
+	private static $phpConstants = [
 		"PHP_VERSION" => 1,
 		"PHP_MAJOR_VERSION" => 1,
 		"PHP_MINOR_VERSION" => 1,
@@ -152,7 +153,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 * @return bool
 	 */
 	public function isExtensionConstant($name) {
-		return isset( $this->reflectedConstants[strval($name)] );
+		return isset($this->reflectedConstants[strval($name)]);
 	}
 
 	/**
@@ -180,7 +181,7 @@ class DefinedConstantCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ConstFetch) {
 			$namespacedName = $node->name->hasAttribute('namespacedName') ? $node->name->getAttribute('namespacedName')->toString() : "";
 			$name = $node->name->toString();

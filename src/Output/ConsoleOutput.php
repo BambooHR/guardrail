@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Output;
 
-
 class ConsoleOutput extends XUnitOutput {
 	/**
 	 * @var array

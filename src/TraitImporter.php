@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail;
+<?php
+
+namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -21,7 +23,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
  * the appropriate methods and properties.
  */
 class TraitImporter {
-
 	/** @var  SymbolTable */
 	private $index;
 
@@ -30,7 +31,7 @@ class TraitImporter {
 	 *
 	 * @param SymbolTable $index Instance of SymbolTable
 	 */
-	public function __construct( SymbolTable $index) {
+	public function __construct(SymbolTable $index) {
 		$this->index = $index;
 	}
 
@@ -144,18 +145,18 @@ class TraitImporter {
 				throw new \BambooHR\Guardrail\Exceptions\UnknownTraitException($traitName, $use->getLine());
 			}
 			$fileName = $this->index->getTraitFile($traitName);
-			$apply = function(Node $node) use ($fileName, $line) {
+			$apply = function (Node $node) use ($fileName, $line) {
 				$node->setAttribute('importedFromTrait', $fileName);
 				$node->setAttribute('importedOnLine', $line);
 			};
 			foreach ($trait->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\Property) {
-					$props = unserialize( serialize( $stmt ) );
+					$props = unserialize(serialize($stmt));
 					ForEachNode::run([$props], $apply);
 					$properties[] = $props;
 				} else if ($stmt instanceof Node\Stmt\ClassMethod) {
 					// Make a deep copy of the node
-					$method = unserialize( serialize( $stmt ) );
+					$method = unserialize(serialize($stmt));
 					ForEachNode::run([$method], $apply);
 					$methods[strval($stmt->name)][$traitName] = $method;
 				}
@@ -179,7 +180,7 @@ class TraitImporter {
 	 */
 	public function resolveTraits(TraitUse $use, ClassLike $class) {
 		[$methods, $properties] = $this->indexTrait($use);
-		$this->resolveAdaptations($use->adaptations, $methods );
-		return array_merge( array_values($properties), $this->importMethods($class, $methods));
+		$this->resolveAdaptations($use->adaptations, $methods);
+		return array_merge(array_values($properties), $this->importMethods($class, $methods));
 	}
 }

@@ -18,8 +18,8 @@ try {
 	$baseDir = dirname(dirname(__DIR__));
 	echo "Building relative to $baseDir\n";
 	$it = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS);
-	$it2 = new class($it) extends \RecursiveFilterIterator {
-		function accept():bool {
+	$it2 = new class ($it) extends \RecursiveFilterIterator {
+		function accept(): bool {
 			return $this->current()->getExtension() !== "phar";
 		}
 	};
@@ -34,4 +34,3 @@ try {
 	echo "Error building: " . $exception->getMessage() . "\n";
 	exit(1);
 }
-

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -20,7 +22,6 @@ use PhpParser\Node\Stmt\Interface_;
  * @package BambooHR\Guardrail\Checks
  */
 class ClassConstantCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -71,7 +72,7 @@ class ClassConstantCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof ClassConstFetch) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();

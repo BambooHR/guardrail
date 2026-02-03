@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -15,7 +17,6 @@ use PhpParser\NodeVisitorAbstract;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class ForEachNode extends NodeVisitorAbstract {
-
 	/**
 	 * @var callable
 	 */
@@ -38,7 +39,7 @@ class ForEachNode extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function enterNode(Node $node) {
-		call_user_func( $this->callBack, $node );
+		call_user_func($this->callBack, $node);
 		return null;
 	}
 
