@@ -98,4 +98,64 @@ class TestClassConstantCheck extends TestSuiteSetup {
 		ENDCODE;
 		$this->assertEquals(6, $this->getStringErrorCount($code), "Error with valid class constant.");
 	}
+
+	/**
+	 * testParentClassConstantInheritance
+	 *
+	 * @return void
+	 * @rapid-unit Checks:ClassConstantCheck:Can access parent class constant via self::
+	 */
+	public function testParentClassConstantInheritance() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
+	}
+
+	/**
+	 * testInterfaceConstantInheritance
+	 *
+	 * @return void
+	 * @rapid-unit Checks:ClassConstantCheck:Can access interface constant via self::
+	 */
+	public function testInterfaceConstantInheritance() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
+	}
+
+	/**
+	 * testClassConstantAccess
+	 *
+	 * @return void
+	 * @rapid-unit Checks:ClassConstantCheck:::class is always valid and should not error
+	 */
+	public function testClassConstantAccess() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
+	}
+
+	/**
+	 * testIgnoredType
+	 *
+	 * @return void
+	 * @rapid-unit Checks:ClassConstantCheck:Ignored types like mixed should not be checked
+	 */
+	public function testIgnoredType() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	}
+
+	/**
+	 * testParentInInterfaceWithExtends
+	 *
+	 * @return void
+	 * @rapid-unit Checks:ClassConstantCheck:Interface with extends can use parent::
+	 */
+	public function testParentInInterfaceWithExtends() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_SCOPE_ERROR));
+	}
+
+	/**
+	 * testParentInEnum
+	 *
+	 * @return void
+	 * @rapid-unit Checks:ClassConstantCheck:Enum cannot use parent::
+	 */
+	public function testParentInEnum() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.12.inc', ErrorConstants::TYPE_SCOPE_ERROR));
+	}
 }
