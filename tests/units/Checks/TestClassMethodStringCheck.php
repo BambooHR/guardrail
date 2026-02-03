@@ -1,7 +1,11 @@
 <?php namespace BambooHR\Guardrail\Tests\Checks;
 
+use BambooHR\Guardrail\Checks\ClassMethodStringCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
+use PhpParser\Node\Expr\BinaryOp\Concat;
 
 /**
  * Class TestClassMethodStringCheck
@@ -47,12 +51,12 @@ class TestClassMethodStringCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ClassMethodStringCheck:getCheckNodeTypes returns correct node types
 	 */
 	public function testGetCheckNodeTypes() {
-		$check = new \BambooHR\Guardrail\Checks\ClassMethodStringCheck(
-			new \BambooHR\Guardrail\SymbolTable\InMemorySymbolTable('/'),
-			$this->createMock(\BambooHR\Guardrail\Output\OutputInterface::class)
+		$check = new ClassMethodStringCheck(
+			new InMemorySymbolTable('/'),
+			$this->createMock(OutputInterface::class)
 		);
 		$types = $check->getCheckNodeTypes();
 		$this->assertIsArray($types);
-		$this->assertContains(\PhpParser\Node\Expr\BinaryOp\Concat::class, $types);
+		$this->assertContains(Concat::class, $types);
 	}
 }
