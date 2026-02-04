@@ -449,7 +449,7 @@ class Util {
 	 * @return bool
 	 */
 	protected static function allIfBranchesExit(If_ $lastStatement) {
-		if (!$lastStatement->else && !$lastStatement->elseifs) {
+		if (!$lastStatement->else) {
 			return false;
 		}
 		$trueCond = self::allBranchesExit($lastStatement->stmts);

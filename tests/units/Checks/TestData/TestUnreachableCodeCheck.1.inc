@@ -24,6 +24,15 @@ function myOtherGoodMethodCall() {
 	echo "Reachable code";
 }
 
+function myThirdGoodMethodCall() {
+	if (false) {
+		return;
+	} elseif (false) {
+		return;
+	}
+
+	echo "Reachable code";
+}
 
 function myBadMethodCall() {
 	if (1 == 1) {
@@ -46,5 +55,17 @@ function myOtherBadMethodCall() {
 	} else {
 		exit;
 	}
+	echo 'Unreachable code';
+}
+
+function myThirdBadMethodCall() {
+	if (false) {
+		return;
+	} elseif (true) {
+		return;
+	}
+
+	return;
+
 	echo 'Unreachable code';
 }
