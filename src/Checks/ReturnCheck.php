@@ -130,18 +130,25 @@ class ReturnCheck extends BaseCheck {
 		if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
 			if (!$this->containsYield($node)) {
 				$functionName = $this->getFunctionName($node, $inside);
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN,
-					"Function $functionName has Generator return type but does not contain yield");
+				$this->emitError(
+					$fileName,
+					$node,
+					ErrorConstants::TYPE_SIGNATURE_RETURN,
+					"Function $functionName has Generator return type but does not contain yield"
+				);
 			}
 			return;
 		}
 
 		if ($returnType && !$this->returnTypeAllowsNoReturn($returnType)) {
-
 			if (!$this->containsReturn($node)) {
 				$functionName = $this->getFunctionName($node, $inside);
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN,
-					"Function $functionName must return a value but contains no return statement");
+				$this->emitError(
+					$fileName,
+					$node,
+					ErrorConstants::TYPE_SIGNATURE_RETURN,
+					"Function $functionName must return a value but contains no return statement"
+				);
 			}
 		}
 	}

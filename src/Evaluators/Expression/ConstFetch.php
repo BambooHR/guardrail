@@ -87,14 +87,14 @@ class ConstFetch implements ExpressionInterface
 			return null;
 		}
 
-		$parser = (new \PhpParser\ParserFactory)->create(\PhpParser\ParserFactory::PREFER_PHP7);
+		$parser = (new \PhpParser\ParserFactory())->create(\PhpParser\ParserFactory::PREFER_PHP7);
 		try {
 			$stmts = $parser->parse($contents);
 		} catch (\PhpParser\Error $error) {
 			return null;
 		}
 
-		$traverser = new \PhpParser\NodeTraverser;
+		$traverser = new \PhpParser\NodeTraverser();
 		$traverser->addVisitor(new \PhpParser\NodeVisitor\NameResolver());
 		return $traverser->traverse($stmts);
 	}
@@ -107,8 +107,10 @@ class ConstFetch implements ExpressionInterface
 		foreach ($stmts as $stmt) {
 			if ($stmt instanceof Node\Stmt\Const_) {
 				foreach ($stmt->consts as $const) {
-					if (isset($const->namespacedName) &&
-						strcasecmp(strval($const->namespacedName), $constName) === 0) {
+					if (
+						isset($const->namespacedName) &&
+						strcasecmp(strval($const->namespacedName), $constName) === 0
+					) {
 						return $const;
 					}
 				}
