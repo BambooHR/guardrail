@@ -109,7 +109,7 @@ class MethodCall extends CallCheck {
 					if ($matchCount < 1) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of " . TypeComparer::typeToString($classNameOb) . "::$methodName");
 					}
-				} else if ($classNameOb instanceof Node\Name) {
+				} elseif ($classNameOb instanceof Node\Name) {
 					if (!$this->inspectIndividualName($classNameOb, $fileName, $node, $methodName, $scope, $inside)) {
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of " . strval($classNameOb) . "::$methodName");
 					}
@@ -143,7 +143,7 @@ class MethodCall extends CallCheck {
 		$callingFromClass = $inside ? strval($inside->namespacedName) : "";
 		if ($method->getAccessLevel() == "private" && ($callingFromClass === "" || strcasecmp($className, $callingFromClass) != 0)) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call private method $className->" . $methodName);
-		} else if (
+		} elseif (
 			$method->getAccessLevel() == "protected" &&
 			(
 				$callingFromClass === "" ||

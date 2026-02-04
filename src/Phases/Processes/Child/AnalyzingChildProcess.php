@@ -24,7 +24,7 @@ class AnalyzingChildProcess extends ChildProcess {
 			$arr = $this->analyzePhase->getAnalyzer()->getTimingsAndCounts();
 			$this->send("TIMINGS " . base64_encode(json_encode($arr)) . "\n");
 			return ProcessManager::READ_CONNECTION;
-		} else if ($command == "DONE") {
+		} elseif ($command == "DONE") {
 			return ProcessManager::CLOSE_CONNECTION;
 		} else {
 			$file = $params[0];

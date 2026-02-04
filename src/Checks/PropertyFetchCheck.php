@@ -129,7 +129,7 @@ class PropertyFetchCheck extends BaseCheck {
 				if ($access === "private" && strcasecmp($declaredIn, $callingClass) !== 0) {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to fetch private property $declaredIn->" . $node->name . " from " .
 											  (!$inside ? "outside a class" : $callingClass ));
-				} else if (
+				} elseif (
 					$access == "protected" &&
 					(
 						$callingClass === ""

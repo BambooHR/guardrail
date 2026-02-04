@@ -46,7 +46,7 @@ class ClassConstFetch implements ExpressionInterface
 
 		if ($expr instanceof Scalar) {
 			return \BambooHR\Guardrail\Evaluators\Expression\Scalar::inferScalar($expr);
-		} else if ($expr instanceof Node\Expr\Array_) {
+		} elseif ($expr instanceof Node\Expr\Array_) {
 			return TypeComparer::identifierFromName("array");
 		} else {
 			return null;
@@ -68,7 +68,7 @@ class ClassConstFetch implements ExpressionInterface
 				}
 				if ($inside instanceof Class_) {
 					$name = strval($inside->extends);
-				} else if ($inside instanceof Interface_) {
+				} elseif ($inside instanceof Interface_) {
 					$name = strval($inside->extends);
 				} else {
 					$name = "";

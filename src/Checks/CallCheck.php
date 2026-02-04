@@ -103,7 +103,7 @@ abstract class CallCheck extends BaseCheck {
 			//echo "Initial expected ".TypeComparer::typeToString($expectedType)."\n";
 			if ($expectedType instanceof Node\Name && isset($templates[strtolower($expectedType)])) {
 				$expectedType = $type;
-			} else if (
+			} elseif (
 				Config::shouldUseDocBlockGenerics() &&
 				$expectedType instanceof Node\Name &&
 				strcasecmp($expectedType, "class-string") === 0

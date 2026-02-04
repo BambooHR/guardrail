@@ -174,7 +174,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 			)
 		) {
 			return $docBlockType;
-		} else if (Config::shouldUseDocBlockForParameters()) {
+		} elseif (Config::shouldUseDocBlockForParameters()) {
 			$type = $param->type;
 			if (!$type) {
 				// A parameter can not be only null.  So disregard these.

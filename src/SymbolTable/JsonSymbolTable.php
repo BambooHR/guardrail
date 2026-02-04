@@ -220,10 +220,10 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			}
 			$result = $this->index[$type][$name]['data'];
 			return $this->unserializeFunction($result);
-		} else if ($type == self::TYPE_CLASS) {
+		} elseif ($type == self::TYPE_CLASS) {
 			if (isset($this->index[self::TYPE_CLASS]) && isset($this->index[self::TYPE_CLASS][$name])) {
 				$result = $this->index[self::TYPE_CLASS][$name]['data'];
-			} else if (isset($this->index[self::TYPE_INTERFACE]) && isset($this->index[self::TYPE_INTERFACE][$name])) {
+			} elseif (isset($this->index[self::TYPE_INTERFACE]) && isset($this->index[self::TYPE_INTERFACE][$name])) {
 				$result = $this->index[self::TYPE_INTERFACE][$name]['data'];
 			} else {
 				return "";
@@ -415,7 +415,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			$tmp = $this->getClassOrInterfaceData($name);
 			if ($tmp) {
 				$ob = new AbstractClass($tmp);
-			} else if (strpos($name, "\\") === false) {
+			} elseif (strpos($name, "\\") === false) {
 				try {
 					$refl = new ReflectionClass($name);
 					$ob = new ReflectedClass($refl);
@@ -635,7 +635,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	function serializeClass(ClassLike $class): string {
 		if ($class instanceof Interface_) {
 			$ret = "I" . ($this->types->add($class->namespacedName));
-		} else if ($class instanceof Node\Stmt\Enum_) {
+		} elseif ($class instanceof Node\Stmt\Enum_) {
 			$ret = "E" . ($this->types->add($class->namespacedName));
 		} else {
 			$ret = "C" . ($this->types->add($class->namespacedName)) . ($class->flags ? " " . $class->flags : "");
@@ -661,11 +661,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		foreach ($class->stmts as $stmt) {
 			if ($stmt instanceof ClassMethod) {
 				$ret .= $this->serializeMethod($stmt);
-			} else if ($stmt instanceof Property) {
+			} elseif ($stmt instanceof Property) {
 				$ret .= $this->serializeProperty($stmt);
-			} else if ($stmt instanceof ClassConst) {
+			} elseif ($stmt instanceof ClassConst) {
 				$ret .= $this->serializeConst($stmt);
-			} else if ($stmt instanceof Node\Stmt\EnumCase) {
+			} elseif ($stmt instanceof Node\Stmt\EnumCase) {
 				$ret .= "E" . $stmt->name . ";";
 			}
 		}
@@ -697,7 +697,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				'stmts' => $stmts,
 				'flags' => $flags
 			]);
-		} else if ($type == "E") {
+		} elseif ($type == "E") {
 			$cls = new Node\Stmt\Enum_($name, [
 				'extends' => $extends,
 				'stmts' => $stmts,
@@ -915,21 +915,21 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$ret .= "=";
 				if ($param->default instanceof Node\Scalar\String_) {
 					$ret .= "string";
-				} else if ($param->default instanceof Node\Scalar\LNumber) {
+				} elseif ($param->default instanceof Node\Scalar\LNumber) {
 					$ret .= "int";
-				} else if ($param->default instanceof Node\Scalar\DNumber) {
+				} elseif ($param->default instanceof Node\Scalar\DNumber) {
 					$ret .= "float";
-				} else if ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "null") == 0) {
+				} elseif ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "null") == 0) {
 					$ret .= "null";
-				} else if ($param->default instanceof Node\Expr\Array_) {
+				} elseif ($param->default instanceof Node\Expr\Array_) {
 					$ret .= "array";
-				} else if ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "true") == 0) {
+				} elseif ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "true") == 0) {
 					$ret .= "true";
-				} else if ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "false") == 0) {
+				} elseif ($param->default instanceof Node\Expr\ConstFetch && strcasecmp($param->default->name, "false") == 0) {
 					$ret .= "false";
-				} else if ($param->default instanceof Node\Expr\ClassConstFetch && $param->default->class instanceof Node\Name && $param->default->name instanceof Node\Identifier) {
+				} elseif ($param->default instanceof Node\Expr\ClassConstFetch && $param->default->class instanceof Node\Name && $param->default->name instanceof Node\Identifier) {
 					$ret .= $param->default->class . "::" . $param->default->name;
-				} else if ($param->default instanceof Node\Expr\ConstFetch && $param->default->name instanceof Node\Name) {
+				} elseif ($param->default instanceof Node\Expr\ConstFetch && $param->default->name instanceof Node\Name) {
 					$ret .= "::" . $param->default->name;
 				} else {
 					$ret .= "unknown";
