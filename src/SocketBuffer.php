@@ -13,9 +13,9 @@ class SocketBuffer {
 		$index2 = strpos($str, "\r");
 		if ($index1 === false && $index2 === false) {
 			return false;
-		} else if ($index1 === false) {
+		} elseif ($index1 === false) {
 			return $index2;
-		} else if ($index2 === false) {
+		} elseif ($index2 === false) {
 			return $index1;
 		} else {
 			return min($index1, $index2);

@@ -17,9 +17,6 @@
     <exclude name="Squiz.Scope.MethodScope.Missing"/>
     <exclude name="PSR12.Properties.ConstantVisibility"/>
     <exclude name="PSR2.Classes.PropertyDeclaration.ScopeMissing"/>
-    <exclude name="PSR2.Classes.PropertyDeclaration.VarUsed"/>
-    <exclude name="PSR2.ControlStructures.ElseIfDeclaration"/>
-    <exclude name="PSR1.Methods.CamelCapsMethodName.NotCamelCaps"/>
   </rule>
   <rule ref="Generic.Functions.OpeningFunctionBraceKernighanRitchie"/>
   <rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>

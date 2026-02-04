@@ -50,7 +50,7 @@ class InstantiationCheck extends MethodCall {
 				if ($inside) {
 					if (strcasecmp($name, "self") == 0) {
 						$name = strval($inside->namespacedName);
-					} else if (strcasecmp($name, "static") == 0) {
+					} elseif (strcasecmp($name, "static") == 0) {
 						$name = strval($inside->namespacedName);
 						$staticNew = true;
 					}

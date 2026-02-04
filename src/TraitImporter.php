@@ -71,10 +71,10 @@ class TraitImporter {
 					// Add it with the new name.
 					$methods[strval($adaptation->newName)][strval($adaptation->trait)] = $method;
 				}
-			} else if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
+			} elseif ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 				// Instance of adaptation ignores the method from a list of traits.
 				foreach ($adaptation->insteadof as $name) {
-					unset($methods[strval($adaptation->method)][$name]);
+					unset($methods[strval($adaptation->method)][strval($name)]);
 				}
 			}
 		}
@@ -154,7 +154,7 @@ class TraitImporter {
 					$props = unserialize(serialize($stmt));
 					ForEachNode::run([$props], $apply);
 					$properties[] = $props;
-				} else if ($stmt instanceof Node\Stmt\ClassMethod) {
+				} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 					// Make a deep copy of the node
 					$method = unserialize(serialize($stmt));
 					ForEachNode::run([$method], $apply);

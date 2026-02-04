@@ -43,7 +43,7 @@ class BreakCheck extends BaseCheck {
 			if ($node->num != null) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_BREAK_NUMBER, "Usage of unsafe \"break [expression]\" form");
 			}
-		} else if ($node instanceof Continue_) {
+		} elseif ($node instanceof Continue_) {
 			if ($node->num != null) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_BREAK_NUMBER, "Usage of unsafe \"continue [expression]\" form");
 			}

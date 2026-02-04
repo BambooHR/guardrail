@@ -153,7 +153,7 @@ abstract class SymbolTable {
 			$tmp = $this->getClassOrInterface($name);
 			if ($tmp) {
 				$ob = new AbstractionClass($tmp);
-			} else if (strpos($name, "\\") === false) {
+			} elseif (strpos($name, "\\") === false) {
 				try {
 					$refl = new ReflectionClass($name);
 					$ob = new ReflectedClass($refl);
@@ -304,7 +304,7 @@ abstract class SymbolTable {
 	public function adjustBasePath(string $fileName): string {
 		if (strpos($fileName, "phar://") === 0) {
 			$fileName = substr($fileName, 7);
-		} else if (!empty($fileName) && strpos($fileName, "/") !== 0) {
+		} elseif (!empty($fileName) && strpos($fileName, "/") !== 0) {
 			$fileName = $this->basePath . "/" . $fileName;
 		}
 		return $fileName;

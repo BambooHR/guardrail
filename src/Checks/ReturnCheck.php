@@ -76,7 +76,7 @@ class ReturnCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a " . TypeComparer::typeToString($returnType) . " function $functionName");
 					return;
 				}
-			} else if ($returnType && $node->expr == null) {
+			} elseif ($returnType && $node->expr == null) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return without a value in function $functionName");
 				return;
 			}
@@ -201,9 +201,9 @@ class ReturnCheck extends BaseCheck {
 		$functionName = "";
 		if ($insideFunc instanceof Node\Stmt\Function_) {
 			$functionName = strval($insideFunc->name);
-		} else if ($insideFunc instanceof Node\Expr\Closure || $insideFunc instanceof Node\Expr\ArrowFunction) {
+		} elseif ($insideFunc instanceof Node\Expr\Closure || $insideFunc instanceof Node\Expr\ArrowFunction) {
 			$functionName = "anonymous function";
-		} else if ($insideFunc instanceof Node\Stmt\ClassMethod) {
+		} elseif ($insideFunc instanceof Node\Stmt\ClassMethod) {
 			$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
 			$functionName = "$class::" . strval($insideFunc->name);
 		}
