@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -18,7 +20,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class UndefinedVariableCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -38,7 +39,7 @@ class UndefinedVariableCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Variable) {
 			if ($node->name instanceof Expr) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_VARIABLE_VARIABLE, "Variable variable detected");

@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
@@ -14,7 +16,6 @@ use PhpParser\Node\Stmt\Function_;
  * @package BambooHR\Guardrail\Checks
  */
 class UnreachableCodeCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -63,14 +64,15 @@ class UnreachableCodeCheck extends BaseCheck {
 	public function checkForUnreachableNode(array $statements) {
 		do {
 			$previous = array_shift($statements);
-		} while ( $previous instanceof Node\Stmt\Nop);
+		} while ($previous instanceof Node\Stmt\Nop);
 		foreach ($statements as $statement) {
-			if (!$statement instanceof Node\Stmt\Nop)
+			if (!$statement instanceof Node\Stmt\Nop) {
 				if (Util::allBranchesExit([$previous])) {
 					return $statement;
 				} else {
 					$previous = $statement;
 				}
+			}
 		}
 		return null;
 	}

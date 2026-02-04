@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR.
@@ -21,7 +23,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class GlobalFunctionCheck extends BaseCheck {
-
 	/**
 	 * GlobalFunctionCheck constructor.
 	 *
@@ -94,9 +95,11 @@ class GlobalFunctionCheck extends BaseCheck {
 		$parents = $scope->getParentNodes();
 
 		foreach ($parents as $parent) {
-			if ($parent instanceof Node\Stmt\If_ ||
+			if (
+				$parent instanceof Node\Stmt\If_ ||
 				$parent instanceof Node\Stmt\ElseIf_ ||
-				$parent instanceof Node\Stmt\Else_) {
+				$parent instanceof Node\Stmt\Else_
+			) {
 				return true;
 			}
 		}

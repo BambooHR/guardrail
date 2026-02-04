@@ -4,7 +4,6 @@ namespace BambooHR\Guardrail\Output;
 
 class CsvOutput extends XUnitOutput
 {
-
 	private $errors = [];
 
 	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
@@ -23,7 +22,7 @@ class CsvOutput extends XUnitOutput
 			$f = fopen("php://stdout", "w");
 		}
 		foreach ($this->errors as $fileName => $errors) {
-			usort($errors, fn($cmpa, $cmpb) => $cmpa['line'] <=> $cmpb['line'] );
+			usort($errors, fn($cmpa, $cmpb) => $cmpa['line'] <=> $cmpb['line']);
 			foreach ($errors as $error) {
 				fputcsv($f, [$fileName, $error['line'],$error['name'], $error['message']]);
 			}

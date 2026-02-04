@@ -17,7 +17,7 @@ class TypeComparer
 
 	function __construct(private SymbolTable $symbolTable) { }
 
-	static public function identifierFromName(string $str):Identifier {
+	public static function identifierFromName(string $str): Identifier {
 		static $identifier = [];
 		if (!array_key_exists($str, $identifier)) {
 			$identifier[$str] = new Identifier($str);
@@ -25,7 +25,7 @@ class TypeComparer
 		return $identifier[$str];
 	}
 
-	static private function compareUnionElements(Name|Identifier|IntersectionType $a, Name|Identifier|IntersectionType $b) {
+	private static function compareUnionElements(Name|Identifier|IntersectionType $a, Name|Identifier|IntersectionType $b) {
 		$aType = $a instanceof IntersectionType ? 1 : 0;
 		$bType = $b instanceof IntersectionType ? 1 : 0;
 		if ($aType != $bType) {
@@ -45,7 +45,7 @@ class TypeComparer
 		}
 	}
 
-	private static function normalizeUnionType(UnionType $type):UnionType {
+	private static function normalizeUnionType(UnionType $type): UnionType {
 		// First, sort any intersections inside the union.
 		foreach ($type->types as $subType) {
 			if ($subType instanceof Node\IntersectionType) {
@@ -57,14 +57,14 @@ class TypeComparer
 	}
 
 
-	private static function normalizeIntersectionType(IntersectionType $type):IntersectionType {
-		usort($type->types, function($a, $b) {
+	private static function normalizeIntersectionType(IntersectionType $type): IntersectionType {
+		usort($type->types, function ($a, $b) {
 			return strcmp(strval($a), strval($b));
 		});
 		return $type;
 	}
 
-	public static function normalizeType(ComplexType|Identifier|Name|null $type):ComplexType|Identifier|Name|null {
+	public static function normalizeType(ComplexType|Identifier|Name|null $type): ComplexType|Identifier|Name|null {
 		if ($type instanceof Node\NullableType) {
 			$type = new UnionType([self::identifierFromName("null"), $type->type]);
 		}
@@ -77,7 +77,7 @@ class TypeComparer
 		return $type;
 	}
 
-	public static function nameFromName(string $str):Name {
+	public static function nameFromName(string $str): Name {
 		static $name = [];
 		if (!array_key_exists($str, $name)) {
 			$name[$str] = new Name($str);
@@ -85,7 +85,7 @@ class TypeComparer
 		return $name[$str];
 	}
 
-	static function isExactMatch(ComplexType|Identifier|Name|null $a, ComplexType|Identifier|Name|null $b):bool {
+	static function isExactMatch(ComplexType|Identifier|Name|null $a, ComplexType|Identifier|Name|null $b): bool {
 		if ($a == null && $b == null) {
 			return true;
 		}
@@ -99,16 +99,12 @@ class TypeComparer
 		if ($a instanceof IntersectionType && $b instanceof IntersectionType) {
 			self::ifEveryType($a, fn($aType) =>
 			self::ifAnyType($b, fn($bType) =>
-			self::isExactMatch($aType, $bType)
-			)
-			);
+			self::isExactMatch($aType, $bType)));
 		}
 		if ($a instanceof UnionType && $b instanceof UnionType) {
 			self::ifEveryType($a, fn($aType) =>
 			self::ifAnyType($b, fn($bType) =>
-			self::isExactMatch($aType, $bType)
-			)
-			);
+			self::isExactMatch($aType, $bType)));
 			return true;
 		}
 		return false;
@@ -206,12 +202,13 @@ class TypeComparer
 	 * Does not produce a name if there are any Array lookups in the chain or if the end isn't a string identifier.
 	 *
 	 */
-	static function getChainedPropertyFetchName(Node $rootNode):?string {
-		if (($rootNode instanceof Node\Expr\PropertyFetch  || $rootNode instanceof Node\Expr\NullsafePropertyFetch)
+	static function getChainedPropertyFetchName(Node $rootNode): ?string {
+		if (
+			($rootNode instanceof Node\Expr\PropertyFetch  || $rootNode instanceof Node\Expr\NullsafePropertyFetch)
 			&& $rootNode->name instanceof Identifier
 		) {
 			$left = self::getChainedPropertyFetchName($rootNode->var);
-			return $left ? ($left."->".$rootNode->name) : null;
+			return $left ? ($left . "->" . $rootNode->name) : null;
 		} else if ($rootNode instanceof Node\Expr\Variable && is_string($rootNode->name)) {
 			return strval($rootNode->name);
 		} else {
@@ -219,28 +216,27 @@ class TypeComparer
 		}
 	}
 
-	static function typeToString(ComplexType|Name|Identifier|null $type):string {
+	static function typeToString(ComplexType|Name|Identifier|null $type): string {
 		if ($type === null) {
 			return "(unknown)";
 		} else if ($type instanceof Name) {
 			$vars = $type->getAttribute('templates', []);
 			if (count($vars) > 0) {
-				return $type."<".implode(",", $vars).">";
+				return $type . "<" . implode(",", $vars) . ">";
 			} else {
 				return strval($type);
 			}
 		} else if ($type instanceof Identifier) {
 			return strval($type);
 		} else if ($type instanceof Node\NullableType) {
-			return "null|".strval($type->type);
+			return "null|" . strval($type->type);
 		} else if ($type instanceof UnionType) {
 			return implode("|", array_map(fn($type)=>self::typeToString($type), $type->types));
-
 		} else if ($type instanceof IntersectionType) {
-			return "(".implode("&", array_map(fn($type)=>self::typeToString($type), $type->types )).")";
+			return "(" . implode("&", array_map(fn($type)=>self::typeToString($type), $type->types)) . ")";
 		} else {
 			// Should be unreachable
-			return "ERROR(".get_class($type).")";
+			return "ERROR(" . get_class($type) . ")";
 		}
 	}
 
@@ -264,7 +260,7 @@ class TypeComparer
 	}
 
 	function isCovariant(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value) {
-			if (is_null($value)) {
+		if (is_null($value)) {
 			if (is_null($target)) {
 				return true;
 			}
@@ -286,7 +282,7 @@ class TypeComparer
 	 * @return bool
 	 *
 	 */
-	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict=false, $nullChecks=true ) : bool {
+	function isCompatibleWithTarget(ComplexType|Name|Identifier|null $target, ComplexType|Name|Identifier|null $value, $forceStrict = false, $nullChecks = true): bool {
 		if ($nullChecks) {
 			if (is_null($target)) {
 				return true;
@@ -299,7 +295,7 @@ class TypeComparer
 
 		// Many target options, many values.  Every value option must match at least one target.
 		$ret = self::ifEveryType($value, fn($valueType) =>
-			self::ifAnyType($target, function($targetType) use ($forceStrict, $valueType) {
+			self::ifAnyType($target, function ($targetType) use ($forceStrict, $valueType) {
 				if ($targetType instanceof IntersectionType) {
 					$types = $targetType->types;
 				} else {
@@ -317,8 +313,7 @@ class TypeComparer
 					}
 				}
 				return true;
-			})
-		);
+			}));
 		return $ret;
 	}
 
@@ -370,7 +365,7 @@ class TypeComparer
 
 	static function removeNamedOption(ComplexType|Identifier|Name|null $a, string $name): ComplexType|Identifier|Name|null {
 		$ret = [];
-		self::forEachType($a, function($el) use ($name, &$ret) {
+		self::forEachType($a, function ($el) use ($name, &$ret) {
 			if (!self::isNamedIdentifier($el, $name)) {
 				$ret[] = $el;
 			}
@@ -388,7 +383,7 @@ class TypeComparer
 			$types = $node->types;
 		}
 		foreach ($types as $type) {
-			if (!call_user_func( $fn, $type )) {
+			if (!call_user_func($fn, $type)) {
 				return false;
 			}
 		}
@@ -414,7 +409,7 @@ class TypeComparer
 		return false;
 	}
 
-	static function ifAnyTypeIsNull($node):bool {
+	static function ifAnyTypeIsNull($node): bool {
 		return self::ifAnyType($node, fn($type)=>self::isNamedIdentifier($type, "null"));
 	}
 
@@ -433,7 +428,7 @@ class TypeComparer
 	}
 
 	static function forEachAnyEveryType($node, callable $fn) {
-		self::forEachType($node, function($type) use ($fn) {
+		self::forEachType($node, function ($type) use ($fn) {
 			if ($type instanceof IntersectionType) {
 				foreach ($type->types as $iType) {
 					call_user_func($fn, $iType);
@@ -444,11 +439,11 @@ class TypeComparer
 		});
 	}
 
-	function isTraversable(ComplexType|Identifier|Name|null $type):bool {
+	function isTraversable(ComplexType|Identifier|Name|null $type): bool {
 		if (is_null($type)) {
 			return true;
 		}
-		return self::ifEveryType($type, function($subType) {
+		return self::ifEveryType($type, function ($subType) {
 			if ($subType) {
 				if ($subType instanceof Node\Name or $subType instanceof Node\Identifier) {
 					$typeStr = strval($subType);
@@ -501,7 +496,7 @@ class TypeComparer
 		}
 	}
 
-	static function isNamedIdentifier(?Node $node, string $name):bool {
+	static function isNamedIdentifier(?Node $node, string $name): bool {
 		return ($node instanceof Node\Identifier || $node instanceof Node\Name) && strcasecmp(strval($node), $name) == 0;
 	}
 }

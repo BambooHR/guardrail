@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail;
+<?php
+
+namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -15,11 +17,11 @@ use PhpParser\Node;
  */
 interface Scope extends PluginScopeInterface {
 	/** @return Node[] */
-	function getParentNodes():array;
+	function getParentNodes(): array;
 
-	function getCurrentFile():string;
+	function getCurrentFile(): string;
 
-	public function setVarUsed($name):void;
+	public function setVarUsed($name): void;
 
 	public function getConfig(): Config;
 }

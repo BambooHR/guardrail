@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -22,7 +24,6 @@ use PhpParser\Node\Stmt\Function_;
  * @package BambooHR\Guardrail\Checks
  */
 class ParamTypesCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -40,13 +41,13 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name , ?ClassLike $inside=null) {
+	protected function isAllowed(Node\ComplexType|Node\NullableType|Node\Name|Node\Identifier|null $name, ?ClassLike $inside = null) {
 		$return = true;
 
 		if ($name instanceof Node\NullableType && TypeComparer::isNamedIdentifier($name->type, "null")) {
 			return false;
 		}
-		TypeComparer::forEachAnyEveryType($name, function($name2) use ($inside, &$return) {
+		TypeComparer::forEachAnyEveryType($name, function ($name2) use ($inside, &$return) {
 			if ($name2 === null) {
 				return;
 			}
@@ -77,7 +78,7 @@ class ParamTypesCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 
 		if ($node instanceof Function_) {
 			$this->checkForNestedFunction($fileName, $node, $inside, $scope);
@@ -99,7 +100,6 @@ class ParamTypesCheck extends BaseCheck {
 
 		if ($node instanceof Node\FunctionLike) {
 			foreach ($node->getParams() as $index => $param) {
-
 				if ($param->type) {
 					$name = $param->type;
 					if (!$this->isAllowed($name, $inside)) {
@@ -126,7 +126,7 @@ class ParamTypesCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_OVERRIDE_BASE_CLASS, "Attempt to override a method in a base class");
 				} else {
 					if (!Util::findAbstractedMethod($inside->extends, $node->name, $this->symbolTable)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Impossible #[Override].  No method named ".$node->name."() found in ".$inside->extends." or any parent class.");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Impossible #[Override].  No method named " . $node->name . "() found in " . $inside->extends . " or any parent class.");
 					}
 				}
 			}
@@ -145,7 +145,7 @@ class ParamTypesCheck extends BaseCheck {
 	 */
 	public function checkForNestedFunction($fileName, Node\FunctionLike $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		$self = $this;
-		ForEachNode::run( $node->getStmts(), function($statement) use ($self, $fileName, $node) {
+		ForEachNode::run($node->getStmts(), function ($statement) use ($self, $fileName, $node) {
 			if ($statement instanceof Node\Stmt\Function_) {
 				$self->emitError($fileName, $node, ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION, "Function declaration detected inside another function or method");
 			}

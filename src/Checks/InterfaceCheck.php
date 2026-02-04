@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -31,7 +33,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @var array
 	 */
-	static private $methodVisibilityLevels = [
+	private static $methodVisibilityLevels = [
 		'private' => 0,
 		'protected' => 1,
 		'public' => 2,
@@ -149,17 +151,20 @@ class InterfaceCheck extends BaseCheck {
 	private function assertParentChildReturnTypesMatch(
 		MethodInterface $childMethod,
 		MethodInterface $parentMethod,
-		string          $fileName,
-		string          $className
+		string $fileName,
+		string $className
 	) {
 		$parentType = $parentMethod->getComplexReturnType();
 		$childType = $childMethod->getComplexReturnType();
-		$isCovariant = $this->typeComparer->isCovariant( $parentType, $childType );
+		$isCovariant = $this->typeComparer->isCovariant($parentType, $childType);
 		if (!$isCovariant) {
-			$this->emitErrorOnLine($fileName, $childMethod->getStartingLine(), self::TYPE_SIGNATURE_RETURN,
+			$this->emitErrorOnLine(
+				$fileName,
+				$childMethod->getStartingLine(),
+				self::TYPE_SIGNATURE_RETURN,
 				"Child method return types do not match parent return types " . $className . "::" .
 				$childMethod->getName() . " : " . TypeComparer::typeToString($parentMethod->getComplexReturnType())
-					." to ". TypeComparer::typeToString($childMethod->getComplexReturnType())
+					. " to " . TypeComparer::typeToString($childMethod->getComplexReturnType())
 			);
 		}
 	}
@@ -196,7 +201,7 @@ class InterfaceCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	private function processNodeImplements(string $fileName, Class_|Interface_ $node):void {
+	private function processNodeImplements(string $fileName, Class_|Interface_ $node): void {
 		$arr = Util::findAllInterfaces(strval($node->namespacedName), $this->symbolTable);
 		foreach ($arr as $name) {
 			$interface = $this->symbolTable->getAbstractedClass($name);
@@ -208,7 +213,7 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 
-	private function processNodeExtends(string $fileName, Class_ $node):void {
+	private function processNodeExtends(string $fileName, Class_ $node): void {
 		$class = new AbstractedClass_($node);
 		$parentClass = $this->symbolTable->getAbstractedClass($node->extends);
 		if (!$parentClass) {
@@ -227,14 +232,14 @@ class InterfaceCheck extends BaseCheck {
 		}
 	}
 
-	private function processNodeImplementsInterface(string $fileName, Class_|Interface_ $node, ClassInterface $interface):void {
+	private function processNodeImplementsInterface(string $fileName, Class_|Interface_ $node, ClassInterface $interface): void {
 		$methods = $interface->getMethodNames();
 		foreach ($methods as $methodName) {
 			$this->processInterfaceMethod($node, $methodName, $fileName, $interface);
 		}
 	}
 
-	public function processInterfaceMethod(Class_|Interface_ $node, string $interfaceMethod, string $fileName, ClassInterface $interface) : void {
+	public function processInterfaceMethod(Class_|Interface_ $node, string $interfaceMethod, string $fileName, ClassInterface $interface): void {
 		$classMethod = Util::findAbstractedMethod($node->namespacedName, $interfaceMethod, $this->symbolTable);
 		if (!$classMethod) {
 			if ($node instanceof Node\Stmt\Class_ && !$node->isAbstract()) {

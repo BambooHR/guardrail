@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Config;
@@ -25,7 +27,7 @@ abstract class CallCheck extends BaseCheck {
 	 * @param FunctionLikeParameter[] $params
 	 * @return void
 	 */
-	protected function checkParams($fileName, $node, $name, ?Scope $scope, array $args, array $params, array $templates=[]) {
+	protected function checkParams($fileName, $node, $name, ?Scope $scope, array $args, array $params, array $templates = []) {
 		$named = false;
 		$covered = array_fill(0, count($params), 0);
 		foreach ($args as $index => $arg) {
@@ -52,13 +54,13 @@ abstract class CallCheck extends BaseCheck {
 						$this->checkParam($fileName, $node, $name, $scope, $arg, $params[$index2], $templates);
 					}
 				} else {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Unable to find named parameter ".$arg->name->name);
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Unable to find named parameter " . $arg->name->name);
 				}
 			}
 		}
 		foreach ($params as $index => $param) {
 			if (!$covered[$index] && !$param->isOptional()) {
-				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "$name: required parameter ".$param->getName()." was not passed");
+				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "$name: required parameter " . $param->getName() . " was not passed");
 			}
 		}
 	}
@@ -68,7 +70,7 @@ abstract class CallCheck extends BaseCheck {
 	 * @param string $name
 	 * @return int
 	 */
-	static function findParam(array $params, string $name):int {
+	static function findParam(array $params, string $name): int {
 		foreach ($params as $index => $param) {
 			if (strcasecmp($param->getName(), $name) == 0) {
 				return $index;
@@ -113,7 +115,8 @@ abstract class CallCheck extends BaseCheck {
 			}
 			if ($expectedType && (!($expectedType instanceof Node\Name) || strcasecmp($expectedType, "T") != 0)) {
 				// Reference mismatch
-				if ($param->isReference() &&
+				if (
+					$param->isReference() &&
 					!(
 						$arg->value instanceof Variable ||
 						$arg->value instanceof Expr\ArrayDimFetch ||
@@ -135,10 +138,12 @@ abstract class CallCheck extends BaseCheck {
 						$typeWithOutNull = TypeComparer::removeNullOption($type);
 						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope?->isStrict());
 					}
-					$this->emitError($fileName, $node,
+					$this->emitError(
+						$fileName,
+						$node,
 						$nullOnlyError ? ErrorConstants::TYPE_SIGNATURE_TYPE_NULL : ErrorConstants::TYPE_SIGNATURE_TYPE,
-						"Incompatible type passed to $name parameter \$$variableName ".
-						"expected ".TypeComparer::typeToString($expectedType). ", passed $typeStr".($scope?->isStrict() ? " STRICT" : "")
+						"Incompatible type passed to $name parameter \$$variableName " .
+						"expected " . TypeComparer::typeToString($expectedType) . ", passed $typeStr" . ($scope?->isStrict() ? " STRICT" : "")
 					);
 				}
 			}

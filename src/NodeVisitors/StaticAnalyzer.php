@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR.
@@ -67,7 +69,6 @@ use PhpParser\NodeVisitorAbstract;
  */
 class StaticAnalyzer extends NodeVisitorAbstract
 {
-
 	/** @var  SymbolTable */
 	private $index;
 
@@ -184,14 +185,13 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		if (!$instances) {
 			$instances = [];
 			foreach (self::EVALUATORS as $className) {
-				$instances[] = new $className;
+				$instances[] = new $className();
 			}
 		}
 
 		foreach ($instances as $instance) {
 			$type = $instance->getInstanceType();
 			if (is_array($type)) {
-
 				foreach ($type as $type2) {
 					if ($node instanceof $type2) {
 						return $instance;
@@ -220,7 +220,9 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	public function setFile($name, Config $config) {
 		$this->file = $name;
 		$this->scopeStack = new ScopeStack(
-			$this->scopeStack->getOutput(), $this->scopeStack->getMetricOutput(), $config
+			$this->scopeStack->getOutput(),
+			$this->scopeStack->getMetricOutput(),
+			$config
 		);
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->scopeStack->setCurrentFile($name);
@@ -292,7 +294,6 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		if ($node instanceof FunctionLike) {
 			$this->updateFunctionEmit($node, $this->scopeStack, "pop");
 		}
-
 	}
 
 	/**

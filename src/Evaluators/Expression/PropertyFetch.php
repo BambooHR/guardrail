@@ -12,7 +12,6 @@ use PhpParser\Node;
 
 class PropertyFetch implements ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return [
 			Node\Expr\PropertyFetch::class,
@@ -29,7 +28,7 @@ class PropertyFetch implements ExpressionInterface
 			$var = NodePatterns::getVariableOrPropertyName($node);
 			if ($var) {
 				$varScope = $scopeStack->getCurrentScope();
-				$varScope->setVarType($var, TypeComparer::removeNullOption( $varScope->getVarType($var)), $node->getLine());
+				$varScope->setVarType($var, TypeComparer::removeNullOption($varScope->getVarType($var)), $node->getLine());
 				$node->setAttribute('assertsTrue', $varScope);
 			}
 		}
@@ -40,7 +39,7 @@ class PropertyFetch implements ExpressionInterface
 
 			$resolvedType = null;
 			$chainedName = TypeComparer::getChainedPropertyFetchName($expr);
-			if ( $chainedName && $scopeStack->getVarType($chainedName)) {
+			if ($chainedName && $scopeStack->getVarType($chainedName)) {
 				$resolvedType = $scopeStack->getVarType($chainedName);
 			}
 
@@ -52,7 +51,7 @@ class PropertyFetch implements ExpressionInterface
 				$hadNullClass = TypeComparer::ifAnyTypeIsNull($class);
 				if ($hadNullClass) {
 					// Add null to the list of potential types if the class to the left of ?-> is potentially null
-					$resolvedType = TypeComparer::getUniqueTypes( TypeComparer::identifierFromName("null"), $resolvedType);
+					$resolvedType = TypeComparer::getUniqueTypes(TypeComparer::identifierFromName("null"), $resolvedType);
 				}
 			}
 
@@ -67,12 +66,13 @@ class PropertyFetch implements ExpressionInterface
 		return null;
 	}
 
-	public function getProperty($class, Node\Identifier $name,SymbolTable $table) {
+	public function getProperty($class, Node\Identifier $name, SymbolTable $table) {
 		$propName = strval($name);
 		if ($propName != "") {
 			$types = [];
 			$unknown = false;
-			TypeComparer::forEachType($class,
+			TypeComparer::forEachType(
+				$class,
 				function ($class) use ($propName, &$types, &$unknown, $table) {
 					$classDef = $table->getAbstractedClass($class);
 					if ($classDef) {
