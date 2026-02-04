@@ -17,7 +17,7 @@ class TestUnreachableCodeCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:UnreachableCode:A return inside an if conditional will throw error for unreachable code
 	 */
 	public function testUnreachableCodeAfterIfConditional() {
-		$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
 	}
 
 	/**
@@ -37,7 +37,7 @@ class TestUnreachableCodeCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:UnreachableCode:A return inside an if conditional will throw error for unreachable code in a class method
 	 */
 	public function testUnreachableCodeAfterIfConditionalInClassMethod() {
-		$this->assertEquals(2, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNREACHABLE_CODE));
 	}
 
 	/**

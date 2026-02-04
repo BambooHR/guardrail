@@ -24,6 +24,16 @@ class CheckClassTesting__ {
 		echo "Reachable code";
 	}
 
+	public function myThirdGoodMethodCall() {
+		if (false) {
+			return;
+		} elseif (false) {
+			return;
+		}
+
+		echo "Reachable code";
+	}
+
 	public function myBadMethodCall() {
 		if (1 == 1) {
 			return;
@@ -46,5 +56,17 @@ class CheckClassTesting__ {
 			exit;
 		}
 		echo 'Unreachable code';
+	}
+
+	public function myThirdBadMethodCall() {
+	if (false) {
+		return;
+	} elseif (true) {
+		return;
+	}
+
+	return;
+
+	echo 'Unreachable code';
 	}
 }

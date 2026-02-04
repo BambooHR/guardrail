@@ -25,15 +25,15 @@ class Scalar implements ExpressionInterface
 	static function inferScalar(ScalarExp $expr): Node\Identifier {
 		if ($expr instanceof ScalarExp\LNumber) {
 			$type = TypeComparer::identifierFromName("int");
-		} else if ($expr instanceof ScalarExp\DNumber) {
+		} elseif ($expr instanceof ScalarExp\DNumber) {
 			$type = TypeComparer::identifierFromName("float");
-		} else if ($expr instanceof ScalarExp\String_) {
+		} elseif ($expr instanceof ScalarExp\String_) {
 			$type = TypeComparer::identifierFromName("string");
-		} else if ($expr instanceof ScalarExp\Encapsed) {
+		} elseif ($expr instanceof ScalarExp\Encapsed) {
 			$type = TypeComparer::identifierFromName("string");
-		} else if ($expr instanceof ScalarExp\MagicConst\Line) {
+		} elseif ($expr instanceof ScalarExp\MagicConst\Line) {
 			$type = TypeComparer::identifierFromName("int");
-		} else if ($expr instanceof ScalarExp\MagicConst) {
+		} elseif ($expr instanceof ScalarExp\MagicConst) {
 			$type = TypeComparer::identifierFromName("string");
 		} else {
 			$type = TypeComparer::identifierFromName("mixed");

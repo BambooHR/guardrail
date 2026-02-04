@@ -31,7 +31,7 @@ class ThrowsCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNDOCUMENTED_EXCEPTION, "Undocumented exception ($throws) thrown");
 				}
 			}
-		} else if ($node instanceof Node\Expr\MethodCall && $node->name instanceof Node\Identifier) {
+		} elseif ($node instanceof Node\Expr\MethodCall && $node->name instanceof Node\Identifier) {
 			$type = $node->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 			if ($type) {
 				TypeComparer::forEachType($type, function ($typeNode) use ($node, $scope, $fileName) {
@@ -83,7 +83,7 @@ class ThrowsCheck extends BaseCheck {
 						}
 					}
 				}
-			} else if ($parent instanceof Node\FunctionLike) {
+			} elseif ($parent instanceof Node\FunctionLike) {
 				return false;
 			}
 		}

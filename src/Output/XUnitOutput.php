@@ -186,7 +186,7 @@ class XUnitOutput implements OutputInterface {
 					continue;
 				}
 				return true;
-			} else if (is_string($entry) && self::emitPatternMatches($name, $entry)) {
+			} elseif (is_string($entry) && self::emitPatternMatches($name, $entry)) {
 				return true;
 			}
 		}
@@ -310,7 +310,7 @@ class XUnitOutput implements OutputInterface {
 		if ($this->config->getOutputLevel() == 1) {
 			echo $verbose;
 			flush();
-		} else if ($this->config->getOutputLevel() == 2) {
+		} elseif ($this->config->getOutputLevel() == 2) {
 			echo $extraVerbose . "\n";
 			flush();
 		}

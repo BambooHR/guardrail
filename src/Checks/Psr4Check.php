@@ -82,12 +82,12 @@ class Psr4Check extends BaseCheck {
 				$fullName = $this->getPsr4Path($node->namespacedName);
 				$name = $node->name;
 			}
-		} else if ($node instanceof Node\Stmt\Interface_) {
+		} elseif ($node instanceof Node\Stmt\Interface_) {
 			if (isset($node->namespacedName)) {
 				$fullName = $this->getPsr4Path($node->namespacedName);
 				$name = $node->name;
 			}
-		} else if ($node instanceof Node\Stmt\Trait_) {
+		} elseif ($node instanceof Node\Stmt\Trait_) {
 			if (isset($node->namespacedName)) {
 				$fullName = $this->getPsr4Path($node->namespacedName);
 				$name = $node->name;
