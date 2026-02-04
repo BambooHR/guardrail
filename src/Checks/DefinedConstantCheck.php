@@ -25,7 +25,7 @@ class DefinedConstantCheck extends BaseCheck {
 	/**
 	 * @var array
 	 */
-	var $reflectedConstants = [];
+	private $reflectedConstants = [];
 
 	/**
 	 * @var array
