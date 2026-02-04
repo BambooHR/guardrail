@@ -12,7 +12,6 @@ use PhpParser\Node\Scalar as ScalarExp;
 
 class Scalar implements ExpressionInterface
 {
-
 	function getInstanceType(): string {
 		return Node\Scalar::class;
 	}

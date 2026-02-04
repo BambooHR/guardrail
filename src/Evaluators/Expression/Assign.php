@@ -26,7 +26,7 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 
 		/** @var Node\Expr\Assign $assign */
 		$assign = $node;
-		$valueType = $assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR );
+		$valueType = $assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		$this->setValueType($assign->var, $valueType, $scopeStack);
 	//	echo "Assigning value type: ".($assign->var->name)."$valueType\n";
 	//	$scopeStack->dump();
@@ -62,11 +62,9 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 					if ($innerVar->key == null && $value && $value instanceof Variable && gettype($value->name) == "string") {
 						//list() = or [$a,$b] = OR // return list($a, $b)
 						if (!$scope->getVarExists($value->name)) {
-
 							$value->setAttribute('assignment', true);
 							$scope->setVarType(strval($value->name), null, $innerVar->getLine());
 							$scope->setVarWritten(strval($value->name), $innerVar->getLine());
-
 						} else {
 							$scope->setVarUsed($value->name);
 						}

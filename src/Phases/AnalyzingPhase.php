@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Phases;
+<?php
+
+namespace BambooHR\Guardrail\Phases;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR.
@@ -60,13 +62,13 @@ class AnalyzingPhase {
 	function __construct() { }
 
 
-	function getTimingResults():array {
+	function getTimingResults(): array {
 		return $this->timingResults;
 	}
 
 
 	function initParser(Config $config, XUnitOutput & MetricOutputInterface $output) {
-		$traverser1 = new NodeTraverser;
+		$traverser1 = new NodeTraverser();
 		$traverser1->addVisitor($resolver = new NameResolver());
 		$traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 		$traverser1->addVisitor(new PromotedPropertyVisitor());
@@ -74,13 +76,13 @@ class AnalyzingPhase {
 		$traverser2 = new NodeTraverser();
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
 
-		$traverser3 = new NodeTraverser;
-		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config ));
+		$traverser3 = new NodeTraverser();
+		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config));
 
 		$this->output = $output;
 
 		$this->traversers = [$traverser1, $traverser2, $traverser3];
-		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		$this->parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
 	}
 
 	function getAnalyzer() {
@@ -99,7 +101,7 @@ class AnalyzingPhase {
 			$ret[$class]['count'] = ($ret[$class]['count'] ?? 0) + $counts[$class];
 		}
 
-		uasort( $ret, fn($first, $second) => $second['time'] <=> $first['time'] );
+		uasort($ret, fn($first, $second) => $second['time'] <=> $first['time']);
 		$this->timingResults  = $ret;
 	}
 
@@ -133,7 +135,7 @@ class AnalyzingPhase {
 	 *
 	 * @return bool
 	 */
-	static public function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
+	public static function checkForSafeAutoloadNode($file, Node $node, OutputInterface $output) {
 		if ($node instanceof Node\Stmt\Declare_ && $node->stmts !== null) {
 			foreach ($node->stmts as $child) {
 				if (!self::checkForSafeautoloadNode($file, $child, $output)) {
@@ -264,9 +266,9 @@ class AnalyzingPhase {
 		list($partialList, $partitionNumber, $sizes) = $this->partition($config, $toProcess);
 		//$partialList = $this->reshuffle($partialList);
 
-		$output->outputVerbose("Partition sizes: " . $white . implode("$reset,$white ", $sizes)."$reset\n");
+		$output->outputVerbose("Partition sizes: " . $white . implode("$reset,$white ", $sizes) . "$reset\n");
 
-		$output->outputVerbose("Partition " . $white.($partitionNumber + 1).$reset . " analyzing " . $white.number_format(count($partialList) ). $reset." files (" . $white.number_format($sizes[$partitionNumber] ).$reset. " bytes)\n");
+		$output->outputVerbose("Partition " . $white . ($partitionNumber + 1) . $reset . " analyzing " . $white . number_format(count($partialList)) . $reset . " files (" . $white . number_format($sizes[$partitionNumber]) . $reset . " bytes)\n");
 		return $this->phase2($config, $output, $partialList, $sizes[$partitionNumber]);
 	}
 
@@ -275,7 +277,7 @@ class AnalyzingPhase {
 	 * Swaps every other entry from the start of the list with every other entry from the end of the list.
 	 * The intention is to even out I/O not doing all the big files at once.
 	 */
-	function reshuffle(array $partialList):array {
+	function reshuffle(array $partialList): array {
 		$last = count($partialList) - 1;
 		for ($i = 0; $i < $last >> 1; $i += 2) {
 			$tmp = $partialList[$i];

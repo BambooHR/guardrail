@@ -21,7 +21,7 @@ class ConstFetch implements ExpressionInterface
 		return $this->getType($table, $constFetch);
 	}
 
-	function getType(SymbolTable $table, Node\Expr\ConstFetch $expr):?Node\Identifier {
+	function getType(SymbolTable $table, Node\Expr\ConstFetch $expr): ?Node\Identifier {
 		if (strcasecmp($expr->name, "null") == 0) {
 			return TypeComparer::identifierFromName("null");
 		}

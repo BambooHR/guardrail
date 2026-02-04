@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -17,7 +19,6 @@ use PhpParser\Node\Stmt\ClassLike;
  * @package BambooHR\Guardrail\Checks
  */
 class InstanceOfCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -37,7 +38,7 @@ class InstanceOfCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Instanceof_) {
 			if ($node->class instanceof Name) {
 				$name = $node->class->toString();

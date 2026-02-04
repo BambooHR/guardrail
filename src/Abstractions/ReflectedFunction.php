@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeComparer;
@@ -16,7 +18,6 @@ use BambooHR\Guardrail\Util;
  * @package BambooHR\Guardrail\Abstractions
  */
 class ReflectedFunction implements FunctionLikeInterface {
-
 	/**
 	 * @var \ReflectionFunction
 	 */
@@ -71,7 +72,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	 * @return bool
 	 */
 	public function hasNullableReturnType() {
-		if ( method_exists($this->refl, "getReturnType")) {
+		if (method_exists($this->refl, "getReturnType")) {
 			$type = $this->refl->getReturnType();
 			if ($type) {
 				return $type->allowsNull();
@@ -162,7 +163,6 @@ class ReflectedFunction implements FunctionLikeInterface {
 					}
 					break;
 				case 1:
-
 					if ($name == "usort" || $name == "uksort" || $name == "uasort") {
 						$type = TypeComparer::identifierFromName("callable");
 					}
@@ -176,7 +176,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 					}
 					break;
 			}
-			$ret[] = new FunctionLikeParameter( $type, $param->name, $param->isOptional(), $isPassedByReference, $isNullable);
+			$ret[] = new FunctionLikeParameter($type, $param->name, $param->isOptional(), $isPassedByReference, $isNullable);
 		}
 		return $ret;
 	}

@@ -8,6 +8,6 @@ use PhpParser\Node;
 
 interface ExpressionInterface
 {
-	function getInstanceType():array|string;
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack):?Node;
+	function getInstanceType(): array|string;
+	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node;
 }

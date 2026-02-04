@@ -22,7 +22,8 @@ class ArrayDimFetch implements ExpressionInterface
 		$fetch = $node;
 		if ($fetch->dim == null) {
 			$type = $fetch->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			if ($type instanceof Node\Identifier &&
+			if (
+				$type instanceof Node\Identifier &&
 				$type->getAttribute('templates') &&
 				count($type->getAttribute('templates')) > 0 &&
 				strcasecmp($type, "array") == 0
@@ -39,7 +40,6 @@ class ArrayDimFetch implements ExpressionInterface
 						$returnType = $method->getDocBlockReturnType();
 						return $this->substituteTemplateVars(['T' => $arrayType], $returnType);
 					}
-
 				}
 			}
 			return TypeComparer::identifierFromName("array");

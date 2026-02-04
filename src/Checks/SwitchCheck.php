@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -17,7 +19,6 @@ use PhpParser\Node\Stmt\Switch_;
  * @package BambooHR\Guardrail\Checks
  */
 class SwitchCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -34,7 +35,7 @@ class SwitchCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	static protected function endWithBreak(array $stmts) {
+	protected static function endWithBreak(array $stmts) {
 		$lastStatement = Util::getLastStatement($stmts);
 		return
 			$lastStatement == null ||
@@ -63,7 +64,7 @@ class SwitchCheck extends BaseCheck {
 	 *
 	 * @return void
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Switch_) {
 			if (!Util::allBranchesExit([$node]) && is_array($node->cases)) {
 				$nextError = null;

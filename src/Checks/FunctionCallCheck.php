@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -18,7 +20,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 
 class FunctionCallCheck extends CallCheck {
-
 	/**
 	 * FunctionCallCheck constructor.
 	 * @param SymbolTable     $symbolTable -
@@ -42,7 +43,7 @@ class FunctionCallCheck extends CallCheck {
 	/**
 	 * @var array
 	 */
-	static private $dangerous = [
+	private static $dangerous = [
 		'exec' => true,
 		'shell_exec' => true,
 		'proc_open' => true,
@@ -55,7 +56,7 @@ class FunctionCallCheck extends CallCheck {
 	/**
 	 * @var array
 	 */
-	static private $debug = [
+	private static $debug = [
 		'print_r' => true,
 		'debug_print_backtrace' => true,
 		'debug_backtrace' => true,
@@ -207,7 +208,7 @@ class FunctionCallCheck extends CallCheck {
 	}
 
 
-	private function isMatchingFunctionExistsCond(Expr $cond, string $name):bool {
+	private function isMatchingFunctionExistsCond(Expr $cond, string $name): bool {
 		if ($cond instanceof Expr\BinaryOp\BooleanAnd || $cond instanceof Expr\BinaryOp\BooleanOr) {
 			return $this->isMatchingFunctionExistsCond($cond->left, $name) || $this->isMatchingFunctionExistsCond($cond->right, $name);
 		}

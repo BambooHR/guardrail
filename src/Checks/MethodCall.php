@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024 BambooHR.
@@ -26,7 +28,6 @@ use PhpParser\Node\Stmt\Trait_;
  * @package BambooHR\Guardrail\Checks
  */
 class MethodCall extends CallCheck {
-
 	/**
 	 * MethodCall constructor.
 	 *
@@ -58,7 +59,7 @@ class MethodCall extends CallCheck {
 	 * @param Scope|null     $scope    Instance of the Scope (all variables in the current state) [optional]
 	 *
 	 */
-	public function run($fileName, Node $node, ?ClassLike $inside=null, ?Scope $scope=null) {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) {
 			if ($inside instanceof Trait_) {
 				// Traits should be converted into methods in the class, so that we can check them in context.
@@ -95,7 +96,7 @@ class MethodCall extends CallCheck {
 				return;
 			}
 
-			TypeComparer::forEachType($className, function($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
+			TypeComparer::forEachType($className, function ($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
 				if ($classNameOb instanceof Node\IntersectionType) {
 					// Only one interface of the intersection has to implement the method.
 					// Multiple interfaces may require the same method
@@ -110,7 +111,7 @@ class MethodCall extends CallCheck {
 					}
 				} else if ($classNameOb instanceof Node\Name) {
 					if (!$this->inspectIndividualName($classNameOb, $fileName, $node, $methodName, $scope, $inside)) {
-						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of ".strval($classNameOb)."::$methodName");
+						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_METHOD, "Call to unknown method of " . strval($classNameOb) . "::$methodName");
 					}
 				} else {
 					if ($classNameOb != null && !TypeComparer::isNamedIdentifier($classNameOb, "mixed") && !TypeComparer::isNamedIdentifier($classNameOb, "object")) {
@@ -135,7 +136,7 @@ class MethodCall extends CallCheck {
 	 *
 	 * @return void
 	 */
-	protected function checkMethod($fileName, $node, $className, $methodName, ?Scope $scope, MethodInterface $method, ?ClassLike $inside=null) {
+	protected function checkMethod($fileName, $node, $className, $methodName, ?Scope $scope, MethodInterface $method, ?ClassLike $inside = null) {
 		if ($method->isStatic()) {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Call to static method of $className::" . $method->getName() . " non-statically");
 		}
@@ -196,7 +197,7 @@ class MethodCall extends CallCheck {
 	 */
 	private function checkForMethodExists(Expr\MethodCall|Expr\NullsafeMethodCall $node, array $stmts): bool {
 		$match = false;
-		ForEachNode::run( $stmts, function($candidate) use (&$match, $node) {
+		ForEachNode::run($stmts, function ($candidate) use (&$match, $node) {
 			if (
 				(
 					$candidate instanceof Node\Stmt\If_ &&
@@ -212,9 +213,10 @@ class MethodCall extends CallCheck {
 		return $match;
 	}
 
-	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall|Expr\NullsafeMethodCall $node):bool {
+	private function isMatchingCond(Expr $cond, array $trueNodes, Expr\MethodCall|Expr\NullsafeMethodCall $node): bool {
 		$match = false;
-		if ($cond instanceof Expr\FuncCall &&
+		if (
+			$cond instanceof Expr\FuncCall &&
 			$cond->name instanceof Node\Name &&
 			$cond->name->toString() == "method_exists" &&
 			count($cond->args) >= 2 &&
@@ -222,7 +224,7 @@ class MethodCall extends CallCheck {
 			$node->name instanceof Node\Identifier &&
 			$cond->args[1]->value->value === $node->name->name
 		) {
-			ForEachNode::run( $trueNodes, function($inner) use (&$match, $node) {
+			ForEachNode::run($trueNodes, function ($inner) use (&$match, $node) {
 				if ($node === $inner) {
 					$match = true;
 				}
@@ -233,12 +235,12 @@ class MethodCall extends CallCheck {
 
 
 	function inspectIndividualName(Node\Name $classNameOb, string $fileName, Expr\MethodCall|Expr\NullsafeMethodCall $node, string $methodName, Scope $scope, ?ClassLike $inside): bool {
-		if ($classNameOb instanceof Node\Name &&
+		if (
+			$classNameOb instanceof Node\Name &&
 			$classNameOb == "T" &&
 			$classNameOb->getAttribute('templates') &&
 			$classNameOb->getAttribute('templates')[0]
 		) {
-
 			$classNameOb = $classNameOb->getAttribute('templates')[0];
 		}
 
@@ -262,7 +264,6 @@ class MethodCall extends CallCheck {
 				!$this->symbolTable->isParentClassOrInterface("iteratoriterator", $typeClassName) &&
 				!$this->wrappedByMethodExistsCheck($node, $scope)
 			) {
-
 				return false;
 			}
 			return true;

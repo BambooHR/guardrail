@@ -12,7 +12,6 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 
 class ServiceMethodDocumentationCheck extends BaseCheck {
-
 	function __construct($index, $output, private MetricOutputInterface $metricOutput) {
 		parent::__construct($index, $output);
 	}
@@ -71,7 +70,9 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	}
 
 	private function emitMissingDocBlockError(string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
-		$this->emitErrorOnLine($fileName, $node->getLine(),
+		$this->emitErrorOnLine(
+			$fileName,
+			$node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 			"Method: {$node->name?->name}, Class: {$inside?->name?->name} - All public Service methods must have a DocBlock."
 		);
@@ -109,7 +110,9 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 
 	private function validateParameters($actualParams, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
 		if (count($docCommentParams) > count($actualParams)) {
-			$this->emitErrorOnLine($fileName, $node->getLine(),
+			$this->emitErrorOnLine(
+				$fileName,
+				$node->getLine(),
 				ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 				"Method: {$node->name->name}, Class: {$inside?->name?->name} - There are extra parameters in your DocBlock that are not present in the method signature."
 			);
@@ -206,20 +209,24 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	}
 
 	private function emitParameterMismatchError(string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside, string $paramName): void {
-		$this->emitErrorOnLine($fileName, $node->getLine(),
+		$this->emitErrorOnLine(
+			$fileName,
+			$node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 			"Method: {$node->name->name}, Class: {$inside?->name?->name} - DocBlock does not contain matching parameter: $paramName"
 		);
 	}
 
 	private function emitTypeMismatchError(
-		string                $fileName,
+		string $fileName,
 		Node\Stmt\ClassMethod $node,
-		?Node\Stmt\ClassLike  $inside,
-		string                $propertyName,
-		string                $errorMessage
+		?Node\Stmt\ClassLike $inside,
+		string $propertyName,
+		string $errorMessage
 	): void {
-		$this->emitErrorOnLine($fileName, $node->getLine(),
+		$this->emitErrorOnLine(
+			$fileName,
+			$node->getLine(),
 			ErrorConstants::TYPE_SERVICE_METHOD_DOCUMENTATION_CHECK,
 			"Method: {$node->name?->name}, Class: {$inside?->name?->name}, Property: $propertyName - $errorMessage"
 		);

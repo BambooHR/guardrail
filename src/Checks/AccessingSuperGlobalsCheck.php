@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
@@ -11,7 +13,6 @@ use PhpParser\Node\Stmt\Global_;
  * @package BambooHR\Guardrail\Checks
  */
 class AccessingSuperGlobalsCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *

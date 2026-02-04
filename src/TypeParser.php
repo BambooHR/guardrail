@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail;
+<?php
+
+namespace BambooHR\Guardrail;
 
 /**
  * Guardrail.  Copyright (c) 2016-2024, BambooHR
@@ -12,9 +14,7 @@ use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
 use PhpParser\Node\UnionType;
 
-
 class TypeParser {
-
 	function __construct(private \closure $resolver) { }
 
 	private function adjustTypeString($type) {
@@ -29,11 +29,11 @@ class TypeParser {
 		return $type;
 	}
 
-	private function generateNameOrIdentifier($type, array $templateVars=[]) {
+	private function generateNameOrIdentifier($type, array $templateVars = []) {
 		if ($type && strval($type) != "") {
 			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type)) {
 				return new Node\Identifier($type);
-			} else if (str_starts_with($type, "\\" )) {
+			} else if (str_starts_with($type, "\\")) {
 				return new Name\FullyQualified(substr($type, 1), ["templates" => $templateVars]);
 			} else if ($type == "T" || $type == "class-string") {
 				return new Name\FullyQualified($type, ["templates" => $templateVars]);
@@ -120,7 +120,7 @@ class TypeParser {
 		throw new DocBlockParserException("Invalid type name: \"$type\"");
 	}
 
-	function parse(string $type):Name|Identifier|Node\ComplexType|null {
+	function parse(string $type): Name|Identifier|Node\ComplexType|null {
 		$i = 0;
 		$this->skipWs($type, $i);
 

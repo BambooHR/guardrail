@@ -10,7 +10,6 @@ use PhpParser\Node;
 
 class AssignOp implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return Node\Expr\AssignOp::class;
 	}

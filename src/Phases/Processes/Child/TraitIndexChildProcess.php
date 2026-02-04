@@ -12,19 +12,19 @@ class TraitIndexChildProcess extends ChildProcess {
 	function __construct(private SymbolTable\SymbolTable $symbolTable) {
 	}
 
-	function init(\Socket $socket):void {
+	function init(\Socket $socket): void {
 		parent::init($socket);
 		if ($this->symbolTable instanceof PersistantSymbolTable) {
-			$this->symbolTable->connect(0 );
+			$this->symbolTable->connect(0);
 		}
 	}
 
-	function runCommand(string $command, string ...$params):int {
+	function runCommand(string $command, string ...$params): int {
 		switch ($command) {
 			case "TRAIT":
 				$className = $params[0];
 				$class = $this->symbolTable->getClass($className);
-				$this->send("TRAITED ".$className." ".base64_encode(serialize(JsonSymbolTable::stripMethodContents($class)))."\n");
+				$this->send("TRAITED " . $className . " " . base64_encode(serialize(JsonSymbolTable::stripMethodContents($class))) . "\n");
 				return ProcessManager::READ_CONNECTION;
 			case "DONE":
 				$this->symbolTable->commit();

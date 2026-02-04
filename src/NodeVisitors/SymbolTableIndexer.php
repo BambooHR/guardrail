@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\NodeVisitors;
+<?php
+
+namespace BambooHR\Guardrail\NodeVisitors;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, BambooHR.
@@ -6,7 +8,6 @@
  */
 
 use BambooHR\Guardrail\EnumCodeAugmenter;
-
 use BambooHR\Guardrail\Output\OutputInterface;
 use PhpParser\Builder\Param;
 use PhpParser\Node;
@@ -26,7 +27,6 @@ use PhpParser\NodeVisitorAbstract;
  * @package BambooHR\Guardrail\NodeVisitors
  */
 class SymbolTableIndexer extends NodeVisitorAbstract {
-
 	/**
 	 * @var SymbolTable
 	 */
@@ -79,11 +79,11 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @param string                      $type
 	 * @return bool
 	 */
-	function isInsideConditionalDeclaration(Function_|Class_|Interface_|FuncCall|Enum_ $declarationNode, string $type):bool {
+	function isInsideConditionalDeclaration(Function_|Class_|Interface_|FuncCall|Enum_ $declarationNode, string $type): bool {
 		$found = false;
 		foreach ($this->nodeStack as $node) {
 			if ($node instanceof Node\Stmt\If_) {
-				ForEachNode::run([...$node->stmts], function($stmt) use (&$found, $declarationNode) {
+				ForEachNode::run([...$node->stmts], function ($stmt) use (&$found, $declarationNode) {
 					if ($stmt === $declarationNode) {
 						$found = true;
 					}
@@ -121,7 +121,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		}
 	}
 
-	function isInternalDefine($name):bool {
+	function isInternalDefine($name): bool {
 		static $internalDefines = null;
 		if ($internalDefines === null) {
 			$temp = get_defined_constants(true);
@@ -158,7 +158,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		} elseif ($node instanceof Node\Const_ && count($this->classStack) == 0) {
 			$defineName = strval($node->namespacedName);
 			$this->index->addDefine($defineName, $node, $this->filename);
-		} elseif ($node instanceof FuncCall &&
+		} elseif (
+			$node instanceof FuncCall &&
 			$node->name instanceof Node\Name &&
 			strcasecmp($node->name->toString(), 'define') == 0 &&
 			count($node->args) >= 1
@@ -186,7 +187,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
-		if ( ($node instanceof Class_ && isset( $node->namespacedName )) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
+		if (($node instanceof Class_ && isset($node->namespacedName)) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		}
 		array_pop($this->nodeStack);
@@ -278,4 +279,3 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 		array_push($this->classStack, $node);
 	}
 }
-

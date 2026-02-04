@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -18,7 +20,6 @@ use PhpParser\NodeTraverser;
  * @package BambooHR\Guardrail\Checks
  */
 class CatchCheck extends BaseCheck {
-
 	/**
 	 * getCheckNodeTypes
 	 *
@@ -44,7 +45,7 @@ class CatchCheck extends BaseCheck {
 				$name = strtolower(strval($nameOb));
 				if ($this->symbolTable->ignoreType($name)) {
 					// exception is in the ignore list... but if the error constant is turned on, we should emit this error
-					if ( $name == 'exception' ) {
+					if ($name == 'exception') {
 						/* Detect a throw at any depth in the catch() subtree.  (Ignoring nested try/catch blocks).
 						   We trust that if they throw anything, they made a conscious decision about how the
 						   exception needed to bubble up. */
