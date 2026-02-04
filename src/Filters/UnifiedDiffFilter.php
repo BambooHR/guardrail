@@ -50,7 +50,7 @@ class UnifiedDiffFilter implements FilterInterface {
 		return $filter;
 	}
 
-	function binary_search($fileName, $lineNumber): bool {
+	function binarySearch($fileName, $lineNumber): bool {
 		if (!isset($this->filter[$fileName])) {
 			return false;
 		}
@@ -103,6 +103,6 @@ class UnifiedDiffFilter implements FilterInterface {
 	 * @return bool
 	 */
 	function shouldEmit($fileName, $errorName, $lineNumber) {
-		return $this->binary_search($fileName, $lineNumber);
+		return $this->binarySearch($fileName, $lineNumber);
 	}
 }
