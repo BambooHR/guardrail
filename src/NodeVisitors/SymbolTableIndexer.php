@@ -172,7 +172,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			$name = $node->namespacedName->toString();
 			$this->index->addTrait($name, $node, $this->filename);
 			array_push($this->classStack, $node);
-		} else if ($node instanceof Node\Expr) {
+		} elseif ($node instanceof Node\Expr) {
 			// Expressions don't contain anything we would index.
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}

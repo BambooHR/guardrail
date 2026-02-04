@@ -109,7 +109,7 @@ class CallableCheck extends BaseCheck {
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CALLABLE, "Callable string '$funcName' is not a function name");
 				}
 			}
-		} else if ($node instanceof Expr\Array_) {
+		} elseif ($node instanceof Expr\Array_) {
 			$this->checkArrayCallable($fileName, $scope, $inside, $node);
 		}
 	}

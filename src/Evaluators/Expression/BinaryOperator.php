@@ -26,7 +26,7 @@ class BinaryOperator implements ExpressionInterface {
 
 		if ($sigil == "&&" && $expr instanceof BinaryOp\BooleanAnd) {
 			$this->mergeAndScope($expr, $scopeStack);
-		} else if ($sigil == "||" && $expr instanceof BinaryOp\BooleanOr) {
+		} elseif ($sigil == "||" && $expr instanceof BinaryOp\BooleanOr) {
 			$this->mergeOrScope($expr);
 		}
 

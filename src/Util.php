@@ -52,7 +52,7 @@ class Util {
 	static function mapClassName(string $name, string $selfName, string $staticName): string {
 		if (strcasecmp($name, 'static') == 0) {
 			return $staticName;
-		} else if (strcasecmp($name, 'self') == 0) {
+		} elseif (strcasecmp($name, 'self') == 0) {
 			return $selfName;
 		} else {
 			return $name;
@@ -165,7 +165,7 @@ class Util {
 			} else {
 				return TypeComparer::nameFromName($type->getName());
 			}
-		} else if ($type instanceof \ReflectionUnionType) {
+		} elseif ($type instanceof \ReflectionUnionType) {
 			$subtypes = array_map(
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
@@ -174,13 +174,13 @@ class Util {
 				$subtypes[] = TypeComparer::identifierFromName("null");
 			}
 			return TypeComparer::getUniqueTypes($subtypes);
-		} else if ($type instanceof \ReflectionIntersectionType) {
+		} elseif ($type instanceof \ReflectionIntersectionType) {
 			$subtypes = array_map(
 				fn($subtype)=> self::reflectionTypeToPhpParserType($subtype),
 				$type->getTypes()
 			);
 			return new IntersectionType([$subtypes]);
-		} else if ($type == null) {
+		} elseif ($type == null) {
 			return null;
 		} else {
 			throw new \InvalidArgumentException();
@@ -411,13 +411,13 @@ class Util {
 
 		if (!$lastStatement) {
 			return false;
-		} else if ($lastStatement instanceof Expression && $lastStatement->expr instanceof Exit_) {
+		} elseif ($lastStatement instanceof Expression && $lastStatement->expr instanceof Exit_) {
 			return true;
-		} else if ($lastStatement instanceof Return_) {
+		} elseif ($lastStatement instanceof Return_) {
 			return true;
-		} else if ($lastStatement instanceof If_) {
+		} elseif ($lastStatement instanceof If_) {
 			return self::allIfBranchesExit($lastStatement);
-		} else if ($lastStatement instanceof Switch_) {
+		} elseif ($lastStatement instanceof Switch_) {
 			return self::allSwitchCasesExit($lastStatement);
 		} else {
 			return false;
@@ -449,7 +449,7 @@ class Util {
 	 * @return bool
 	 */
 	protected static function allIfBranchesExit(If_ $lastStatement) {
-		if (!$lastStatement->else && !$lastStatement->elseifs) {
+		if (!$lastStatement->else) {
 			return false;
 		}
 		$trueCond = self::allBranchesExit($lastStatement->stmts);

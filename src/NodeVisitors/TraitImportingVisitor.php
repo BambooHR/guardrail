@@ -65,7 +65,7 @@ class TraitImportingVisitor extends NodeVisitorAbstract {
 	public function leaveNode(Node $node) {
 		if ($node instanceof Class_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
-		} else if ($node instanceof Node\Stmt\TraitUse) {
+		} elseif ($node instanceof Node\Stmt\TraitUse) {
 			$class = end($this->classStack);
 			assert($class);
 			$traits = $this->importer->resolveTraits($node, $class);
