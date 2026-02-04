@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Abstractions;
+<?php
+
+namespace BambooHR\Guardrail\Abstractions;
 
 /**
  * Guardrail.  Copyright (c) 2016-2023, JBambooHR.
@@ -21,7 +23,6 @@ use PhpParser\Node\Stmt\Function_ as AstFunction;
  * @package BambooHR\Guardrail\Abstractions
  */
 class FunctionAbstraction implements FunctionLikeInterface {
-
 	/**
 	 * @var AstFunction
 	 */
@@ -154,7 +155,7 @@ class FunctionAbstraction implements FunctionLikeInterface {
 		return false;
 	}
 
-	public function getThrowsList():array {
+	public function getThrowsList(): array {
 		return $this->function->getAttribute('throws', []);
 	}
 

@@ -35,7 +35,6 @@ use Throwable;
  * @package BambooHR\Guardrail\Phases
  */
 class IndexingPhase {
-
 	private IndexParentProcess $processManager;
 
 	private $parser = null;
@@ -49,14 +48,14 @@ class IndexingPhase {
 	 */
 	function __construct(private Config $config, OutputInterface $output) {
 		$this->processManager = new IndexParentProcess($config, $output);
-		$this->traverser1 = new NodeTraverser;
+		$this->traverser1 = new NodeTraverser();
 		$this->traverser1->addVisitor($resolver = new NameResolver());
 		$this->traverser1->addVisitor(new DocBlockNameResolver($resolver->getNameContext()));
 		$this->traverser1->addVisitor(new PromotedPropertyVisitor());
-		$this->traverser2 = new NodeTraverser;
+		$this->traverser2 = new NodeTraverser();
 		$this->indexer = new SymbolTableIndexer($config->getSymbolTable(), $output);
 		$this->traverser2->addVisitor($this->indexer);
-		$this->parser = (new ParserFactory)->create(ParserFactory::PREFER_PHP7);
+		$this->parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
 	}
 
 	/**
@@ -95,7 +94,7 @@ class IndexingPhase {
 		// If the $fileName is in our phar then make it a relative path so that files that we index don't
 		// depend on the phar file existing in a particular directory.
 		if (strpos($name, "phar://") === 0) {
-			$name = str_replace(Phar::running(), "", $name );
+			$name = str_replace(Phar::running(), "", $name);
 			while ($name[0] == '/') {
 				$name = substr($name, 1);
 			}
@@ -137,7 +136,7 @@ class IndexingPhase {
 				$output->outputVerbose(".");
 			}
 			if ($config->getOutputLevel() == 2) {
-				$output->outputExtraVerbose( sprintf("%d - %s\n", $fileNumber, $itr->current()) );
+				$output->outputExtraVerbose(sprintf("%d - %s\n", $fileNumber, $itr->current()));
 			}
 		}
 		$this->processManager->loopWhileConnections();
@@ -158,13 +157,15 @@ class IndexingPhase {
 		$baseDirectory = $config->getBasePath();
 		$indexPaths = $configArr['index'];
 		if (! Util::configDirectoriesAreValid($baseDirectory, $indexPaths)) {
-			$output->output("Invalid or missing paths in your index config section.",
-				"Invalid or missing paths in your index config section.");
+			$output->output(
+				"Invalid or missing paths in your index config section.",
+				"Invalid or missing paths in your index config section."
+			);
 			exit;
 		}
 		$output->outputVerbose("Index directories are valid: Indexing starting.\n");
 
-		$this->indexList($config, $output, $this->getFileList($indexPaths) );
+		$this->indexList($config, $output, $this->getFileList($indexPaths));
 
 		$output->outputVerbose("Merging indexes\n");
 		$table = $config->getSymbolTable();

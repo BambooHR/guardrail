@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Checks;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -19,7 +21,6 @@ use PhpParser\Node\Stmt\Return_;
  * @package BambooHR\Guardrail\Checks
  */
 class ReturnCheck extends BaseCheck {
-
 	private TypeComparer $typeComparer;
 	/**
 	 * ReturnCheck constructor.
@@ -66,7 +67,7 @@ class ReturnCheck extends BaseCheck {
 			$returnIsNever = TypeComparer::isNamedIdentifier($returnType, "never");
 			if ($returnIsVoid || $returnIsNever) {
 				if ($node->expr != null) {
-					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a ".TypeComparer::typeToString($returnType)." function $functionName");
+					$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_RETURN, "Attempt to return a value from a " . TypeComparer::typeToString($returnType) . " function $functionName");
 					return;
 				}
 			} else if ($returnType && $node->expr == null) {

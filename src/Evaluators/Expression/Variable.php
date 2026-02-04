@@ -17,7 +17,7 @@ class Variable implements ExpressionInterface {
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		$expr = $node;
 		$returnType = null;
-		if ($expr instanceOf Node\Expr\Variable && is_string($expr->name)) {
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			if (!$expr->hasAttribute('assignment') && $scopeStack->getVarExists($expr->name)) {
 				$scopeStack->setVarUsed($expr->name);
 			}
@@ -33,7 +33,7 @@ class Variable implements ExpressionInterface {
 					$var = NodePatterns::getVariableOrPropertyName($expr);
 					if ($var) {
 						$varScope = $scopeStack->getCurrentScope();
-						$varScope->setVarType($var, TypeComparer::removeNullOption( $varScope->getVarType($var)), $node->getLine());
+						$varScope->setVarType($var, TypeComparer::removeNullOption($varScope->getVarType($var)), $node->getLine());
 						$node->setAttribute('assertsTrue', $varScope);
 					}
 				}

@@ -1,4 +1,5 @@
 <?php
+
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 
 namespace BambooHR\Guardrail\Evaluators\Expression;
@@ -12,10 +13,12 @@ use PhpParser\Node;
 
 class InstanceOf_ implements ExpressionInterface {
 	function getInstanceType(): string {
+
 		return Node\Expr\Instanceof_::class;
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
+
 		/** @var Node\Expr\Instanceof_ $instanceOf */
 		$instanceOf = $node;
 		if (
@@ -26,7 +29,6 @@ class InstanceOf_ implements ExpressionInterface {
 			$instanceOf->class instanceof Node\Name
 		) {
 			$className = $instanceOf->class;
-
 			if (Util::isSelfOrStaticType($instanceOf->class)) {
 				$class = $scopeStack->getCurrentClass();
 				if ($class) {
@@ -34,7 +36,6 @@ class InstanceOf_ implements ExpressionInterface {
 				}
 			}
 			$varName = TypeComparer::getChainedPropertyFetchName($instanceOf->expr);
-
 			if ($varName !== "this" && $varName != "") {
 				$trueScope = $scopeStack->getCurrentScope()->getScopeClone();
 				$falseScope = $trueScope->getScopeClone();
@@ -45,6 +46,6 @@ class InstanceOf_ implements ExpressionInterface {
 			}
 		}
 
-		return TypeComparer::identifierFromName("bool" );
+		return TypeComparer::identifierFromName("bool");
 	}
 }

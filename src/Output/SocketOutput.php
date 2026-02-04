@@ -2,7 +2,6 @@
 
 namespace BambooHR\Guardrail\Output;
 
-
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Metrics\MetricInterface;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;
@@ -43,7 +42,7 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 		Socket::writeComplete($this->socket, "ERROR " . base64_encode(serialize($arr)) . "\n");
 	}
 
-	public function emitMetric(MetricInterface $metric):void {
+	public function emitMetric(MetricInterface $metric): void {
 		if ($this->shouldEmit($metric->getFile(), $metric->getType(), $metric->getLineNumber())) {
 			Socket::writeComplete($this->socket, "METRIC " . base64_encode(serialize($metric)) . "\n");
 		}

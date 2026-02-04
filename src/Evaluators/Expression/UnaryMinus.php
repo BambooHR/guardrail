@@ -10,7 +10,6 @@ use PhpParser\Node;
 
 class UnaryMinus implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 {
-
 	function getInstanceType(): array|string {
 		return [Node\Expr\UnaryMinus::class,Node\Expr\BitwiseNot::class, Node\Expr\UnaryPlus::class];
 	}

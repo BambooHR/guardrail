@@ -10,10 +10,10 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 class IndexChildProcess extends ChildProcess {
 	function __construct(private int $processNumber, private SymbolTable $symbolTable, private IndexingPhase $indexingPhase) { }
 
-	function init(\Socket $socket):void {
+	function init(\Socket $socket): void {
 		parent::init($socket);
 		if ($this->symbolTable instanceof PersistantSymbolTable) {
-			$this->symbolTable->connect($this->processNumber + 1 );
+			$this->symbolTable->connect($this->processNumber + 1);
 		}
 	}
 
@@ -28,7 +28,7 @@ class IndexChildProcess extends ChildProcess {
 			case "INDEX":
 				$file = $params[0];
 				$size = $this->indexingPhase->indexFile($file);
-				$this->send("INDEXED $size $file ".($this->processNumber + 1)."\n");
+				$this->send("INDEXED $size $file " . ($this->processNumber + 1) . "\n");
 				return ProcessManager::READ_CONNECTION;
 			default:
 				echo "Unexpected internal command:  $command\n";

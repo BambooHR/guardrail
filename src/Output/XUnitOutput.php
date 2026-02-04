@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Output;
+<?php
+
+namespace BambooHR\Guardrail\Output;
 
 /**
  * Guardrail.  Copyright (c) 2016-2017, Jonathan Gardiner and BambooHR.
@@ -15,7 +17,6 @@ use Webmozart\Glob\Glob;
  * @package BambooHR\Guardrail\Output
  */
 class XUnitOutput implements OutputInterface {
-
 	/** @var Config  */
 	protected $config;
 
@@ -68,10 +69,10 @@ class XUnitOutput implements OutputInterface {
 		$this->emitErrors = $config->getOutputLevel() == 1;
 		$this->emitList = $config->getEmitList();
 
-		$this->isTTY = posix_isatty(STDOUT );
+		$this->isTTY = posix_isatty(STDOUT);
 	}
 
-	public function isTTY():bool {
+	public function isTTY(): bool {
 		return $this->isTTY;
 	}
 
@@ -89,11 +90,10 @@ class XUnitOutput implements OutputInterface {
 			$this->suites[$className] = $suite;
 		}
 		return $this->suites[$className];
-
 	}
 
-	private function escapeText(string $text):string {
-		return str_replace(["&",'"'], ["&nbsp;", "&#34;"], $text );
+	private function escapeText(string $text): string {
+		return str_replace(["&",'"'], ["&nbsp;", "&#34;"], $text);
 	}
 
 	/**
@@ -119,7 +119,7 @@ class XUnitOutput implements OutputInterface {
 		$failures = $this->doc->getElementsByTagName("failure");
 		foreach ($failures as $failure) {
 			$type = $failure->getAttribute('type');
-			$count[$type] = isset( $count[$type] ) ? $count[$type] + 1 : 1;
+			$count[$type] = isset($count[$type]) ? $count[$type] + 1 : 1;
 		}
 		return $count;
 	}
@@ -132,7 +132,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	static public function emitPatternMatches($name, $pattern) {
+	public static function emitPatternMatches($name, $pattern) {
 		if (substr($pattern, -2) == '.*') {
 			$start = substr($pattern, 0, -2);
 			return (strpos($name, $start) === 0);
@@ -151,7 +151,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	public function shouldEmit($fileName, $name, $lineNumber, float|int|null $metric=null) {
+	public function shouldEmit($fileName, $name, $lineNumber, float|int|null $metric = null) {
 		if (isset($this->silenced[$name]) && $this->silenced[$name] > 0) {
 			return false;
 		}
@@ -199,7 +199,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	private function fileMatchesArrayOrString($fileName, $haystack) : bool {
+	private function fileMatchesArrayOrString($fileName, $haystack): bool {
 		if (is_array($haystack)) {
 			return $this->fileExistsInArray($fileName, $haystack);
 		} else {
@@ -213,7 +213,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return bool
 	 */
-	private function fileExistsInArray($fileName, array $entryArray) : bool {
+	private function fileExistsInArray($fileName, array $entryArray): bool {
 		foreach ($entryArray as $entryItem) {
 			if (Glob::match("/" . $fileName, "/" . $entryItem)) {
 				return true;
@@ -259,7 +259,7 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return void
 	 */
-	public function emitError($className, $fileName, $lineNumber, $name, $message="") {
+	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
 
 		++$this->totalErrors;
 		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
@@ -271,7 +271,7 @@ class XUnitOutput implements OutputInterface {
 		if (!isset($this->files[$className][$fileName])) {
 			$case = $suite->addTestCase();
 			$case->setName($fileName);
-			$case->setClassname( $className );
+			$case->setClassname($className);
 			if (!isset($this->files[$className])) {
 				$this->files[$className] = [];
 			}
@@ -281,7 +281,7 @@ class XUnitOutput implements OutputInterface {
 		}
 
 		$message .= " on line " . $lineNumber;
-		$case->addFailure( $this->escapeText($name . ":" . $message), "error");
+		$case->addFailure($this->escapeText($name . ":" . $message), "error");
 		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}
@@ -293,7 +293,7 @@ class XUnitOutput implements OutputInterface {
 		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $name: $message\n");
 	}
 
-	public function ttyContent($content):string {
+	public function ttyContent($content): string {
 		return $this->isTTY ? $content : "";
 	}
 
