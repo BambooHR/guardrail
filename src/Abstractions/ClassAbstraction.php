@@ -12,6 +12,7 @@ use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Class_;
@@ -168,6 +169,8 @@ class ClassAbstraction implements ClassInterface {
 					if (strcasecmp($const->name, $name) == 0) {
 						if ($const->value instanceof LNumber) {
 							return TypeComparer::identifierFromName("int");
+						} elseif ($const->value instanceof DNumber) {
+							return TypeComparer::identifierFromName("float");
 						} elseif ($const->value instanceof String_) {
 							return TypeComparer::identifierFromName("string");
 						} elseif (

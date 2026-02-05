@@ -8,6 +8,9 @@ use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
+use PhpParser\ParserFactory;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\NameResolver;
 
 class ConstFetch implements ExpressionInterface
 {
@@ -29,128 +32,95 @@ class ConstFetch implements ExpressionInterface
 			return TypeComparer::identifierFromName($expr->name);
 		}
 
-		// Check if it's defined in the symbol table (user code)
-		$defineFile = $table->getDefineFile($expr->name);
+		// Try to get the constant value from global constants
+		$constantName = (string)$expr->name;
+		$defineFile = $table->getDefineFile($constantName);
 		if ($defineFile) {
-			$constNode = $this->getConstFromFile($defineFile, $expr->name);
-			if ($constNode !== null && $constNode->value !== null) {
-				return $this->inferTypeFromValue($constNode->value);
+			$valueExpr = $this->getConstantValueFromFile($defineFile, $constantName);
+			if ($valueExpr) {
+				$typeName = $this->inferTypeFromValueExpr($valueExpr);
+				if ($typeName) {
+					return TypeComparer::identifierFromName($typeName);
+				}
 			}
 		}
 
-		// Fall back to runtime constants (PHP built-ins)
 		if (defined($expr->name)) {
-			// Infer type from the actual constant value
-			$value = constant($expr->name);
-			if (is_int($value)) {
-				return TypeComparer::identifierFromName("int");
-			} elseif (is_float($value)) {
-				return TypeComparer::identifierFromName("float");
-			} elseif (is_string($value)) {
-				return TypeComparer::identifierFromName("string");
-			} elseif (is_bool($value)) {
-				return TypeComparer::identifierFromName("bool");
-			} elseif (is_array($value)) {
-				return TypeComparer::identifierFromName("array");
-			}
+			// Guardrail doesn't declare any global constants.  Any that exist are from the runtime.
+			return TypeComparer::identifierFromName("mixed");
+		}
+
+		if ($table->isDefined($expr->name)) {
 			return TypeComparer::identifierFromName("mixed");
 		}
 
 		return TypeComparer::identifierFromName("mixed");
 	}
 
-	/**
-	 * Retrieve a constant definition from a file.
-	 * Uses static caching to avoid re-parsing the same file multiple times.
-	 */
-	private function getConstFromFile(string $fileName, string $constName): ?Node\Const_ {
-		static $fileCache = [];
-
-		if (!isset($fileCache[$fileName])) {
-			$stmts = $this->parseFile($fileName);
-			if ($stmts === null) {
-				return null;
+	private function inferTypeFromValueExpr(Node\Expr $expr): ?string {
+		if ($expr instanceof Node\Scalar\LNumber) {
+			return "int";
+		} elseif ($expr instanceof Node\Scalar\DNumber) {
+			return "float";
+		} elseif ($expr instanceof Node\Scalar\String_) {
+			return "string";
+		} elseif ($expr instanceof Node\Expr\Array_) {
+			return "array";
+		} elseif ($expr instanceof Node\Expr\ConstFetch) {
+			$name = strtolower((string)$expr->name);
+			if ($name === "true" || $name === "false") {
+				return "bool";
+			} elseif ($name === "null") {
+				return "null";
 			}
-			$fileCache[$fileName] = $stmts;
 		}
-
-		return $this->findConstInStmts($fileCache[$fileName], $constName);
+		return null;
 	}
 
-	/**
-	 * Parse a PHP file and return its AST with resolved names.
-	 * Returns null on parse errors or file read failures.
-	 */
-	private function parseFile(string $fileName): ?array {
-		$contents = @file_get_contents($fileName);
-		if ($contents === false) {
+	private function getConstantValueFromFile(string $fileName, string $constantName): ?Node\Expr {
+		if (!file_exists($fileName)) {
 			return null;
 		}
 
-		$parser = (new \PhpParser\ParserFactory())->create(\PhpParser\ParserFactory::PREFER_PHP7);
+		$contents = file_get_contents($fileName);
+		$parser = (new ParserFactory())->create(ParserFactory::PREFER_PHP7);
 		try {
 			$stmts = $parser->parse($contents);
 		} catch (\PhpParser\Error $error) {
 			return null;
 		}
 
-		$traverser = new \PhpParser\NodeTraverser();
-		$traverser->addVisitor(new \PhpParser\NodeVisitor\NameResolver());
-		return $traverser->traverse($stmts);
-	}
+		$traverser = new NodeTraverser();
+		$traverser->addVisitor(new NameResolver());
+		$stmts = $traverser->traverse($stmts);
 
-	/**
-	 * Recursively search for a constant definition in AST statements.
-	 * Handles both top-level and namespaced constants.
-	 */
-	private function findConstInStmts(array $stmts, string $constName): ?Node\Const_ {
+		// Search for the constant definition
 		foreach ($stmts as $stmt) {
 			if ($stmt instanceof Node\Stmt\Const_) {
 				foreach ($stmt->consts as $const) {
-					if (
-						isset($const->namespacedName) &&
-						strcasecmp(strval($const->namespacedName), $constName) === 0
-					) {
-						return $const;
+					if (strcasecmp((string)$const->namespacedName, $constantName) == 0) {
+						return $const->value;
 					}
 				}
-			} elseif ($stmt instanceof Node\Stmt\Namespace_) {
-				$found = $this->findConstInStmts($stmt->stmts, $constName);
-				if ($found !== null) {
-					return $found;
+			} elseif ($stmt instanceof Node\Stmt\Expression && $stmt->expr instanceof Node\Expr\FuncCall) {
+				$funcCall = $stmt->expr;
+				$funcName = null;
+				if (isset($funcCall->name)) {
+					$funcName = $funcCall->name;
+				}
+				if ($funcName instanceof Node\Name) {
+					if (strcasecmp($funcName->toString(), 'define') == 0) {
+						if (count($funcCall->args) >= 2) {
+							$nameArg = $funcCall->args[0]->value;
+							if ($nameArg instanceof Node\Scalar\String_ && strcasecmp($nameArg->value, $constantName) == 0) {
+								return $funcCall->args[1]->value;
+							}
+						}
+					}
 				}
 			}
 		}
+
 		return null;
-	}
-
-	/**
-	 * Infer the type of a constant from its value expression.
-	 * Handles scalar types, arrays, and special constants (true/false/null).
-	 */
-	private function inferTypeFromValue(Node\Expr $value): Node\Identifier {
-		if ($value instanceof Node\Scalar\LNumber) {
-			return TypeComparer::identifierFromName("int");
-		}
-		if ($value instanceof Node\Scalar\DNumber) {
-			return TypeComparer::identifierFromName("float");
-		}
-		if ($value instanceof Node\Scalar\String_) {
-			return TypeComparer::identifierFromName("string");
-		}
-		if ($value instanceof Node\Expr\ConstFetch) {
-			$name = strtolower(strval($value->name));
-			if ($name === 'true' || $name === 'false') {
-				return TypeComparer::identifierFromName("bool");
-			}
-			if ($name === 'null') {
-				return TypeComparer::identifierFromName("null");
-			}
-		}
-		if ($value instanceof Node\Expr\Array_) {
-			return TypeComparer::identifierFromName("array");
-		}
-
-		return TypeComparer::identifierFromName("mixed");
 	}
 }

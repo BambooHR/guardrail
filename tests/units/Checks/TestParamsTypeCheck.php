@@ -24,6 +24,14 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	}
 
 	public function testParamTypeErrors() {
-		$this->assertEquals(8, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+		$this->assertEquals(21, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testParamTypeDefineNoError() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testParamTypeDefineErrors() {
+		$this->assertEquals(10, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 }

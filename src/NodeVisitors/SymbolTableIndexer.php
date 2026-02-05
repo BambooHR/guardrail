@@ -201,7 +201,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 */
 	public function handleDefine(Node\Scalar\String_ $arg0, FuncCall $node): void {
 		$defineName = $arg0->value;
-		$defineFile = $this->index->removeBasePath($this->index->getDefineFile($defineName));
+		$existingDefineFile = $this->index->getDefineFile($defineName);
+		$defineFile = $existingDefineFile ? $this->index->removeBasePath($existingDefineFile) : "";
 		$internal = $this->isInternalDefine($defineName);
 		if (!$internal && $defineFile === "") {
 			$this->index->addDefine($defineName, $node, $this->filename);

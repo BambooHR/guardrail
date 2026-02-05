@@ -44,10 +44,20 @@ class ClassConstFetch implements ExpressionInterface
 			}
 		}
 
-		if ($expr instanceof Scalar) {
+		if ($expr instanceof Node\Identifier) {
+			return $expr;
+		} elseif ($expr instanceof Scalar) {
 			return \BambooHR\Guardrail\Evaluators\Expression\Scalar::inferScalar($expr);
 		} elseif ($expr instanceof Node\Expr\Array_) {
 			return TypeComparer::identifierFromName("array");
+		} elseif ($expr instanceof Node\Expr\ConstFetch) {
+			$name = strtolower((string)$expr->name);
+			if ($name === "true" || $name === "false") {
+				return TypeComparer::identifierFromName("bool");
+			} elseif ($name === "null") {
+				return TypeComparer::identifierFromName("null");
+			}
+			return null;
 		} else {
 			return null;
 		}
