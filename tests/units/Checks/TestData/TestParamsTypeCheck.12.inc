@@ -1,22 +1,21 @@
 <?php declare(strict_types=1);
 
-// Test case for cross-class constant references being mistyped as array
+// Test case that mimics the actual bug scenario
 class DirectionConstants {
 	public const string FORWARD = 'forward';
 	public const string BACKWARD = 'backward';
 }
 
-class MyValidator {
-	// This constant references another class's constant but has NO type hint
-	// This might cause the type inference to fail and default to array
+class PayrollDateValidator {
+	// Constant without explicit type hint referencing another class's typed constant
 	public const DEFAULT_DIRECTION = DirectionConstants::FORWARD;
 	
-	public function validateDirection(string $direction): void {
-		// Method implementation
+	public function validateParams(string $direction): void {
+		// Validation logic
 	}
 }
 
-// This should NOT produce type errors
-// But if the constant is mistyped as array, it will fail
-$validator = new MyValidator();
-$validator->validateDirection(MyValidator::DEFAULT_DIRECTION);
+// This should NOT produce "passed array" error
+$validator = new PayrollDateValidator();
+$validator->validateParams(PayrollDateValidator::DEFAULT_DIRECTION);
+$validator->validateParams(DirectionConstants::FORWARD);

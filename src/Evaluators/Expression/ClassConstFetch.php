@@ -77,6 +77,10 @@ class ClassConstFetch implements ExpressionInterface
 				return TypeComparer::identifierFromName("null");
 			}
 			return null;
+		} elseif ($expr instanceof Node\Expr\ClassConstFetch) {
+			// If we still have an unresolved ClassConstFetch, it means we couldn't resolve it
+			// Return null to indicate unknown type rather than trying to infer incorrectly
+			return null;
 		} else {
 			return null;
 		}
