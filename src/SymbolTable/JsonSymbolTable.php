@@ -645,6 +645,14 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				} elseif ($const->value instanceof Node\Expr\BinaryOp\Concat) {
 					// String concatenation always results in string
 					$typeToSerialize = TypeComparer::identifierFromName("string");
+				} elseif ($const->value instanceof Node\Expr\UnaryMinus || $const->value instanceof Node\Expr\UnaryPlus) {
+					// Unary operations on numbers: -1, +5, -3.14, etc.
+					// Check the operand type
+					if ($const->value->expr instanceof Node\Scalar\LNumber) {
+						$typeToSerialize = TypeComparer::identifierFromName("int");
+					} elseif ($const->value->expr instanceof Node\Scalar\DNumber) {
+						$typeToSerialize = TypeComparer::identifierFromName("float");
+					}
 				}
 			}
 			$ret .= "C" . $const->name .
