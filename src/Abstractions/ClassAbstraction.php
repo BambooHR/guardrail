@@ -167,12 +167,20 @@ class ClassAbstraction implements ClassInterface {
 			if ($constList instanceof ClassConst) {
 				foreach ($constList->consts as $const) {
 					if (strcasecmp($const->name, $name) == 0) {
+						// PHP 8.3+ typed constants: check the type declaration first
+						if ($constList->type !== null) {
+							return $constList->type;
+						}
+
+						// Fall back to inferring type from the value
 						if ($const->value instanceof LNumber) {
 							return TypeComparer::identifierFromName("int");
 						} elseif ($const->value instanceof DNumber) {
 							return TypeComparer::identifierFromName("float");
 						} elseif ($const->value instanceof String_) {
 							return TypeComparer::identifierFromName("string");
+						} elseif ($const->value instanceof Expr\Array_) {
+							return TypeComparer::identifierFromName("array");
 						} elseif (
 							$const->value instanceof Expr\ConstFetch &&
 							(
