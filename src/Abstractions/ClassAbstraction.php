@@ -168,7 +168,8 @@ class ClassAbstraction implements ClassInterface {
 				foreach ($constList->consts as $const) {
 					if (strcasecmp($const->name, $name) == 0) {
 						// PHP 8.3+ typed constants: check the type declaration first
-						if ($constList->type !== null) {
+						// Skip the type check if it looks like a class name (likely a parser bug)
+						if ($constList->type !== null && !($constList->type instanceof Name)) {
 							return $constList->type;
 						}
 
