@@ -48,6 +48,6 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	}
 
 	public function testParamTypeBitWiseErrors() {
-		$this->assertEquals(12, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+		$this->assertEquals(14, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 }
