@@ -83,6 +83,8 @@ class ReflectedClass implements ClassInterface {
 				return TypeComparer::identifierFromName("bool");
 			} elseif (is_string($constant)) {
 				return TypeComparer::identifierFromName("string");
+			} elseif (is_array($constant)) {
+				return TypeComparer::identifierFromName("array");
 			} else {
 				return TypeComparer::identifierFromName("mixed");
 			}

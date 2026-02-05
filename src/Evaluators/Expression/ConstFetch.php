@@ -47,6 +47,20 @@ class ConstFetch implements ExpressionInterface
 
 		if (defined($expr->name)) {
 			// Guardrail doesn't declare any global constants.  Any that exist are from the runtime.
+			$value = constant($expr->name);
+			if (is_int($value)) {
+				return TypeComparer::identifierFromName("int");
+			} elseif (is_float($value)) {
+				return TypeComparer::identifierFromName("float");
+			} elseif (is_string($value)) {
+				return TypeComparer::identifierFromName("string");
+			} elseif (is_bool($value)) {
+				return TypeComparer::identifierFromName("bool");
+			} elseif (is_array($value)) {
+				return TypeComparer::identifierFromName("array");
+			} elseif (is_null($value)) {
+				return TypeComparer::identifierFromName("null");
+			}
 			return TypeComparer::identifierFromName("mixed");
 		}
 
