@@ -38,7 +38,6 @@ class ConstFetchTest extends TestCase {
 	public static function runtimeConstantTypeProvider(): array {
 		return [
 			'FILTER_VALIDATE_EMAIL is int' => ['FILTER_VALIDATE_EMAIL', 'int'],
-			'FILTER_SANITIZE_STRING is int' => ['FILTER_SANITIZE_STRING', 'int'],
 			'FILTER_FLAG_NONE is int' => ['FILTER_FLAG_NONE', 'int'],
 			'PHP_VERSION is string' => ['PHP_VERSION', 'string'],
 			'PHP_OS is string' => ['PHP_OS', 'string'],

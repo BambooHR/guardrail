@@ -60,7 +60,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		parent::__construct($basePath);
 		$this->types = new TypeStringTable();
 		$this->fileName = $fileName;
-		$this->parser = new TypeParser(fn($typeString)=>new Node\Name\FullyQualified($typeString));
 	}
 
 	/**
@@ -624,8 +623,22 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$flags = $classConst->flags;
 		$ret = "";
 		foreach ($classConst->consts as $const) {
+			// Serialize explicit type declaration or infer from value
+			$typeToSerialize = $classConst->type;
+			if (!$typeToSerialize) {
+				// Infer type from value for constants without explicit type
+				if ($const->value instanceof Node\Scalar\LNumber) {
+					$typeToSerialize = TypeComparer::identifierFromName("int");
+				} elseif ($const->value instanceof Node\Scalar\DNumber) {
+					$typeToSerialize = TypeComparer::identifierFromName("float");
+				} elseif ($const->value instanceof Node\Scalar\String_) {
+					$typeToSerialize = TypeComparer::identifierFromName("string");
+				} elseif ($const->value instanceof Node\Expr\Array_) {
+					$typeToSerialize = TypeComparer::identifierFromName("array");
+				}
+			}
 			$ret .= "C" . $const->name .
-				($classConst->type ? " " . $this->types->add($classConst->type) : "") .
+				($typeToSerialize ? " " . $this->types->add($typeToSerialize) : "") .
 				($flags != 0 ? " " . $flags : "") .
 				";";
 		}
@@ -760,7 +773,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 	function unserializeConst(string $serializedConstant): ClassConst {
-		preg_match('/^(C)([^ ]+)( [0-9]+( [0-9]+)?)?$/', $serializedConstant, $matches);
+		preg_match('/^(C)([^ ;]+)( [0-9]+( [0-9]+)?)?;?$/', $serializedConstant, $matches);
 		$name = $matches[2];
 		$flags = !empty($matches[4]) ? intval(trim($matches[4])) : 0;
 		$const = new ClassConst([new Node\Const_($name, new \PhpParser\Node\Scalar\String_(""))], $flags);

@@ -12,6 +12,7 @@ use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
@@ -151,7 +152,7 @@ class ClassAbstraction implements ClassInterface {
 		return $this->getConstantExpr($name) ? true : false;
 	}
 
-	public function getConstantExpr($name): null|Expr|Name|Identifier {
+	public function getConstantExpr($name): null|Expr|Identifier|Name|ComplexType {
 
 		if ($this->isEnum()) {
 			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
@@ -198,6 +199,8 @@ class ClassAbstraction implements ClassInterface {
 							)
 						) {
 							return TypeComparer::identifierFromName("bool");
+						} elseif ($const->value instanceof Expr\ConstFetch && strcasecmp($const->value->name, "null") == 0) {
+							return TypeComparer::identifierFromName("null");
 						}
 						return $const->value;
 					}

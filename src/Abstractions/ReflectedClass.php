@@ -2,8 +2,12 @@
 
 namespace BambooHR\Guardrail\Abstractions;
 
+use BambooHR\Guardrail\Abstractions\ClassInterface;
+use BambooHR\Guardrail\Abstractions\Property;
+use BambooHR\Guardrail\Abstractions\ReflectedClassMethod;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -74,7 +78,7 @@ class ReflectedClass implements ClassInterface {
 		return $this->refl->isAbstract();
 	}
 
-	public function getConstantExpr($name): null|Name|Identifier {
+	public function getConstantExpr($name): null|Expr|Identifier|Name|ComplexType {
 		if ($this->refl->hasConstant($name)) {
 			$constant = $this->refl->getConstant($name);
 			if (is_int($constant)) {

@@ -9,6 +9,7 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
@@ -45,6 +46,11 @@ class ClassConstFetch implements ExpressionInterface
 		}
 
 		if ($expr instanceof Node\Identifier) {
+			return $expr;
+		} elseif ($expr instanceof Node\Name) {
+			return $expr;
+		} elseif ($expr instanceof ComplexType) {
+			// PHP 8.3+ typed constants can have UnionType, IntersectionType, or NullableType
 			return $expr;
 		} elseif ($expr instanceof Scalar) {
 			return \BambooHR\Guardrail\Evaluators\Expression\Scalar::inferScalar($expr);
