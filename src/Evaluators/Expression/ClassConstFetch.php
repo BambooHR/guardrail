@@ -50,6 +50,14 @@ class ClassConstFetch implements ExpressionInterface
 			return \BambooHR\Guardrail\Evaluators\Expression\Scalar::inferScalar($expr);
 		} elseif ($expr instanceof Node\Expr\Array_) {
 			return TypeComparer::identifierFromName("array");
+		} elseif (
+			$expr instanceof Node\Expr\BinaryOp\BitwiseOr ||
+			$expr instanceof Node\Expr\BinaryOp\BitwiseAnd ||
+			$expr instanceof Node\Expr\BinaryOp\BitwiseXor ||
+			$expr instanceof Node\Expr\BinaryOp\ShiftLeft ||
+			$expr instanceof Node\Expr\BinaryOp\ShiftRight
+		) {
+			return TypeComparer::identifierFromName("int");
 		} elseif ($expr instanceof Node\Expr\ConstFetch) {
 			$name = strtolower((string)$expr->name);
 			if ($name === "true" || $name === "false") {

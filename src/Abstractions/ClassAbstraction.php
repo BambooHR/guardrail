@@ -182,6 +182,14 @@ class ClassAbstraction implements ClassInterface {
 						} elseif ($const->value instanceof Expr\Array_) {
 							return TypeComparer::identifierFromName("array");
 						} elseif (
+							$const->value instanceof Expr\BinaryOp\BitwiseOr ||
+							$const->value instanceof Expr\BinaryOp\BitwiseAnd ||
+							$const->value instanceof Expr\BinaryOp\BitwiseXor ||
+							$const->value instanceof Expr\BinaryOp\ShiftLeft ||
+							$const->value instanceof Expr\BinaryOp\ShiftRight
+						) {
+							return TypeComparer::identifierFromName("int");
+						} elseif (
 							$const->value instanceof Expr\ConstFetch &&
 							(
 								strcasecmp($const->value->name, "true") == 0 ||

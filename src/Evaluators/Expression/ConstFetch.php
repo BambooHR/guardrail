@@ -66,6 +66,14 @@ class ConstFetch implements ExpressionInterface
 			return "string";
 		} elseif ($expr instanceof Node\Expr\Array_) {
 			return "array";
+		} elseif (
+			$expr instanceof Node\Expr\BinaryOp\BitwiseOr ||
+			$expr instanceof Node\Expr\BinaryOp\BitwiseAnd ||
+			$expr instanceof Node\Expr\BinaryOp\BitwiseXor ||
+			$expr instanceof Node\Expr\BinaryOp\ShiftLeft ||
+			$expr instanceof Node\Expr\BinaryOp\ShiftRight
+		) {
+			return "int";
 		} elseif ($expr instanceof Node\Expr\ConstFetch) {
 			$name = strtolower((string)$expr->name);
 			if ($name === "true" || $name === "false") {
