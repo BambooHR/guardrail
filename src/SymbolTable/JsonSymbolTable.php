@@ -635,6 +635,16 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 					$typeToSerialize = TypeComparer::identifierFromName("string");
 				} elseif ($const->value instanceof Node\Expr\Array_) {
 					$typeToSerialize = TypeComparer::identifierFromName("array");
+				} elseif ($const->value instanceof Node\Scalar\MagicConst) {
+					// Magic constants like __DIR__, __FILE__, etc. are strings (except __LINE__)
+					if ($const->value instanceof Node\Scalar\MagicConst\Line) {
+						$typeToSerialize = TypeComparer::identifierFromName("int");
+					} else {
+						$typeToSerialize = TypeComparer::identifierFromName("string");
+					}
+				} elseif ($const->value instanceof Node\Expr\BinaryOp\Concat) {
+					// String concatenation always results in string
+					$typeToSerialize = TypeComparer::identifierFromName("string");
 				}
 			}
 			$ret .= "C" . $const->name .
