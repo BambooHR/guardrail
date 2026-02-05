@@ -98,4 +98,58 @@ class TestClassConstantCheck extends TestSuiteSetup {
 		ENDCODE;
 		$this->assertEquals(6, $this->getStringErrorCount($code), "Error with valid class constant.");
 	}
+
+	/**
+	 * Test basic class constant types
+	 *
+	 * @return void
+	 */
+	public function testBasicConstantTypes() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.basic-types.inc', ''));
+	}
+
+	/**
+	 * Test typed class constants with self references
+	 *
+	 * @return void
+	 */
+	public function testTypedConstantsWithSelfReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.typed-consts.inc', ''));
+	}
+
+	/**
+	 * Test bitwise operations in class constants
+	 *
+	 * @return void
+	 */
+	public function testBitwiseOperationsInConstants() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.bitwise-ops.inc', ''));
+	}
+
+	/**
+	 * Test negative values in class constants
+	 *
+	 * @return void
+	 */
+	public function testNegativeValuesInConstants() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.negative-values.inc', ''));
+	}
+
+	/**
+	 * Test cross-class constant references with typed constants
+	 *
+	 * @return void
+	 */
+	public function testCrossClassTypedConstantReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-typed.inc', ''));
+	}
+
+	/**
+	 * Test cross-class constant references with untyped constants
+	 *
+	 * @return void
+	 */
+	public function testCrossClassUntypedConstantReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-untyped.inc', ''));
+	}
 }
