@@ -54,4 +54,8 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	public function testParamTypeNegativeNoError() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
+
+	public function testParamTypeCrossClassConstantsNoError() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }

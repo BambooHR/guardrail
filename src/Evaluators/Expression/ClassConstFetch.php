@@ -36,6 +36,11 @@ class ClassConstFetch implements ExpressionInterface
 				$className = self::relativeClassName($scopeStack->getCurrentClass(), $expr->class);
 				$expr = Util::findAbstractedConstantExpr($className, $expr->name, $table);
 
+				// If we couldn't resolve the constant, break out of the loop
+				if ($expr === null) {
+					break;
+				}
+
 				// If Foo::member resolves to an enum EnumCase, then it
 				// will come back to us a Name (Foo) representing the Enum class.
 				//  We can just turn around and return that Name as the type.
