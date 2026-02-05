@@ -15,13 +15,19 @@ testBoolParam(true);
 testBoolParam(false);
 testNullParam(null);
 
-// Test in conditionals
-if (true) {
-	$x = 1;
+class TestClass {
+	function testBoolParam(bool $value) {
+		return $value;
+	}
+
+	function testNullParam(?string $value) {
+		return $value;
+	}
 }
 
-if (false) {
-	$y = 2;
-}
+$test = new TestClass();
 
-$z = null;
+// These should not produce type errors
+testBoolParam($test->testBoolParam(true));
+testBoolParam($test->testBoolParam(false));
+testNullParam($test->testNullParam(null));
