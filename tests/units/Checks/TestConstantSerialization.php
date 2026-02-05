@@ -39,12 +39,4 @@ class TestConstantSerialization extends TestSuiteSetup
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ''));
 	}
 
-	/**
-	 * Test that negative integer constants are correctly typed as int
-	 *
-	 * @return void
-	 */
-	public function testNegativeIntegerConstantType() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ''));
-	}
 }
