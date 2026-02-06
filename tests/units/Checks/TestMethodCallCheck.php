@@ -54,7 +54,7 @@ class TestMethodCallCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testInlineVarAnnotationsError(): void {
-		// Expecting 4 errors: doc comment formats should not work with incorrect type
-		$this->assertEquals(4, $this->runAnalyzerOnFile('.inline-var-error.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+		// Expecting 6 errors: doc comment formats should not work with incorrect type
+		$this->assertEquals(6, $this->runAnalyzerOnFile('.inline-var-error.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
 	}
 }

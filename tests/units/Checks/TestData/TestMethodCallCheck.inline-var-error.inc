@@ -34,6 +34,17 @@ function testInlineVarOneAsterisk() {
 	return $stream;
 }
 
+function testInlineVarNoAsterisk() {
+	$exception = new Exception("test");
+
+	// Standard format: @var Type $variable
+	// @var Exception $previous
+	$previous = $exception->getPrevious();
+	$stream = $previous->getResponse()->getBody();
+
+	return $stream;
+}
+
 function testInlineVarReversedFormat() {
 	$exception = new Exception("test");
 
@@ -50,6 +61,17 @@ function testInlineVarOneAsteriskReversed() {
 
 	// Reversed format: @var $variable Type
 	/* @var $previous Exception */
+	$previous = $exception->getPrevious();
+	$stream = $previous->getResponse()->getBody();
+
+	return $stream;
+}
+
+function testInlineVarNoAsteriskReversed() {
+	$exception = new Exception("test");
+
+	// Reversed format: @var $variable Type
+	// @var $previous Exception
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
 
