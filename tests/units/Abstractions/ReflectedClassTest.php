@@ -64,7 +64,7 @@ class ReflectedClassTest extends TestCase {
 		$this->assertEquals($expectedNode, $reflectedClass->getConstantValueExpression($constantName));
 	}
 
-	public function constantValueProvider(): array {
+	static public function constantValueProvider(): array {
 		return [
 			'string' => ['TEST_STRING', new String_("string value")],
 			'integer' => ['TEST_INT', new LNumber(42)],
@@ -94,5 +94,25 @@ class ReflectedClassTest extends TestCase {
 	public function testGetConstantValueExpressionForNonExistent() {
 		$reflectedClass = new ReflectedClass(new ReflectionClass(ClassWithConstantsForReflectedTest::class));
 		$this->assertNull($reflectedClass->getConstantValueExpression('NON_EXISTENT_CONST'));
+	}
+
+	/**
+	 * @dataProvider constantTypeProvider
+	 */
+	public function testGetConstantExprReturnsCorrectType($constantName, $expectedTypeName) {
+		$reflectedClass = new ReflectedClass(new ReflectionClass(ClassWithConstantsForReflectedTest::class));
+		$type = $reflectedClass->getConstantExpr($constantName);
+		$this->assertInstanceOf(\PhpParser\Node\Identifier::class, $type);
+		$this->assertEquals($expectedTypeName, (string)$type);
+	}
+
+	public static function constantTypeProvider(): array {
+		return [
+			'string_type' => ['TEST_STRING', 'string'],
+			'int_type' => ['TEST_INT', 'int'],
+			'bool_type' => ['TEST_BOOL_TRUE', 'bool'],
+			'array_type' => ['TEST_ARRAY', 'array'],
+			'implicit_array_type' => ['TEST_IMPLICIT_ARRAY', 'array'],
+		];
 	}
 }

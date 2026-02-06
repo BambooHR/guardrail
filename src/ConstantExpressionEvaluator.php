@@ -44,9 +44,24 @@ readonly class ConstantExpressionEvaluator {
 	private function fallbackEvaluator(Expr $expr) {
 		if ($expr instanceof Expr\ClassConstFetch) {
 			return $this->evaluateClassConstFetch($expr);
+		} elseif ($expr instanceof Expr\ConstFetch) {
+			return $this->evaluateConstFetch($expr);
 		} else {
 			throw new ConstExprEvaluationException();
 		}
+	}
+
+	/**
+	 * @throws ConstExprEvaluationException
+	 */
+	private function evaluateConstFetch(Expr\ConstFetch $expr): mixed {
+		$constantName = $expr->name->toString();
+
+		if (defined($constantName)) {
+			return constant($constantName);
+		}
+
+		throw new ConstExprEvaluationException();
 	}
 
 	/**

@@ -46,6 +46,7 @@ class TypeStringTable implements \JsonSerializable {
 		return $type;
 	}
 
+	#[\ReturnTypeWillChange]
 	function jsonSerialize() {
 		return $this->strings;
 	}

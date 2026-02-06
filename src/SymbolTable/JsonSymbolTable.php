@@ -11,10 +11,9 @@ use BambooHR\Guardrail\Abstractions\FunctionAbstraction as AbstractFunction;
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
 use BambooHR\Guardrail\Abstractions\ReflectedFunction;
-use BambooHR\Guardrail\Evaluators\Expression\Scalar;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use BambooHR\Guardrail\TypeComparer;
-use BambooHR\Guardrail\TypeParser;
+use BambooHR\Guardrail\Util;
 use Exception;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -60,7 +59,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		parent::__construct($basePath);
 		$this->types = new TypeStringTable();
 		$this->fileName = $fileName;
-		$this->parser = new TypeParser(fn($typeString)=>new Node\Name\FullyQualified($typeString));
 	}
 
 	/**
@@ -624,8 +622,37 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$flags = $classConst->flags;
 		$ret = "";
 		foreach ($classConst->consts as $const) {
+			// Serialize explicit type declaration or infer from value
+			$typeToSerialize = $classConst->type;
+			if (!$typeToSerialize) {
+				// Infer type from value for constants without explicit type
+				$typeToSerialize = Util::inferTypeFromExpression($const->value);
+
+				// Handle special cases not covered by the shared function
+				if (!$typeToSerialize) {
+					if ($const->value instanceof Node\Scalar\MagicConst) {
+						// Magic constants like __DIR__, __FILE__, etc. are strings (except __LINE__)
+						if ($const->value instanceof Node\Scalar\MagicConst\Line) {
+							$typeToSerialize = TypeComparer::identifierFromName("int");
+						} else {
+							$typeToSerialize = TypeComparer::identifierFromName("string");
+						}
+					} elseif ($const->value instanceof Node\Expr\BinaryOp\Concat) {
+						// String concatenation always results in string
+						$typeToSerialize = TypeComparer::identifierFromName("string");
+					} elseif ($const->value instanceof Node\Expr\UnaryMinus || $const->value instanceof Node\Expr\UnaryPlus) {
+						// Unary operations on numbers: -1, +5, -3.14, etc.
+						// Check the operand type
+						if ($const->value->expr instanceof Node\Scalar\LNumber) {
+							$typeToSerialize = TypeComparer::identifierFromName("int");
+						} elseif ($const->value->expr instanceof Node\Scalar\DNumber) {
+							$typeToSerialize = TypeComparer::identifierFromName("float");
+						}
+					}
+				}
+			}
 			$ret .= "C" . $const->name .
-				($classConst->type ? " " . $this->types->add($classConst->type) : "") .
+				($typeToSerialize ? " " . $this->types->add($typeToSerialize) : "") .
 				($flags != 0 ? " " . $flags : "") .
 				";";
 		}
@@ -760,7 +787,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 	function unserializeConst(string $serializedConstant): ClassConst {
-		preg_match('/^(C)([^ ]+)( [0-9]+( [0-9]+)?)?$/', $serializedConstant, $matches);
+		preg_match('/^(C)([^ ;]+)( [0-9]+( [0-9]+)?)?;?$/', $serializedConstant, $matches);
 		$name = $matches[2];
 		$flags = !empty($matches[4]) ? intval(trim($matches[4])) : 0;
 		$const = new ClassConst([new Node\Const_($name, new \PhpParser\Node\Scalar\String_(""))], $flags);
