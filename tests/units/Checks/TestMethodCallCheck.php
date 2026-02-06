@@ -33,4 +33,28 @@ class TestMethodCallCheck extends TestSuiteSetup {
 	public function testKnownMethodAfterInferringType(): void {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
 	}
+
+	/**
+	 * Test that inline @var annotations work correctly with method chaining
+	 * Tests both doc comment formats: standard and reversed order
+	 * Note: Regular block comments are not supported by PHP parser's getDocComment()
+	 *
+	 * @return void
+	 */
+	public function testInlineVarAnnotations(): void {
+		// Expecting 0 errors: both doc comment formats should work
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.inline-var.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
+
+	/**
+	 * Test that inline @var annotations work correctly with method chaining
+	 * Tests both doc comment formats: standard and reversed order
+	 * Note: Regular block comments are not supported by PHP parser's getDocComment()
+	 *
+	 * @return void
+	 */
+	public function testInlineVarAnnotationsError(): void {
+		// Expecting 4 errors: doc comment formats should not work with incorrect type
+		$this->assertEquals(4, $this->runAnalyzerOnFile('.inline-var-error.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
 }
