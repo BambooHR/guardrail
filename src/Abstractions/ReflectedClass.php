@@ -81,17 +81,14 @@ class ReflectedClass implements ClassInterface {
 	public function getConstantExpr($name): null|Expr|Identifier|Name|ComplexType {
 		if ($this->refl->hasConstant($name)) {
 			$constant = $this->refl->getConstant($name);
-			if (is_int($constant)) {
-				return TypeComparer::identifierFromName("int");
-			} elseif (is_bool($constant)) {
-				return TypeComparer::identifierFromName("bool");
-			} elseif (is_string($constant)) {
-				return TypeComparer::identifierFromName("string");
-			} elseif (is_array($constant)) {
-				return TypeComparer::identifierFromName("array");
-			} else {
-				return TypeComparer::identifierFromName("mixed");
+			$expr = Util::valueToExpression($constant);
+			if ($expr !== null) {
+				$inferredType = Util::inferTypeFromExpression($expr);
+				if ($inferredType !== null) {
+					return $inferredType;
+				}
 			}
+			return TypeComparer::identifierFromName("mixed");
 		}
 		return null;
 	}

@@ -505,6 +505,41 @@ class Util {
 		];
 	}
 
+	/**
+	 * Infer the type identifier from an expression node.
+	 * This handles common patterns like scalars, arrays, bitwise operations, and const fetches.
+	 *
+	 * @param Expr $expr The expression to infer type from
+	 * @return \PhpParser\Node\Identifier|null The inferred type identifier, or null if type cannot be inferred
+	 */
+	public static function inferTypeFromExpression(Expr $expr): ?\PhpParser\Node\Identifier {
+		if ($expr instanceof LNumber) {
+			return TypeComparer::identifierFromName("int");
+		} elseif ($expr instanceof DNumber) {
+			return TypeComparer::identifierFromName("float");
+		} elseif ($expr instanceof String_) {
+			return TypeComparer::identifierFromName("string");
+		} elseif ($expr instanceof Array_) {
+			return TypeComparer::identifierFromName("array");
+		} elseif (
+			$expr instanceof Expr\BinaryOp\BitwiseOr ||
+			$expr instanceof Expr\BinaryOp\BitwiseAnd ||
+			$expr instanceof Expr\BinaryOp\BitwiseXor ||
+			$expr instanceof Expr\BinaryOp\ShiftLeft ||
+			$expr instanceof Expr\BinaryOp\ShiftRight
+		) {
+			return TypeComparer::identifierFromName("int");
+		} elseif ($expr instanceof ConstFetch) {
+			$name = strtolower((string)$expr->name);
+			if ($name === "true" || $name === "false") {
+				return TypeComparer::identifierFromName("bool");
+			} elseif ($name === "null") {
+				return TypeComparer::identifierFromName("null");
+			}
+		}
+		return null;
+	}
+
 	public static function valueToExpression(mixed $value): ?Expr {
 		return match (gettype($value)) {
 			'boolean' => new ConstFetch(new Name($value ? 'true' : 'false')),

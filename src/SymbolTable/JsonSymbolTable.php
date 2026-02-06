@@ -11,10 +11,9 @@ use BambooHR\Guardrail\Abstractions\FunctionAbstraction as AbstractFunction;
 use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
 use BambooHR\Guardrail\Abstractions\ReflectedFunction;
-use BambooHR\Guardrail\Evaluators\Expression\Scalar;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use BambooHR\Guardrail\TypeComparer;
-use BambooHR\Guardrail\TypeParser;
+use BambooHR\Guardrail\Util;
 use Exception;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -627,31 +626,28 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 			$typeToSerialize = $classConst->type;
 			if (!$typeToSerialize) {
 				// Infer type from value for constants without explicit type
-				if ($const->value instanceof Node\Scalar\LNumber) {
-					$typeToSerialize = TypeComparer::identifierFromName("int");
-				} elseif ($const->value instanceof Node\Scalar\DNumber) {
-					$typeToSerialize = TypeComparer::identifierFromName("float");
-				} elseif ($const->value instanceof Node\Scalar\String_) {
-					$typeToSerialize = TypeComparer::identifierFromName("string");
-				} elseif ($const->value instanceof Node\Expr\Array_) {
-					$typeToSerialize = TypeComparer::identifierFromName("array");
-				} elseif ($const->value instanceof Node\Scalar\MagicConst) {
-					// Magic constants like __DIR__, __FILE__, etc. are strings (except __LINE__)
-					if ($const->value instanceof Node\Scalar\MagicConst\Line) {
-						$typeToSerialize = TypeComparer::identifierFromName("int");
-					} else {
+				$typeToSerialize = Util::inferTypeFromExpression($const->value);
+
+				// Handle special cases not covered by the shared function
+				if (!$typeToSerialize) {
+					if ($const->value instanceof Node\Scalar\MagicConst) {
+						// Magic constants like __DIR__, __FILE__, etc. are strings (except __LINE__)
+						if ($const->value instanceof Node\Scalar\MagicConst\Line) {
+							$typeToSerialize = TypeComparer::identifierFromName("int");
+						} else {
+							$typeToSerialize = TypeComparer::identifierFromName("string");
+						}
+					} elseif ($const->value instanceof Node\Expr\BinaryOp\Concat) {
+						// String concatenation always results in string
 						$typeToSerialize = TypeComparer::identifierFromName("string");
-					}
-				} elseif ($const->value instanceof Node\Expr\BinaryOp\Concat) {
-					// String concatenation always results in string
-					$typeToSerialize = TypeComparer::identifierFromName("string");
-				} elseif ($const->value instanceof Node\Expr\UnaryMinus || $const->value instanceof Node\Expr\UnaryPlus) {
-					// Unary operations on numbers: -1, +5, -3.14, etc.
-					// Check the operand type
-					if ($const->value->expr instanceof Node\Scalar\LNumber) {
-						$typeToSerialize = TypeComparer::identifierFromName("int");
-					} elseif ($const->value->expr instanceof Node\Scalar\DNumber) {
-						$typeToSerialize = TypeComparer::identifierFromName("float");
+					} elseif ($const->value instanceof Node\Expr\UnaryMinus || $const->value instanceof Node\Expr\UnaryPlus) {
+						// Unary operations on numbers: -1, +5, -3.14, etc.
+						// Check the operand type
+						if ($const->value->expr instanceof Node\Scalar\LNumber) {
+							$typeToSerialize = TypeComparer::identifierFromName("int");
+						} elseif ($const->value->expr instanceof Node\Scalar\DNumber) {
+							$typeToSerialize = TypeComparer::identifierFromName("float");
+						}
 					}
 				}
 			}

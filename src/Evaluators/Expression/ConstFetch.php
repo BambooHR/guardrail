@@ -3,10 +3,10 @@
 namespace BambooHR\Guardrail\Evaluators\Expression;
 
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
-use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
@@ -38,7 +38,8 @@ class ConstFetch implements ExpressionInterface
 		if ($defineFile) {
 			$valueExpr = $this->getConstantValueFromFile($defineFile, $constantName);
 			if ($valueExpr) {
-				$typeName = $this->inferTypeFromValueExpr($valueExpr);
+				$type = Util::inferTypeFromExpression($expr);
+				$typeName = $type ? $type->name : null;
 				if ($typeName) {
 					return TypeComparer::identifierFromName($typeName);
 				}
@@ -63,41 +64,12 @@ class ConstFetch implements ExpressionInterface
 			}
 			return TypeComparer::identifierFromName("mixed");
 		}
-
 		if ($table->isDefined($expr->name)) {
 			return TypeComparer::identifierFromName("mixed");
 		}
-
 		return TypeComparer::identifierFromName("mixed");
 	}
 
-	private function inferTypeFromValueExpr(Node\Expr $expr): ?string {
-		if ($expr instanceof Node\Scalar\LNumber) {
-			return "int";
-		} elseif ($expr instanceof Node\Scalar\DNumber) {
-			return "float";
-		} elseif ($expr instanceof Node\Scalar\String_) {
-			return "string";
-		} elseif ($expr instanceof Node\Expr\Array_) {
-			return "array";
-		} elseif (
-			$expr instanceof Node\Expr\BinaryOp\BitwiseOr ||
-			$expr instanceof Node\Expr\BinaryOp\BitwiseAnd ||
-			$expr instanceof Node\Expr\BinaryOp\BitwiseXor ||
-			$expr instanceof Node\Expr\BinaryOp\ShiftLeft ||
-			$expr instanceof Node\Expr\BinaryOp\ShiftRight
-		) {
-			return "int";
-		} elseif ($expr instanceof Node\Expr\ConstFetch) {
-			$name = strtolower((string)$expr->name);
-			if ($name === "true" || $name === "false") {
-				return "bool";
-			} elseif ($name === "null") {
-				return "null";
-			}
-		}
-		return null;
-	}
 
 	private function getConstantValueFromFile(string $fileName, string $constantName): ?Node\Expr {
 		if (!file_exists($fileName)) {

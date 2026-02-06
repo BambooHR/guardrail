@@ -8,14 +8,11 @@ namespace BambooHR\Guardrail\Abstractions;
  */
 
 use BambooHR\Guardrail\NodeVisitors\Grabber;
-use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\ComplexType;
-use PhpParser\Node\Scalar\DNumber;
-use PhpParser\Node\Scalar\LNumber;
-use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
@@ -178,33 +175,13 @@ class ClassAbstraction implements ClassInterface {
 						}
 
 						// Fall back to inferring type from the value
-						if ($const->value instanceof LNumber) {
-							return TypeComparer::identifierFromName("int");
-						} elseif ($const->value instanceof DNumber) {
-							return TypeComparer::identifierFromName("float");
-						} elseif ($const->value instanceof String_) {
-							return TypeComparer::identifierFromName("string");
-						} elseif ($const->value instanceof Expr\Array_) {
-							return TypeComparer::identifierFromName("array");
-						} elseif (
-							$const->value instanceof Expr\BinaryOp\BitwiseOr ||
-							$const->value instanceof Expr\BinaryOp\BitwiseAnd ||
-							$const->value instanceof Expr\BinaryOp\BitwiseXor ||
-							$const->value instanceof Expr\BinaryOp\ShiftLeft ||
-							$const->value instanceof Expr\BinaryOp\ShiftRight
-						) {
-							return TypeComparer::identifierFromName("int");
-						} elseif (
-							$const->value instanceof Expr\ConstFetch &&
-							(
-								strcasecmp($const->value->name, "true") == 0 ||
-								strcasecmp($const->value->name, "false") == 0
-							)
-						) {
-							return TypeComparer::identifierFromName("bool");
-						} elseif ($const->value instanceof Expr\ConstFetch && strcasecmp($const->value->name, "null") == 0) {
-							return TypeComparer::identifierFromName("null");
-						} elseif ($const->value instanceof Expr\ClassConstFetch) {
+						$inferredType = Util::inferTypeFromExpression($const->value);
+						if ($inferredType !== null) {
+							return $inferredType;
+						}
+
+						// Handle special cases not covered by the shared function
+						if ($const->value instanceof Expr\ClassConstFetch) {
 							// When a constant references another class's constant, return the expression
 							// so it can be resolved by the ClassConstFetch evaluator
 							return $const->value;

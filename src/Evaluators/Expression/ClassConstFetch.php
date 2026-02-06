@@ -3,7 +3,6 @@
 namespace BambooHR\Guardrail\Evaluators\Expression;
 
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
-use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
@@ -59,31 +58,18 @@ class ClassConstFetch implements ExpressionInterface
 			return $expr;
 		} elseif ($expr instanceof Scalar) {
 			return \BambooHR\Guardrail\Evaluators\Expression\Scalar::inferScalar($expr);
-		} elseif ($expr instanceof Node\Expr\Array_) {
-			return TypeComparer::identifierFromName("array");
-		} elseif (
-			$expr instanceof Node\Expr\BinaryOp\BitwiseOr ||
-			$expr instanceof Node\Expr\BinaryOp\BitwiseAnd ||
-			$expr instanceof Node\Expr\BinaryOp\BitwiseXor ||
-			$expr instanceof Node\Expr\BinaryOp\ShiftLeft ||
-			$expr instanceof Node\Expr\BinaryOp\ShiftRight
-		) {
-			return TypeComparer::identifierFromName("int");
-		} elseif ($expr instanceof Node\Expr\ConstFetch) {
-			$name = strtolower((string)$expr->name);
-			if ($name === "true" || $name === "false") {
-				return TypeComparer::identifierFromName("bool");
-			} elseif ($name === "null") {
-				return TypeComparer::identifierFromName("null");
-			}
-			return null;
 		} elseif ($expr instanceof Node\Expr\ClassConstFetch) {
 			// If we still have an unresolved ClassConstFetch, it means we couldn't resolve it
 			// Return null to indicate unknown type rather than trying to infer incorrectly
 			return null;
-		} else {
-			return null;
+		} elseif ($expr !== null) {
+			// Use shared type inference for common expression patterns
+			$inferredType = Util::inferTypeFromExpression($expr);
+			if ($inferredType !== null) {
+				return $inferredType;
+			}
 		}
+		return null;
 	}
 
 
