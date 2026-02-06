@@ -17,7 +17,7 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	 * @rapid-unit Checks:ParamsTypeCheck:Function calling another function emits errors
 	 */
 	public function testFunctionInFunctionCallEmitsError() {
-		$this->assertEquals(4, $this->runAnalyzerOnFile('.function-in-function.inc', ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION));
+		$this->assertEquals(4, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION));
 	}
 
 }
