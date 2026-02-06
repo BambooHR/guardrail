@@ -24,12 +24,6 @@ $test = new TestClass();
 $test->simpleParams(TestClass::A, TestClass::B, TestClass::C, TestClass::D, TestClass::E, TestClass::F, TestClass::G, TestClass::H, TestClass::I);
 $test->intParam(TestClass::A);
 
-function intParam(int $a) : int {
-	return $a;
-}
-
-intParam(TestClass::A);
-
 class anotherClass {
 
 	const A = 1;

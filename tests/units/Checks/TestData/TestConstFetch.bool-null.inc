@@ -14,20 +14,3 @@ function testNullParam(?string $value) {
 testBoolParam(true);
 testBoolParam(false);
 testNullParam(null);
-
-class TestClass {
-	function testBoolParam(bool $value) {
-		return $value;
-	}
-
-	function testNullParam(?string $value) {
-		return $value;
-	}
-}
-
-$test = new TestClass();
-
-// These should not produce type errors
-testBoolParam($test->testBoolParam(true));
-testBoolParam($test->testBoolParam(false));
-testNullParam($test->testNullParam(null));

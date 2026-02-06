@@ -170,7 +170,11 @@ class ClassAbstraction implements ClassInterface {
 					if (strcasecmp($const->name, $name) == 0) {
 						// PHP 8.3+ typed constants: check the type declaration first
 						if ($constList->type !== null) {
-							return $constList->type;
+							// Skip the type check if it's a Name (class name) - this shouldn't happen for scalar types
+							// but can occur due to parser issues. Fall through to value-based inference.
+							if (!($constList->type instanceof Name)) {
+								return $constList->type;
+							}
 						}
 
 						// Fall back to inferring type from the value
