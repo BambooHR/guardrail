@@ -53,24 +53,6 @@ class TestDefinedConstantCheck extends TestSuiteSetup {
 	/**
 	 * @return void
 	 */
-	public function testConstantIsDefinedChecksNamespacedAndGlobal() {
-		$symbolTable = new InMemorySymbolTable('/');
-		$symbolTable->addDefine('MyConst', $this->parseText('<?php define("MyConst", 1);')[0], 'file.php');
-		$symbolTable->addDefine('Space1\\MyConst', $this->parseText('<?php namespace Space1; const MyConst = 1;')[0], 'file.php');
-		$check = new DefinedConstantCheck(
-			$symbolTable,
-			$this->createMock(OutputInterface::class)
-		);
-		$method = $this->getProtectedMethod(DefinedConstantCheck::class, 'constantIsDefined');
-		$this->assertTrue($method->invoke($check, 'Space1\\MyConst', 'MyConst'));
-		$this->assertTrue($method->invoke($check, '', 'MyConst'));
-	}
-
-	/**
-	 * testUndefinedGlobalConstant
-	 *
-	 * @return void
-	 */
 	public function testUndefinedGlobalConstant() {
 		$this->assertEquals(2, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT));
 	}
@@ -85,8 +67,42 @@ class TestDefinedConstantCheck extends TestSuiteSetup {
 	/**
 	 * @return void
 	 */
-	public function testKnownConstantsDoNotEmitErrors() {
+	public function testKnownLanguageAndMagicConstantsDoNotEmitErrors() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT));
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testKnownLocalAndExtensionConstantsDoNotEmitErrors() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT));
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testConstantIsDefinedChecksNamespacedAndGlobal() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT));
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testUndefinedGlobalConstantInGlobalNamespace() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT));
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testUndefinedGlobalConstantInNamespace() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT));
+	}
+
+	/**
+	 * @return void
+	 */
+	public function testUndefinedFullyQualifiedGlobalConstantInNamespace() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_UNKNOWN_GLOBAL_CONSTANT));
 	}
 }
