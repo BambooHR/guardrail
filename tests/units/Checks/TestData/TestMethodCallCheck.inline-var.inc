@@ -15,7 +15,8 @@ class Response {
 function testInlineVarStandardFormat() {
 	$exception = new Exception("test");
 
-	// Standard format: @var Type $variable
+	// Standard format (type first, variable name second) with two asterisks
+	// Should allow `getBody` to be called on $previous
 	/** @var ClientException $previous */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -26,7 +27,8 @@ function testInlineVarStandardFormat() {
 function testInlineVarOneAsterisk() {
 	$exception = new Exception("test");
 
-	// Standard format: @var Type $variable
+	// Standard format (type first, variable name second) with one asterisk
+	// Should allow `getBody` to be called on $previous
 	/* @var ClientException $previous */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -37,7 +39,8 @@ function testInlineVarOneAsterisk() {
 function testInlineVarReversedFormat() {
 	$exception = new Exception("test");
 
-	// Reversed format: @var $variable Type
+	// Reversed format (variable name first, type second) with two asterisks
+	// Should allow `getBody` to be called on $previous
 	/** @var $previous ClientException */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -48,7 +51,8 @@ function testInlineVarReversedFormat() {
 function testInlineVarOneAsteriskReversed() {
 	$exception = new Exception("test");
 
-	// Reversed format: @var $variable Type
+	// Reversed format (variable name first, type second) with one asterisk
+	// Should allow `getBody` to be called on $previous
 	/* @var $previous ClientException */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();

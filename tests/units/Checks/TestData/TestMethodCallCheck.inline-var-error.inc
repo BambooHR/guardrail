@@ -15,7 +15,8 @@ class Response {
 function testInlineVarStandardFormat() {
 	$exception = new Exception("test");
 
-	// Standard format: @var Type $variable
+	// Standard format (type first, variable name second) with two asterisks
+	// Should fail as Exception doesn't have a getResponse method
 	/** @var Exception $previous */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -26,7 +27,8 @@ function testInlineVarStandardFormat() {
 function testInlineVarOneAsterisk() {
 	$exception = new Exception("test");
 
-	// Standard format: @var Type $variable
+	// Standard format (type first, variable name second) with one asterisk
+	// Should fail as Exception doesn't have a getResponse method
 	/* @var Exception $previous */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -37,7 +39,8 @@ function testInlineVarOneAsterisk() {
 function testInlineVarNoAsterisk() {
 	$exception = new Exception("test");
 
-	// Standard format: @var Type $variable
+	// Standard format (type first, variable name second) without asterisk
+	// Should fail as Exception doesn't have a getResponse method
 	// @var Exception $previous
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -48,7 +51,8 @@ function testInlineVarNoAsterisk() {
 function testInlineVarReversedFormat() {
 	$exception = new Exception("test");
 
-	// Reversed format: @var $variable Type
+	// Reversed format (variable name first, type second) with two asterisks
+	// Should fail as Exception doesn't have a getResponse method
 	/** @var $previous Exception */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -59,7 +63,8 @@ function testInlineVarReversedFormat() {
 function testInlineVarOneAsteriskReversed() {
 	$exception = new Exception("test");
 
-	// Reversed format: @var $variable Type
+	// Reversed format (variable name first, type second) with one asterisk
+	// Should fail as Exception doesn't have a getResponse method
 	/* @var $previous Exception */
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();
@@ -70,7 +75,8 @@ function testInlineVarOneAsteriskReversed() {
 function testInlineVarNoAsteriskReversed() {
 	$exception = new Exception("test");
 
-	// Reversed format: @var $variable Type
+	// Reversed format (variable name first, type second) without asterisk
+	// Should fail as Exception doesn't have a getResponse method
 	// @var $previous Exception
 	$previous = $exception->getPrevious();
 	$stream = $previous->getResponse()->getBody();

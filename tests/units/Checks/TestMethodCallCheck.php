@@ -36,20 +36,21 @@ class TestMethodCallCheck extends TestSuiteSetup {
 
 	/**
 	 * Test that inline @var annotations work correctly with method chaining
-	 * Tests both doc comment formats: standard and reversed order
-	 * Note: Regular block comments are not supported by PHP parser's getDocComment()
+	 * - both doc comment formats (/* and /**) should work
+	 * - both reversed and standard order should work
 	 *
 	 * @return void
 	 */
 	public function testInlineVarAnnotations(): void {
-		// Expecting 0 errors: both doc comment formats should work
+		// Expecting 0 errors:
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.inline-var.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
 	}
 
 	/**
 	 * Test that inline @var annotations work correctly with method chaining
-	 * Tests both doc comment formats: standard and reversed order
-	 * Note: Regular block comments are not supported by PHP parser's getDocComment()
+	 * - both doc comment formats (/* and /**) should not work with incorrect type
+	 * - should error on standard comment (//)
+	 * - both reversed and standard order should not work with incorrect type
 	 *
 	 * @return void
 	 */
