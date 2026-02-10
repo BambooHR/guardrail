@@ -19,15 +19,18 @@ class TestReturnCheck extends TestSuiteSetup {
 		// 6 invalid generators (3 class methods + 3 standalone functions) = 6 errors
 		$this->assertEquals(6, $this->runAnalyzerOnFile('-generators-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail generator return types");
 	}
+	public function testEmptyFunctionsPass() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-empty-functions.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass empty functions with various return types" );
+	}
 	public function testEmptyFunctionsFail() {
-		// 8 invalid empty functions (int, string, array, bool, callable, object, self, static) = 8 errors
-		// 8 invalid empty functions in a class (int, string, array, bool, callable, object, self, static) = 8 errors
-		$this->assertEquals(16, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return types" );
+		// 12 invalid empty functions (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable) = 12 errors
+		// 12 invalid empty functions in a class (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable) = 12 errors
+		$this->assertEquals(24, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return types" );
 	}
 
 	public function testNoReturn() {
-		// 6 invalid (3 class methods + 3 standalone functions)
-		$this->assertEquals(6, $this->runAnalyzerOnFile('-no-return-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail no return" );
+		// 8 invalid (4 class methods + 4 standalone functions)
+		$this->assertEquals(8, $this->runAnalyzerOnFile('-no-return-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail no return" );
 	}
 
 	public function testObjectReturnFail() {

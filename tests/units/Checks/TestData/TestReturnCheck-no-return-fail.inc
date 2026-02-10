@@ -10,6 +10,10 @@ class testClass {
 	function noReturn(): string {
 		$test = 1;
 	}
+
+	function noReturnNullable(): ?string {
+		$test = 1;
+	}
 }
 
 
@@ -20,5 +24,9 @@ function stringReturnNoReturn(): string {
 }
 
 function noReturn(): string {
+	$test = 1;
+}
+
+function noReturnNullable(): ?string {
 	$test = 1;
 }

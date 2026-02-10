@@ -16,6 +16,14 @@ class EmptyFunctionsFail {
 	function selfReturn(): self {}
 
 	function staticReturn(): static {}
+
+	function iterableReturn(): iterable {}
+
+	function throwableReturn(): Throwable {}
+
+	function nullableIntReturn(): ?int {}
+
+	function unionTypeReturn(): int | string {}
 }
 
 function intReturn(): int {}
@@ -33,3 +41,11 @@ function objectReturn(): object {}
 function selfReturn(): self {}
 
 function staticReturn(): static {}
+
+function iterableReturn(): iterable {}
+
+function throwableReturn(): Throwable {}
+
+function nullableIntReturn(): ?int {}
+
+function unionTypeReturn(): int | string {}

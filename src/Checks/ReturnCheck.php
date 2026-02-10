@@ -225,10 +225,6 @@ class ReturnCheck extends BaseCheck {
 			}
 		}
 
-		if ($returnType instanceof Node\NullableType) {
-			return true;
-		}
-
 		if ($returnType instanceof Node\UnionType) {
 			foreach ($returnType->types as $type) {
 				if (TypeComparer::isNamedIdentifier($type, "null")) {
