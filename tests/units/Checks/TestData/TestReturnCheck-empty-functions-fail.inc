@@ -28,6 +28,14 @@ class EmptyFunctionsFail {
 	function nullReturn(): null {}
 
 	function nullableStringReturn(): null|string {}
+
+	function voidReturnUnion(): int | void {}
+
+	function voidReturnNullable(): ?void {}
+
+	function mixedReturnNullable(): ?mixed {}
+
+	function mixedReturnUnion(): int | mixed {}
 }
 
 function intReturn(): int {}
@@ -57,3 +65,11 @@ function unionTypeReturn(): int | string {}
 function nullReturn(): null {}
 
 function nullableStringReturn(): null|string {}
+
+function voidReturnUnion(): int | void {}
+
+function voidReturnNullable(): ?void {}
+
+function mixedReturnNullable(): ?mixed {}
+
+function mixedReturnUnion(): int | mixed {}

@@ -23,9 +23,9 @@ class TestReturnCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-empty-functions.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass empty functions with various return type");
 	}
 	public function testEmptyFunctionsFail() {
-		// 14 invalid empty functions (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable, null, null|string) = 14 errors
-		// 14 invalid empty functions in a class (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable, null, null|string) = 14 errors
-		$this->assertEquals(28, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return type");
+		// 18 invalid empty functions (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable, null, null|string) = 18 errors
+		// 18 invalid empty functions in a class (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable, null, null|string) = 18 errors
+		$this->assertEquals(36, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return type");
 	}
 
 	public function testNoReturn() {
@@ -59,7 +59,7 @@ class TestReturnCheck extends TestSuiteSetup {
 	}
 
 	public function testStandardReturnTypesFail() {
-		// 26 invalid type mismatches (13 in class methods + 13 in standalone functions)
+		// 20 invalid type mismatches (10 in class methods + 10 in standalone functions)
 		$this->assertEquals(20, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail standard return types");
 	}
 }
