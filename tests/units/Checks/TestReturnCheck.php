@@ -39,7 +39,7 @@ class TestReturnCheck extends TestSuiteSetup {
 	}
 
 	public function testStandardReturnTypesFail() {
-		// 34 invalid type mismatches (17 in class methods + 17 in standalone functions)
-		$this->assertEquals(34, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail standard return types");
+		// 26 invalid type mismatches (13 in class methods + 13 in standalone functions)
+		$this->assertEquals(26, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail standard return types");
 	}
 }

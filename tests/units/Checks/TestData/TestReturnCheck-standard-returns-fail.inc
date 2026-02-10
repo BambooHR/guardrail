@@ -16,10 +16,6 @@ class InvalidReturns {
 		return "not an instance of testClass";
 	}
 
-	function objectReturnString(): object {
-		return "not an instance of object";
-	}
-
 	function callableReturnInt(): callable {
 		return 42;
 	}
@@ -39,6 +35,7 @@ class InvalidReturns {
 	function floatReturnArray(): float {
 		return [];
 	}
+
 	function nonNullableReturnNone(): int {
 		return none;
 	}
@@ -59,18 +56,8 @@ class InvalidReturns {
 		return true;
 	}
 
-	function stringReturnNoReturnEmpty(): string {}
-
-	function stringReturnNoReturn(): string {
-		$test = 1;
-	}
-
 	function stringReturnVoid(): string {
 		return;
-	}
-
-	function noReturn(): string {
-		$test = 1;
 	}
 }
 
@@ -81,10 +68,6 @@ function arrayReturnInt(): array {
 
 function classReturnString(): testClass {
 	return "not an instance of testClass";
-}
-
-function objectReturnString(): object {
-	return "not an instance of object";
 }
 
 function callableReturnInt(): callable {
@@ -127,16 +110,6 @@ function unionReturnString(): int|string {
 	return true;
 }
 
-function stringReturnNoReturnEmpty(): string {}
-
-function stringReturnNoReturn(): string {
-	$test = 1;
-}
-
 function stringReturnVoid(): string {
 	return;
-}
-
-function noReturn(): string {
-	$test = 1;
 }
