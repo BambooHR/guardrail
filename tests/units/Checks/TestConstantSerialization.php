@@ -11,7 +11,6 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  */
 class TestConstantSerialization extends TestSuiteSetup
 {
-
 	/**
 	 * Test that array constants are correctly typed as array, not string
 	 *
@@ -38,5 +37,4 @@ class TestConstantSerialization extends TestSuiteSetup
 	public function testStringConcatenationType() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ''));
 	}
-
 }

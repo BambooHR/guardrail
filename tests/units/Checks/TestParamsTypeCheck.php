@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Tests\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Tests\Checks;
 
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
@@ -9,7 +11,6 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  * @package BambooHR\Guardrail\Tests\Checks
  */
 class TestParamsTypeCheck extends TestSuiteSetup {
-
 	/**
 	 * testFunctionInFunctionCallEmitsError
 	 *
@@ -19,5 +20,4 @@ class TestParamsTypeCheck extends TestSuiteSetup {
 	public function testFunctionInFunctionCallEmitsError() {
 		$this->assertEquals(4, $this->runAnalyzerOnFile('.1.inc', ErrorConstants::TYPE_FUNCTION_INSIDE_FUNCTION));
 	}
-
 }

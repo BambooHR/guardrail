@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Tests\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Tests\Checks;
 
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
@@ -9,7 +11,6 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  * @package BambooHR\Guardrail\Tests\Checks
  */
 class TestClassConstantCheck extends TestSuiteSetup {
-
 	/**
 	 * testCantUseParentWithNoParent
 	 *
@@ -151,5 +152,9 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 */
 	public function testCrossClassUntypedConstantReferences() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-untyped.inc', ''));
+	}
+
+	public function testCrossClassDoubleUntypedConstantReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-double-untyped.inc', ''));
 	}
 }

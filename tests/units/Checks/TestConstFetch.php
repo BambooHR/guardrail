@@ -10,7 +10,6 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  */
 class TestConstFetch extends TestSuiteSetup
 {
-
 	/**
 	 * Test that runtime PHP constants are correctly typed
 	 *
