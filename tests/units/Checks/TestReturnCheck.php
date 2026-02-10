@@ -19,4 +19,8 @@ class TestReturnCheck extends TestSuiteSetup {
 		// 6 invalid generators (3 class methods + 3 standalone functions) = 6 errors
 		$this->assertEquals(6, $this->runAnalyzerOnFile('-generators-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail generator return types");
 	}
+	public function testEmptyFunctionsFail() {
+		// 8 invalid empty functions (int, string, array, bool, callable, object, self, static) = 8 errors
+		$this->assertEquals(8, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return types" );
+	}
 }
