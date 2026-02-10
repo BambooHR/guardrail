@@ -8,12 +8,11 @@ namespace BambooHR\Guardrail\Abstractions;
  */
 
 use BambooHR\Guardrail\NodeVisitors\Grabber;
-use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Identifier;
-use PhpParser\Node\Scalar\LNumber;
-use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\ClassLike;
@@ -150,7 +149,7 @@ class ClassAbstraction implements ClassInterface {
 		return $this->getConstantExpr($name) ? true : false;
 	}
 
-	public function getConstantExpr($name): null|Expr|Name|Identifier {
+	public function getConstantExpr($name): null|Expr|Identifier|Name|ComplexType {
 
 		if ($this->isEnum()) {
 			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
@@ -166,18 +165,26 @@ class ClassAbstraction implements ClassInterface {
 			if ($constList instanceof ClassConst) {
 				foreach ($constList->consts as $const) {
 					if (strcasecmp($const->name, $name) == 0) {
-						if ($const->value instanceof LNumber) {
-							return TypeComparer::identifierFromName("int");
-						} elseif ($const->value instanceof String_) {
-							return TypeComparer::identifierFromName("string");
-						} elseif (
-							$const->value instanceof Expr\ConstFetch &&
-							(
-								strcasecmp($const->value->name, "true") == 0 ||
-								strcasecmp($const->value->name, "false") == 0
-							)
-						) {
-							return TypeComparer::identifierFromName("bool");
+						// PHP 8.3+ typed constants: check the type declaration first
+						if ($constList->type !== null) {
+							// Skip the type check if it's a Name (class name) - this shouldn't happen for scalar types
+							// but can occur due to parser issues. Fall through to value-based inference.
+							if (!($constList->type instanceof Name)) {
+								return $constList->type;
+							}
+						}
+
+						// Fall back to inferring type from the value
+						$inferredType = Util::inferTypeFromExpression($const->value);
+						if ($inferredType !== null) {
+							return $inferredType;
+						}
+
+						// Handle special cases not covered by the shared function
+						if ($const->value instanceof Expr\ClassConstFetch) {
+							// When a constant references another class's constant, return the expression
+							// so it can be resolved by the ClassConstFetch evaluator
+							return $const->value;
 						}
 						return $const->value;
 					}
