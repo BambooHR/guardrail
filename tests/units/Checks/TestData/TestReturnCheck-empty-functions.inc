@@ -12,10 +12,6 @@ class EmptyFunctionsPass {
 
 	function neverReturn(): never {}
 
-	function nullReturn(): null {}
-
-	function nullableStringReturn(): null|string {}
-
 	function mixedReturn(): mixed {}
 }
 
@@ -33,9 +29,5 @@ function noneReturnMultiLine(): none {
 function voidReturn(): void {}
 
 function neverReturn(): never {}
-
-function nullReturn(): null {}
-
-function nullableStringReturn(): null|string {}
 
 function mixedReturn(): mixed {}

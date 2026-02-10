@@ -24,6 +24,10 @@ class EmptyFunctionsFail {
 	function nullableIntReturn(): ?int {}
 
 	function unionTypeReturn(): int | string {}
+
+	function nullReturn(): null {}
+
+	function nullableStringReturn(): null|string {}
 }
 
 function intReturn(): int {}
@@ -49,3 +53,7 @@ function throwableReturn(): Throwable {}
 function nullableIntReturn(): ?int {}
 
 function unionTypeReturn(): int | string {}
+
+function nullReturn(): null {}
+
+function nullableStringReturn(): null|string {}

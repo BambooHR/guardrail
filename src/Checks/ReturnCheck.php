@@ -218,18 +218,10 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	protected function returnTypeAllowsNoReturn($returnType): bool {
-		$allowedTypes = ["void", "never", "mixed", "none", "null"];
+		$allowedTypes = ["void", "never", "mixed", "none"];
 		foreach ($allowedTypes as $type) {
 			if (TypeComparer::isNamedIdentifier($returnType, $type)) {
 				return true;
-			}
-		}
-
-		if ($returnType instanceof Node\UnionType) {
-			foreach ($returnType->types as $type) {
-				if (TypeComparer::isNamedIdentifier($type, "null")) {
-					return true;
-				}
 			}
 		}
 

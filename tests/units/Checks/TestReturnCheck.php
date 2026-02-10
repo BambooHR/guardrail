@@ -23,9 +23,9 @@ class TestReturnCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-empty-functions.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass empty functions with various return type");
 	}
 	public function testEmptyFunctionsFail() {
-		// 12 invalid empty functions (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable) = 12 errors
-		// 12 invalid empty functions in a class (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable) = 12 errors
-		$this->assertEquals(24, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return type");
+		// 14 invalid empty functions (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable, null, null|string) = 14 errors
+		// 14 invalid empty functions in a class (int, string, array, bool, callable, object, self, static, ?int, int | string, iterable, Throwable, null, null|string) = 14 errors
+		$this->assertEquals(28, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return type");
 	}
 
 	public function testNoReturn() {
