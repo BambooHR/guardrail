@@ -23,4 +23,14 @@ class TestReturnCheck extends TestSuiteSetup {
 		// 8 invalid empty functions (int, string, array, bool, callable, object, self, static) = 8 errors
 		$this->assertEquals(8, $this->runAnalyzerOnFile('-empty-functions-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail empty functions with various return types" );
 	}
+
+	public function testNoReturn() {
+		// 6 invalid (3 class methods + 3 standalone functions)
+		$this->assertEquals(6, $this->runAnalyzerOnFile('-no-return-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail no return" );
+	}
+
+	public function testObjectReturnFail() {
+		// 2 invalid (1 class method + 1 standalone function)
+		$this->assertEquals(2, $this->runAnalyzerOnFile('-object-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail object return" );
+	}
 }
