@@ -40,6 +40,15 @@ class ConstFetch implements ExpressionInterface
 		return TypeComparer::identifierFromName("mixed");
 	}
 
+	/**
+	 * Infer type from a constant's runtime value
+	 *
+	 * Note: boolean and NULL types are handled earlier in getType() and won't reach this method.
+	 * array, resource, and object types are kept for defensive programming but are rarely
+	 * encountered in PHP runtime constants.
+	 *
+	 * @codeCoverageIgnore
+	 */
 	private function getTypeFromValue($value): Node\Identifier {
 		$type = gettype($value);
 		switch ($type) {
