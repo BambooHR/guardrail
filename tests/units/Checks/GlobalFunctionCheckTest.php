@@ -2,7 +2,13 @@
 
 use BambooHR\Guardrail\Checks\GlobalFunctionCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
+use PhpParser\Node;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\Function_;
 
 /**
  * Class GlobalFunctionCheckTest
@@ -46,6 +52,11 @@ class GlobalFunctionCheckTest extends TestSuiteSetup {
                 '.5.inc',
                 0
             ],
+            'elseif/else conditional function' => [
+                'Function inside an elseif/else block should be allowed',
+                '.6.inc',
+                0
+            ],
         ];
     }
 
@@ -62,6 +73,33 @@ class GlobalFunctionCheckTest extends TestSuiteSetup {
     public function testFunctionLocations(string $description, string $file, int $expectedErrorCount) {
         $this->assertEquals($expectedErrorCount, $this->runAnalyzerOnFile($file, ErrorConstants::TYPE_GLOBAL_FUNCTION), $description);
     }
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:GlobalFunctionCheck:Ignores non-function nodes
+	 */
+	public function testIgnoresNonFunctionNodes(): void {
+		$node = new Class_(new Identifier('DemoClass'));
+		$this->checkClassNeverEmitsError(GlobalFunctionCheck::class, $node);
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:GlobalFunctionCheck:Ignores functions when inside a class
+	 */
+	public function testIgnoresFunctionsInsideClasses(): void {
+		$node = new Function_('demoFunction');
+		$inside = new Class_(new Identifier('DemoClass'));
+
+		$builder = $this->getMockBuilder(OutputInterface::class);
+		$output = $builder
+			->onlyMethods(["emitError"])
+			->getMockForAbstractClass();
+		$output->expects($this->never())->method("emitError");
+		$emptyTable = new InMemorySymbolTable(__DIR__);
+		$check = new GlobalFunctionCheck($emptyTable, $output);
+		$check->run(__FILE__, $node, $inside, null);
+	}
 
 
 }
