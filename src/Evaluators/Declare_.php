@@ -17,18 +17,18 @@ class Declare_ implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
-		if (count($node->declares) > 0 && strval($node->declares[0]->key) == "strict") {
+		if (count($node->declares) > 0 && strval($node->declares[0]->key) == "strict_types") {
 			$value = ($node->declares[0]->value instanceof Node\Scalar\LNumber && $node->declares[0]->value->value === 1) ? true : false;
 			if ($node->stmts != null) {
-				$this->scopeStack->pushScopeClone();
+				$scopeStack->pushScope($scopeStack->getScopeClone());
 			}
-			$this->scopeStack->getCurrentScope()->isStrict = $value;
+			$scopeStack->getCurrentScope()->isStrict = $value;
 		}
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
-		if (count($node->declares) > 0 && strval($node->declares[0]->key) == "strict") {
+		if (count($node->declares) > 0 && strval($node->declares[0]->key) == "strict_types") {
 			if ($node->stmts != null) {
 				$scopeStack->popScope();
 			}
