@@ -1,8 +1,11 @@
 <?php namespace BambooHR\Guardrail\Tests\Checks;
 
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Checks\FunctionCallCheck;
+use BambooHR\Guardrail\Output\XUnitOutput;
+use BambooHR\Guardrail\Phases\IndexingPhase;
+use BambooHR\Guardrail\Tests\TestConfig;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
-use BambooHR\Guardrail\CommandLineRunner;
 
 
 /**
@@ -110,5 +113,31 @@ class TestFunctionCallCheck extends TestSuiteSetup {
 	 */
 	public function testInvalidRegexPattern(): void {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_INCORRECT_REGEX));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:FunctionCallCheck:Reports minimum parameter counts for known functions
+	 */
+	public function testGetMinimumParams(): void {
+		$testDataDirectory = $this->getCallerTestDataDirectory($this);
+		$fileName = $testDataDirectory . '.12.inc';
+
+		$config = new TestConfig($fileName, ErrorConstants::TYPE_UNKNOWN_FUNCTION);
+		$output = new XUnitOutput($config);
+		$indexer = new IndexingPhase($config, $output);
+		$indexer->indexFile($fileName);
+
+		$check = new FunctionCallCheck($config->getSymbolTable(), $output);
+		$this->assertEquals(2, $check->getMinimumParams('test_min_params'));
+		$this->assertEquals(-1, $check->getMinimumParams('missing_test_min_params'));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:FunctionCallCheck:Ignores unknown functions wrapped by function_exists
+	 */
+	public function testUnknownFunctionWrappedByFunctionExists(): void {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.13.inc', ErrorConstants::TYPE_UNKNOWN_FUNCTION));
 	}
 }
