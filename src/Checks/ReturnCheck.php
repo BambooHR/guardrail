@@ -141,7 +141,7 @@ class ReturnCheck extends BaseCheck {
 		}
 
 		if ($returnType && !$this->returnTypeAllowsNoReturn($returnType)) {
-			if (!$this->containsReturn($node)) {
+			if (!$this->allPathsReturnOrThrow($node)) {
 				$functionName = $this->getFunctionName($node, $inside);
 				$this->emitError(
 					$fileName,
@@ -173,22 +173,115 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
-	 * Check if a function contains a return statement
+	 * Check if all code paths in a function either return a value or throw an exception
 	 *
 	 * @param Node\FunctionLike $func The function to check
 	 *
 	 * @return bool
 	 */
-	private function containsReturn(Node\FunctionLike $func): bool {
-		$hasReturn = false;
-
+	private function allPathsReturnOrThrow(Node\FunctionLike $func): bool {
 		$stmts = $func->getStmts();
-		ForEachNode::run($stmts, function (Node $node) use (&$hasReturn) {
-			if ($node instanceof Node\Stmt\Return_) {
-				$hasReturn = true;
+		if (!$stmts) {
+			return false;
+		}
+		return $this->statementsAllReturnOrThrow($stmts);
+	}
+
+	/**
+	 * Check if all code paths in a list of statements either return or throw
+	 *
+	 * @param array $stmts List of statements
+	 *
+	 * @return bool
+	 */
+	private function statementsAllReturnOrThrow(array $stmts): bool {
+		$lastStatement = $this->getLastNonNopStatement($stmts);
+
+		if (!$lastStatement) {
+			return false;
+		} elseif ($lastStatement instanceof Node\Stmt\Return_) {
+			return true;
+		} elseif ($lastStatement instanceof Node\Stmt\Throw_) {
+			return true;
+		} elseif ($lastStatement instanceof Node\Stmt\Expression && $lastStatement->expr instanceof Node\Expr\Exit_) {
+			return true;
+		} elseif ($lastStatement instanceof Node\Stmt\If_) {
+			return $this->allIfBranchesReturnOrThrow($lastStatement);
+		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
+			return $this->allSwitchCasesReturnOrThrow($lastStatement);
+		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
+			return $this->allTryCatchBranchesReturnOrThrow($lastStatement);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Get the last non-Nop statement from a list of statements
+	 *
+	 * @param array $stmts The statements
+	 *
+	 * @return Node|null
+	 */
+	private function getLastNonNopStatement(array $stmts): ?Node {
+		for (end($stmts); key($stmts) !== null; prev($stmts)) {
+			$currentElement = current($stmts);
+			if (!$currentElement instanceof Node\Stmt\Nop) {
+				return $currentElement;
 			}
-		});
-		return $hasReturn;
+		}
+		return null;
+	}
+
+	/**
+	 * Check if all branches of an if statement either return or throw
+	 *
+	 * @param Node\Stmt\If_ $ifStatement Instance of If_
+	 *
+	 * @return bool
+	 */
+	private function allIfBranchesReturnOrThrow(Node\Stmt\If_ $ifStatement): bool {
+		if (!$ifStatement->else) {
+			return false;
+		}
+		if (!$this->statementsAllReturnOrThrow($ifStatement->stmts)) {
+			return false;
+		}
+		if (!$this->statementsAllReturnOrThrow($ifStatement->else->stmts)) {
+			return false;
+		}
+		if ($ifStatement->elseifs) {
+			foreach ($ifStatement->elseifs as $elseIf) {
+				if (!$this->statementsAllReturnOrThrow($elseIf->stmts)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check if all cases of a switch statement either return or throw
+	 *
+	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
+	 *
+	 * @return bool
+	 */
+	private function allSwitchCasesReturnOrThrow(Node\Stmt\Switch_ $switchStatement): bool {
+		$hasDefault = false;
+		foreach ($switchStatement->cases as $case) {
+			if (!$case->cond) {
+				$hasDefault = true;
+			}
+			$stmts = $case->stmts;
+			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
+				$stmts = array_slice($stmts, 0, -1);
+			}
+			if ($stmts && !$this->statementsAllReturnOrThrow($stmts)) {
+				return false;
+			}
+		}
+		return $hasDefault;
 	}
 
 	/**
@@ -208,6 +301,31 @@ class ReturnCheck extends BaseCheck {
 			$functionName = "$class::" . strval($insideFunc->name);
 		}
 		return $functionName;
+	}
+
+	/**
+	 * Check if all branches of a try-catch statement either return or throw
+	 *
+	 * @param Node\Stmt\TryCatch $tryCatch Instance of TryCatch
+	 *
+	 * @return bool
+	 */
+	private function allTryCatchBranchesReturnOrThrow(Node\Stmt\TryCatch $tryCatch): bool {
+		// If finally block returns or throws, it overrides try/catch
+		if ($tryCatch->finally && $this->statementsAllReturnOrThrow($tryCatch->finally->stmts)) {
+			return true;
+		}
+
+		// Otherwise, both try and all catch blocks must return or throw
+		if (!$this->statementsAllReturnOrThrow($tryCatch->stmts)) {
+			return false;
+		}
+		foreach ($tryCatch->catches as $catch) {
+			if (!$this->statementsAllReturnOrThrow($catch->stmts)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
