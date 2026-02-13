@@ -328,3 +328,158 @@ function switchWithBreaksAllReturn(int $x): array {
 			break;
 	}
 }
+
+// Nested try-catch blocks
+function nestedTryCatch(): int {
+	try {
+		try {
+			throw new \Exception();
+		} catch (\Exception $e) {
+			return 1;
+		}
+	} catch (\Exception $e) {
+		return 2;
+	}
+}
+
+// Switch inside if/else
+function switchInsideIf(bool $flag, int $x): string {
+	if ($flag) {
+		switch ($x) {
+			case 1:
+				return "one";
+			default:
+				return "other";
+		}
+	} else {
+		return "false";
+	}
+}
+
+// If inside switch
+function ifInsideSwitch(int $x, bool $flag): array {
+	switch ($x) {
+		case 1:
+			if ($flag) {
+				return [1];
+			} else {
+				return [2];
+			}
+		default:
+			return [];
+	}
+}
+
+// Try-catch inside if/else
+function tryCatchInsideIf(bool $flag): int {
+	if ($flag) {
+		try {
+			throw new \Exception();
+		} catch (\Exception $e) {
+			return 1;
+		}
+	} else {
+		return 0;
+	}
+}
+
+// Multiple elseifs with all branches complete
+function multipleElseifsAllComplete(int $x): string {
+	if ($x > 10) {
+		return "big";
+	} elseif ($x > 5) {
+		return "medium";
+	} elseif ($x > 0) {
+		return "small";
+	} else {
+		return "zero or negative";
+	}
+}
+
+// Switch with only default case
+function switchOnlyDefault(int $x): bool {
+	switch ($x) {
+		default:
+			return true;
+	}
+}
+
+// Function with die() instead of exit()
+function functionWithDie(): int {
+	die("error");
+}
+
+// Deeply nested control structures
+function deeplyNested(int $a, int $b, int $c): string {
+	if ($a > 0) {
+		if ($b > 0) {
+			switch ($c) {
+				case 1:
+					return "1";
+				default:
+					return "other";
+			}
+		} else {
+			return "b negative";
+		}
+	} else {
+		return "a negative";
+	}
+}
+
+// Try-finally without catch (try returns)
+function tryFinallyNoThrow(): int {
+	try {
+		return 1;
+	} finally {
+		// cleanup
+	}
+}
+
+// Try-finally with throw in try
+function tryFinallyWithThrow(): string {
+	try {
+		throw new \Exception();
+	} finally {
+		// cleanup - but exception still propagates
+	}
+}
+
+// Function with multiple Nop statements (comments) before return
+function functionWithManyComments(): array {
+	// Comment 1
+	// Comment 2
+	// Comment 3
+
+	// More comments
+
+	return [];
+}
+
+// Try-catch inside switch
+function tryCatchInsideSwitch(int $x): bool {
+	switch ($x) {
+		case 1:
+			try {
+				throw new \Exception();
+			} catch (\Exception $e) {
+				return true;
+			}
+		default:
+			return false;
+	}
+}
+
+// Switch inside try-catch
+function switchInsideTryCatch(int $x): int {
+	try {
+		switch ($x) {
+			case 1:
+				return 1;
+			default:
+				throw new \Exception();
+		}
+	} catch (\Exception $e) {
+		return 0;
+	}
+}

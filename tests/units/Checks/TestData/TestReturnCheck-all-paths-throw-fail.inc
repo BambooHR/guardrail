@@ -275,6 +275,87 @@ function elseifBranchIncomplete(int $x): string {
 	}
 }
 
+// Nested try-catch where inner catch is incomplete - should fail
+function nestedTryCatchIncomplete(): int {
+	try {
+		try {
+			throw new \Exception();
+		} catch (\Exception $e) {
+			$log = $e->getMessage();
+			// Inner catch doesn't return/throw
+		}
+	} catch (\Exception $e) {
+		return 2;
+	}
+}
+
+// Switch inside if where switch is incomplete - should fail
+function switchInsideIfIncomplete(bool $flag, int $x): string {
+	if ($flag) {
+		switch ($x) {
+			case 1:
+				return "one";
+			// Missing default case
+		}
+	} else {
+		return "false";
+	}
+}
+
+// If inside switch where if is incomplete - should fail
+function ifInsideSwitchIncomplete(int $x, bool $flag): array {
+	switch ($x) {
+		case 1:
+			if ($flag) {
+				return [1];
+			}
+			// Missing else branch
+		default:
+			return [];
+	}
+}
+
+// Try-catch inside if where catch is incomplete - should fail
+function tryCatchInsideIfIncomplete(bool $flag): int {
+	if ($flag) {
+		try {
+			throw new \Exception();
+		} catch (\Exception $e) {
+			$error = $e->getMessage();
+			// Catch doesn't return/throw
+		}
+	} else {
+		return 0;
+	}
+}
+
+// Try-finally where try doesn't return and finally doesn't help - should fail
+function tryFinallyIncomplete(): int {
+	try {
+		$x = 5;
+		// No return or throw
+	} finally {
+		// cleanup only
+	}
+}
+
+// Deeply nested where innermost is incomplete - should fail
+function deeplyNestedIncomplete(int $a, int $b, int $c): string {
+	if ($a > 0) {
+		if ($b > 0) {
+			switch ($c) {
+				case 1:
+					return "1";
+				// Missing default case
+			}
+		} else {
+			return "b negative";
+		}
+	} else {
+		return "a negative";
+	}
+}
+
 class FinallyFailClass {
 	// Try-catch-finally where both try and catch incomplete, finally doesn't help - should fail
 	public function finallyNoHelpBothIncomplete(): int {

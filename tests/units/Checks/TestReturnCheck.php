@@ -63,12 +63,14 @@ class TestReturnCheck extends TestSuiteSetup {
 		$this->assertEquals(20, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail standard return types");
 	}
 	public function testAllPathsThrowNoReturnNoError() {
-		// 31 valid functions/methods where all paths return or throw (includes exit() and switch with breaks)
+		// 45 valid functions/methods where all paths return or throw
+		// Includes: nested structures, die(), try-finally, deeply nested, switch variations
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-all-paths-throw.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass functions where all paths throw exceptions");
 	}
 
 	public function testAllPathsThrowFail() {
-		// 30 invalid functions/methods where not all paths return or throw (includes elseif incomplete)
-		$this->assertEquals(30, $this->runAnalyzerOnFile('-all-paths-throw-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
+		// 36 invalid functions/methods where not all paths return or throw
+		// Includes: nested incomplete structures, try-finally incomplete, deeply nested incomplete
+		$this->assertEquals(36, $this->runAnalyzerOnFile('-all-paths-throw-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
 	}
 }
