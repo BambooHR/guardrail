@@ -263,6 +263,18 @@ function finallyIncompleteCatchIncomplete(): string {
 	}
 }
 
+// Function with elseif where one branch is incomplete - should fail
+function elseifBranchIncomplete(int $x): string {
+	if ($x > 0) {
+		return "positive";
+	} elseif ($x < 0) {
+		$log = "negative";
+		// No return or throw in elseif
+	} else {
+		return "zero";
+	}
+}
+
 class FinallyFailClass {
 	// Try-catch-finally where both try and catch incomplete, finally doesn't help - should fail
 	public function finallyNoHelpBothIncomplete(): int {

@@ -295,3 +295,36 @@ function tryThrowsCatchNoThrowFinallyThrows(): bool {
 		throw new \RuntimeException(); // Finally throw overrides
 	}
 }
+
+// Function that uses exit() to terminate
+function functionWithExit(): int {
+	if (true) {
+		exit(1);
+	} else {
+		return 0;
+	}
+}
+
+// Function where all paths use exit()
+function allPathsExit(bool $condition): string {
+	if ($condition) {
+		exit(0);
+	} else {
+		exit(1);
+	}
+}
+
+// Switch statement with break statements that all return/throw
+function switchWithBreaksAllReturn(int $x): array {
+	switch ($x) {
+		case 1:
+			return [1];
+			break;
+		case 2:
+			return [2];
+			break;
+		default:
+			return [];
+			break;
+	}
+}
