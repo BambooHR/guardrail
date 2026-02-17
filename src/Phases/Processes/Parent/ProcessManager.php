@@ -36,7 +36,7 @@ abstract class ProcessManager {
 		}
 		$pid = pcntl_fork();
 		if ($pid == -1) {
-			throw new \RuntimeException("pcntl_fork failed");
+			// error
 		} elseif ($pid) {
 			// Server side, $pid=client pid
 			$this->connections[$pid] = $pair[1];
