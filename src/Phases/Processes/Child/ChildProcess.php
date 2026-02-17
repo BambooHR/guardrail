@@ -19,9 +19,6 @@ abstract class ChildProcess {
 
 	abstract function runCommand(string $command, string ...$params);
 
-	/**
-	 * @guardrail-ignore Standard.Return.Type
-	 */
 	function run(): int {
 		$buffer = new SocketBuffer();
 		while (1) {
