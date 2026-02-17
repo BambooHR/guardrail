@@ -1,7 +1,13 @@
 <?php namespace BambooHR\Guardrail\Test\Checks;
 
+use BambooHR\Guardrail\Abstractions\ClassInterface;
+use BambooHR\Guardrail\Abstractions\ClassMethod;
+use BambooHR\Guardrail\Checks\EnumCheck;
 use BambooHR\Guardrail\Checks\ErrorConstants;
+use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\SymbolTable\InMemorySymbolTable;
 use BambooHR\Guardrail\Tests\TestSuiteSetup;
+use PhpParser\Node\Stmt\Enum_;
 
 /**
  * Class TestDefinedConstantCheck
@@ -9,6 +15,26 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  * @package BambooHR\Guardrail\Tests\Checks
  */
 class TestEnumCheck extends TestSuiteSetup {
+	public function testGetCheckNodeTypes() {
+		$check = new EnumCheck(
+			new InMemorySymbolTable('/'),
+			$this->createMock(OutputInterface::class)
+		);
+		$types = $check->getCheckNodeTypes();
+		$this->assertContains(Enum_::class, $types);
+	}
+
+	public function testCasesMethodIsRejected() {
+		$enumNode = $this->parseText('<?php enum Foo { case Bar; }')[0];
+		$methodNode = $this->parseText('<?php class Foo { public static function cases() {} }')[0]->getMethods()[0];
+		$class = $this->createMock(ClassInterface::class);
+		$enumNode->stmts = [new ClassMethod($class, $methodNode)];
+
+		$output = $this->analyzeStringToOutput('test.php', '', ErrorConstants::TYPE_ILLEGAL_ENUM, ['basePath' => '/']);
+		$check = new EnumCheck(new InMemorySymbolTable('/'), $output);
+		$check->run('test.php', $enumNode);
+		$this->assertEquals(1, $output->getErrorCount(), 'Failed to detect cases() method in enum');
+	}
 
 	public function testInheritance() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.2.inc', ErrorConstants::TYPE_ILLEGAL_ENUM), "Failed to detect inheriting from an enum" );	}
