@@ -37,4 +37,13 @@ class TestCatchCheck extends TestSuiteSetup {
 	public function testRethrowBaseException() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
 	}
+
+	public function testNoErrorExistingException() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	}
+
+	public function testNoErrorNotBaseException() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
+	}
+
 }
