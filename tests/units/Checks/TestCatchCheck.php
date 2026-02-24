@@ -46,4 +46,19 @@ class TestCatchCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
 	}
 
+	public function testNonDerivedThrowable() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	}
+
+	public function testThrowable() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	}
+
+	/**
+	 * @rapid-unit Checks:CatchCheck:Does not emit error if the catch block explicitly throws an exception.
+	 */
+	public function testRethrowStopTraversal() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
+	}
+
 }
