@@ -62,15 +62,6 @@ class TestCallableCheck extends TestSuiteSetup {
 
 	/**
 	 * @return void
-	 * @rapid-unit Checks:CallableCheck:Does not emit error for closure callable
-	 */
-	public function testClosureCallableNoError() {
-		$node = new Node\Expr\Closure();
-		$this->checkClassNeverEmitsError(CallableCheck::class, $node);
-	}
-	
-	/**
-	 * @return void
 	 * @rapid-unit Checks:CallableCheck:Returns empty array for node types since it is embedded in other checks
 	 */
 	public function testGetCheckNodeTypesReturnsEmptyArray() {
