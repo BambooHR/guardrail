@@ -213,6 +213,8 @@ class ReturnCheck extends BaseCheck {
 			return $this->allTryCatchBranchesReturnOrThrow($lastStatement);
 		} elseif ($lastStatement instanceof Node\Stmt\While_) {
 			return $this->whileLoopReturnsOrThrows($lastStatement);
+		} elseif ($lastStatement instanceof Node\Stmt\Do_) {
+			return $this->doWhileLoopReturnsOrThrows($lastStatement);
 		} else {
 			return false;
 		}
@@ -364,5 +366,9 @@ class ReturnCheck extends BaseCheck {
 			return $this->statementsAllReturnOrThrow($whileLoop->stmts);
 		}
 		return false;
+	}
+
+	private function doWhileLoopReturnsOrThrows(Node\Stmt\Do_ $doWhileLoop): bool {
+		return $this->statementsAllReturnOrThrow($doWhileLoop->stmts);
 	}
 }
