@@ -90,7 +90,8 @@ abstract class SymbolTable {
 	 */
 	public function isParentClassOrInterface(string $potentialParent, string $child): bool {
 		if (strcasecmp($potentialParent, "object") == 0) {
-			return true;
+			// object type should only accept actual class instances, not scalars
+			return $this->isDefinedClass($child);
 		}
 		while ($child) {
 			if (strcasecmp($potentialParent, $child) == 0) {

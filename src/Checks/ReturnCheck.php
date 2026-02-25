@@ -7,6 +7,7 @@ namespace BambooHR\Guardrail\Checks;
  * Apache 2.0 License
  */
 
+use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
@@ -39,7 +40,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return array
 	 */
 	public function getCheckNodeTypes() {
-		return [ Return_::class ];
+		return [ Return_::class, Node\Stmt\Function_::class, Node\Stmt\ClassMethod::class ];
 	}
 
 	/**
@@ -53,6 +54,11 @@ class ReturnCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
+		if ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassMethod) {
+			$this->checkGeneratorFunction($fileName, $node, $inside);
+			return;
+		}
+
 		if ($node instanceof Return_) {
 			$insideFunc = $scope?->getInsideFunction();
 
@@ -86,6 +92,10 @@ class ReturnCheck extends BaseCheck {
 				$returnType = $inside->namespacedName;
 			}
 
+			if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
+				return;
+			}
+
 			if (!$this->typeComparer->isCompatibleWithTarget($returnType, $exprType, $scope?->isStrict())) {
 				$functionName = $this->getFunctionName($insideFunc, $inside);
 				$msg = "Value returned from $functionName()" .
@@ -97,6 +107,89 @@ class ReturnCheck extends BaseCheck {
 		}
 	}
 
+	/**
+	 * Validate function-level return type requirements
+	 *
+	 * @param string            $fileName The name of the file
+	 * @param Node\FunctionLike $node     The function/method node
+	 * @param ClassLike|null    $inside   The class we are inside of (if any)
+	 *
+	 * @return void
+	 */
+	private function checkGeneratorFunction(string $fileName, Node\FunctionLike $node, ?ClassLike $inside = null): void {
+		$returnType = $node->getReturnType();
+
+		if ($node instanceof Node\Stmt\ClassMethod && $node->isAbstract()) {
+			return;
+		}
+
+		if ($inside instanceof Node\Stmt\Interface_) {
+			return;
+		}
+
+		if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
+			if (!$this->containsYield($node)) {
+				$functionName = $this->getFunctionName($node, $inside);
+				$this->emitError(
+					$fileName,
+					$node,
+					ErrorConstants::TYPE_SIGNATURE_RETURN,
+					"Function $functionName has Generator return type but does not contain yield"
+				);
+			}
+			return;
+		}
+
+		if ($returnType && !$this->returnTypeAllowsNoReturn($returnType)) {
+			if (!$this->containsReturn($node)) {
+				$functionName = $this->getFunctionName($node, $inside);
+				$this->emitError(
+					$fileName,
+					$node,
+					ErrorConstants::TYPE_SIGNATURE_RETURN,
+					"Function $functionName must return a value but contains no return statement"
+				);
+			}
+		}
+	}
+
+	/**
+	 * Check if a function contains yield or yield from statements
+	 *
+	 * @param Node\FunctionLike $func The function to check
+	 *
+	 * @return bool
+	 */
+	protected function containsYield(Node\FunctionLike $func): bool {
+		$hasYield = false;
+
+		$stmts = $func->getStmts();
+		ForEachNode::run($stmts, function (Node $node) use (&$hasYield) {
+			if ($node instanceof Node\Expr\Yield_ || $node instanceof Node\Expr\YieldFrom) {
+				$hasYield = true;
+			}
+		});
+		return $hasYield;
+	}
+
+	/**
+	 * Check if a function contains a return statement
+	 *
+	 * @param Node\FunctionLike $func The function to check
+	 *
+	 * @return bool
+	 */
+	private function containsReturn(Node\FunctionLike $func): bool {
+		$hasReturn = false;
+
+		$stmts = $func->getStmts();
+		ForEachNode::run($stmts, function (Node $node) use (&$hasReturn) {
+			if ($node instanceof Node\Stmt\Return_) {
+				$hasReturn = true;
+			}
+		});
+		return $hasReturn;
+	}
 
 	/**
 	 * @param Node\FunctionLike $insideFunc The method we're inside of
@@ -115,5 +208,23 @@ class ReturnCheck extends BaseCheck {
 			$functionName = "$class::" . strval($insideFunc->name);
 		}
 		return $functionName;
+	}
+
+	/**
+	 * Check if a return type allows a function to have no return statement
+	 *
+	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnType
+	 *
+	 * @return bool
+	 */
+	protected function returnTypeAllowsNoReturn($returnType): bool {
+		$allowedTypes = ["void", "never", "mixed", "none"];
+		foreach ($allowedTypes as $type) {
+			if (TypeComparer::isNamedIdentifier($returnType, $type)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
