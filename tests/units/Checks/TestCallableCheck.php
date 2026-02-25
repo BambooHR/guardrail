@@ -14,6 +14,9 @@ use PhpParser\Node;
 class TestCallableCheck extends TestSuiteSetup {
 
 
+	/**
+	 * @return array{OutputInterface, InMemorySymbolTable}
+	 */
 	private function setupMocks() {
 		$output = $this->getMockBuilder(OutputInterface::class)->getMockForAbstractClass();
 		$symbolTable = new InMemorySymbolTable(__DIR__);
@@ -124,6 +127,10 @@ class TestCallableCheck extends TestSuiteSetup {
 		$check->run(__FILE__, $node, null, null);
 	}
 
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallableCheck:Emits error when callable string method does not exist on class
+	 */
 	public function testUndefinedCallableStringMethod() {
 		$output = $this->getMockBuilder(OutputInterface::class)
 			->onlyMethods(['emitError'])
@@ -146,6 +153,10 @@ class TestCallableCheck extends TestSuiteSetup {
 		$check->run(__FILE__, $node, null, null);
 	}
 
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallableCheck:Emits error when array callable with inferred type references undefined method
+	 */
 	public function testArrayCallableWithInferredType() {
 		$output = $this->getMockBuilder(OutputInterface::class)
 			->onlyMethods(['emitError'])
