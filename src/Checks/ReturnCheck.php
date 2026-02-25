@@ -211,6 +211,8 @@ class ReturnCheck extends BaseCheck {
 			return $this->allSwitchCasesReturnOrThrow($lastStatement);
 		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
 			return $this->allTryCatchBranchesReturnOrThrow($lastStatement);
+		} elseif ($lastStatement instanceof Node\Stmt\While_) {
+			return $this->whileLoopReturnsOrThrows($lastStatement);
 		} else {
 			return false;
 		}
@@ -241,6 +243,9 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function allIfBranchesReturnOrThrow(Node\Stmt\If_ $ifStatement): bool {
+		if ($this->isConstantTrue($ifStatement->cond)) {
+			return $this->statementsAllReturnOrThrow($ifStatement->stmts);
+		}
 		if (!$ifStatement->else) {
 			return false;
 		}
@@ -343,6 +348,21 @@ class ReturnCheck extends BaseCheck {
 			}
 		}
 
+		return false;
+	}
+
+	private function isConstantTrue($expr): bool {
+		if ($expr instanceof Node\Expr\ConstFetch) {
+			$name = strtolower($expr->name->toString());
+			return $name === 'true';
+		}
+		return false;
+	}
+
+	private function whileLoopReturnsOrThrows(Node\Stmt\While_ $whileLoop): bool {
+		if ($this->isConstantTrue($whileLoop->cond)) {
+			return $this->statementsAllReturnOrThrow($whileLoop->stmts);
+		}
 		return false;
 	}
 }

@@ -73,4 +73,9 @@ class TestReturnCheck extends TestSuiteSetup {
 		// Includes: nested incomplete structures, try-finally incomplete, deeply nested incomplete
 		$this->assertEquals(36, $this->runAnalyzerOnFile('-all-paths-throw-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
 	}
+
+
+	public function testWhileIFConstant() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-while-if-constant.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
+	}
 }
