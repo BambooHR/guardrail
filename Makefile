@@ -20,4 +20,4 @@ analyze:
 	php src/bin/guardrail.php -a -j self.json
 
 coverage:
-	XDEBUG_MODE=coverage ./vendor/bin/phpunit --configuration ./tests/phpunit.xml --coverage-html ./coverage
+	./vendor/bin/phpunit --configuration ./tests/phpunit.xml --coverage-html ./coverage
