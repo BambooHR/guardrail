@@ -277,7 +277,7 @@ class ReturnCheck extends BaseCheck {
 	private function allSwitchCasesReturnOrThrow(Node\Stmt\Switch_ $switchStatement): bool {
 		$hasDefault = false;
 		foreach ($switchStatement->cases as $case) {
-			if (!$case->cond) {
+			if ($case->cond === null) {
 				$hasDefault = true;
 			}
 			$stmts = $case->stmts;
