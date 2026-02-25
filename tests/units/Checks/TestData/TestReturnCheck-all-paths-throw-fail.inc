@@ -406,3 +406,103 @@ class FinallyFailClass {
 		}
 	}
 }
+
+// Switch with fall through but missing final return - should fail
+function testSwitchFallThroughNoFinalReturn(int $x): string {
+	switch ($x) {
+		case 1:
+		case 2:
+			$log = "one or two";
+			// Falls through but no return
+		default:
+			$cleanup = true;
+			// No return in default either
+	}
+}
+
+// Switch with fall through to incomplete case - should fail
+function testSwitchFallThroughToIncompleteCase(int $x): string {
+	switch ($x) {
+		case 1:
+		case 2:
+			return "one or two";
+		case 3:
+		case 4:
+			$log = "three or four";
+			// Falls through but no return
+		default:
+			return "other";
+	}
+}
+
+// Nested switch with fall through, inner incomplete - should fail
+function testNestedSwitchFallThroughIncomplete(int $x, int $y): string {
+	switch ($x) {
+		case 1:
+		case 2:
+			switch ($y) {
+				case 10:
+				case 20:
+					$log = "processing";
+					// No return in inner switch
+				default:
+					return "inner default";
+			}
+		default:
+			return "outer default";
+	}
+}
+
+// Switch fall through with no default - should fail
+function testSwitchFallThroughNoDefault(int $x): string {
+	switch ($x) {
+		case 1:
+		case 2:
+			return "one or two";
+		case 3:
+		case 4:
+			return "three or four";
+		// Missing default case
+	}
+}
+
+// Multiple fall throughs with one incomplete - should fail
+function testMultipleFallThroughOneIncomplete(int $x): string {
+	switch ($x) {
+		case 1:
+		case 2:
+		case 3:
+			return "one, two, or three";
+		case 4:
+		case 5:
+			$log = "four or five";
+			// No return here
+		default:
+			return "other";
+	}
+}
+
+// While(true) without return inside - should fail
+function testWhileTrueNoReturn(): int {
+	while (true) {
+		$x = 5;
+		// Infinite loop but no return or break
+	}
+}
+
+// Do-while with condition but incomplete body - should fail
+function testDoWhileIncompleteBody(bool $condition): int {
+	do {
+		$x = 5;
+		// No return
+	} while ($condition);
+	// Could loop forever, no guaranteed return
+}
+
+// If(true) without return inside - should fail
+function testIfTrueNoReturn(): int {
+	if (true) {
+		$x = 5;
+		// No return in guaranteed branch
+	}
+}

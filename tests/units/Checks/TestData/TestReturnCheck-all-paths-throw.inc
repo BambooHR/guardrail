@@ -25,6 +25,94 @@ function testSwitchAllThrow(int $x): string {
 	}
 }
 
+function testSwitchFallThrough(int $x): string {
+	switch ($x) {
+		case 1:
+		case 2:
+			return "one or two";
+		default:
+			throw new \Exception();
+	}
+}
+
+function testSwitchMultipleFallThrough(int $x): string {
+	switch ($x) {
+		case 1:
+		case 2:
+		case 3:
+			return "one, two, or three";
+		case 4:
+		case 5:
+			return "four or five";
+		default:
+			return "other";
+	}
+}
+
+function testSwitchFallThroughToDefault(int $x): string {
+	switch ($x) {
+		case 1:
+			return "one";
+		case 2:
+		default:
+			return "two or other";
+	}
+}
+
+function testSwitchFallThroughMixedReturnThrow(int $x): string {
+	switch ($x) {
+		case 1:
+		case 2:
+			return "one or two";
+		case 3:
+		case 4:
+			throw new \Exception("three or four");
+		default:
+			return "other";
+	}
+}
+
+function testNestedSwitchFallThrough(int $x, int $y): string {
+	switch ($x) {
+		case 1:
+		case 2:
+			switch ($y) {
+				case 10:
+				case 20:
+					return "x is 1-2, y is 10-20";
+				default:
+					return "x is 1-2, y is other";
+			}
+		default:
+			return "x is other";
+	}
+}
+
+function testSwitchEmptyCaseFallThroughToDefault(int $x): string {
+	switch ($x) {
+		case 1:
+			return "one";
+		case 2:
+		case 3:
+		default:
+			return "two, three, or other";
+	}
+}
+
+function testWhileFalseFallThrough(bool $flag): int {
+	while (false) {
+		return 1;
+	}
+	return 2;
+}
+
+function testDoWhileFalseFallThrough(): int {
+	do {
+		$x = 5;
+	} while (false);
+	return $x;
+}
+
 function testNestedIfAllThrow(bool $a, bool $b): array {
 	if ($a) {
 		if ($b) {
