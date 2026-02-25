@@ -57,9 +57,18 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	 * @return void
 	 */
 	private function importInlineVarType(Node $node) {
-		$comment = $node->getDocComment();
-		if ($comment && preg_match_all('/@var +([-A-Z0-9_|\\\\<>]+(?:\[])*)( +\\$([A-Z0-9_]+))?/i', $comment->getText(), $matchArray, PREG_SET_ORDER)) {
-			$node->setAttribute("namespacedInlineVar", $this->buildVarsFromTag($matchArray));
+		// Check both doc comments (/** */) and regular comments (/* */)
+		$comments = $node->getComments();
+		foreach ($comments as $comment) {
+			$text = $comment->getText();
+			// Only process block comments (/* */ or /** */), not line comments (//)
+			if (strpos($text, '/*') === 0) {
+				// Match both formats: @var Type $var and @var $var Type
+				if (preg_match_all('/@var +(?:([-A-Z0-9_|\\\\<>]+(?:\[])*)( +\\$([A-Z0-9_]+))?|(\\$([A-Z0-9_]+)) +([-A-Z0-9_|\\\\<>]+(?:\[])*))/i', $text, $matchArray, PREG_SET_ORDER)) {
+					$node->setAttribute("namespacedInlineVar", $this->buildVarsFromTag($matchArray));
+					break; // Only process the first matching comment
+				}
+			}
 		}
 	}
 
@@ -199,10 +208,19 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	protected function buildVarsFromTag($tags) {
 		$vars = [];
 		foreach ($tags as $tag) {
-			if (isset($tag[3])) {
+			// Handle standard format: @var Type $var (groups 1 and 3)
+			if (isset($tag[3]) && !empty($tag[1])) {
 				$str = strval($tag[1]);
 				try {
 					$vars[$tag[3]] = $this->parser->parse($str);
+				} catch (DocBlockParserException) {
+					//Ignore
+				}
+			} elseif (isset($tag[5]) && isset($tag[6])) {
+				// Handle reversed format: @var $var Type (groups 5 and 6)
+				$str = strval($tag[6]);
+				try {
+					$vars[$tag[5]] = $this->parser->parse($str);
 				} catch (DocBlockParserException) {
 					//Ignore
 				}
