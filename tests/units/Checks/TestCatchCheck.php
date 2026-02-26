@@ -37,4 +37,44 @@ class TestCatchCheck extends TestSuiteSetup {
 	public function testRethrowBaseException() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.3.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
 	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CatchCheck:Does not emit error when catching a known exception class
+	 */
+	public function testNoErrorExistingException() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CatchCheck:Does not emit error when catching a non-base exception
+	 */
+	public function testNoErrorNotBaseException() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CatchCheck:Emits error when catching a class that does not implement Throwable
+	 */
+	public function testNonDerivedThrowable() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CatchCheck:Does not emit error when catching Throwable interface
+	 */
+	public function testThrowable() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	}
+
+	/**
+	 * @rapid-unit Checks:CatchCheck:Does not emit error if the catch block explicitly throws an exception.
+	 */
+	public function testRethrowStopTraversal() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_EXCEPTION_BASE));
+	}
+
 }
