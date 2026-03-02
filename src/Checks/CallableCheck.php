@@ -64,9 +64,9 @@ class CallableCheck extends BaseCheck {
 		if ($object instanceof Node\Scalar\String_) {
 			// TODO: namespace resolution when resolving a callable string. Users should prefer [Foo::class,"Baz"] syntax.
 			$this->checkClassType($object->value, $fileName, $callableArray);
-		} elseif ($object instanceof Node\Expr\StaticPropertyFetch) {
-			if ($object->class instanceof Node\Name && is_string($object->name) && $object->name == "class") {
-				$this->checkClassType($object->name, $fileName, $callableArray);
+		} elseif ($object instanceof Node\Expr\ClassConstFetch) {
+			if ($object->class instanceof Node\Name && strval($object->name) == "class") {
+				$this->checkClassType($object->class, $fileName, $callableArray);
 			}
 		} else {
 			$classType = $object->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
