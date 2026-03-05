@@ -74,11 +74,11 @@ class TestCallCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
-	/**
-	 * @return void
-	 * @rapid-unit Checks:CallCheck:Does not emit error for valid function call with variadic placeholder
-	 */
-	public function testValidCallWithVariadicPlaceholder() {
+    /**
+     * @return void
+     * @rapid-unit Checks:CallCheck:Does not emit error for valid function call with variadic placeholder
+     */
+    public function testValidCallWithVariadicPlaceholder() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
@@ -98,4 +98,19 @@ class TestCallCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_SIGNATURE_TYPE, ['DocBlockGenerics' => true]));
 	}
 
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallCheck:Does not emit error when splat used on nullable array via docblock
+	 */
+	public function testNullUnionIteratableSplat() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.12.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallCheck:Does not emit error when splat used on nullable property type
+	 */
+	public function testNullablePropertySplat() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.13.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }
