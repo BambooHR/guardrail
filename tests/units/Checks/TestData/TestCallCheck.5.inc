@@ -1,5 +1,5 @@
 <?php
-function testFunc(string $a, string $b) {}
+function testFunc(string $a) {}
 
 $notTraversable = 123;
 testFunc(...$notTraversable);
