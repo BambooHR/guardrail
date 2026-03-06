@@ -205,6 +205,8 @@ class ReturnCheck extends BaseCheck {
 			return true;
 		} elseif ($lastStatement instanceof Node\Stmt\Expression && $lastStatement->expr instanceof Node\Expr\Exit_) {
 			return true;
+		} elseif ($lastStatement instanceof Node\Stmt\Expression && $this->isCallToFunctionThatThrows($lastStatement->expr)) {
+			return true;
 		} elseif ($lastStatement instanceof Node\Stmt\If_) {
 			return $this->allIfBranchesReturnOrThrow($lastStatement);
 		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
@@ -370,5 +372,35 @@ class ReturnCheck extends BaseCheck {
 
 	private function doWhileLoopReturnsOrThrows(Node\Stmt\Do_ $doWhileLoop): bool {
 		return $this->statementsAllReturnOrThrow($doWhileLoop->stmts);
+	}
+
+	/**
+	 * Check if an expression is a call to a function that never returns
+	 *
+	 * @param Node\Expr $expr The expression to check
+	 *
+	 * @return bool
+	 */
+	private function isCallToFunctionThatThrows(Node\Expr $expr): bool {
+		if ($expr instanceof Node\Expr\FuncCall) {
+			$name = $expr->name;
+			if ($name instanceof Node\Name) {
+				$function = $this->symbolTable->getAbstractedFunction(strval($name));
+				if ($function) {
+					// Check if the function body always throws/returns
+					if ($function instanceof \BambooHR\Guardrail\Abstractions\FunctionAbstraction) {
+						// FunctionAbstraction wraps a Function_ node, we need to check if it always throws
+						// We can use reflection to get the function property
+						$reflection = new \ReflectionClass($function);
+						$property = $reflection->getProperty('function');
+						$functionNode = $property->getValue($function);
+						if ($functionNode instanceof Node\Stmt\Function_) {
+							return $this->allPathsReturnOrThrow($functionNode);
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 }
