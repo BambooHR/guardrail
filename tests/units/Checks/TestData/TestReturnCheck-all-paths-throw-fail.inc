@@ -20,6 +20,15 @@ function throwFunction(): void {
 	throw new \Exception();
 }
 
+function functionCallingReturnFunction(): int {
+	returnFunction();
+	// Missing return or throw
+}
+
+function returnFunction(): void {
+	return;
+}
+
 // Function with no return and no throw - should fail
 function noReturnNoThrow(): int {
 	$x = 5;

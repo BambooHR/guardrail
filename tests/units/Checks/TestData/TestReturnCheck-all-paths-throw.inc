@@ -21,8 +21,6 @@ function throwFunction(): void {
 	throw new \Exception();
 }
 
-
-
 function testFunction(): int {
 	throw new \Exception();
 }
