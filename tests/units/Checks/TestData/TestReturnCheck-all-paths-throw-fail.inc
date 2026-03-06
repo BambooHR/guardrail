@@ -1,5 +1,25 @@
 <?php declare(strict_types=1);
 
+function functionCallingThrowFunction(): int {
+	if (false) {
+		throwFunction();
+	}
+	// Missing else - no return or throw
+}
+
+function functionCallingThrowFunctionWithTryCatch(): int {
+	try {
+		$someValue = 5;
+		// Missing return or throw
+	} catch (\Exception $e) {
+		throwFunction();
+	}
+}
+
+function throwFunction(): void {
+	throw new \Exception();
+}
+
 // Function with no return and no throw - should fail
 function noReturnNoThrow(): int {
 	$x = 5;

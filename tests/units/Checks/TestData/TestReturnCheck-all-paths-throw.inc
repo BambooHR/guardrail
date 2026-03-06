@@ -1,5 +1,28 @@
 <?php declare(strict_types=1);
 
+function functionCallingThrowFunction(): int {
+	throwFunction();
+}
+
+function functionCallingAFunctionThatCallsThrowFunction(): int {
+	functionCallingThrowFunction();
+}
+
+function functionCallingThrowFunctionWithTryCatch(): int {
+	try {
+		$someValue = 5;
+		throwFunction();
+	} catch (\Exception $e) {
+		throw $e;
+	}
+}
+
+function throwFunction(): void {
+	throw new \Exception();
+}
+
+
+
 function testFunction(): int {
 	throw new \Exception();
 }
