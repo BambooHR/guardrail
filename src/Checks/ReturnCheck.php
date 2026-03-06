@@ -387,7 +387,7 @@ class ReturnCheck extends BaseCheck {
 			if ($name instanceof Node\Name) {
 				$function = $this->symbolTable->getAbstractedFunction(strval($name));
 				if ($function) {
-					// Check if the function body always throws/returns
+					// Check if the function body always throws (not just returns)
 					if ($function instanceof \BambooHR\Guardrail\Abstractions\FunctionAbstraction) {
 						// FunctionAbstraction wraps a Function_ node, we need to check if it always throws
 						// We can use reflection to get the function property
@@ -395,12 +395,168 @@ class ReturnCheck extends BaseCheck {
 						$property = $reflection->getProperty('function');
 						$functionNode = $property->getValue($function);
 						if ($functionNode instanceof Node\Stmt\Function_) {
-							return $this->allPathsReturnOrThrow($functionNode);
+							return $this->allPathsThrow($functionNode);
 						}
+					}
+				}
+			}
+		} elseif ($expr instanceof Node\Expr\MethodCall && $expr->name instanceof Node\Identifier) {
+			// Handle instance method calls
+			$type = $expr->var->getAttribute(\BambooHR\Guardrail\TypeComparer::INFERRED_TYPE_ATTR);
+			if ($type) {
+				// Handle union types by checking each type
+				$allThrow = false;
+				TypeComparer::forEachType($type, function ($typeNode) use ($expr, &$allThrow) {
+					$method = \BambooHR\Guardrail\Util::findAbstractedMethod(strval($typeNode), $expr->name, $this->symbolTable);
+					if ($method && $method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
+						$reflection = new \ReflectionClass($method);
+						$property = $reflection->getProperty('method');
+						$methodNode = $property->getValue($method);
+						if ($methodNode instanceof Node\Stmt\ClassMethod) {
+							if ($this->allPathsThrow($methodNode)) {
+								$allThrow = true;
+							}
+						}
+					}
+				});
+				return $allThrow;
+			}
+		} elseif ($expr instanceof Node\Expr\StaticCall && $expr->name instanceof Node\Identifier) {
+			// Handle static method calls
+			if ($expr->class instanceof Node\Name) {
+				$className = strval($expr->class);
+				$method = \BambooHR\Guardrail\Util::findAbstractedMethod($className, $expr->name, $this->symbolTable);
+				if ($method && $method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
+					$reflection = new \ReflectionClass($method);
+					$property = $reflection->getProperty('method');
+					$methodNode = $property->getValue($method);
+					if ($methodNode instanceof Node\Stmt\ClassMethod) {
+						return $this->allPathsThrow($methodNode);
 					}
 				}
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Check if all code paths in a function throw an exception (not return)
+	 *
+	 * @param Node\FunctionLike $func The function to check
+	 *
+	 * @return bool
+	 */
+	private function allPathsThrow(Node\FunctionLike $func): bool {
+		$stmts = $func->getStmts();
+		if (!$stmts) {
+			return false;
+		}
+		return $this->statementsAllThrow($stmts);
+	}
+
+	/**
+	 * Check if all code paths in a list of statements throw (not return)
+	 *
+	 * @param array $stmts List of statements
+	 *
+	 * @return bool
+	 */
+	private function statementsAllThrow(array $stmts): bool {
+		$lastStatement = $this->getLastNonNopStatement($stmts);
+
+		if (!$lastStatement) {
+			return false;
+		} elseif ($lastStatement instanceof Node\Stmt\Throw_) {
+			return true;
+		} elseif ($lastStatement instanceof Node\Stmt\Expression && $this->isCallToFunctionThatThrows($lastStatement->expr)) {
+			return true;
+		} elseif ($lastStatement instanceof Node\Stmt\If_) {
+			return $this->allIfBranchesThrow($lastStatement);
+		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
+			return $this->allSwitchCasesThrow($lastStatement);
+		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
+			return $this->allTryCatchBranchesThrow($lastStatement);
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Check if all branches of an if statement throw
+	 *
+	 * @param Node\Stmt\If_ $ifStatement Instance of If_
+	 *
+	 * @return bool
+	 */
+	private function allIfBranchesThrow(Node\Stmt\If_ $ifStatement): bool {
+		if ($this->isConstantTrue($ifStatement->cond)) {
+			return $this->statementsAllThrow($ifStatement->stmts);
+		}
+		if (!$ifStatement->else) {
+			return false;
+		}
+		if (!$this->statementsAllThrow($ifStatement->stmts)) {
+			return false;
+		}
+		if (!$this->statementsAllThrow($ifStatement->else->stmts)) {
+			return false;
+		}
+		if ($ifStatement->elseifs) {
+			foreach ($ifStatement->elseifs as $elseIf) {
+				if (!$this->statementsAllThrow($elseIf->stmts)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check if all cases of a switch statement throw
+	 *
+	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
+	 *
+	 * @return bool
+	 */
+	private function allSwitchCasesThrow(Node\Stmt\Switch_ $switchStatement): bool {
+		$hasDefault = false;
+		foreach ($switchStatement->cases as $case) {
+			if ($case->cond === null) {
+				$hasDefault = true;
+			}
+			$stmts = $case->stmts;
+			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
+				$stmts = array_slice($stmts, 0, -1);
+			}
+			if ($stmts && !$this->statementsAllThrow($stmts)) {
+				return false;
+			}
+		}
+		return $hasDefault;
+	}
+
+	/**
+	 * Check if all branches of a try-catch statement throw
+	 *
+	 * @param Node\Stmt\TryCatch $tryCatch Instance of TryCatch
+	 *
+	 * @return bool
+	 */
+	private function allTryCatchBranchesThrow(Node\Stmt\TryCatch $tryCatch): bool {
+		// If finally block throws, it overrides try/catch
+		if ($tryCatch->finally && $this->statementsAllThrow($tryCatch->finally->stmts)) {
+			return true;
+		}
+
+		// Otherwise, both try and all catch blocks must throw
+		if (!$this->statementsAllThrow($tryCatch->stmts)) {
+			return false;
+		}
+		foreach ($tryCatch->catches as $catch) {
+			if (!$this->statementsAllThrow($catch->stmts)) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

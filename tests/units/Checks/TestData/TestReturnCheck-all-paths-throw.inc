@@ -21,6 +21,96 @@ function throwFunction(): void {
 	throw new \Exception();
 }
 
+// Nested function calls that throw (3 levels deep)
+function functionCallingNestedThrowFunction(): int {
+	functionCallingAFunctionThatCallsThrowFunction();
+}
+
+// Function that throws in one branch but returns in another - should pass
+function mixedBranchesOneThrowsOneReturns(bool $flag): int {
+	if ($flag) {
+		throwFunction();
+	} else {
+		return 42;
+	}
+}
+
+// Switch statement with all cases calling throw functions
+function switchAllCasesCallThrowFunction(int $x): int {
+	switch ($x) {
+		case 1:
+			throwFunction();
+		case 2:
+			throwFunction();
+		default:
+			throwFunction();
+	}
+}
+
+// While loop with constant true calling throw function
+function whileTrueCallsThrowFunction(): int {
+	while (true) {
+		throwFunction();
+	}
+}
+
+// Exit after function call
+function callFunctionThenExit(): int {
+	someNormalFunction();
+	exit(1);
+}
+
+function someNormalFunction(): void {
+	echo "test";
+}
+
+// Try-catch where try calls throw function and catch also calls throw function
+function tryCatchBothCallThrowFunctions(): int {
+	try {
+		throwFunction();
+	} catch (\Exception $e) {
+		throwFunction();
+	}
+}
+
+// Finally block calling throw function (overrides)
+function finallyCallsThrowFunction(): int {
+	try {
+		return 42;
+	} finally {
+		throwFunction();
+	}
+}
+
+class ThrowingClass {
+	public function throwMethod(): void {
+		throw new \Exception();
+	}
+
+	public static function throwStaticMethod(): void {
+		throw new \Exception();
+	}
+
+	public function internalCallToThrowMethod(): void {
+		$this->throwMethod();
+	}
+}
+
+function callMethodThatThrows(): int {
+	$obj = new ThrowingClass();
+	$obj->throwMethod();
+}
+
+function callStaticMethodThatThrows(): int {
+	ThrowingClass::throwStaticMethod();
+}
+
+function doWhileCallsThrowFunctionFalse(): int {
+	do {
+		throwFunction();
+	} while (false);
+}
+
 function testFunction(): int {
 	throw new \Exception();
 }

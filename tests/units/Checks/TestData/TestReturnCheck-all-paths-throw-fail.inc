@@ -29,6 +29,67 @@ function returnFunction(): void {
 	return;
 }
 
+function whileFalseCallsThrowFunction(): int {
+	while (false) {
+		throwFunction();
+	}
+	// Missing return or throw - loop never executes
+}
+
+function switchWithoutDefaultCallsThrowFunction(int $x): int {
+	switch ($x) {
+		case 1:
+			throwFunction();
+		case 2:
+			throwFunction();
+		// Missing default case
+	}
+	// Missing return or throw
+}
+
+function tryNormalCatchThrows(): int {
+	try {
+		someNormalFunction();
+		// No throw or return in try
+	} catch (\Exception $e) {
+		throwFunction();
+	}
+	// Missing return after try-catch
+}
+
+// Method call that doesn't throw - should fail (methods not yet supported anyway)
+class NonThrowingClass {
+	public function normalMethod(): void {
+		echo "test";
+	}
+}
+
+function callMethodThatDoesntThrow(): int {
+	$obj = new NonThrowingClass();
+	$obj->normalMethod();
+	// Missing return or throw
+}
+
+class StaticNonThrowingClass {
+	public static function normalStaticMethod(): void {
+		echo "test";
+	}
+}
+
+function callStaticMethodThatDoesntThrow(): int {
+	StaticNonThrowingClass::normalStaticMethod();
+	// Missing return or throw
+}
+
+function functionCallingReturnFunction(): int {
+	returnFunction();
+	// Missing return or throw
+}
+
+function returnFunction(): void {
+	return;
+}
+
 // Function with no return and no throw - should fail
 function noReturnNoThrow(): int {
 	$x = 5;
