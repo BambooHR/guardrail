@@ -274,9 +274,9 @@ class Scope implements PluginScopeInterface {
 	/**
 	 * Merge multiple branch scopes, handling early exits and undefined variables
 	 * 
-	 * @param Scope[] $branches Array of branch scopes to merge
+	 * @param Scope[] $branches Array of branch scopes to merge (including implicit branches)
 	 * @param int[] $exitedBranches Indices of branches that exited early (return/throw/break)
-	 * @param bool $hasImplicitBranch Whether there's an implicit branch (no else, no default)
+	 * @param bool $hasImplicitBranch Deprecated - implicit branches should be added to $branches array
 	 * @return void
 	 */
 	public function mergeBranches(array $branches, array $exitedBranches = [], bool $hasImplicitBranch = false): void {
@@ -286,11 +286,6 @@ class Scope implements PluginScopeInterface {
 			if (!in_array($index, $exitedBranches, true)) {
 				$completedBranches[] = $branch;
 			}
-		}
-		
-		// If there's an implicit branch (e.g., if without else), add current scope as a branch
-		if ($hasImplicitBranch) {
-			$completedBranches[] = $this->getScopeClone();
 		}
 		
 		// If no branches completed (all exited early), nothing to merge

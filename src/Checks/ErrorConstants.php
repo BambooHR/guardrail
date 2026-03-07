@@ -32,6 +32,7 @@ class ErrorConstants {
 	const TYPE_GLOBAL_EXPRESSION_ACCESSED = 'Standard.Global.Expression';
 	const TYPE_GLOBAL_STRING_ACCESSED = 'Standard.Global.String';
 	const TYPE_GOTO = 'Standard.Goto';
+	const TYPE_INCONSISTENT_VARIABLE = 'Standard.Inconsistent.Variable';
 	const TYPE_READONLY_DECLARATION = "Standard.Incorrect.ReadOnly";
 	const TYPE_ILLEGAL_ENUM = 'Standard.Illegal.Enum';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';

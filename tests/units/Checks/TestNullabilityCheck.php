@@ -167,7 +167,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset");
 	}
 	
@@ -228,7 +228,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset (no default)");
 	}
 	
@@ -279,7 +279,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset (try may have failed)");
 	}
 	
@@ -295,7 +295,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset (only set if exception)");
 	}
 	
@@ -500,7 +500,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset in try block");
 	}
 	

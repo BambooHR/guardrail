@@ -109,7 +109,17 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				// Merge all branches into parent scope
 				$parentScope = $scopeStack->getCurrentScope();
 				$hasImplicitBranch = ($node->else === null);
-				$parentScope->mergeBranches($branches, $exitedBranches, $hasImplicitBranch);
+				
+				// If there's an implicit branch, we need to include the original parent scope
+				// (before the if statement) as one of the branches
+				if ($hasImplicitBranch) {
+					$originalParentScope = $node->getAttribute('if-parent-scope');
+					if ($originalParentScope) {
+						$branches[] = $originalParentScope;
+					}
+				}
+				
+				$parentScope->mergeBranches($branches, $exitedBranches, false);
 			}
 		}
 	}

@@ -1,0 +1,6 @@
+{
+    "makefile.configureOnOpen": false,
+    "guardrailLsp.symbolTablePath": "symbol_table.json",
+    "guardrailLsp.useWSL": true,
+    "guardrailLsp.wslDistribution": "Ubuntu-24.04"
+}

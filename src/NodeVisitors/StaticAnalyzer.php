@@ -26,6 +26,7 @@ use BambooHR\Guardrail\Checks\EnumCheck;
 use BambooHR\Guardrail\Checks\FunctionCallCheck;
 use BambooHR\Guardrail\Checks\GotoCheck;
 use BambooHR\Guardrail\Checks\ImagickCheck;
+use BambooHR\Guardrail\Checks\InconsistentVariableCheck;
 use BambooHR\Guardrail\Checks\InstanceOfCheck;
 use BambooHR\Guardrail\Checks\InstantiationCheck;
 use BambooHR\Guardrail\Checks\InterfaceCheck;
@@ -128,6 +129,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new DocBlockTypesCheck($this->index, $output),
 			new EnumCheck($this->index, $output),
 			new UndefinedVariableCheck($this->index, $output),
+			new InconsistentVariableCheck($this->index, $output),
 			new DefinedConstantCheck($this->index, $output),
 			new BackTickOperatorCheck($this->index, $output),
 			new PropertyFetchCheck($this->index, $output),
