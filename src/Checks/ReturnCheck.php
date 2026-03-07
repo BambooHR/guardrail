@@ -470,24 +470,38 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function checkIfBranches(Node\Stmt\If_ $ifStatement, bool $throwOnly): bool {
-		$checker = $throwOnly ? [$this, 'statementsAllThrow'] : [$this, 'statementsAllReturnOrThrow'];
-
 		if ($this->isConstantTrue($ifStatement->cond)) {
-			return $checker($ifStatement->stmts);
+			return $throwOnly ? $this->statementsAllThrow($ifStatement->stmts) : $this->statementsAllReturnOrThrow($ifStatement->stmts);
 		}
 		if (!$ifStatement->else) {
 			return false;
 		}
-		if (!$checker($ifStatement->stmts)) {
-			return false;
-		}
-		if (!$checker($ifStatement->else->stmts)) {
-			return false;
-		}
-		if ($ifStatement->elseifs) {
-			foreach ($ifStatement->elseifs as $elseIf) {
-				if (!$checker($elseIf->stmts)) {
-					return false;
+		if ($throwOnly) {
+			if (!$this->statementsAllThrow($ifStatement->stmts)) {
+				return false;
+			}
+			if (!$this->statementsAllThrow($ifStatement->else->stmts)) {
+				return false;
+			}
+			if ($ifStatement->elseifs) {
+				foreach ($ifStatement->elseifs as $elseIf) {
+					if (!$this->statementsAllThrow($elseIf->stmts)) {
+						return false;
+					}
+				}
+			}
+		} else {
+			if (!$this->statementsAllReturnOrThrow($ifStatement->stmts)) {
+				return false;
+			}
+			if (!$this->statementsAllReturnOrThrow($ifStatement->else->stmts)) {
+				return false;
+			}
+			if ($ifStatement->elseifs) {
+				foreach ($ifStatement->elseifs as $elseIf) {
+					if (!$this->statementsAllReturnOrThrow($elseIf->stmts)) {
+						return false;
+					}
 				}
 			}
 		}
@@ -503,8 +517,6 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function checkSwitchCases(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
-		$checker = $throwOnly ? [$this, 'statementsAllThrow'] : [$this, 'statementsAllReturnOrThrow'];
-
 		$hasDefault = false;
 		foreach ($switchStatement->cases as $case) {
 			if ($case->cond === null) {
@@ -514,8 +526,11 @@ class ReturnCheck extends BaseCheck {
 			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
 				$stmts = array_slice($stmts, 0, -1);
 			}
-			if ($stmts && !$checker($stmts)) {
-				return false;
+			if ($stmts) {
+				$allTerminate = $throwOnly ? $this->statementsAllThrow($stmts) : $this->statementsAllReturnOrThrow($stmts);
+				if (!$allTerminate) {
+					return false;
+				}
 			}
 		}
 		return $hasDefault;
@@ -530,17 +545,20 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function checkTryCatchBranches(Node\Stmt\TryCatch $tryCatch, bool $throwOnly): bool {
-		$checker = $throwOnly ? [$this, 'statementsAllThrow'] : [$this, 'statementsAllReturnOrThrow'];
-
-		if ($tryCatch->finally && $checker($tryCatch->finally->stmts)) {
-			return true;
+		if ($tryCatch->finally) {
+			$finallyTerminates = $throwOnly ? $this->statementsAllThrow($tryCatch->finally->stmts) : $this->statementsAllReturnOrThrow($tryCatch->finally->stmts);
+			if ($finallyTerminates) {
+				return true;
+			}
 		}
 
-		if (!$checker($tryCatch->stmts)) {
+		$tryTerminates = $throwOnly ? $this->statementsAllThrow($tryCatch->stmts) : $this->statementsAllReturnOrThrow($tryCatch->stmts);
+		if (!$tryTerminates) {
 			return false;
 		}
 		foreach ($tryCatch->catches as $catch) {
-			if (!$checker($catch->stmts)) {
+			$catchTerminates = $throwOnly ? $this->statementsAllThrow($catch->stmts) : $this->statementsAllReturnOrThrow($catch->stmts);
+			if (!$catchTerminates) {
 				return false;
 			}
 		}
