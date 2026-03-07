@@ -6,6 +6,7 @@ namespace BambooHR\Guardrail\Evaluators;
 
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\TypeInference\TypeAssertion;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ElseIf_;
 
@@ -18,14 +19,24 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
 		if ($node instanceof Node\Stmt\If_) {
+			// Store parent scope and initialize branch tracking
+			$node->setAttribute('if-parent-scope', $scopeStack->getCurrentScope());
+			$node->setAttribute('if-branches', []);
+			$node->setAttribute('if-exited-branches', []);
+			
+			// Create scope for then-branch and apply type narrowing
 			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
+			TypeAssertion::narrowTypes($node->cond, $thenBranch, true);
 			$scopeStack->pushScope($thenBranch);
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
 		} elseif ($node instanceof Node\Stmt\ElseIf_) {
 			$scopeStack->swapTopTwoScopes();
-			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
-			$scopeStack->pushScope($thenBranch);
+			
+			// Create scope for elseif-branch and apply type narrowing
+			$elseIfBranch = $scopeStack->getCurrentScope()->getScopeClone();
+			TypeAssertion::narrowTypes($node->cond, $elseIfBranch, true);
+			$scopeStack->pushScope($elseIfBranch);
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
 		} elseif ($node instanceof Node\Stmt\Else_) {
@@ -36,25 +47,69 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
 		if ($node instanceof Node\Stmt\If_) {
-			if (
-				$node->else == null &&
-				count($node->elseifs) == 0 &&
-				( end($node->stmts) instanceof Node\Stmt\Return_ || end($node->stmts) instanceof Node\Stmt\Throw_ || end($node->stmts) instanceof Node\Stmt\Continue_)
-			) {
-			// Our condition was true and then never returned, that means that
-				// the else version of that scope if true for the remainder of this function.
+			// Check if then-branch exits early
+			$thenExitsEarly = !empty($node->stmts) && 
+				(end($node->stmts) instanceof Node\Stmt\Return_ || 
+				 end($node->stmts) instanceof Node\Stmt\Throw_ || 
+				 end($node->stmts) instanceof Node\Stmt\Continue_ ||
+				 end($node->stmts) instanceof Node\Stmt\Break_);
+			
+			if ($thenExitsEarly && $node->else == null && count($node->elseifs) == 0) {
+				// Then-branch exits and no else - apply inverse narrowing to parent scope
 				$scopeStack->popScope();
+				$parentScope = $scopeStack->getCurrentScope();
+				TypeAssertion::narrowTypes($node->cond, $parentScope, false);
+				
 				if ($node->cond->hasAttribute('assertsFalse')) {
 					$else = $node->cond->getAttribute('assertsFalse');
-					$scopeStack->getCurrentScope()->merge($else);
+					$parentScope->merge($else);
 				}
 			} else {
-				$cond = $scopeStack->popScope();
-				$scopeStack->getCurrentScope()->merge($cond);
-
-				for ($count = 0; $count < count($node->elseifs); ++$count) {
-					$scopeStack->getCurrentScope()->merge($scopeStack->popScope());
+				// Collect all branch scopes
+				$branches = [];
+				$exitedBranches = [];
+				
+				// Add then-branch
+				$thenScope = $scopeStack->popScope();
+				$branches[] = $thenScope;
+				if ($thenExitsEarly) {
+					$exitedBranches[] = 0;
 				}
+				
+				// Add elseif branches
+				for ($i = 0; $i < count($node->elseifs); ++$i) {
+					$elseIfScope = $scopeStack->popScope();
+					$branches[] = $elseIfScope;
+					
+					$elseIfStmts = $node->elseifs[$i]->stmts;
+					if (!empty($elseIfStmts) && 
+						(end($elseIfStmts) instanceof Node\Stmt\Return_ || 
+						 end($elseIfStmts) instanceof Node\Stmt\Throw_ ||
+						 end($elseIfStmts) instanceof Node\Stmt\Continue_ ||
+						 end($elseIfStmts) instanceof Node\Stmt\Break_)) {
+						$exitedBranches[] = count($branches) - 1;
+					}
+				}
+				
+				// Add else branch if it exists
+				if ($node->else !== null) {
+					$elseScope = $scopeStack->popScope();
+					$branches[] = $elseScope;
+					
+					$elseStmts = $node->else->stmts;
+					if (!empty($elseStmts) && 
+						(end($elseStmts) instanceof Node\Stmt\Return_ || 
+						 end($elseStmts) instanceof Node\Stmt\Throw_ ||
+						 end($elseStmts) instanceof Node\Stmt\Continue_ ||
+						 end($elseStmts) instanceof Node\Stmt\Break_)) {
+						$exitedBranches[] = count($branches) - 1;
+					}
+				}
+				
+				// Merge all branches into parent scope
+				$parentScope = $scopeStack->getCurrentScope();
+				$hasImplicitBranch = ($node->else === null);
+				$parentScope->mergeBranches($branches, $exitedBranches, $hasImplicitBranch);
 			}
 		}
 	}

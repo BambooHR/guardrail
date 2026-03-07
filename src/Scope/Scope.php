@@ -8,6 +8,7 @@ namespace BambooHR\Guardrail\Scope;
  */
 
 use BambooHR\Guardrail\TypeComparer;
+use PhpParser\Node;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Identifier;
@@ -268,5 +269,130 @@ class Scope implements PluginScopeInterface {
 				$this->vars[$name]->mergeVar($otherVar);
 			}
 		}
+	}
+	
+	/**
+	 * Merge multiple branch scopes, handling early exits and undefined variables
+	 * 
+	 * @param Scope[] $branches Array of branch scopes to merge
+	 * @param int[] $exitedBranches Indices of branches that exited early (return/throw/break)
+	 * @param bool $hasImplicitBranch Whether there's an implicit branch (no else, no default)
+	 * @return void
+	 */
+	public function mergeBranches(array $branches, array $exitedBranches = [], bool $hasImplicitBranch = false): void {
+		// Filter out branches that exited early
+		$completedBranches = [];
+		foreach ($branches as $index => $branch) {
+			if (!in_array($index, $exitedBranches, true)) {
+				$completedBranches[] = $branch;
+			}
+		}
+		
+		// If there's an implicit branch (e.g., if without else), add current scope as a branch
+		if ($hasImplicitBranch) {
+			$completedBranches[] = $this->getScopeClone();
+		}
+		
+		// If no branches completed (all exited early), nothing to merge
+		if (empty($completedBranches)) {
+			return;
+		}
+		
+		// Collect all variables from all branches
+		$allVarNames = [];
+		foreach ($completedBranches as $branch) {
+			foreach ($branch->vars as $name => $var) {
+				$allVarNames[$name] = true;
+			}
+		}
+		
+		// For each variable, merge types from all branches
+		foreach (array_keys($allVarNames) as $varName) {
+			$types = [];
+			$existsInAllBranches = true;
+			$mayBeNullInAny = false;
+			$mayBeUnsetInAny = false;
+			
+			foreach ($completedBranches as $branch) {
+				if ($branch->getVarExists($varName)) {
+					$branchVar = $branch->getVarObject($varName);
+					if ($branchVar) {
+						$types[] = $branchVar->type;
+						$mayBeNullInAny = $mayBeNullInAny || $branchVar->mayBeNull;
+						$mayBeUnsetInAny = $mayBeUnsetInAny || $branchVar->mayBeUnset;
+					}
+				} else {
+					$existsInAllBranches = false;
+				}
+			}
+			
+			// If variable doesn't exist in all branches, it may be unset
+			if (!$existsInAllBranches) {
+				$mayBeUnsetInAny = true;
+			}
+			
+			// Union all types together
+			$mergedType = $this->unionTypes($types);
+			
+			// Set or update the variable in this scope
+			if (!isset($this->vars[$varName])) {
+				$var = new ScopeVar();
+				$var->name = $varName;
+				$this->vars[$varName] = $var;
+			}
+			
+			$this->vars[$varName]->type = $mergedType;
+			$this->vars[$varName]->typeChanged = true;
+			$this->vars[$varName]->mayBeNull = $mayBeNullInAny;
+			$this->vars[$varName]->mayBeUnset = $mayBeUnsetInAny;
+		}
+	}
+	
+	/**
+	 * Create a union type from multiple types
+	 * 
+	 * @param array $types Array of type nodes
+	 * @return Name|Identifier|ComplexType|null
+	 */
+	private function unionTypes(array $types): Name|Identifier|ComplexType|null {
+		// Filter out null types
+		$types = array_filter($types, fn($t) => $t !== null);
+		
+		if (empty($types)) {
+			return null;
+		}
+		
+		if (count($types) === 1) {
+			return reset($types);
+		}
+		
+		// Flatten any existing union types
+		$flatTypes = [];
+		foreach ($types as $type) {
+			if ($type instanceof ComplexType && $type instanceof Node\UnionType) {
+				foreach ($type->types as $subType) {
+					$flatTypes[] = $subType;
+				}
+			} else {
+				$flatTypes[] = $type;
+			}
+		}
+		
+		// Remove duplicates by comparing type strings
+		$uniqueTypes = [];
+		$seenTypes = [];
+		foreach ($flatTypes as $type) {
+			$typeStr = TypeComparer::typeToString($type);
+			if (!isset($seenTypes[$typeStr])) {
+				$seenTypes[$typeStr] = true;
+				$uniqueTypes[] = $type;
+			}
+		}
+		
+		if (count($uniqueTypes) === 1) {
+			return $uniqueTypes[0];
+		}
+		
+		return new Node\UnionType($uniqueTypes);
 	}
 }
