@@ -24,6 +24,17 @@ class Scope implements PluginScopeInterface {
 	 * @var ScopeVar[]
 	 */
 	private $vars = [];
+	
+	/**
+	 * @var int Version counter for tracking when variables are defined in this scope
+	 */
+	private static $globalScopeVersion = 0;
+	
+	/**
+	 * @var int The version of this scope (incremented for each branch)
+	 */
+	private $scopeVersion = 0;
+	
 	function __construct(public bool $isStatic, public bool $isGlobal, public bool $isStrict, private ?FunctionLike $inside = null) {
 	}
 
@@ -76,6 +87,7 @@ class Scope implements PluginScopeInterface {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
+			$var->scopeVersion = $this->scopeVersion; // Mark when this variable was defined
 			$this->vars[$name] = $var;
 		}
 
@@ -243,6 +255,11 @@ class Scope implements PluginScopeInterface {
 		}
 		$ret = new self($this->isStatic, $this->isGlobal, $this->isStrict, $this->inside);
 		$ret->vars = $newVars;
+		
+		// Increment scope version so we can track variables defined in this branch
+		self::$globalScopeVersion++;
+		$ret->scopeVersion = self::$globalScopeVersion;
+		
 		return $ret;
 	}
 
@@ -308,21 +325,32 @@ class Scope implements PluginScopeInterface {
 			$mayBeNullInAny = false;
 			$mayBeUnsetInAny = false;
 			
+			$branchesWithVar = 0;
+			$branchesWhereVarWasNew = 0;
+			
 			foreach ($completedBranches as $branch) {
 				if ($branch->getVarExists($varName)) {
+					$branchesWithVar++;
 					$branchVar = $branch->getVarObject($varName);
 					if ($branchVar) {
 						$types[] = $branchVar->type;
 						$mayBeNullInAny = $mayBeNullInAny || $branchVar->mayBeNull;
 						$mayBeUnsetInAny = $mayBeUnsetInAny || $branchVar->mayBeUnset;
+						
+						// Check if this variable was newly defined in this branch
+						// (scopeVersion > 0 means it was defined in a branch, not inherited)
+						if ($branchVar->scopeVersion > 0 && $branchVar->scopeVersion == $branch->scopeVersion) {
+							$branchesWhereVarWasNew++;
+						}
 					}
 				} else {
 					$existsInAllBranches = false;
 				}
 			}
 			
-			// If variable doesn't exist in all branches, it may be unset
-			if (!$existsInAllBranches) {
+			// If variable doesn't exist in all branches, OR if it was newly defined in some 
+			// branches but not all, then it may be unset
+			if (!$existsInAllBranches || ($branchesWhereVarWasNew > 0 && $branchesWhereVarWasNew < count($completedBranches))) {
 				$mayBeUnsetInAny = true;
 			}
 			

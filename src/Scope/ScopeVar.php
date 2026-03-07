@@ -21,6 +21,11 @@ class ScopeVar {
 	 * @var bool True if the variable may be unset (created in one branch but not another)
 	 */
 	public $mayBeUnset = false;
+	
+	/**
+	 * @var int Scope version when this variable was defined (0 = inherited from parent)
+	 */
+	public $scopeVersion = 0;
 
 	/**
 	 * @param ScopeVar $other -
