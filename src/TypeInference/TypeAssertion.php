@@ -118,6 +118,8 @@ class TypeAssertion {
 			if ($var) {
 				$var->mayBeNull = false;
 				$var->mayBeUnset = false;
+				// Remove null from type
+				$var->type = self::removeNull($var->type);
 			}
 		}
 		// In falsy branch, we know it's NOT this class, but could still be other types
@@ -147,6 +149,8 @@ class TypeAssertion {
 		if ($truthyBranch) {
 			// In truthy branch, variable is not null and not unset
 			$var->mayBeNull = false;
+			// Remove null from type
+			$var->type = self::removeNull($var->type);
 			$var->mayBeUnset = false;
 		} else {
 			// In falsy branch, variable could be null, false, 0, "", []
@@ -200,6 +204,8 @@ class TypeAssertion {
 					// Variable is NOT null
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 				
@@ -208,11 +214,15 @@ class TypeAssertion {
 					// Variable is set and not null
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				} else {
 					// Variable is either unset or null
 					// We can't distinguish which, so set both
 					$var->mayBeNull = true;
 					$var->mayBeUnset = true;
+					// Add null to type
+					$var->type = self::addNull($var->type);
 				}
 				break;
 				
@@ -221,6 +231,8 @@ class TypeAssertion {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('string'), $node->getLine());
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 				
@@ -231,6 +243,8 @@ class TypeAssertion {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('int'), $node->getLine());
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 				
@@ -241,6 +255,8 @@ class TypeAssertion {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('float'), $node->getLine());
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 				
@@ -249,6 +265,8 @@ class TypeAssertion {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('bool'), $node->getLine());
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 				
@@ -257,6 +275,8 @@ class TypeAssertion {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('array'), $node->getLine());
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 				
@@ -265,6 +285,8 @@ class TypeAssertion {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('object'), $node->getLine());
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 				
@@ -273,6 +295,8 @@ class TypeAssertion {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('resource'), $node->getLine());
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
 				}
 				break;
 		}
@@ -316,11 +340,14 @@ class TypeAssertion {
 			// Variable is NOT null
 			$var->mayBeNull = false;
 			$var->mayBeUnset = false;
+			// Remove null from type
+			$var->type = self::removeNull($var->type);
 		} else {
 			// Variable IS null
 			$var->mayBeNull = true;
 			$var->mayBeUnset = false;
-			$scope->setVarType($varName, TypeComparer::identifierFromName('null'), $node->getLine());
+			// Add null to type
+			$var->type = self::addNull($var->type);
 		}
 	}
 	
@@ -367,6 +394,8 @@ class TypeAssertion {
 			// Variable is NOT null
 			$var->mayBeNull = false;
 			$var->mayBeUnset = false;
+			// Remove null from type
+			$var->type = self::removeNull($var->type);
 		}
 	}
 	
@@ -380,5 +409,89 @@ class TypeAssertion {
 		return $node instanceof Node\Expr\ConstFetch && 
 		       $node->name instanceof Node\Name &&
 		       strtolower($node->name->toString()) === 'null';
+	}
+	
+	/**
+	 * Remove null from a type
+	 * 
+	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
+	 * @return Node\Name|Node\Identifier|Node\ComplexType|null
+	 */
+	private static function removeNull(Node\Name|Node\Identifier|Node\ComplexType|null $type): Node\Name|Node\Identifier|Node\ComplexType|null {
+		if ($type === null) {
+			return null;
+		}
+		
+		// If it's a NullableType, return the inner type
+		if ($type instanceof Node\NullableType) {
+			return $type->type;
+		}
+		
+		// If it's a UnionType, filter out null
+		if ($type instanceof Node\UnionType) {
+			$nonNullTypes = [];
+			foreach ($type->types as $subType) {
+				if (!TypeComparer::isNamedIdentifier($subType, 'null')) {
+					$nonNullTypes[] = $subType;
+				}
+			}
+			
+			if (empty($nonNullTypes)) {
+				return null;
+			}
+			
+			if (count($nonNullTypes) === 1) {
+				return $nonNullTypes[0];
+			}
+			
+			return new Node\UnionType($nonNullTypes);
+		}
+		
+		// If it's just "null", return null
+		if (TypeComparer::isNamedIdentifier($type, 'null')) {
+			return null;
+		}
+		
+		// Otherwise return as-is
+		return $type;
+	}
+	
+	/**
+	 * Add null to a type if not already present
+	 * 
+	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
+	 * @return Node\Name|Node\Identifier|Node\ComplexType|null
+	 */
+	private static function addNull(Node\Name|Node\Identifier|Node\ComplexType|null $type): Node\Name|Node\Identifier|Node\ComplexType|null {
+		if ($type === null) {
+			return TypeComparer::identifierFromName('null');
+		}
+		
+		// Already nullable
+		if ($type instanceof Node\NullableType) {
+			return $type;
+		}
+		
+		// Check if it's already null
+		if (TypeComparer::isNamedIdentifier($type, 'null')) {
+			return $type;
+		}
+		
+		// If it's a union, check if null is already in it
+		if ($type instanceof Node\UnionType) {
+			foreach ($type->types as $subType) {
+				if (TypeComparer::isNamedIdentifier($subType, 'null')) {
+					return $type; // Already has null
+				}
+			}
+			
+			// Add null to the union
+			$types = $type->types;
+			$types[] = TypeComparer::identifierFromName('null');
+			return new Node\UnionType($types);
+		}
+		
+		// Create a union with null
+		return new Node\UnionType([$type, TypeComparer::identifierFromName('null')]);
 	}
 }
