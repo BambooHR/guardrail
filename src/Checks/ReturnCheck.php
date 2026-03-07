@@ -247,26 +247,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function allIfBranchesReturnOrThrow(Node\Stmt\If_ $ifStatement): bool {
-		if ($this->isConstantTrue($ifStatement->cond)) {
-			return $this->statementsAllReturnOrThrow($ifStatement->stmts);
-		}
-		if (!$ifStatement->else) {
-			return false;
-		}
-		if (!$this->statementsAllReturnOrThrow($ifStatement->stmts)) {
-			return false;
-		}
-		if (!$this->statementsAllReturnOrThrow($ifStatement->else->stmts)) {
-			return false;
-		}
-		if ($ifStatement->elseifs) {
-			foreach ($ifStatement->elseifs as $elseIf) {
-				if (!$this->statementsAllReturnOrThrow($elseIf->stmts)) {
-					return false;
-				}
-			}
-		}
-		return true;
+		return $this->checkIfBranches($ifStatement, false);
 	}
 
 	/**
@@ -277,20 +258,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function allSwitchCasesReturnOrThrow(Node\Stmt\Switch_ $switchStatement): bool {
-		$hasDefault = false;
-		foreach ($switchStatement->cases as $case) {
-			if ($case->cond === null) {
-				$hasDefault = true;
-			}
-			$stmts = $case->stmts;
-			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
-				$stmts = array_slice($stmts, 0, -1);
-			}
-			if ($stmts && !$this->statementsAllReturnOrThrow($stmts)) {
-				return false;
-			}
-		}
-		return $hasDefault;
+		return $this->checkSwitchCases($switchStatement, false);
 	}
 
 	/**
@@ -320,21 +288,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function allTryCatchBranchesReturnOrThrow(Node\Stmt\TryCatch $tryCatch): bool {
-		// If finally block returns or throws, it overrides try/catch
-		if ($tryCatch->finally && $this->statementsAllReturnOrThrow($tryCatch->finally->stmts)) {
-			return true;
-		}
-
-		// Otherwise, both try and all catch blocks must return or throw
-		if (!$this->statementsAllReturnOrThrow($tryCatch->stmts)) {
-			return false;
-		}
-		foreach ($tryCatch->catches as $catch) {
-			if (!$this->statementsAllReturnOrThrow($catch->stmts)) {
-				return false;
-			}
-		}
-		return true;
+		return $this->checkTryCatchBranches($tryCatch, false);
 	}
 
 	/**
@@ -404,18 +358,13 @@ class ReturnCheck extends BaseCheck {
 			// Handle instance method calls
 			$type = $expr->var->getAttribute(\BambooHR\Guardrail\TypeComparer::INFERRED_TYPE_ATTR);
 			if ($type) {
-				// Handle union types by checking each type
 				$allThrow = false;
 				TypeComparer::forEachType($type, function ($typeNode) use ($expr, &$allThrow) {
 					$method = \BambooHR\Guardrail\Util::findAbstractedMethod(strval($typeNode), $expr->name, $this->symbolTable);
 					if ($method && $method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
-						$reflection = new \ReflectionClass($method);
-						$property = $reflection->getProperty('method');
-						$methodNode = $property->getValue($method);
-						if ($methodNode instanceof Node\Stmt\ClassMethod) {
-							if ($this->allPathsThrow($methodNode)) {
-								$allThrow = true;
-							}
+						$methodNode = $this->extractMethodNode($method);
+						if ($methodNode && $this->allPathsThrow($methodNode)) {
+							$allThrow = true;
 						}
 					}
 				});
@@ -427,10 +376,8 @@ class ReturnCheck extends BaseCheck {
 				$className = strval($expr->class);
 				$method = \BambooHR\Guardrail\Util::findAbstractedMethod($className, $expr->name, $this->symbolTable);
 				if ($method && $method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
-					$reflection = new \ReflectionClass($method);
-					$property = $reflection->getProperty('method');
-					$methodNode = $property->getValue($method);
-					if ($methodNode instanceof Node\Stmt\ClassMethod) {
+					$methodNode = $this->extractMethodNode($method);
+					if ($methodNode) {
 						return $this->allPathsThrow($methodNode);
 					}
 				}
@@ -489,26 +436,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function allIfBranchesThrow(Node\Stmt\If_ $ifStatement): bool {
-		if ($this->isConstantTrue($ifStatement->cond)) {
-			return $this->statementsAllThrow($ifStatement->stmts);
-		}
-		if (!$ifStatement->else) {
-			return false;
-		}
-		if (!$this->statementsAllThrow($ifStatement->stmts)) {
-			return false;
-		}
-		if (!$this->statementsAllThrow($ifStatement->else->stmts)) {
-			return false;
-		}
-		if ($ifStatement->elseifs) {
-			foreach ($ifStatement->elseifs as $elseIf) {
-				if (!$this->statementsAllThrow($elseIf->stmts)) {
-					return false;
-				}
-			}
-		}
-		return true;
+		return $this->checkIfBranches($ifStatement, true);
 	}
 
 	/**
@@ -519,20 +447,7 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function allSwitchCasesThrow(Node\Stmt\Switch_ $switchStatement): bool {
-		$hasDefault = false;
-		foreach ($switchStatement->cases as $case) {
-			if ($case->cond === null) {
-				$hasDefault = true;
-			}
-			$stmts = $case->stmts;
-			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
-				$stmts = array_slice($stmts, 0, -1);
-			}
-			if ($stmts && !$this->statementsAllThrow($stmts)) {
-				return false;
-			}
-		}
-		return $hasDefault;
+		return $this->checkSwitchCases($switchStatement, true);
 	}
 
 	/**
@@ -543,20 +458,106 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function allTryCatchBranchesThrow(Node\Stmt\TryCatch $tryCatch): bool {
-		// If finally block throws, it overrides try/catch
-		if ($tryCatch->finally && $this->statementsAllThrow($tryCatch->finally->stmts)) {
+		return $this->checkTryCatchBranches($tryCatch, true);
+	}
+
+	/**
+	 * Unified method to check if branches meet termination criteria
+	 *
+	 * @param Node\Stmt\If_ $ifStatement Instance of If_
+	 * @param bool           $throwOnly    If true, only throw counts; if false, return or throw counts
+	 *
+	 * @return bool
+	 */
+	private function checkIfBranches(Node\Stmt\If_ $ifStatement, bool $throwOnly): bool {
+		$checker = $throwOnly ? [$this, 'statementsAllThrow'] : [$this, 'statementsAllReturnOrThrow'];
+
+		if ($this->isConstantTrue($ifStatement->cond)) {
+			return $checker($ifStatement->stmts);
+		}
+		if (!$ifStatement->else) {
+			return false;
+		}
+		if (!$checker($ifStatement->stmts)) {
+			return false;
+		}
+		if (!$checker($ifStatement->else->stmts)) {
+			return false;
+		}
+		if ($ifStatement->elseifs) {
+			foreach ($ifStatement->elseifs as $elseIf) {
+				if (!$checker($elseIf->stmts)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Unified method to check if switch cases meet termination criteria
+	 *
+	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
+	 * @param bool               $throwOnly        If true, only throw counts; if false, return or throw counts
+	 *
+	 * @return bool
+	 */
+	private function checkSwitchCases(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
+		$checker = $throwOnly ? [$this, 'statementsAllThrow'] : [$this, 'statementsAllReturnOrThrow'];
+
+		$hasDefault = false;
+		foreach ($switchStatement->cases as $case) {
+			if ($case->cond === null) {
+				$hasDefault = true;
+			}
+			$stmts = $case->stmts;
+			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
+				$stmts = array_slice($stmts, 0, -1);
+			}
+			if ($stmts && !$checker($stmts)) {
+				return false;
+			}
+		}
+		return $hasDefault;
+	}
+
+	/**
+	 * Unified method to check if try-catch branches meet termination criteria
+	 *
+	 * @param Node\Stmt\TryCatch $tryCatch  Instance of TryCatch
+	 * @param bool                $throwOnly If true, only throw counts; if false, return or throw counts
+	 *
+	 * @return bool
+	 */
+	private function checkTryCatchBranches(Node\Stmt\TryCatch $tryCatch, bool $throwOnly): bool {
+		$checker = $throwOnly ? [$this, 'statementsAllThrow'] : [$this, 'statementsAllReturnOrThrow'];
+
+		if ($tryCatch->finally && $checker($tryCatch->finally->stmts)) {
 			return true;
 		}
 
-		// Otherwise, both try and all catch blocks must throw
-		if (!$this->statementsAllThrow($tryCatch->stmts)) {
+		if (!$checker($tryCatch->stmts)) {
 			return false;
 		}
 		foreach ($tryCatch->catches as $catch) {
-			if (!$this->statementsAllThrow($catch->stmts)) {
+			if (!$checker($catch->stmts)) {
 				return false;
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Extract method node from a ClassMethod abstraction
+	 *
+	 * @param \BambooHR\Guardrail\Abstractions\ClassMethod $method
+	 *
+	 * @return Node\Stmt\ClassMethod|null
+	 */
+	private function extractMethodNode(\BambooHR\Guardrail\Abstractions\ClassMethod $method): ?Node\Stmt\ClassMethod {
+		$reflection = new \ReflectionClass($method);
+		$property = $reflection->getProperty('method');
+		$methodNode = $property->getValue($method);
+		return $methodNode instanceof Node\Stmt\ClassMethod ? $methodNode : null;
 	}
 }
