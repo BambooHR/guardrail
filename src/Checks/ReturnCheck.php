@@ -465,7 +465,7 @@ class ReturnCheck extends BaseCheck {
 	 * Unified method to check if branches meet termination criteria
 	 *
 	 * @param Node\Stmt\If_ $ifStatement Instance of If_
-	 * @param bool           $throwOnly    If true, only throw counts; if false, return or throw counts
+	 * @param bool          $throwOnly   If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
@@ -498,7 +498,7 @@ class ReturnCheck extends BaseCheck {
 	 * Unified method to check if switch cases meet termination criteria
 	 *
 	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
-	 * @param bool               $throwOnly        If true, only throw counts; if false, return or throw counts
+	 * @param bool              $throwOnly       If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
@@ -525,7 +525,7 @@ class ReturnCheck extends BaseCheck {
 	 * Unified method to check if try-catch branches meet termination criteria
 	 *
 	 * @param Node\Stmt\TryCatch $tryCatch  Instance of TryCatch
-	 * @param bool                $throwOnly If true, only throw counts; if false, return or throw counts
+	 * @param bool               $throwOnly If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
