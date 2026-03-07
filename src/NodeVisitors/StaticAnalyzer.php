@@ -102,8 +102,11 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		Ev\FunctionLike::class,
 		Ev\Global_::class,
 		Ev\If_::class,
+		Ev\Loop::class,
 		Ev\Return_::class,
-		Ev\StaticVar_::class
+		Ev\StaticVar_::class,
+		Ev\Switch_::class,
+		Ev\TryCatch::class
 	];
 
 
