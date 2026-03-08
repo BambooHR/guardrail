@@ -439,18 +439,19 @@ class TypeAssertion {
 		$varName = $varNode->name;
 		$var = $scope->getVarObject($varName);
 		
+		// If variable doesn't exist, we can't narrow it
 		if (!$var) {
 			return;
 		}
 		
 		if ($truthyBranch) {
-			// Variable is NOT null
+			// Variable is NOT null ($x !== null or $x != null is true)
 			$var->mayBeNull = false;
 			$var->mayBeUnset = false;
 			// Remove null from type
 			$var->type = self::removeNull($var->type);
 		} else {
-			// Variable IS null
+			// Variable IS null ($x !== null or $x != null is false)
 			$var->mayBeNull = true;
 			$var->mayBeUnset = false;
 			// Add null to type
