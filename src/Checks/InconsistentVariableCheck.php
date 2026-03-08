@@ -66,6 +66,26 @@ class InconsistentVariableCheck extends BaseCheck {
 					return;
 				}
 				
+				// Skip if variable is used inside isset(), empty(), or array_key_exists()
+				// These functions are specifically designed to handle potentially unset variables
+				$parent = $parentNodes[count($parentNodes) - 1] ?? null;
+				
+				// Check for isset() and empty() language constructs
+				if ($parent instanceof Node\Expr\Isset_ || $parent instanceof Node\Expr\Empty_) {
+					return;
+				}
+				
+				// Check for array_key_exists() function call
+				if ($parent instanceof Node\Arg) {
+					$grandparent = $parentNodes[count($parentNodes) - 2] ?? null;
+					if ($grandparent instanceof Node\Expr\FuncCall && $grandparent->name instanceof Node\Name) {
+						$funcName = strtolower($grandparent->name->toString());
+						if ($funcName === 'array_key_exists') {
+							return;
+						}
+					}
+				}
+				
 				// Get the variable object from scope
 				$var = $scope->getVarObject($name);
 				

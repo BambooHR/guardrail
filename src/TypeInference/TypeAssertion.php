@@ -48,7 +48,19 @@ class TypeAssertion {
 			return;
 		}
 		
-		// Function calls: is_null(), isset(), is_string(), etc.
+		// isset() language construct
+		if ($condition instanceof Node\Expr\Isset_) {
+			self::handleIsset($condition, $scope, $truthyBranch);
+			return;
+		}
+		
+		// empty() language construct
+		if ($condition instanceof Node\Expr\Empty_) {
+			self::handleEmpty($condition, $scope, $truthyBranch);
+			return;
+		}
+		
+		// Function calls: is_null(), is_string(), etc.
 		if ($condition instanceof Node\Expr\FuncCall) {
 			self::handleTypeCheckFunction($condition, $scope, $truthyBranch);
 			return;
@@ -161,7 +173,91 @@ class TypeAssertion {
 	}
 	
 	/**
-	 * Handle type check functions (is_null, isset, is_string, etc.)
+	 * Handle isset() language construct
+	 * 
+	 * @param Node\Expr\Isset_ $node
+	 * @param Scope $scope
+	 * @param bool $truthyBranch
+	 * @return void
+	 */
+	private static function handleIsset(Node\Expr\Isset_ $node, Scope $scope, bool $truthyBranch): void {
+		// isset() can check multiple variables: isset($a, $b, $c)
+		foreach ($node->vars as $varNode) {
+			if (!($varNode instanceof Node\Expr\Variable) || !is_string($varNode->name)) {
+				continue;
+			}
+			
+			$varName = $varNode->name;
+			$var = $scope->getVarObject($varName);
+			
+			if ($truthyBranch) {
+				// Variable is set and not null
+				if (!$var) {
+					// Variable doesn't exist yet - create it with mixed type
+					$scope->setVarType($varName, TypeComparer::identifierFromName('mixed'), $node->getLine());
+				}
+				
+				// Always re-fetch to ensure we have the correct reference
+				$var = $scope->getVarObject($varName);
+				if ($var) {
+					$var->mayBeNull = false;
+					$var->mayBeUnset = false;
+					// Remove null from type
+					$var->type = self::removeNull($var->type);
+				}
+			} else {
+				// Variable is either unset or null
+				if ($var) {
+					$var->mayBeNull = true;
+					$var->mayBeUnset = true;
+					// Add null to type
+					$var->type = self::addNull($var->type);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Handle empty() language construct
+	 * 
+	 * @param Node\Expr\Empty_ $node
+	 * @param Scope $scope
+	 * @param bool $truthyBranch
+	 * @return void
+	 */
+	private static function handleEmpty(Node\Expr\Empty_ $node, Scope $scope, bool $truthyBranch): void {
+		if (!($node->expr instanceof Node\Expr\Variable) || !is_string($node->expr->name)) {
+			return;
+		}
+		
+		$varName = $node->expr->name;
+		$var = $scope->getVarObject($varName);
+		
+		if ($truthyBranch) {
+			// Variable is empty (could be unset, null, false, 0, "", etc.)
+			if ($var) {
+				$var->mayBeNull = true;
+				$var->mayBeUnset = true;
+			}
+		} else {
+			// Variable is NOT empty - it's set and truthy
+			if (!$var) {
+				// Variable doesn't exist yet - create it with mixed type
+				$scope->setVarType($varName, TypeComparer::identifierFromName('mixed'), $node->getLine());
+				$var = $scope->getVarObject($varName);
+			}
+			
+			if ($var) {
+				$var->mayBeNull = false;
+				$var->mayBeUnset = false;
+				// Remove null from type
+				$var->type = self::removeNull($var->type);
+			}
+		}
+	}
+	
+	/**
+	 * Handle type check functions (is_null, is_string, etc.)
 	 * 
 	 * @param Node\Expr\FuncCall $node
 	 * @param Scope $scope
@@ -188,12 +284,12 @@ class TypeAssertion {
 		$varName = $varNode->name;
 		$var = $scope->getVarObject($varName);
 		
-		if (!$var) {
-			return;
-		}
-		
 		switch ($funcName) {
 			case 'is_null':
+				if (!$var) {
+					return; // Can't narrow type if variable doesn't exist
+				}
+				
 				if ($truthyBranch) {
 					// Variable IS null
 					$var->mayBeNull = true;
@@ -210,19 +306,30 @@ class TypeAssertion {
 				break;
 				
 			case 'isset':
+				// Note: isset() as a function call is deprecated - use Isset_ language construct instead
 				if ($truthyBranch) {
 					// Variable is set and not null
-					$var->mayBeNull = false;
-					$var->mayBeUnset = false;
-					// Remove null from type
-					$var->type = self::removeNull($var->type);
+					if (!$var) {
+						// Variable doesn't exist yet - create it with mixed type
+						$scope->setVarType($varName, TypeComparer::identifierFromName('mixed'), $node->getLine());
+						$var = $scope->getVarObject($varName);
+					}
+					
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
 				} else {
 					// Variable is either unset or null
-					// We can't distinguish which, so set both
-					$var->mayBeNull = true;
-					$var->mayBeUnset = true;
-					// Add null to type
-					$var->type = self::addNull($var->type);
+					if ($var) {
+						// We can't distinguish which, so set both
+						$var->mayBeNull = true;
+						$var->mayBeUnset = true;
+						// Add null to type
+						$var->type = self::addNull($var->type);
+					}
 				}
 				break;
 				
