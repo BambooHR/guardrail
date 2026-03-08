@@ -18,7 +18,8 @@ class TestAmbiguousMethodCall extends TestSuiteSetup {
 	}
 	
 	public function testRelatedTypesViaInterface() {
-		$this->markTestSkipped('Need to create .inc file for this test');
+		$output = $this->analyzeFileToOutput('.4.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - FooInterface|FooImpl are related");
 	}
 	
 	public function testRelatedTypesSharedInterface() {
@@ -27,11 +28,13 @@ class TestAmbiguousMethodCall extends TestSuiteSetup {
 	}
 	
 	public function testSingleType() {
-		$this->markTestSkipped('Single type - no union, check not applicable');
+		$output = $this->analyzeFileToOutput('.11.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - single type, no union");
 	}
 	
 	public function testNullableType() {
-		$this->markTestSkipped('Nullable type - not a union of classes, check not applicable');
+		$output = $this->analyzeFileToOutput('.12.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - nullable type, not a union of classes (may emit null method call but not ambiguous)");
 	}
 	
 	// ========================================
@@ -44,15 +47,18 @@ class TestAmbiguousMethodCall extends TestSuiteSetup {
 	}
 	
 	public function testUnrelatedInterfaces() {
-		$this->markTestSkipped('Need to create .inc file for this test');
+		$output = $this->analyzeFileToOutput('.5.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - InterfaceA|InterfaceB are unrelated");
 	}
 	
 	public function testThreeUnrelatedTypes() {
-		$this->markTestSkipped('Need to create .inc file for this test');
+		$output = $this->analyzeFileToOutput('.6.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - TypeA|TypeB|TypeC are unrelated");
 	}
 	
 	public function testMixedRelatedAndUnrelated() {
-		$this->markTestSkipped('Need to create .inc file for this test');
+		$output = $this->analyzeFileToOutput('.7.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - Unrelated is not related to Base|Child");
 	}
 	
 	// ========================================
@@ -60,14 +66,17 @@ class TestAmbiguousMethodCall extends TestSuiteSetup {
 	// ========================================
 	
 	public function testWithMixedType() {
-		$this->markTestSkipped('Mixed type - check not applicable');
+		$output = $this->analyzeFileToOutput('.8.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - mixed is ignored in union");
 	}
 	
 	public function testWithScalarTypes() {
-		$this->markTestSkipped('Scalar types - check not applicable');
+		$output = $this->analyzeFileToOutput('.9.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - scalar types are ignored in union");
 	}
 	
 	public function testComplexInheritanceHierarchy() {
-		$this->markTestSkipped('Need to create .inc file for this test');
+		$output = $this->analyzeFileToOutput('.10.inc', [ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - ConcreteA|ConcreteB share AbstractBase and BaseInterface");
 	}
 }
