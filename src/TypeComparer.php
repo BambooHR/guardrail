@@ -134,13 +134,19 @@ class TypeComparer
 		return [];
 	}
 
-	function areSimpleTypesCompatible(Name|Identifier|null $target, Name|Identifier|UnionType|null $value, bool $strict): bool {
+	function areSimpleTypesCompatible(Name|Identifier|null $target, Name|Identifier|UnionType|Node\NullableType|null $value, bool $strict): bool {
 		if ($target == null) {
 			return true;
 		}
 		if ($value == null) {
 			return true;
 		}
+		
+		// If value is a complex type (NullableType or UnionType), delegate to isCompatibleWithTarget
+		if ($value instanceof Node\NullableType || $value instanceof UnionType) {
+			return $this->isCompatibleWithTarget($target, $value, $strict);
+		}
+		
 		$targetName = strtolower($target->getAttribute('namespacedName') ?: strval($target));
 		$valueName = strtolower($value->getAttribute('namespacedName') ?: strval($value));
 
