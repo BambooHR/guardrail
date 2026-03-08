@@ -74,9 +74,17 @@ class PropertyFetch implements ExpressionInterface
 			TypeComparer::forEachType(
 				$class,
 				function ($class) use ($propName, &$types, &$unknown, $table) {
-					$classDef = $table->getAbstractedClass($class);
+					// Convert node to string - handle Name, Identifier, and NullableType
+					if ($class instanceof Node\NullableType) {
+						$class = $class->type;
+					}
+					$className = ($class instanceof Node\Name || $class instanceof Node\Identifier) 
+						? $class->toString() 
+						: strval($class);
+					
+					$classDef = $table->getAbstractedClass($className);
 					if ($classDef) {
-						$prop = Util::findAbstractedProperty($class, $propName, $table);
+						$prop = Util::findAbstractedProperty($className, $propName, $table);
 						if ($prop) {
 							$types[] = $prop->getType();
 						} else {

@@ -157,8 +157,7 @@ class Config {
 
 		$this->basePath = dirname(realpath($this->configFileName)) . "/";
 
-		$fullPath = Util::fullDirectoryPath($this->getBasePath(), $this->configFileName);
-		$jsonConfigValid = Util::jsonFileContentIsValid($fullPath);
+		$jsonConfigValid = Util::jsonFileContentIsValid($this->configFileName);
 		if (true !== $jsonConfigValid['success']) {
 			echo $jsonConfigValid['message'] . "\n";
 			throw new InvalidConfigException();
@@ -324,6 +323,9 @@ class Config {
 					break;
 				case '-m':
 					$this->preferredTable = self::MEMORY_SYMBOL_TABLE;
+					break;
+				case '-s':
+					$this->preferredTable = self::SQLITE_SYMBOL_TABLE;
 					break;
 				case '-j':
 					$this->preferredTable = self::JSON_SYMBOL_TABLE;
