@@ -328,7 +328,7 @@ class Scope implements PluginScopeInterface {
 			$branchesWithVar = 0;
 			$branchesWhereVarWasNew = 0;
 			
-			foreach ($completedBranches as $branch) {
+			foreach ($completedBranches as $branchIdx => $branch) {
 				if ($branch->getVarExists($varName)) {
 					$branchesWithVar++;
 					$branchVar = $branch->getVarObject($varName);

@@ -24,6 +24,11 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$node->setAttribute('if-branches', []);
 			$node->setAttribute('if-exited-branches', []);
 			
+			// Store the if condition on the else node for inverse narrowing
+			if ($node->else !== null) {
+				$node->else->setAttribute('if-node', $node);
+			}
+			
 			// Create scope for then-branch and apply type narrowing
 			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
 			TypeAssertion::narrowTypes($node->cond, $thenBranch, true);
@@ -40,6 +45,27 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$cond = self::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
 		} elseif ($node instanceof Node\Stmt\Else_) {
+			// The then-branch (or last elseif) is on top of the stack
+			// We need to swap it with the parent scope so we can create the else branch from parent
+			$scopeStack->swapTopTwoScopes();
+			
+			// Now parent is on top - create a new cloned scope for the else branch
+			$elseBranch = $scopeStack->getCurrentScope()->getScopeClone();
+			
+			// Apply inverse narrowing from the original if condition
+			// The else block runs when the if condition (and all elseif conditions) were false
+			$ifNode = $node->getAttribute('if-node');
+			if ($ifNode instanceof Node\Stmt\If_) {
+				TypeAssertion::narrowTypes($ifNode->cond, $elseBranch, false);
+				
+				// Also apply inverse narrowing from all elseif conditions
+				foreach ($ifNode->elseifs as $elseIf) {
+					TypeAssertion::narrowTypes($elseIf->cond, $elseBranch, false);
+				}
+			}
+			
+			// Push the else branch, then swap back so parent is on bottom
+			$scopeStack->pushScope($elseBranch);
 			$scopeStack->swapTopTwoScopes();
 		}
 	}
