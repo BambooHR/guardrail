@@ -88,6 +88,8 @@ class Scope implements PluginScopeInterface {
 			$var = new ScopeVar();
 			$var->name = $name;
 			$var->scopeVersion = $this->scopeVersion; // Mark when this variable was defined
+			// Set mayBeNull based on type: untyped or ?Type or Type|null = true
+			$var->mayBeNull = \BambooHR\Guardrail\TypeComparer::isTypeNullable($type);
 			$this->vars[$name] = $var;
 		}
 

@@ -413,6 +413,36 @@ class TypeComparer
 		return self::ifAnyType($node, fn($type)=>self::isNamedIdentifier($type, "null"));
 	}
 
+	/**
+	 * Check if a type hint is nullable (untyped, ?Type, or Type|null)
+	 * 
+	 * @param ComplexType|Identifier|Name|null $type The type hint from a parameter or property
+	 * @return bool True if the type allows null
+	 */
+	static function isTypeNullable(ComplexType|Identifier|Name|null $type): bool {
+		// Untyped = nullable
+		if ($type === null) {
+			return true;
+		}
+		
+		// ?Type syntax
+		if ($type instanceof Node\NullableType) {
+			return true;
+		}
+		
+		// Type|null or null|Type syntax
+		if ($type instanceof Node\UnionType) {
+			foreach ($type->types as $unionType) {
+				if (self::isNamedIdentifier($unionType, "null")) {
+					return true;
+				}
+			}
+		}
+		
+		// Typed non-nullable
+		return false;
+	}
+
 	static function forEachType($node, callable $fn) {
 		if ($node instanceof Node\NullableType) {
 			call_user_func($fn, self::identifierFromName("null"));
