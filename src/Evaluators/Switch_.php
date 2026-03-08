@@ -15,18 +15,40 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\Switch_) {
-			// Store parent scope for later merging
-			$node->setAttribute('switch-parent-scope', $scopeStack->getCurrentScope());
-			$node->setAttribute('switch-case-scopes', []);
-			$node->setAttribute('switch-exited-cases', []);
+			// Clone and store parent scope snapshot
+			$parentScope = $scopeStack->getCurrentScope();
+			$parentSnapshot = $parentScope->getScopeClone();
+			$node->setAttribute('switch-parent-scope', $parentSnapshot);
 			$node->setAttribute('switch-has-default', $this->hasDefaultCase($node));
-			$node->setAttribute('switch-current-case-index', -1);
-			$node->setAttribute('switch-previous-fell-through', false);
 			
-			// Store reference to this switch on all case nodes
-			foreach ($node->cases as $case) {
+			// Create scopes for each case upfront
+			// Each case gets TWO scopes: one for "expression matches, enter case" and one for "expression doesn't match, go to next case"
+			$currentNextCaseScope = $parentSnapshot->getScopeClone(); // Start with parent for first case
+			
+			foreach ($node->cases as $i => $case) {
 				$case->setAttribute('parent-switch', $node);
+				$case->setAttribute('case-index', $i);
+				
+				// The "next case" scope is what we evaluate the case expression against
+				$case->setAttribute('case-expression-scope', $currentNextCaseScope);
+				
+				// Split: one branch enters this case, other branch goes to next case
+				// For now, create the "enter case" scope - we'll handle assertions when we enter the case
+				$enterCaseScope = $currentNextCaseScope->getScopeClone();
+				$case->setAttribute('case-enter-scope', $enterCaseScope);
+				
+				// The "next case" scope for the following case (if expression doesn't match)
+				$nextCaseScope = $currentNextCaseScope->getScopeClone();
+				$case->setAttribute('case-next-scope', $nextCaseScope);
+				
+				// Update for next iteration
+				$currentNextCaseScope = $nextCaseScope;
 			}
+			
+			// Track which case we're currently in and scopes to merge
+			$node->setAttribute('switch-current-case-index', -1);
+			$node->setAttribute('switch-completed-scopes', []);
+			$node->setAttribute('switch-exited-cases', []);
 		}
 
 		if ($node instanceof Node\Stmt\Case_) {
@@ -35,23 +57,34 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				return;
 			}
 			
-			$caseIndex = $parentSwitch->getAttribute('switch-current-case-index') + 1;
+			$caseIndex = $node->getAttribute('case-index');
 			$parentSwitch->setAttribute('switch-current-case-index', $caseIndex);
 			
-			$previousFellThrough = $parentSwitch->getAttribute('switch-previous-fell-through');
-			
-			if ($previousFellThrough) {
-				// Continue with current scope (fall-through from previous case)
-				$caseScope = $scopeStack->getCurrentScope();
-			} else {
-				// Create new scope from parent
-				$parentScope = $parentSwitch->getAttribute('switch-parent-scope');
-				$caseScope = $parentScope->getScopeClone();
-				$scopeStack->pushScope($caseScope);
+			// Check if previous case fell through
+			$previousCaseIndex = $caseIndex - 1;
+			$fellThrough = false;
+			if ($previousCaseIndex >= 0) {
+				$previousCase = $parentSwitch->cases[$previousCaseIndex];
+				$fellThrough = !$this->caseExitsOrBreaks($previousCase);
 			}
 			
-			$node->setAttribute('case-scope-index', $caseIndex);
-			$node->setAttribute('case-fell-through', $previousFellThrough);
+			if ($fellThrough) {
+				// Merge previous case's scope into this case's enter scope
+				$previousCase = $parentSwitch->cases[$previousCaseIndex];
+				$previousCaseScope = $scopeStack->getCurrentScope();
+				$enterCaseScope = $node->getAttribute('case-enter-scope');
+				
+				// Merge previous case state into this case
+				$enterCaseScope->merge($previousCaseScope);
+				
+				// Continue using the same scope on stack (fall-through)
+				$node->setAttribute('case-fell-through', true);
+			} else {
+				// Start fresh with this case's enter scope
+				$enterCaseScope = $node->getAttribute('case-enter-scope');
+				$scopeStack->pushScope($enterCaseScope);
+				$node->setAttribute('case-fell-through', false);
+			}
 		}
 	}
 
@@ -62,80 +95,66 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				return;
 			}
 			
-			$caseIndex = $node->getAttribute('case-scope-index');
+			$caseIndex = $node->getAttribute('case-index');
 			$fellThrough = $node->getAttribute('case-fell-through');
 			$exitsOrBreaks = $this->caseExitsOrBreaks($node);
+			$actuallyExits = $this->caseActuallyExits($node);
 			
-			// Only store scope if we created a new one (didn't fall through)
-			if (!$fellThrough) {
-				$caseScope = $scopeStack->getCurrentScope();
-				$caseScopes = $parentSwitch->getAttribute('switch-case-scopes');
-				$caseScopes[$caseIndex] = $caseScope;
-				$parentSwitch->setAttribute('switch-case-scopes', $caseScopes);
+			// Get the current scope from stack (has all the case's modifications)
+			$currentCaseScope = $scopeStack->getCurrentScope();
+			
+			if ($exitsOrBreaks) {
+				// Case exits or breaks - save this scope for merging
+				$completedScopes = $parentSwitch->getAttribute('switch-completed-scopes');
+				$completedScopes[$caseIndex] = $currentCaseScope;
+				$parentSwitch->setAttribute('switch-completed-scopes', $completedScopes);
 				
-				// Track if this case exits early (return/throw/continue, but NOT break)
-				$actuallyExits = $this->caseActuallyExits($node);
+				// Track if this case actually exits early (not just break)
 				if ($actuallyExits) {
 					$exited = $parentSwitch->getAttribute('switch-exited-cases');
 					$exited[] = $caseIndex;
 					$parentSwitch->setAttribute('switch-exited-cases', $exited);
 				}
 				
-				// Pop scope if it exits or breaks (doesn't fall through)
-				if ($exitsOrBreaks) {
+				// Pop scope if we didn't fall through
+				if (!$fellThrough) {
 					$scopeStack->popScope();
-					$parentSwitch->setAttribute('switch-previous-fell-through', false);
-				} else {
-					// Case falls through - leave scope for next case
-					$parentSwitch->setAttribute('switch-previous-fell-through', true);
 				}
-			} else {
-				// We fell through from previous case
-				if ($exitsOrBreaks) {
-					// This case exits, so we need to store the scope
-					$caseScope = $scopeStack->getCurrentScope();
-					$caseScopes = $parentSwitch->getAttribute('switch-case-scopes');
-					$caseScopes[$caseIndex] = $caseScope;
-					$parentSwitch->setAttribute('switch-case-scopes', $caseScopes);
-					
-					// Track if this case actually exits (not just breaks)
-					$actuallyExits = $this->caseActuallyExits($node);
-					if ($actuallyExits) {
-						$exited = $parentSwitch->getAttribute('switch-exited-cases');
-						$exited[] = $caseIndex;
-						$parentSwitch->setAttribute('switch-exited-cases', $exited);
-					}
-					
-					$scopeStack->popScope();
-					$parentSwitch->setAttribute('switch-previous-fell-through', false);
-				}
-				// If it doesn't exit, continue falling through
 			}
+			// If doesn't exit/break, leave scope on stack for fall-through to next case
 		}
 
 		if ($node instanceof Node\Stmt\Switch_) {
-			// Clean up any remaining scope from fall-through
-			if ($node->getAttribute('switch-previous-fell-through')) {
+			// Pop any remaining scope from last case if it fell through
+			$lastCase = end($node->cases);
+			if ($lastCase && !$this->caseExitsOrBreaks($lastCase)) {
 				$scopeStack->popScope();
 			}
 			
-			// Merge all case scopes
-			$parentScope = $scopeStack->getCurrentScope();
-			$caseScopes = $node->getAttribute('switch-case-scopes');
+			// Collect all completed case scopes from node attributes
+			$branches = [];
+			$completedScopes = $node->getAttribute('switch-completed-scopes');
+			
+			foreach ($completedScopes as $caseIndex => $caseScope) {
+				$branches[] = $caseScope;
+			}
+			
 			$exitedCases = $node->getAttribute('switch-exited-cases');
 			$hasDefault = $node->getAttribute('switch-has-default');
 			
-			// If there's no default case, add the original parent scope as an implicit branch
-			// (represents the path where no case matches)
+			// If there's no default case, add implicit "no match" branch
 			if (!$hasDefault) {
-				$originalParentScope = $node->getAttribute('switch-parent-scope');
-				if ($originalParentScope) {
-					$caseScopes[] = $originalParentScope;
+				// The last case's "next-scope" represents the "no case matched" path
+				$lastCase = end($node->cases);
+				if ($lastCase) {
+					$noMatchScope = $lastCase->getAttribute('case-next-scope');
+					$branches[] = $noMatchScope;
 				}
 			}
 			
-			// Merge branches into parent scope
-			$parentScope->mergeBranches($caseScopes, $exitedCases, false);
+			// Merge all branches into parent scope
+			$parentScope = $scopeStack->getCurrentScope();
+			$parentScope->mergeBranches($branches, $exitedCases, false);
 		}
 	}
 
