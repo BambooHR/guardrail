@@ -102,6 +102,11 @@ class MethodCall extends CallCheck {
 				return;
 			}
 
+			// Check for ambiguous method calls on unrelated types
+			if ($className instanceof Node\UnionType) {
+				$this->checkForAmbiguousMethodCall($fileName, $node, $className, $methodName);
+			}
+
 			TypeComparer::forEachType($className, function ($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
 				if ($classNameOb instanceof Node\IntersectionType) {
 					// Only one interface of the intersection has to implement the method.
@@ -239,6 +244,168 @@ class MethodCall extends CallCheck {
 		return $match;
 	}
 
+
+	/**
+	 * Check if a union type contains unrelated classes/interfaces that would require
+	 * ambiguous method dispatch (can't use vtable/interface dispatch)
+	 *
+	 * @param string $fileName
+	 * @param Node $node
+	 * @param Node\UnionType $unionType
+	 * @param string $methodName
+	 * @return void
+	 */
+	private function checkForAmbiguousMethodCall(string $fileName, Node $node, Node\UnionType $unionType, string $methodName): void {
+		$classTypes = [];
+		
+		// Collect all class/interface types from the union (skip null, mixed, scalars)
+		foreach ($unionType->types as $type) {
+			if ($type instanceof Node\Name) {
+				$typeName = strval($type);
+				// Skip built-in types and mixed
+				if (!in_array(strtolower($typeName), ['null', 'mixed', 'object', 'string', 'int', 'float', 'bool', 'array', 'callable', 'iterable', 'resource', 'void', 'never', 'false', 'true'])) {
+					$classTypes[] = $typeName;
+				}
+			}
+		}
+		
+		// Need at least 2 class types to have ambiguity
+		if (count($classTypes) < 2) {
+			return;
+		}
+		
+		// Check if all types are related through inheritance or interface implementation
+		// Strategy: find if there's a common ancestor/interface that all types share
+		$allRelated = $this->areAllTypesRelated($classTypes);
+		
+		if (!$allRelated) {
+			$typeList = implode(', ', array_map(fn($t) => $t, $classTypes));
+			$this->emitError(
+				$fileName, 
+				$node, 
+				ErrorConstants::TYPE_AMBIGUOUS_METHOD_CALL, 
+				"Ambiguous method call $methodName() on unrelated types: $typeList - cannot use vtable/interface dispatch"
+			);
+		}
+	}
+	
+	/**
+	 * Check if all types in the list are related through inheritance or interface implementation
+	 * 
+	 * @param array $types Array of class/interface names
+	 * @return bool True if all types share a common ancestor/interface, or if we can't determine (types not in symbol table)
+	 */
+	private function areAllTypesRelated(array $types): bool {
+		if (count($types) < 2) {
+			return true;
+		}
+		
+		// Strategy: Find all ancestors/interfaces for each type, then check if there's
+		// a common one that all types share
+		
+		// Collect all ancestors and interfaces for each type
+		$allAncestors = [];
+		$allTypesFound = true;
+		
+		foreach ($types as $type) {
+			$ancestors = $this->getAllAncestorsAndInterfaces($type);
+			
+			// If we couldn't find this type in the symbol table, we can't make a determination
+			if (empty($ancestors)) {
+				$allTypesFound = false;
+				break;
+			}
+			
+			$allAncestors[$type] = $ancestors;
+		}
+		
+		// If any type wasn't found, assume they're related (don't flag as error)
+		// This can happen when classes are defined in the same file being analyzed
+		if (!$allTypesFound) {
+			return true;
+		}
+		
+		// Find common ancestors/interfaces
+		// Start with the first type's ancestors as candidates
+		$commonAncestors = $allAncestors[$types[0]];
+		
+		// Intersect with each subsequent type's ancestors
+		for ($i = 1; $i < count($types); $i++) {
+			$commonAncestors = array_intersect($commonAncestors, $allAncestors[$types[$i]]);
+		}
+		
+		// If there's at least one common ancestor/interface, they're related
+		return count($commonAncestors) > 0;
+	}
+	
+	/**
+	 * Get all ancestors (parent classes) and interfaces for a type
+	 * 
+	 * @param string $typeName
+	 * @return array Array of ancestor/interface names (lowercase for comparison)
+	 */
+	private function getAllAncestorsAndInterfaces(string $typeName): array {
+		$result = [];
+		$class = $this->symbolTable->getAbstractedClass($typeName);
+		
+		if (!$class) {
+			// Class not found in symbol table - might be undefined or from external code
+			return $result;
+		}
+		
+		// Add the type itself
+		$result[] = strtolower($typeName);
+		
+		// Add parent class
+		$parentName = $class->getParentClassName();
+		if ($parentName) {
+			$result[] = strtolower($parentName);
+			// Recursively add parent's ancestors
+			$parentAncestors = $this->getAllAncestorsAndInterfaces($parentName);
+			$result = array_merge($result, $parentAncestors);
+		}
+		
+		// Add all interfaces
+		foreach ($class->getInterfaceNames() as $interface) {
+			$result[] = strtolower($interface);
+			// Recursively add interface's parent interfaces
+			$interfaceAncestors = $this->getAllAncestorsAndInterfaces($interface);
+			$result = array_merge($result, $interfaceAncestors);
+		}
+		
+		return array_unique($result);
+	}
+	
+	/**
+	 * Check if two types share a common interface
+	 * 
+	 * @param string $type1
+	 * @param string $type2
+	 * @return bool
+	 */
+	private function shareCommonInterface(string $type1, string $type2): bool {
+		$class1 = $this->symbolTable->getAbstractedClass($type1);
+		$class2 = $this->symbolTable->getAbstractedClass($type2);
+		
+		if (!$class1 || !$class2) {
+			return false;
+		}
+		
+		// Get all interfaces for both types
+		$interfaces1 = $class1->getInterfaceNames();
+		$interfaces2 = $class2->getInterfaceNames();
+		
+		// Check if they share any interface
+		foreach ($interfaces1 as $interface1) {
+			foreach ($interfaces2 as $interface2) {
+				if (strcasecmp($interface1, $interface2) === 0) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
 
 	function inspectIndividualName(Node\Name $classNameOb, string $fileName, Expr\MethodCall|Expr\NullsafeMethodCall $node, string $methodName, Scope $scope, ?ClassLike $inside): bool {
 		if (

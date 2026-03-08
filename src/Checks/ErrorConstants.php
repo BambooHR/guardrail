@@ -47,6 +47,7 @@ class ErrorConstants {
 	const TYPE_NULL_DEREFERENCE = "Standard.Null.Dereference";
 
 	const TYPE_NULL_METHOD_CALL = "Standard.Null.MethodCall";
+	const TYPE_AMBIGUOUS_METHOD_CALL = "Standard.Ambiguous.MethodCall";
 	const TYPE_PARSE_ERROR = 'Standard.Parse.Error';
 	const TYPE_SCOPE_ERROR = 'Standard.Scope';
 	const TYPE_SPLAT_MISMATCH = "Standard.Splat.Type";
