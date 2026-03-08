@@ -22,7 +22,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x is narrowed to non-null");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x is narrowed to non-null");
 	}
 	
 	public function testNullCheckWithEarlyReturn() {
@@ -47,7 +47,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be null");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may be null");
 	}
 	
 	public function testIssetCheck() {
@@ -119,7 +119,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x is non-null in both branches");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x is non-null in both branches");
 	}
 	
 	public function testIfElseOneBranchNull() {
@@ -135,7 +135,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be null from else branch");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may be null from else branch");
 	}
 	
 	public function testIfWithoutElseNullable() {
@@ -150,7 +150,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may still be null");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may still be null");
 	}
 	
 	// ========================================
@@ -168,7 +168,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may be unset");
 	}
 	
 	public function testVariableDefinedInAllBranches() {
@@ -184,7 +184,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x is defined in all branches");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x is defined in all branches");
 	}
 	
 	// ========================================
@@ -210,7 +210,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x is set in all cases including default");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x is set in all cases including default");
 	}
 	
 	public function testSwitchWithoutDefault() {
@@ -229,7 +229,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset (no default)");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may be unset (no default)");
 	}
 	
 	// ========================================
@@ -246,7 +246,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $row is truthy inside loop");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$row is truthy inside loop");
 	}
 	
 	public function testWhileLoopAfterExit() {
@@ -260,7 +260,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $row is null/false after loop");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$row is null/false after loop");
 	}
 	
 	// ========================================
@@ -280,7 +280,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset (try may have failed)");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may be unset (try may have failed)");
 	}
 	
 	public function testCatchBlockVariableMayBeUnset() {
@@ -296,7 +296,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset (only set if exception)");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may be unset (only set if exception)");
 	}
 	
 	public function testFinallyBlockVariableAlwaysSet() {
@@ -312,7 +312,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_VARIABLE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x is always set in finally");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x is always set in finally");
 	}
 	
 	public function testCatchExceptionVariableNonNull() {
@@ -344,7 +344,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x is non-null in both conditions");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x is non-null in both conditions");
 	}
 	
 	public function testOrShortCircuitWithEarlyReturn() {
@@ -358,7 +358,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - both conditions failed, $x is non-null and not empty");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - both conditions failed, \$x is non-null and not empty");
 	}
 	
 	public function testAssignmentInCondition() {
@@ -371,7 +371,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x is truthy in if block");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x is truthy in if block");
 	}
 	
 	// ========================================
@@ -418,7 +418,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - !($x === null) proves non-null");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - !(\$x === null) proves non-null");
 	}
 	
 	public function testDoubleNegation() {
@@ -431,7 +431,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - !!$x proves truthy/non-null");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - !!\$x proves truthy/non-null");
 	}
 	
 	// ========================================
@@ -483,7 +483,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $item narrowed in if block");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$item narrowed in if block");
 	}
 	
 	public function testTryInIf() {
@@ -501,7 +501,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_INCONSISTENT_VARIABLE, ["basePath" => "/"]);
-		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be unset in try block");
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - \$x may be unset in try block");
 	}
 	
 	// ========================================
@@ -531,7 +531,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		ENDCODE;
 
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
-		$this->assertEquals(0, $output->getErrorCount(), "Should not error - $x narrowed in ternary true branch");
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - \$x narrowed in ternary true branch");
 	}
 	
 	public function testComplexBooleanExpression() {
