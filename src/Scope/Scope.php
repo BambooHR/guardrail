@@ -305,7 +305,6 @@ class Scope implements PluginScopeInterface {
 			}
 		}
 		
-		
 		// If no branches completed (all exited early), nothing to merge
 		if (empty($completedBranches)) {
 			return;
