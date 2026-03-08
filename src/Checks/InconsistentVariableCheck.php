@@ -51,9 +51,20 @@ class InconsistentVariableCheck extends BaseCheck {
 			}
 			
 			// Only check string variable names in non-global scopes
-			if (gettype($node->name) == 'string' && $scope && !$scope->isGlobal()) {
+			if (gettype($node->name) == 'string' && $scope) {
+				// Get the current scope from the stack (respects TypeAssertion narrowing)
+				// The $scope parameter is actually a ScopeStack, not a Scope
+				$scopeStack = $scope instanceof \BambooHR\Guardrail\Scope\ScopeStack 
+					? $scope 
+					: null;
+				$currentScope = $scopeStack ? $scopeStack->getCurrentScope() : $scope;
+				
+				if ($currentScope->isGlobal()) {
+					return;
+				}
+				
 				$name = $node->name;
-				$parentNodes = $scope->getParentNodes();
+				$parentNodes = $scopeStack ? $scopeStack->getParentNodes() : [];
 
 				// Skip special variables and closure use variables
 				if (in_array($name, ["this", ...Util::getPhpGlobalNames()]) || 
@@ -86,8 +97,8 @@ class InconsistentVariableCheck extends BaseCheck {
 					}
 				}
 				
-				// Get the variable object from scope
-				$var = $scope->getVarObject($name);
+				// Get the variable object from current scope (respects TypeAssertion)
+				$var = $currentScope->getVarObject($name);
 				
 				// If variable exists and may be unset, emit error
 				if ($var && $var->mayBeUnset) {

@@ -33,8 +33,8 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$node->else->setAttribute('parent-if', $node);
 			}
 			
-			// Create independent scope for then-branch
-			$thenBranch = $parentScope->getScopeClone();
+			// Create independent scope for then-branch from snapshot
+			$thenBranch = $parentSnapshot->getScopeClone();
 			TypeAssertion::narrowTypes($node->cond, $thenBranch, true);
 			
 			// Store then-branch scope on the node and push to stack for body execution

@@ -28,6 +28,16 @@ class ScopeVar {
 	public $scopeVersion = 0;
 
 	/**
+	 * Deep clone the variable to ensure type is also cloned
+	 */
+	public function __clone() {
+		// Clone the type if it's an object
+		if (is_object($this->type)) {
+			$this->type = clone $this->type;
+		}
+	}
+
+	/**
 	 * @param ScopeVar $other -
 	 * @return void
 	 */
