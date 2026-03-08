@@ -20,7 +20,32 @@ try {
 	$it = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS);
 	$it2 = new class ($it) extends \RecursiveFilterIterator {
 		function accept(): bool {
-			return $this->current()->getExtension() !== "phar";
+			$filename = $this->current()->getFilename();
+			$extension = $this->current()->getExtension();
+			
+			// Skip phar files
+			if ($extension === "phar") {
+				return false;
+			}
+			
+			// Skip generated JSON files in root
+			if ($extension === "json" && dirname($this->current()->getPathname()) === dirname(dirname(__DIR__))) {
+				if (in_array($filename, ['metrics.json', 'symbol_table.json', 'method_usage.json'])) {
+					return false;
+				}
+			}
+			
+			// Skip vim swap files
+			if (strpos($filename, '.swp') !== false || strpos($filename, '.swo') !== false) {
+				return false;
+			}
+			
+			// Skip git directory
+			if ($filename === '.git') {
+				return false;
+			}
+			
+			return true;
 		}
 	};
 	$it3 = new \RecursiveIteratorIterator($it2);
