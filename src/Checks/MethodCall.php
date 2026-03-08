@@ -91,7 +91,13 @@ class MethodCall extends CallCheck {
 				$className = TypeComparer::removeNullOption($className);
 			}
 
-			if (TypeComparer::ifAnyTypeIsNull($className)) {
+			// Check flow-sensitive mayBeNull flag from current scope
+			$scopeStack = $scope instanceof ScopeStack ? $scope : null;
+			$currentScope = $scopeStack ? $scopeStack->getCurrentScope() : $scope;
+			$var = $currentScope?->getVarObject($name);
+			$isNullable = TypeComparer::ifAnyTypeIsNull($className) || ($var && $var->mayBeNull);
+
+			if ($isNullable) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
 				return;
 			}
