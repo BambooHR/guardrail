@@ -22,10 +22,15 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$node->setAttribute('switch-has-default', $this->hasDefaultCase($node));
 			$node->setAttribute('switch-current-case-index', -1);
 			$node->setAttribute('switch-previous-fell-through', false);
+			
+			// Store reference to this switch on all case nodes
+			foreach ($node->cases as $case) {
+				$case->setAttribute('parent-switch', $node);
+			}
 		}
 
 		if ($node instanceof Node\Stmt\Case_) {
-			$parentSwitch = $this->findParentSwitch($node);
+			$parentSwitch = $node->getAttribute('parent-switch');
 			if (!$parentSwitch) {
 				return;
 			}
@@ -52,7 +57,7 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\Case_) {
-			$parentSwitch = $this->findParentSwitch($node);
+			$parentSwitch = $node->getAttribute('parent-switch');
 			if (!$parentSwitch) {
 				return;
 			}
@@ -68,13 +73,16 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$caseScopes[$caseIndex] = $caseScope;
 				$parentSwitch->setAttribute('switch-case-scopes', $caseScopes);
 				
-				// Track if this case exits early
-				if ($exitsOrBreaks) {
+				// Track if this case exits early (return/throw/continue, but NOT break)
+				$actuallyExits = $this->caseActuallyExits($node);
+				if ($actuallyExits) {
 					$exited = $parentSwitch->getAttribute('switch-exited-cases');
 					$exited[] = $caseIndex;
 					$parentSwitch->setAttribute('switch-exited-cases', $exited);
-					
-					// Pop scope since we're exiting
+				}
+				
+				// Pop scope if it exits or breaks (doesn't fall through)
+				if ($exitsOrBreaks) {
 					$scopeStack->popScope();
 					$parentSwitch->setAttribute('switch-previous-fell-through', false);
 				} else {
@@ -90,9 +98,13 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 					$caseScopes[$caseIndex] = $caseScope;
 					$parentSwitch->setAttribute('switch-case-scopes', $caseScopes);
 					
-					$exited = $parentSwitch->getAttribute('switch-exited-cases');
-					$exited[] = $caseIndex;
-					$parentSwitch->setAttribute('switch-exited-cases', $exited);
+					// Track if this case actually exits (not just breaks)
+					$actuallyExits = $this->caseActuallyExits($node);
+					if ($actuallyExits) {
+						$exited = $parentSwitch->getAttribute('switch-exited-cases');
+						$exited[] = $caseIndex;
+						$parentSwitch->setAttribute('switch-exited-cases', $exited);
+					}
 					
 					$scopeStack->popScope();
 					$parentSwitch->setAttribute('switch-previous-fell-through', false);
@@ -113,9 +125,17 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$exitedCases = $node->getAttribute('switch-exited-cases');
 			$hasDefault = $node->getAttribute('switch-has-default');
 			
+			// If there's no default case, add the original parent scope as an implicit branch
+			// (represents the path where no case matches)
+			if (!$hasDefault) {
+				$originalParentScope = $node->getAttribute('switch-parent-scope');
+				if ($originalParentScope) {
+					$caseScopes[] = $originalParentScope;
+				}
+			}
+			
 			// Merge branches into parent scope
-			$hasImplicitBranch = !$hasDefault;
-			$parentScope->mergeBranches($caseScopes, $exitedCases, $hasImplicitBranch);
+			$parentScope->mergeBranches($caseScopes, $exitedCases, false);
 		}
 	}
 
@@ -143,6 +163,23 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 		
 		return $lastStmt instanceof Node\Stmt\Break_ ||
 		       $lastStmt instanceof Node\Stmt\Return_ ||
+		       $lastStmt instanceof Node\Stmt\Throw_ ||
+		       $lastStmt instanceof Node\Stmt\Continue_ ||
+		       ($lastStmt instanceof Node\Stmt\Expression && 
+		        $lastStmt->expr instanceof Node\Expr\Exit_);
+	}
+	
+	/**
+	 * Check if a case actually exits (return/throw/continue) - NOT break
+	 */
+	private function caseActuallyExits(Node\Stmt\Case_ $case): bool {
+		if (empty($case->stmts)) {
+			return false;
+		}
+		
+		$lastStmt = end($case->stmts);
+		
+		return $lastStmt instanceof Node\Stmt\Return_ ||
 		       $lastStmt instanceof Node\Stmt\Throw_ ||
 		       $lastStmt instanceof Node\Stmt\Continue_ ||
 		       ($lastStmt instanceof Node\Stmt\Expression && 
