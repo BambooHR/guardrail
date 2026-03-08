@@ -19,13 +19,6 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
 		if ($node instanceof Node\Stmt\If_) {
-			// IMPORTANT: Take a snapshot of parent scope BEFORE creating any branch scopes
-			// This snapshot represents the state before the if statement
-			// We'll use it as the implicit "else" branch if there's no explicit else
-			$parentScope = $scopeStack->getCurrentScope();
-			$parentSnapshot = $parentScope->getScopeClone();
-			
-			$node->setAttribute('if-parent-scope', $parentSnapshot);
 			$node->setAttribute('if-branches', []);
 			$node->setAttribute('if-exited-branches', []);
 			
@@ -35,8 +28,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			}
 			
 			// Create scope for then-branch and apply type narrowing
-			// This is the SECOND clone, so it will have a different version than the snapshot
-			$thenBranch = $parentScope->getScopeClone();
+			$thenBranch = $scopeStack->getCurrentScope()->getScopeClone();
 			TypeAssertion::narrowTypes($node->cond, $thenBranch, true);
 			$scopeStack->pushScope($thenBranch);
 			$cond = self::getIfCond($node);
@@ -142,16 +134,13 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$parentScope = $scopeStack->getCurrentScope();
 				$hasImplicitBranch = ($node->else === null);
 				
-				// If there's an implicit branch, we need to include the original parent scope
-				// (before the if statement) as one of the branches
+				// If there's an implicit branch (no else), the current scope on the stack
+				// represents the "all conditions false" path - this is our implicit else
 				if ($hasImplicitBranch) {
-					$originalParentScope = $node->getAttribute('if-parent-scope');
-					if ($originalParentScope) {
-						// The parent scope has been modified during branch execution
-						// We need to create a "clean" version representing the state before the if
-						// The mergeBranches logic will handle filtering out variables created in branches
-						$branches[] = $originalParentScope;
-					}
+					// Clone the current scope to use as the implicit else branch
+					// This scope has been through all condition evaluations but no branch bodies
+					$implicitElseBranch = $parentScope->getScopeClone();
+					$branches[] = $implicitElseBranch;
 				}
 				
 				$parentScope->mergeBranches($branches, $exitedBranches, false);
