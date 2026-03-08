@@ -305,6 +305,7 @@ class Scope implements PluginScopeInterface {
 			}
 		}
 		
+		
 		// If no branches completed (all exited early), nothing to merge
 		if (empty($completedBranches)) {
 			return;
@@ -330,17 +331,32 @@ class Scope implements PluginScopeInterface {
 			
 			foreach ($completedBranches as $branchIdx => $branch) {
 				if ($branch->getVarExists($varName)) {
-					$branchesWithVar++;
 					$branchVar = $branch->getVarObject($varName);
 					if ($branchVar) {
-						$types[] = $branchVar->type;
-						$mayBeNullInAny = $mayBeNullInAny || $branchVar->mayBeNull;
-						$mayBeUnsetInAny = $mayBeUnsetInAny || $branchVar->mayBeUnset;
+						// Check if this variable was newly defined in THIS branch
+						$wasNewInThisBranch = ($branchVar->scopeVersion > 0 && $branchVar->scopeVersion == $branch->scopeVersion);
 						
-						// Check if this variable was newly defined in this branch
-						// (scopeVersion > 0 means it was defined in a branch, not inherited)
-						if ($branchVar->scopeVersion > 0 && $branchVar->scopeVersion == $branch->scopeVersion) {
-							$branchesWhereVarWasNew++;
+						// Check if this variable was created in a DIFFERENT branch
+						$wasCreatedInDifferentBranch = false;
+						if ($branchVar->scopeVersion > 0 && $branchVar->scopeVersion != $branch->scopeVersion) {
+							// This variable has a scope version that doesn't match this branch
+							// It was created in a different branch and leaked into this scope
+							$wasCreatedInDifferentBranch = true;
+						}
+						
+						// Only count this variable if it wasn't created in a different branch
+						if (!$wasCreatedInDifferentBranch) {
+							$branchesWithVar++;
+							$types[] = $branchVar->type;
+							$mayBeNullInAny = $mayBeNullInAny || $branchVar->mayBeNull;
+							$mayBeUnsetInAny = $mayBeUnsetInAny || $branchVar->mayBeUnset;
+							
+							if ($wasNewInThisBranch) {
+								$branchesWhereVarWasNew++;
+							}
+						} else {
+							// Variable was created in a different branch, treat as not existing in this branch
+							$existsInAllBranches = false;
 						}
 					}
 				} else {
