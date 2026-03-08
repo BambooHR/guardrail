@@ -43,6 +43,7 @@
     "Standard.Inheritance.Unimplemented",
     "Standard.Null.Dereference",
     "Standard.Null.MethodCall",
+    "Standard.Ambiguous.MethodCall",
     "Standard.Null.Param",
     "Standard.Override.Base",
     "Standard.Param.Count",
