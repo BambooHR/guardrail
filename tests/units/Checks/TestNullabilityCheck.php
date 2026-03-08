@@ -134,7 +134,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may be null from else branch");
 	}
 	
@@ -149,7 +149,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $x may still be null");
 	}
 	
@@ -259,7 +259,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - $row is null/false after loop");
 	}
 	
@@ -518,7 +518,7 @@ class TestNullabilityCheck extends TestSuiteSetup {
 			}
 		ENDCODE;
 
-		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
 		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - narrowing doesn't persist after empty if");
 	}
 	
