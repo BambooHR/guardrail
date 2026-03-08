@@ -14,215 +14,93 @@ class TryCatch implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\TryCatch) {
-			// Store parent scope for merging
+			// Clone and store parent scope snapshot - all blocks will clone from this
 			$parentScope = $scopeStack->getCurrentScope();
-			$node->setAttribute('try-parent-scope', $parentScope);
-			$node->setAttribute('try-parent-vars', array_keys($parentScope->getTypeChangedVars()));
-			$node->setAttribute('try-catch-scopes', []);
+			$parentSnapshot = $parentScope->getScopeClone();
+			$node->setAttribute('try-parent-scope', $parentSnapshot);
 			
-			// Create scope for try block
-			$tryScope = $parentScope->getScopeClone();
+			// Create ALL independent scopes upfront from parent snapshot
+			// Try scope
+			$tryScope = $parentSnapshot->getScopeClone();
+			$node->setAttribute('try-scope', $tryScope);
+			
+			// Catch scopes - one for each catch block
+			foreach ($node->catches as $i => $catch) {
+				$catchScope = $parentSnapshot->getScopeClone();
+				$catch->setAttribute('catch-scope', $catchScope);
+				$catch->setAttribute('catch-index', $i);
+			}
+			
+			// Finally scope if it exists
+			if ($node->finally !== null) {
+				$finallyScope = $parentSnapshot->getScopeClone();
+				$node->finally->setAttribute('finally-scope', $finallyScope);
+			}
+			
+			// Now push try scope to stack for execution
 			$scopeStack->pushScope($tryScope);
 		}
 
 		if ($node instanceof Node\Stmt\Catch_) {
-			$parentTry = $this->findParentTry($node);
-			if (!$parentTry) {
-				return;
+			// Pop previous scope and push this catch's pre-created scope
+			$scopeStack->popScope();
+			$catchScope = $node->getAttribute('catch-scope');
+			if ($catchScope) {
+				$scopeStack->pushScope($catchScope);
 			}
-			
-			// Pop previous scope (try or previous catch)
-			$previousScope = $scopeStack->popScope();
-			
-			// Store the previous scope
-			$scopes = $parentTry->getAttribute('try-catch-scopes');
-			$scopes[] = $previousScope;
-			$parentTry->setAttribute('try-catch-scopes', $scopes);
-			
-			// Create scope for this catch block from parent (not from try)
-			$parentScope = $parentTry->getAttribute('try-parent-scope');
-			$catchScope = $parentScope->getScopeClone();
-			
-			// Add exception variable to catch scope
-			if ($node->var) {
-				$catchScope->setVarType($node->var->name, $node->type, $node->getLine());
-				$catchVar = $catchScope->getVarObject($node->var->name);
-				if ($catchVar) {
-					$catchVar->mayBeNull = false;
-					$catchVar->mayBeUnset = false;
-				}
-			}
-			
-			$scopeStack->pushScope($catchScope);
 		}
 
 		if ($node instanceof Node\Stmt\Finally_) {
-			$parentTry = $this->findParentTry($node);
-			if (!$parentTry) {
-				return;
+			// Pop previous scope and push finally's pre-created scope
+			$scopeStack->popScope();
+			$finallyScope = $node->getAttribute('finally-scope');
+			if ($finallyScope) {
+				$scopeStack->pushScope($finallyScope);
 			}
-			
-			// Pop last catch scope (or try if no catches)
-			$previousScope = $scopeStack->popScope();
-			
-			// Store the previous scope
-			$scopes = $parentTry->getAttribute('try-catch-scopes');
-			$scopes[] = $previousScope;
-			$parentTry->setAttribute('try-catch-scopes', $scopes);
-			
-			// Create scope for finally block from parent
-			$parentScope = $parentTry->getAttribute('try-parent-scope');
-			$finallyScope = $parentScope->getScopeClone();
-			$scopeStack->pushScope($finallyScope);
-			
-			$parentTry->setAttribute('has-finally', true);
 		}
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\TryCatch) {
-			$parentScope = $scopeStack->getCurrentScope();
-			$parentVars = $node->getAttribute('try-parent-vars') ?? [];
-			$scopes = $node->getAttribute('try-catch-scopes');
-			$hasFinally = $node->getAttribute('has-finally') ?? false;
+			// Collect branch scopes from node attributes
+			$branches = [];
 			
-			// Pop the current scope (last catch, try, or finally)
-			$currentScope = $scopeStack->popScope();
+			// Pop last scope (last catch or finally)
+			$scopeStack->popScope();
 			
-			if ($hasFinally) {
-				// Finally scope - variables here are guaranteed to be set
-				// Merge finally scope into parent
-				$parentScope->merge($currentScope);
+			// Add try scope
+			$tryScope = $node->getAttribute('try-scope');
+			$branches[] = $tryScope;
+			
+			// Add catch scopes
+			foreach ($node->catches as $catch) {
+				$catchScope = $catch->getAttribute('catch-scope');
+				if ($catchScope) {
+					$branches[] = $catchScope;
+				}
+			}
+			
+			// Handle finally block
+			if ($node->finally !== null) {
+				$finallyScope = $node->finally->getAttribute('finally-scope');
 				
-				// Now merge try/catch scopes with mayBeUnset for new variables
-				$this->mergeTryCatchScopes($parentScope, $scopes, $parentVars);
+				// Finally variables are guaranteed - merge directly into parent
+				$parentScope = $scopeStack->getCurrentScope();
+				$parentScope->merge($finallyScope);
+				
+				// Now merge try/catch branches - variables defined in these get mayBeUnset
+				$parentScope->mergeBranches($branches, [], false);
 			} else {
-				// No finally - add current scope to list and merge all
-				$scopes[] = $currentScope;
-				$this->mergeTryCatchScopes($parentScope, $scopes, $parentVars);
-			}
-		}
-	}
-
-	/**
-	 * Merge try/catch scopes, marking new variables as mayBeUnset
-	 */
-	private function mergeTryCatchScopes(Scope $parentScope, array $scopes, array $parentVars): void {
-		// Collect all variables from all try/catch scopes
-		$allVars = [];
-		foreach ($scopes as $scope) {
-			foreach ($scope->getTypeChangedVars() as $name => $var) {
-				if (!in_array($name, $parentVars, true)) {
-					// This is a new variable declared in try/catch
-					$allVars[$name] = true;
-				}
-			}
-		}
-		
-		// For each new variable, merge types and mark as mayBeUnset
-		foreach (array_keys($allVars) as $varName) {
-			$types = [];
-			$existsInAllScopes = true;
-			$mayBeNullInAny = false;
-			
-			foreach ($scopes as $scope) {
-				if ($scope->getVarExists($varName)) {
-					$scopeVar = $scope->getVarObject($varName);
-					if ($scopeVar) {
-						$types[] = $scopeVar->type;
-						$mayBeNullInAny = $mayBeNullInAny || $scopeVar->mayBeNull;
-					}
-				} else {
-					$existsInAllScopes = false;
-				}
-			}
-			
-			// Union all types
-			if (!empty($types)) {
-				$mergedType = $this->unionTypes($types);
+				// No finally - add implicit "no exception" branch (parent snapshot)
+				$parentSnapshot = $node->getAttribute('try-parent-scope');
+				$implicitNoExceptionBranch = $parentSnapshot->getScopeClone();
+				$branches[] = $implicitNoExceptionBranch;
 				
-				// Set variable in parent scope
-				if (!$parentScope->getVarExists($varName)) {
-					$parentScope->setVarType($varName, $mergedType, 0);
-				}
-				
-				$parentVar = $parentScope->getVarObject($varName);
-				if ($parentVar) {
-					// Variables declared in try/catch are ALWAYS mayBeUnset
-					// because any line could have thrown
-					$parentVar->mayBeUnset = true;
-					$parentVar->mayBeNull = $mayBeNullInAny;
-					$parentVar->typeChanged = true;
-				}
-			}
-		}
-		
-		// Also merge variables that existed before but were modified
-		foreach ($scopes as $scope) {
-			foreach ($scope->getTypeChangedVars() as $name => $var) {
-				if (in_array($name, $parentVars, true)) {
-					// This variable existed before - normal merge
-					$parentScope->merge($scope);
-					break; // Only need to merge once
-				}
+				// Merge all branches
+				$parentScope = $scopeStack->getCurrentScope();
+				$parentScope->mergeBranches($branches, [], false);
 			}
 		}
 	}
 
-	/**
-	 * Union multiple types together
-	 */
-	private function unionTypes(array $types): Node\Name|Node\Identifier|Node\ComplexType|null {
-		$types = array_filter($types, fn($t) => $t !== null);
-		
-		if (empty($types)) {
-			return null;
-		}
-		
-		if (count($types) === 1) {
-			return reset($types);
-		}
-		
-		// Flatten union types
-		$flatTypes = [];
-		foreach ($types as $type) {
-			if ($type instanceof Node\ComplexType && $type instanceof Node\UnionType) {
-				foreach ($type->types as $subType) {
-					$flatTypes[] = $subType;
-				}
-			} else {
-				$flatTypes[] = $type;
-			}
-		}
-		
-		// Remove duplicates
-		$uniqueTypes = [];
-		$seenTypes = [];
-		foreach ($flatTypes as $type) {
-			$typeStr = \BambooHR\Guardrail\TypeComparer::typeToString($type);
-			if (!isset($seenTypes[$typeStr])) {
-				$seenTypes[$typeStr] = true;
-				$uniqueTypes[] = $type;
-			}
-		}
-		
-		if (count($uniqueTypes) === 1) {
-			return $uniqueTypes[0];
-		}
-		
-		return new Node\UnionType($uniqueTypes);
-	}
-
-	/**
-	 * Find parent try/catch statement
-	 */
-	private function findParentTry(Node $node): ?Node\Stmt\TryCatch {
-		$current = $node;
-		while ($current = $current->getAttribute('parent')) {
-			if ($current instanceof Node\Stmt\TryCatch) {
-				return $current;
-			}
-		}
-		return null;
-	}
 }
