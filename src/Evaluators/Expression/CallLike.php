@@ -11,6 +11,7 @@ use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\TypeInference\TypeAssertion;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\New_;
@@ -80,19 +81,12 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		}
 		if ($call->name instanceof Node\Name) {
 			if ($pass == 2) {
+				// Handle assert() with type narrowing
 				if (
 					strcasecmp($call->name, "assert") == 0 &&
-					count($call->args) == 1
+					count($call->args) >= 1
 				) {
-					$var = $call->args[0]->value;
-					if (
-						$var instanceof Instanceof_ &&
-						$var->expr instanceof Variable &&
-						is_string($var->expr->name) &&
-						$var->class instanceof Node\Name
-					) {
-						$scopeStack->getCurrentScope()->setVarType($var->expr->name, $var->class, $var->getLine());
-					}
+					$this->handleAssert($call, $scopeStack);
 				}
 				$this->checkForVariableCastedCall($call, $scopeStack);
 				$this->checkForPropertyCastedCall($call, $table, $scopeStack);
@@ -316,6 +310,52 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Handle assert() function calls with type narrowing
+	 * 
+	 * Applies type narrowing based on the assertion condition to the current scope.
+	 * This allows assert($node instanceof Foo) to narrow $node's type to Foo.
+	 * 
+	 * @param Node\Expr\FuncCall $call The assert() function call
+	 * @param ScopeStack $scopeStack The current scope stack
+	 * @return void
+	 */
+	private function handleAssert(Node\Expr\FuncCall $call, ScopeStack $scopeStack): void {
+		$condition = $call->args[0]->value;
+		$currentScope = $scopeStack->getCurrentScope();
+		
+		// Create a clone of the current scope to apply narrowing to
+		$narrowedScope = $currentScope->getScopeClone();
+		
+		// Apply type narrowing based on the assertion (truthy branch since assert expects true)
+		TypeAssertion::narrowTypes($condition, $narrowedScope, true);
+		
+		// Merge the narrowed scope back into the current scope
+		// Get all variables that had their types changed by the narrowing
+		$typeChangedVars = $narrowedScope->getTypeChangedVars();
+		
+		foreach ($typeChangedVars as $varName => $narrowedVar) {
+			// Apply the narrowed type to the current scope
+			$currentScope->setVarType($varName, $narrowedVar->type, $call->getLine());
+			
+			// Also update mayBeNull flag if it was narrowed
+			if (!$narrowedVar->mayBeNull && $currentScope->getVarExists($varName)) {
+				$currentVar = $currentScope->getVarObject($varName);
+				if ($currentVar) {
+					$currentVar->mayBeNull = false;
+				}
+			}
+			
+			// Update mayBeUnset flag if it was narrowed
+			if (!$narrowedVar->mayBeUnset && $currentScope->getVarExists($varName)) {
+				$currentVar = $currentScope->getVarObject($varName);
+				if ($currentVar) {
+					$currentVar->mayBeUnset = false;
+				}
+			}
+		}
 	}
 
 	private function addReferenceParametersToLocalScope(Scope $scope, array $args, array $params): void {

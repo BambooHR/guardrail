@@ -81,7 +81,9 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 */
 	function isInsideConditionalDeclaration(Function_|Class_|Interface_|FuncCall|Enum_ $declarationNode, string $type): bool {
 		$found = false;
+		echo "Checking if $type is inside conditional declaration\n";
 		foreach ($this->nodeStack as $node) {
+			echo "Node: " . get_class($node) . "\n";
 			if ($node instanceof Node\Stmt\If_) {
 				ForEachNode::run([...$node->stmts], function ($stmt) use (&$found, $declarationNode) {
 					if ($stmt === $declarationNode) {
@@ -89,22 +91,25 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 					}
 				});
 				if ($found) {
+					echo "Found in conditional declaration\n";
 					return true;
 				}
 			}
 		}
+		echo "Not found in conditional declaration\n";
 		return false;
 	}
 
 
 	public function isInternalClass($name) {
-		if (!class_exists($name)) {
-			return false;
-		}
+		echo "Looking for internal class $name\n";
+	return false;
 		try {
 			$type = new \ReflectionClass($name);
+			echo "Is user defined: " . (!$type->isUserDefined() ? "No" : "Yes") . "\n";
 			return !$type->isUserDefined();
-		} catch (\ReflectionException) {
+		} catch (\Exception) {
+			echo "Reflection exception\n";
 			return false;
 		}
 	}
@@ -145,6 +150,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return int|null
 	 */
 	public function enterNode(Node $node) {
+		echo "ENTER:" . get_class($node) . "\n";
 		$this->nodeStack[] = $node;
 		if ($node instanceof Node\Stmt\Enum_) {
 			EnumCodeAugmenter::addEnumPropsAndMethods($node);
@@ -176,6 +182,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			// Expressions don't contain anything we would index.
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
+		echo "/ENTER\n";
 		return null;
 	}
 
@@ -187,6 +194,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 * @return null
 	 */
 	public function leaveNode(Node $node) {
+		echo "LEAVE:" . get_class($node) . "\n";
 		if (($node instanceof Class_ && isset($node->namespacedName)) || $node instanceof Interface_ || $node instanceof Trait_ || $node instanceof Enum_) {
 			array_pop($this->classStack);
 		}
@@ -243,12 +251,16 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	public function handleClass(Class_|Node\Stmt\Enum_ $node): void {
 		$name = isset($node->namespacedName) ? $node->namespacedName->toString() : "";
 		if ($name) {
+			echo "Name:$name\n";
 			if ($this->isInternalClass($name)) {
+				echo "Is internal class\n";
 				if (!$this->isInsideConditionalDeclaration($node, "class")) {
 					$this->output->outputVerbose("\nAttempt to unconditionally redeclare internal class $name found in " . $this->filename . "\n");
 				}
 			} else {
+				echo "Get class file\n";
 				$filename = $this->index->removeBasePath($this->index->getClassFile($name));
+				//echo "Name: $name,File Name:$filename\n";
 				if ($filename === "") {
 					$this->index->addClass($name, $node, $this->filename);
 				} else {
@@ -259,6 +271,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 			}
 		}
 		array_push($this->classStack, $node);
+		echo "Done handling class\n";
 	}
 
 	/**

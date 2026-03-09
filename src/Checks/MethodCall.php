@@ -97,7 +97,7 @@ class MethodCall extends CallCheck {
 			$var = $currentScope?->getVarObject($name);
 			$isNullable = TypeComparer::ifAnyTypeIsNull($className) || ($var && $var->mayBeNull);
 
-			if ($isNullable) {
+			if ($isNullable && !($node instanceof Expr\NullsafeMethodCall)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
 				return;
 			}

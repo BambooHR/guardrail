@@ -19,6 +19,8 @@ class ScopeStack implements ScopeInterface {
 	private array $parentNodes = [];
 
 	private string $currentFile;
+	
+	private ?\PhpParser\NameContext $nameContext = null;
 
 	function __construct(
 		private OutputInterface $output,
@@ -28,6 +30,14 @@ class ScopeStack implements ScopeInterface {
 
 	function getConfig(): Config {
 		return $this->config;
+	}
+	
+	function setNameContext(\PhpParser\NameContext $nameContext): void {
+		$this->nameContext = $nameContext;
+	}
+	
+	function getNameContext(): ?\PhpParser\NameContext {
+		return $this->nameContext;
 	}
 
 	function getOutput(): OutputInterface {

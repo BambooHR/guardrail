@@ -9,9 +9,11 @@ use BambooHR\Guardrail\Evaluators\OnExitEvaluatorInterface;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\TypeInference\TypeAssertion;
 use PhpParser\Node;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
 
 class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 {
@@ -85,24 +87,37 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 			if (!isset($overrides[$var->name])) {
 				$scope->setVarType($var->name, TypeComparer::getUniqueTypes($valueType), $var->getLine());
 				
-				// Propagate mayBeNull flag to the target variable
+				// Propagate mayBeNull flag and clear mayBeUnset (variable is definitely defined after assignment)
 				$currentScope = $scope->getCurrentScope();
 				$targetVar = $currentScope?->getVarObject($var->name);
 				if ($targetVar) {
 					$targetVar->mayBeNull = $mayBeNull;
+					$targetVar->mayBeUnset = false; // Assignment always defines the variable
 				}
 			}
+			
+			// Always check for docblock type assertions, regardless of DocBlockInlineVars config
+			$nameContext = $scope->getNameContext();
+			$nameResolver = $nameContext ? fn($fn) => $nameContext->getResolvedClassName(new Name($fn)) : null;
+			TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver);
+			
 		} elseif ($var instanceof Node\Expr\PropertyFetch) {
 			$varName = TypeComparer::getChainedPropertyFetchName($var);
 			if ($varName !== null) {
 				$scope->setVarType($varName, TypeComparer::getUniqueTypes($valueType), $var->getLine());
 				
-				// Propagate mayBeNull flag to the target variable
+				// Propagate mayBeNull flag and clear mayBeUnset
 				$currentScope = $scope->getCurrentScope();
 				$targetVar = $currentScope?->getVarObject($varName);
 				if ($targetVar) {
 					$targetVar->mayBeNull = $mayBeNull;
+					$targetVar->mayBeUnset = false; // Assignment always defines the variable
 				}
+				
+				// Check for docblock type assertions on the assignment statement
+				$nameContext = $scope->getNameContext();
+				$nameResolver = $nameContext ? fn($fn) => $nameContext->getResolvedClassName(new Name($fn)) : null;
+				TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver);
 			}
 		}
 	}

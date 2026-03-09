@@ -84,6 +84,8 @@ class ErrorConstants {
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
+	const TYPE_IMPOSSIBLE_CONDITION = 'Standard.Impossible.Condition';
+	const TYPE_REDUNDANT_CONDITION = 'Standard.Redundant.Condition';
 
 	const TYPE_ATTRIBUTE_NOT_ATTRIBUTE = 'Standard.Attribute.NotAttribute';
 	const TYPE_ATTRIBUTE_WRONG_TARGET = 'Standard.Attribute.WrongTarget';

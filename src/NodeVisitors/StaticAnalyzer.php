@@ -36,6 +36,7 @@ use BambooHR\Guardrail\Checks\PropertyFetchCheck;
 use BambooHR\Guardrail\Checks\PropertyStoreCheck;
 use BambooHR\Guardrail\Checks\Psr4Check;
 use BambooHR\Guardrail\Checks\ReadOnlyPropertyCheck;
+use BambooHR\Guardrail\Checks\RedundantConditionCheck;
 use BambooHR\Guardrail\Checks\ReturnCheck;
 use BambooHR\Guardrail\Checks\DependenciesOnVendorCheck;
 use BambooHR\Guardrail\Checks\ServiceMethodDocumentationCheck;
@@ -118,10 +119,14 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 * @param OutputInterface       $output       Instance if OutputInterface
 	 * @param MetricOutputInterface $metricOutput Instance of MetricOutputInterface
 	 * @param Config                $config       The config
+	 * @param NameContext|null      $nameContext  The name context for namespace resolution
 	 */
-	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config) {
+	function __construct(SymbolTable $index, OutputInterface $output, MetricOutputInterface $metricOutput, Config $config, ?\PhpParser\NameContext $nameContext = null) {
 		$this->index = $index;
 		$this->scopeStack = new ScopeStack($output, $metricOutput, $config);
+		if ($nameContext) {
+			$this->scopeStack->setNameContext($nameContext);
+		}
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 
 		/** @var \BambooHR\Guardrail\Checks\BaseCheck[] $checkers */
@@ -130,6 +135,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new EnumCheck($this->index, $output),
 			new UndefinedVariableCheck($this->index, $output),
 			new InconsistentVariableCheck($this->index, $output),
+			//new RedundantConditionCheck($this->index, $output),
 			new DefinedConstantCheck($this->index, $output),
 			new BackTickOperatorCheck($this->index, $output),
 			new PropertyFetchCheck($this->index, $output),
@@ -168,7 +174,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new DependenciesOnVendorCheck($this->index, $output, $metricOutput),
 			new OpenApiAttributeDocumentationCheck($this->index, $output, $metricOutput),
 			new ServiceMethodDocumentationCheck($this->index, $output, $metricOutput),
-			//new ClassStoredAsVariableCheck($this->index, $output)
+			//new ClassStoredAsVariableCheck($this->index, $output),
 			new AttributeCheck($this->index, $output),
 		];
 

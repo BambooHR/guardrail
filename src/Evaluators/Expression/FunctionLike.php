@@ -25,14 +25,14 @@ class FunctionLike implements ExpressionInterface
 				$node->uses
 			);
 			foreach ($closureScope->getUsedVars() as $var) {
-				/** @var Scope\ScopeVar $var */
+				assert($var instanceof Scope\ScopeVar);
 				if ($scopeStack->getVarExists($var->name) && $var->used && in_array($var->name, $uses)) {
 					$scopeStack->setVarUsed($var->name);
 				}
 			}
 		} elseif ($node instanceof Node\Expr\ArrowFunction) {
 			foreach ($closureScope->getUsedVars() as $var) {
-				/** @var Scope\ScopeVar $var */
+				assert($var instanceof Scope\ScopeVar);
 				if ($scopeStack->getVarExists($var->name) && $var->used) {
 					$scopeStack->setVarUsed($var->name);
 				}

@@ -89,6 +89,7 @@ class IndexingPhase {
 	 * @guardrail-ignore Standard.Exception.Base
 	 */
 	function indexFile($pathName) {
+		echo "Index Path:$pathName\n";
 		$baseDir = $this->config->getBasePath();
 		$name = Util::removeInitialPath($baseDir, $pathName);
 		// If the $fileName is in our phar then make it a relative path so that files that we index don't
@@ -196,15 +197,22 @@ class IndexingPhase {
 	 */
 	public function indexString(string $name, string $fileData): int {
 		$this->indexer->setFilename($name);
+		echo "Indexing file:$name\n";
 		try {
+			echo "Parsing\n";
 			$statements = $this->parser->parse($fileData);
+		
 			if ($statements) {
+				echo "Traverse 1\n";
 				$this->traverser1->traverse($statements);
+				echo "Traverse 2\n";
 				$this->traverser2->traverse($statements);
+				echo "End traverse\n";
 			}
 		} catch (Throwable $exc) {
 			echo "\n[$name] ERROR " . $exc->getMessage() . "\n";
 		}
+		echo "Indexed file:$name\n";
 		return strlen($fileData);
 	}
 }

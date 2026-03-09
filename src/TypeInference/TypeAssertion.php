@@ -27,9 +27,13 @@ class TypeAssertion {
 	 * @param Node $condition The condition being evaluated
 	 * @param Scope $scope The scope to modify
 	 * @param bool $truthyBranch Whether this is the truthy or falsy branch
+	 * @param callable|null $nameResolver Optional name resolver for namespace resolution
 	 * @return void
 	 */
-	public static function narrowTypes(Node $condition, Scope $scope, bool $truthyBranch): void {
+	public static function narrowTypes(Node $condition, Scope $scope, bool $truthyBranch, ?callable $nameResolver = null): void {
+		// Check for docblock type assertions on the previous line
+		self::handleDocblockTypeAssertion($condition, $scope, $truthyBranch, $nameResolver);
+		
 		// instanceof Foo -> $var is Foo in truthy branch
 		if ($condition instanceof Node\Expr\Instanceof_) {
 			self::handleInstanceOf($condition, $scope, $truthyBranch);
@@ -100,6 +104,81 @@ class TypeAssertion {
 			}
 			// In truthy branch, at least one is true - can't narrow
 			return;
+		}
+	}
+	
+	/**
+	 * Handle docblock type assertions before assignments
+	 * 
+	 * @param Node $condition The condition or statement being evaluated
+	 * @param Scope $scope The scope to modify
+	 * @param bool $truthyBranch Whether this is the truthy or falsy branch
+	 * @param callable|null $nameResolver Optional name resolver for namespace resolution
+	 * @return void
+	 */
+	public static function handleDocblockTypeAssertion(Node $condition, Scope $scope, bool $truthyBranch, ?callable $nameResolver = null): void {
+		// Get comments from the condition or previous statement
+		$comments = $condition->getComments();
+		
+		// If no comments on the condition, try to get comments from the parent statement
+		if (empty($comments)) {
+			$parent = $condition->getAttribute('parent');
+			if ($parent) {
+				$comments = $parent->getComments();
+			}
+		}
+		
+		if (empty($comments)) {
+			return;
+		}
+		
+		foreach ($comments as $comment) {
+			$text = $comment->getText();
+			// Only process block comments (/* */ or /** */), not line comments (//)
+			if (strpos($text, '/*') === 0) {
+				// Match @var Type $var format
+				if (preg_match_all('/@var +(?:([-A-Z0-9_|\\\\<>]+(?:\[])*)( +\\$([A-Z0-9_]+))?|(\\$([A-Z0-9_]+)) +([-A-Z0-9_|\\\\<>]+(?:\[])*))/i', $text, $matchArray, PREG_SET_ORDER)) {
+					foreach ($matchArray as $tag) {
+						$varName = null;
+						$type = null;
+						
+						// Handle standard format: @var Type $var (groups 1 and 3)
+						if (isset($tag[3]) && !empty($tag[1])) {
+							$varName = $tag[3];
+							$typeString = $tag[1];
+						} elseif (isset($tag[5]) && isset($tag[6])) {
+							// Handle reversed format: @var $var Type (groups 5 and 6)
+							$varName = $tag[5];
+							$typeString = $tag[6];
+						}
+						
+						if ($varName && $typeString && $scope->getVarExists($varName)) {
+							try {
+								// Parse the type string using the TypeParser with proper namespace resolution
+								$resolver = $nameResolver ?: fn($fn)=>$fn;
+								$typeParser = new \BambooHR\Guardrail\TypeParser($resolver);
+								$parsedType = $typeParser->parse($typeString);
+								
+								if ($truthyBranch) {
+									// In truthy branch, assert the variable is this type
+									$scope->setVarType($varName, $parsedType, $condition->getLine());
+									
+									// Update mayBeNull flag based on whether the type is explicitly nullable
+									$var = $scope->getVarObject($varName);
+									if ($var) {
+										// Check if the type string explicitly contains "null" or starts with "?"
+										$var->mayBeNull = stripos($typeString, 'null') !== false || str_starts_with($typeString, '?');
+										$var->mayBeUnset = false;
+									}
+								}
+							} catch (\Exception $e) {
+								// Ignore parsing errors
+								continue;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	

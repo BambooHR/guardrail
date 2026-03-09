@@ -90,6 +90,8 @@ class Scope implements PluginScopeInterface {
 			$var->scopeVersion = $this->scopeVersion; // Mark when this variable was defined
 			// Set mayBeNull based on type: untyped or ?Type or Type|null = true
 			$var->mayBeNull = \BambooHR\Guardrail\TypeComparer::isTypeNullable($type);
+			// Variable is being defined, so it's not unset
+			$var->mayBeUnset = false;
 			$this->vars[$name] = $var;
 		}
 
@@ -337,13 +339,16 @@ class Scope implements PluginScopeInterface {
 						// Check if this variable was newly defined in THIS branch
 						$wasNewInThisBranch = ($branchVar->scopeVersion > 0 && $branchVar->scopeVersion == $branch->scopeVersion);
 						
-						// Check if this variable was created in a DIFFERENT branch
+						// Check if this variable was created in a DIFFERENT branch (not inherited from parent)
+						// A variable is inherited if its scopeVersion is less than the branch's scopeVersion
+						// A variable was created in a different branch if its scopeVersion is greater than the branch's scopeVersion
 						$wasCreatedInDifferentBranch = false;
-						if ($branchVar->scopeVersion > 0 && $branchVar->scopeVersion != $branch->scopeVersion) {
-							// This variable has a scope version that doesn't match this branch
+						if ($branchVar->scopeVersion > 0 && $branchVar->scopeVersion > $branch->scopeVersion) {
+							// This variable has a scope version NEWER than this branch
 							// It was created in a different branch and leaked into this scope
 							$wasCreatedInDifferentBranch = true;
 						}
+						// Note: If scopeVersion < branch->scopeVersion, it's inherited from parent (not created in different branch)
 						
 						// Only count this variable if it wasn't created in a different branch
 						if (!$wasCreatedInDifferentBranch) {

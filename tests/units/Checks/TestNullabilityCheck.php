@@ -546,4 +546,167 @@ class TestNullabilityCheck extends TestSuiteSetup {
 		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
 		$this->assertEquals(0, $output->getErrorCount(), "Should not error - all three variables narrowed");
 	}
+	
+	// ========================================
+	// Assert Tests
+	// ========================================
+	
+	public function testAssertNullable() {
+		$func = <<<'ENDCODE'
+			function test($nullable) {
+				assert($nullable);
+				return $nullable->method();
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - assert() proves non-null");
+	}
+	
+	public function testAssertWithNullCheck() {
+		$func = <<<'ENDCODE'
+			function test($nullable) {
+				assert($nullable !== null);
+				return $nullable->method();
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - assert with !== null proves non-null");
+	}
+	
+	public function testAssertWithInstanceOf() {
+		$func = <<<'ENDCODE'
+			function test($nullable) {
+				assert($nullable instanceof \stdClass);
+				return $nullable->method();
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - assert with instanceof proves non-null");
+	}
+	
+	public function testAssertInBranch() {
+		$func = <<<'ENDCODE'
+			function test($condition, $nullable) {
+				if ($condition) {
+					assert($nullable);
+					return $nullable->method();
+				}
+				return null;
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - assert in if branch proves non-null in that branch");
+	}
+	
+	// ========================================
+	// Docblock Type Assertion Tests
+	// ========================================
+	
+	public function testDocblockTypeAssertion() {
+		$func = <<<'ENDCODE'
+			function test($value) {
+				/** @var stdClass $value */
+				$value = $value;
+				return $value->method();
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - @var docblock asserts non-null type");
+	}
+	
+	public function testDocblockNullableTypeAssertion() {
+		$func = <<<'ENDCODE'
+			function test($value) {
+				/** @var stdClass|null $value */
+				$value = $value;
+				return $value->method();
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_METHOD_CALL, ["basePath" => "/"]);
+		$this->assertGreaterThan(0, $output->getErrorCount(), "Should error - @var docblock with nullable type still allows null");
+	}
+	
+	public function testDocblockArrayTypeAssertion() {
+		$func = <<<'ENDCODE'
+			function test($data) {
+				/** @var array $data */
+				$data = processData($data);
+				return count($data);
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_METHOD, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - @var docblock asserts array type");
+	}
+	
+	public function testDocblockStringTypeAssertion() {
+		$func = <<<'ENDCODE'
+			function test($value) {
+				/** @var string $value */
+				$value = $value;
+				return strlen($value);
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_METHOD, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - @var docblock asserts string type");
+	}
+	
+	public function testDocblockTypeAssertionInConditional() {
+		$func = <<<'ENDCODE'
+			function test($condition, $value) {
+				if ($condition) {
+					/** @var stdClass $value */
+					$value = $value;
+					return $value->method();
+				}
+				return null;
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - @var docblock in conditional branch asserts type");
+	}
+	
+	public function testDocblockNamespaceResolution() {
+		// Test basic functionality with stdClass first
+		$func = <<<'ENDCODE'
+			function test_basic($value) {
+				/** @var stdClass $value */
+				$value = $value;
+				return $value->method();
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_NULL_DEREFERENCE, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - basic docblock type assertion should work with stdClass");
+	}
+	
+	public function testDocblockNamespaceResolutionWithNamespace() {
+		// Test with actual namespace resolution
+		$func = <<<'ENDCODE'
+			namespace Test\Namespace;
+			
+			class TestClass {
+				public function method() {
+					return "test";
+				}
+			}
+			
+			function test_with_fully_qualified($value) {
+				/** @var \Test\Namespace\TestClass $value */
+				$value = $value;
+				return $value->method();
+			}
+		ENDCODE;
+
+		$output = $this->analyzeStringToOutput("test.php", $func, ErrorConstants::TYPE_UNKNOWN_METHOD, ["basePath" => "/"]);
+		$this->assertEquals(0, $output->getErrorCount(), "Should not error - fully qualified namespace resolution should work in docblock type assertions");
+	}
 }

@@ -19,9 +19,9 @@ class Catch_ implements OnEnterEvaluatorInterface
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
+		assert( $node instanceof Node\Stmt\Catch_ );
 		/** @var Node\Stmt\Catch_ $catch */
-		$catch = $node;
-		if ($catch->var) {
+		if ($node->var) {
 			$name = strval($node->var->name);
 			$scope = $scopeStack->getCurrentScope();
 			if ($scope->getVarExists($name)) {

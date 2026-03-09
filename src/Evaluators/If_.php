@@ -19,11 +19,11 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
 		if ($node instanceof Node\Stmt\If_) {
-			// Clone and store parent scope - all branches will clone from this snapshot
-			// We clone it now to prevent the parent scope from being modified during branch execution
+			// Store parent scope snapshot BEFORE condition evaluation
 			$parentScope = $scopeStack->getCurrentScope();
 			$parentSnapshot = $parentScope->getScopeClone();
 			$node->setAttribute('if-parent-scope', $parentSnapshot);
+			$node->setAttribute('if-pre-condition-scope', $parentSnapshot);
 			
 			// Set reference to this if node on all elseif and else nodes
 			foreach ($node->elseifs as $elseIf) {
@@ -33,11 +33,17 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$node->else->setAttribute('parent-if', $node);
 			}
 			
-			// Create independent scope for then-branch from snapshot
+			// Note: At this point, the condition hasn't been evaluated yet.
+			// The condition will be evaluated as part of normal AST traversal,
+			// and any assignments in the condition (like if ($x = foo())) will
+			// modify the parent scope that's currently on the stack.
+			// We'll capture those changes in onExit when we have access to the
+			// post-condition scope state.
+			
+			// For now, create then-branch from pre-condition snapshot
 			$thenBranch = $parentSnapshot->getScopeClone();
 			TypeAssertion::narrowTypes($node->cond, $thenBranch, true);
 			
-			// Store then-branch scope on the node and push to stack for body execution
 			$node->setAttribute('if-then-scope', $thenBranch);
 			$scopeStack->pushScope($thenBranch);
 			

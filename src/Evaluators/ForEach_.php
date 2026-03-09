@@ -18,7 +18,7 @@ class ForEach_ implements OnEnterEvaluatorInterface
 	}
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-
+		assert($node instanceof Node\Stmt\Foreach_);
 		$valueVar = $node->valueVar;
 		$keyVar = $node->keyVar;
 		if ($keyVar instanceof Variable) {

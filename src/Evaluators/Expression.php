@@ -136,7 +136,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			$scopeStack->pushScope($node->getAttribute('assertsTrue'));
 		}
 
-		if ($node->hasAttribute('merge-true-assert-on-leave')) {
+		if ($node instanceof BinaryOp && $node->hasAttribute('merge-true-assert-on-leave')) {
 			$neither = $scopeStack->popScope();
 			if ($node->left->hasAttribute('assertsTrue')) {
 				$left = $node->left->getAttribute('assertsTrue');
