@@ -223,6 +223,35 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
+	 * Helper method to check statements based on throw-only or return-or-throw criteria
+	 *
+	 * @param array $stmts     List of statements
+	 * @param bool  $throwOnly If true, only throw counts; if false, return or throw counts
+	 *
+	 * @return bool
+	 */
+	private function checkStatements(array $stmts, bool $throwOnly): bool {
+		if ($throwOnly) {
+			return $this->statementsAllThrow($stmts);
+		}
+		return $this->statementsAllReturnOrThrow($stmts);
+	}
+
+	/**
+	 * Remove trailing break and nop statements from a list
+	 *
+	 * @param array $stmts The statements
+	 *
+	 * @return array
+	 */
+	private function removeTrailingBreaksAndNops(array $stmts): array {
+		while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
+			$stmts = array_slice($stmts, 0, -1);
+		}
+		return $stmts;
+	}
+
+	/**
 	 * Get the last non-Nop statement from a list of statements
 	 *
 	 * @param array $stmts The statements
@@ -337,53 +366,94 @@ class ReturnCheck extends BaseCheck {
 	 */
 	private function isCallToFunctionThatThrows(Node\Expr $expr): bool {
 		if ($expr instanceof Node\Expr\FuncCall) {
-			$name = $expr->name;
-			if ($name instanceof Node\Name) {
-				$function = $this->symbolTable->getAbstractedFunction(strval($name));
-				if ($function) {
-					// Check if the function body always throws (not just returns)
-					if ($function instanceof \BambooHR\Guardrail\Abstractions\FunctionAbstraction) {
-						// FunctionAbstraction wraps a Function_ node, we need to check if it always throws
-						// We can use reflection to get the function property
-						$reflection = new \ReflectionClass($function);
-						$property = $reflection->getProperty('function');
-						$functionNode = $property->getValue($function);
-						if ($functionNode instanceof Node\Stmt\Function_) {
-							return $this->allPathsThrow($functionNode);
-						}
-					}
-				}
-			}
-		} elseif ($expr instanceof Node\Expr\MethodCall && $expr->name instanceof Node\Identifier) {
-			// Handle instance method calls
-			$type = $expr->var->getAttribute(\BambooHR\Guardrail\TypeComparer::INFERRED_TYPE_ATTR);
-			if ($type) {
-				$allThrow = false;
-				TypeComparer::forEachType($type, function ($typeNode) use ($expr, &$allThrow) {
-					$method = \BambooHR\Guardrail\Util::findAbstractedMethod(strval($typeNode), $expr->name, $this->symbolTable);
-					if ($method && $method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
-						$methodNode = $this->extractMethodNode($method);
-						if ($methodNode && $this->allPathsThrow($methodNode)) {
-							$allThrow = true;
-						}
-					}
-				});
-				return $allThrow;
-			}
-		} elseif ($expr instanceof Node\Expr\StaticCall && $expr->name instanceof Node\Identifier) {
-			// Handle static method calls
-			if ($expr->class instanceof Node\Name) {
-				$className = strval($expr->class);
-				$method = \BambooHR\Guardrail\Util::findAbstractedMethod($className, $expr->name, $this->symbolTable);
-				if ($method && $method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
-					$methodNode = $this->extractMethodNode($method);
-					if ($methodNode) {
-						return $this->allPathsThrow($methodNode);
-					}
-				}
-			}
+			return $this->isFunctionCallThatThrows($expr);
+		} elseif ($expr instanceof Node\Expr\MethodCall) {
+			return $this->isMethodCallThatThrows($expr);
+		} elseif ($expr instanceof Node\Expr\StaticCall) {
+			return $this->isStaticCallThatThrows($expr);
 		}
 		return false;
+	}
+
+	/**
+	 * Check if a function call always throws
+	 *
+	 * @param Node\Expr\FuncCall $funcCall The function call to check
+	 *
+	 * @return bool
+	 */
+	private function isFunctionCallThatThrows(Node\Expr\FuncCall $funcCall): bool {
+		if (!$funcCall->name instanceof Node\Name) {
+			return false;
+		}
+
+		$function = $this->symbolTable->getAbstractedFunction(strval($funcCall->name));
+		if (!$function instanceof \BambooHR\Guardrail\Abstractions\FunctionAbstraction) {
+			return false;
+		}
+
+		$functionNode = $this->getFunctionNodeFromAbstraction($function);
+		return $functionNode && $this->allPathsThrow($functionNode);
+	}
+
+	/**
+	 * Check if an instance method call always throws
+	 *
+	 * @param Node\Expr\MethodCall $methodCall The method call to check
+	 *
+	 * @return bool
+	 */
+	private function isMethodCallThatThrows(Node\Expr\MethodCall $methodCall): bool {
+		if (!$methodCall->name instanceof Node\Identifier) {
+			return false;
+		}
+
+		$type = $methodCall->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		if (!$type) {
+			return false;
+		}
+
+		$allThrow = false;
+		TypeComparer::forEachType($type, function ($typeNode) use ($methodCall, &$allThrow) {
+			$method = \BambooHR\Guardrail\Util::findAbstractedMethod(
+				strval($typeNode),
+				$methodCall->name,
+				$this->symbolTable
+			);
+			if ($method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
+				$methodNode = $this->getMethodNodeFromAbstraction($method);
+				if ($methodNode && $this->allPathsThrow($methodNode)) {
+					$allThrow = true;
+				}
+			}
+		});
+		return $allThrow;
+	}
+
+	/**
+	 * Check if a static method call always throws
+	 *
+	 * @param Node\Expr\StaticCall $staticCall The static call to check
+	 *
+	 * @return bool
+	 */
+	private function isStaticCallThatThrows(Node\Expr\StaticCall $staticCall): bool {
+		if (!$staticCall->name instanceof Node\Identifier || !$staticCall->class instanceof Node\Name) {
+			return false;
+		}
+
+		$method = \BambooHR\Guardrail\Util::findAbstractedMethod(
+			strval($staticCall->class),
+			$staticCall->name,
+			$this->symbolTable
+		);
+
+		if (!$method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
+			return false;
+		}
+
+		$methodNode = $this->getMethodNodeFromAbstraction($method);
+		return $methodNode && $this->allPathsThrow($methodNode);
 	}
 
 	/**
@@ -471,40 +541,29 @@ class ReturnCheck extends BaseCheck {
 	 */
 	private function checkIfBranches(Node\Stmt\If_ $ifStatement, bool $throwOnly): bool {
 		if ($this->isConstantTrue($ifStatement->cond)) {
-			return $throwOnly ? $this->statementsAllThrow($ifStatement->stmts) : $this->statementsAllReturnOrThrow($ifStatement->stmts);
+			return $this->checkStatements($ifStatement->stmts, $throwOnly);
 		}
+
 		if (!$ifStatement->else) {
 			return false;
 		}
-		if ($throwOnly) {
-			if (!$this->statementsAllThrow($ifStatement->stmts)) {
-				return false;
-			}
-			if (!$this->statementsAllThrow($ifStatement->else->stmts)) {
-				return false;
-			}
-			if ($ifStatement->elseifs) {
-				foreach ($ifStatement->elseifs as $elseIf) {
-					if (!$this->statementsAllThrow($elseIf->stmts)) {
-						return false;
-					}
-				}
-			}
-		} else {
-			if (!$this->statementsAllReturnOrThrow($ifStatement->stmts)) {
-				return false;
-			}
-			if (!$this->statementsAllReturnOrThrow($ifStatement->else->stmts)) {
-				return false;
-			}
-			if ($ifStatement->elseifs) {
-				foreach ($ifStatement->elseifs as $elseIf) {
-					if (!$this->statementsAllReturnOrThrow($elseIf->stmts)) {
-						return false;
-					}
+
+		if (!$this->checkStatements($ifStatement->stmts, $throwOnly)) {
+			return false;
+		}
+
+		if (!$this->checkStatements($ifStatement->else->stmts, $throwOnly)) {
+			return false;
+		}
+
+		if ($ifStatement->elseifs) {
+			foreach ($ifStatement->elseifs as $elseIf) {
+				if (!$this->checkStatements($elseIf->stmts, $throwOnly)) {
+					return false;
 				}
 			}
 		}
+
 		return true;
 	}
 
@@ -522,15 +581,10 @@ class ReturnCheck extends BaseCheck {
 			if ($case->cond === null) {
 				$hasDefault = true;
 			}
-			$stmts = $case->stmts;
-			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
-				$stmts = array_slice($stmts, 0, -1);
-			}
-			if ($stmts) {
-				$allTerminate = $throwOnly ? $this->statementsAllThrow($stmts) : $this->statementsAllReturnOrThrow($stmts);
-				if (!$allTerminate) {
-					return false;
-				}
+
+			$stmts = $this->removeTrailingBreaksAndNops($case->stmts);
+			if ($stmts && !$this->checkStatements($stmts, $throwOnly)) {
+				return false;
 			}
 		}
 		return $hasDefault;
@@ -545,34 +599,45 @@ class ReturnCheck extends BaseCheck {
 	 * @return bool
 	 */
 	private function checkTryCatchBranches(Node\Stmt\TryCatch $tryCatch, bool $throwOnly): bool {
-		if ($tryCatch->finally) {
-			$finallyTerminates = $throwOnly ? $this->statementsAllThrow($tryCatch->finally->stmts) : $this->statementsAllReturnOrThrow($tryCatch->finally->stmts);
-			if ($finallyTerminates) {
-				return true;
-			}
+		if ($tryCatch->finally && $this->checkStatements($tryCatch->finally->stmts, $throwOnly)) {
+			return true;
 		}
 
-		$tryTerminates = $throwOnly ? $this->statementsAllThrow($tryCatch->stmts) : $this->statementsAllReturnOrThrow($tryCatch->stmts);
-		if (!$tryTerminates) {
+		if (!$this->checkStatements($tryCatch->stmts, $throwOnly)) {
 			return false;
 		}
+
 		foreach ($tryCatch->catches as $catch) {
-			$catchTerminates = $throwOnly ? $this->statementsAllThrow($catch->stmts) : $this->statementsAllReturnOrThrow($catch->stmts);
-			if (!$catchTerminates) {
+			if (!$this->checkStatements($catch->stmts, $throwOnly)) {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
 	/**
-	 * Extract method node from a ClassMethod abstraction
+	 * Get the underlying function node from a FunctionAbstraction
+	 *
+	 * @param \BambooHR\Guardrail\Abstractions\FunctionAbstraction $function
+	 *
+	 * @return Node\Stmt\Function_|null
+	 */
+	private function getFunctionNodeFromAbstraction(\BambooHR\Guardrail\Abstractions\FunctionAbstraction $function): ?Node\Stmt\Function_ {
+		$reflection = new \ReflectionClass($function);
+		$property = $reflection->getProperty('function');
+		$functionNode = $property->getValue($function);
+		return $functionNode instanceof Node\Stmt\Function_ ? $functionNode : null;
+	}
+
+	/**
+	 * Get the underlying method node from a ClassMethod abstraction
 	 *
 	 * @param \BambooHR\Guardrail\Abstractions\ClassMethod $method
 	 *
 	 * @return Node\Stmt\ClassMethod|null
 	 */
-	private function extractMethodNode(\BambooHR\Guardrail\Abstractions\ClassMethod $method): ?Node\Stmt\ClassMethod {
+	private function getMethodNodeFromAbstraction(\BambooHR\Guardrail\Abstractions\ClassMethod $method): ?Node\Stmt\ClassMethod {
 		$reflection = new \ReflectionClass($method);
 		$property = $reflection->getProperty('method');
 		$methodNode = $property->getValue($method);
