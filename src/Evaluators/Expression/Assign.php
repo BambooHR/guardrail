@@ -9,9 +9,11 @@ use BambooHR\Guardrail\Evaluators\OnExitEvaluatorInterface;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\TypeInference\TypeAssertion;
 use PhpParser\Node;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
 
 class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 {
@@ -27,23 +29,95 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 		/** @var Node\Expr\Assign $assign */
 		$assign = $node;
 		$valueType = $assign->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-		$this->setValueType($assign->var, $valueType, $scopeStack);
-	//	echo "Assigning value type: ".($assign->var->name)."$valueType\n";
-	//	$scopeStack->dump();
+		
+		// Get mayBeNull flag from source expression
+		$sourceMayBeNull = $this->getMayBeNullFromExpr($assign->expr, $scopeStack);
+		
+		$this->setValueType($assign->var, $valueType, $sourceMayBeNull, $scopeStack);
 		return $valueType;
 	}
 
-	function setValueType(Node\Expr $var, ?Node $valueType, ScopeStack $scope) {
+	/**
+	 * Get the mayBeNull flag from an expression
+	 * 
+	 * @param Node\Expr $expr The expression to check
+	 * @param ScopeStack $scope The current scope stack
+	 * @return bool True if the expression may be null
+	 */
+	function getMayBeNullFromExpr(Node\Expr $expr, ScopeStack $scope): bool {
+		// Check if the type itself is nullable
+		$type = $expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		if (TypeComparer::isTypeNullable($type)) {
+			return true;
+		}
+		
+		// If it's a variable, check its mayBeNull flag
+		if ($expr instanceof Node\Expr\Variable && gettype($expr->name) == "string") {
+			$currentScope = $scope->getCurrentScope();
+			$var = $currentScope?->getVarObject($expr->name);
+			if ($var && $var->mayBeNull) {
+				return true;
+			}
+		}
+		
+		// If it's a property fetch, check the chain
+		if ($expr instanceof Node\Expr\PropertyFetch) {
+			$varName = TypeComparer::getChainedPropertyFetchName($expr);
+			if ($varName !== null) {
+				$currentScope = $scope->getCurrentScope();
+				$var = $currentScope?->getVarObject($varName);
+				if ($var && $var->mayBeNull) {
+					return true;
+				}
+			}
+		}
+		
+		// For chained assignments ($a = $b = $c), check if the right side is an assignment
+		if ($expr instanceof Node\Expr\Assign) {
+			return $this->getMayBeNullFromExpr($expr->expr, $scope);
+		}
+		
+		return false;
+	}
+
+	function setValueType(Node\Expr $var, ?Node $valueType, bool $mayBeNull, ScopeStack $scope) {
 		if ($var instanceof Node\Expr\Variable && gettype($var->name) == "string") {
 			$overrides = Config::shouldUseDocBlockForInlineVars() ? $var->getAttribute('namespacedInlineVar') : [];
 			// If it's in overrides, then it was already set by a DocBlock @var
 			if (!isset($overrides[$var->name])) {
 				$scope->setVarType($var->name, TypeComparer::getUniqueTypes($valueType), $var->getLine());
+				
+				// Propagate mayBeNull flag and clear mayBeUnset (variable is definitely defined after assignment)
+				$currentScope = $scope->getCurrentScope();
+				$targetVar = $currentScope?->getVarObject($var->name);
+				if ($targetVar) {
+					$targetVar->mayBeNull = $mayBeNull;
+					$targetVar->mayBeUnset = false; // Assignment always defines the variable
+				}
 			}
+			
+			// Always check for docblock type assertions, regardless of DocBlockInlineVars config
+			$nameContext = $scope->getNameContext();
+			$nameResolver = $nameContext ? fn($fn) => $nameContext->getResolvedClassName(new Name($fn)) : null;
+			TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver);
+			
 		} elseif ($var instanceof Node\Expr\PropertyFetch) {
 			$varName = TypeComparer::getChainedPropertyFetchName($var);
 			if ($varName !== null) {
 				$scope->setVarType($varName, TypeComparer::getUniqueTypes($valueType), $var->getLine());
+				
+				// Propagate mayBeNull flag and clear mayBeUnset
+				$currentScope = $scope->getCurrentScope();
+				$targetVar = $currentScope?->getVarObject($varName);
+				if ($targetVar) {
+					$targetVar->mayBeNull = $mayBeNull;
+					$targetVar->mayBeUnset = false; // Assignment always defines the variable
+				}
+				
+				// Check for docblock type assertions on the assignment statement
+				$nameContext = $scope->getNameContext();
+				$nameResolver = $nameContext ? fn($fn) => $nameContext->getResolvedClassName(new Name($fn)) : null;
+				TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver);
 			}
 		}
 	}

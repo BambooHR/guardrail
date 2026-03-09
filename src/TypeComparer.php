@@ -134,13 +134,19 @@ class TypeComparer
 		return [];
 	}
 
-	function areSimpleTypesCompatible(Name|Identifier|null $target, Name|Identifier|UnionType|null $value, bool $strict): bool {
+	function areSimpleTypesCompatible(Name|Identifier|null $target, Name|Identifier|UnionType|Node\NullableType|null $value, bool $strict): bool {
 		if ($target == null) {
 			return true;
 		}
 		if ($value == null) {
 			return true;
 		}
+		
+		// If value is a complex type (NullableType or UnionType), delegate to isCompatibleWithTarget
+		if ($value instanceof Node\NullableType || $value instanceof UnionType) {
+			return $this->isCompatibleWithTarget($target, $value, $strict);
+		}
+		
 		$targetName = strtolower($target->getAttribute('namespacedName') ?: strval($target));
 		$valueName = strtolower($value->getAttribute('namespacedName') ?: strval($value));
 
@@ -411,6 +417,36 @@ class TypeComparer
 
 	static function ifAnyTypeIsNull($node): bool {
 		return self::ifAnyType($node, fn($type)=>self::isNamedIdentifier($type, "null"));
+	}
+
+	/**
+	 * Check if a type hint is nullable (untyped, ?Type, or Type|null)
+	 * 
+	 * @param ComplexType|Identifier|Name|null $type The type hint from a parameter or property
+	 * @return bool True if the type allows null
+	 */
+	static function isTypeNullable(ComplexType|Identifier|Name|null $type): bool {
+		// Untyped = nullable
+		if ($type === null) {
+			return true;
+		}
+		
+		// ?Type syntax
+		if ($type instanceof Node\NullableType) {
+			return true;
+		}
+		
+		// Type|null or null|Type syntax
+		if ($type instanceof Node\UnionType) {
+			foreach ($type->types as $unionType) {
+				if (self::isNamedIdentifier($unionType, "null")) {
+					return true;
+				}
+			}
+		}
+		
+		// Typed non-nullable
+		return false;
 	}
 
 	static function forEachType($node, callable $fn) {

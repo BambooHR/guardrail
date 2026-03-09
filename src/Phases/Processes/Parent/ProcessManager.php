@@ -46,9 +46,17 @@ abstract class ProcessManager {
 		} else {
 			// Client side
 			socket_close($pair[1]);
-			$childProcess->init($pair[0]);
-			$childProcess->run();
-			socket_close($pair[0]);
+			try {
+				$childProcess->init($pair[0]);
+				$childProcess->run();
+			}
+			catch(Exception $e) {
+				echo "Child thread aborting after exception: ".$e->getMessage()."\n";
+				echo $e->getTraceAsString()."\n";
+			} 
+			finally {
+				socket_close($pair[0]);
+			}
 			exit(0);
 		}
 	}

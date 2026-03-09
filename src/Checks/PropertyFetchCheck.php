@@ -59,7 +59,14 @@ class PropertyFetchCheck extends BaseCheck {
 			}
 
 			if (!$node instanceof Node\Expr\NullsafePropertyFetch) {
-				if (TypeComparer::ifAnyTypeIsNull($type) && !NodePatterns::parentIgnoresNulls($scope?->getParentNodes(), $node)) {
+				// Check flow-sensitive mayBeNull flag from current scope
+				$scopeStack = $scope instanceof \BambooHR\Guardrail\Scope\ScopeStack ? $scope : null;
+				$currentScope = $scopeStack ? $scopeStack->getCurrentScope() : $scope;
+				$var = $currentScope?->getVarObject($chainedParent);
+				
+				$isNullable = TypeComparer::ifAnyTypeIsNull($type) || ($var && $var->mayBeNull);
+				
+				if ($isNullable && !NodePatterns::parentIgnoresNulls($scope?->getParentNodes(), $node)) {
 					$variable = TypeComparer::getChainedPropertyFetchName($node) ?? "";
 					$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_DEREFERENCE, "Dereferencing potentially null object" . ($variable != "" ? " \$$variable" : ""));
 				}

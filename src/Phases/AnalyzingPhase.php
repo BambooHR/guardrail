@@ -77,7 +77,7 @@ class AnalyzingPhase {
 		$traverser2->addVisitor(new TraitImportingVisitor($config->getSymbolTable()));
 
 		$traverser3 = new NodeTraverser();
-		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config));
+		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config, $resolver->getNameContext()));
 
 		$this->output = $output;
 

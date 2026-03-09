@@ -38,7 +38,7 @@ class Empty_ implements \BambooHR\Guardrail\Evaluators\ExpressionInterface
 				$node->setAttribute('assertsFalse', $this->buildNotNullChainScope($scopeStack, $varName, $node));
 			}
 		} elseif ($node instanceof Node\Expr\BooleanNot) {
-/** @var Node\Expr\BooleanNot $not */
+/** @var PhpParser\Node\Expr\BooleanNot $not */
 			$not = $node;
 			if ($not->expr->hasAttribute('assertsTrue')) {
 				$not->setAttribute('assertsFalse', $not->expr->getAttribute('assertsTrue'));

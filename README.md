@@ -56,54 +56,86 @@ Guardrail classifies checks by name. Here is the standard list of errors. Note t
  start with the word "Standard."  Custom plugins should begin with a different string. (Ideally, an 
  organization name for the organization creating the plugin.)
 
-| Name                                | Description                                                                                                     |
-|-------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Standard.Access.Violation           | Accessing a protected/private variable in a context where you are not allowed to access them.                  |
-| Standard.Autoload.Unsafe            | Code that executes any statements other than a class declaration.                                              |
-| Standard.ConditionalAssignment      | Assigning a variable in conditional expression of an if() statement.                                           |
-| Standard.Constructor.MissingCall    | Overriding a constructor without calling the parent constructor                                                 |
-| Standard.Countable.Emptiness        | Use of `empty()` to check if a countable is empty or not                                                        |
-| Standard.Debug                      | Typical debug statements such as var_dump() or print_r()                                                        |
-| Standard.Deprecated.Internal        | Call to an internal PHP function that is deprecated                                                             |
-| Standard.Deprecated.User            | Call to a user function that has @deprecated in the docblock.                                                  |
-| Standard.Exception.Base             | Catching the base \Exception class instead of something more specific.                                         |
-| Standard.Incorrect.ReadOnly         | Attempting to build an illegal readonly property (default value or non-typed)                                   |
-| Standard.Incorrect.Static           | Static reference to a dynamic variable/method                                                                   |
-| Standard.Incorrect.Dynamic          | Dynamic reference to a static variable/method                                                                   |
-| Standard.Inheritance.Unimplemented  | Class implementing an interface fails to implement on of it's methods.                                         |
-| Standard.Function.InsideFunction    | Declaring a function inside of another function. (Closures/lambdas are still allowed.)                         |
-| Standard.Global.Expression          | Referencing $GLOBALS\[ $expr ]                                                                                  |
-| Standard.Global.Function            | Function defined at the global level. Functions should be placed in namespaces, classes, or conditional blocks. |
-| Standard.Global.String              | Referencing a global with either global $var or $GLOBALS\['var']                                                |
-| Standard.Goto                       | Any instance of a "goto" statement                                                                              |
-| Standard.Override.Base              | Attempt to use a #\[Override] on method in a base class                                                         |
-| Standard.Metrics.Complexity         | Any method/function with a cyclomatic complexity of 10 or greater.                                             |
-| Standard.Param.Count                | Failure to pass all the declared parameters to a function.                                                     |
-| Standard.Param.Count.Excess         | Passing too many variables to a function (ignores variadic functions)                                           |
-| Standard.Param.Type                 | Type mismatch on a parameter to a function                                                                      |
-| Standard.Parse.Error                | A parse error                                                                                                   |
-| Standard.Psr4                       | The namespace of the class must match in the final parts of the path with a ".php" on the end.                 |
-| Standard.Return.Type                | Type mismatch on a return from a function                                                                       |
-| Standard.Scope                      | Usage of parent:: or self:: when in a context where they are not available.                                    |
-| Standard.Security.Eval              | Code that runs eval() or create_function()                                                                      |
-| Standard.Security.Shell             | Code that runs a shell (exec, passthru, system, etc)                                                            |
-| Standard.Security.Backtick          | The backtick operator                                                                                           |
-| Standard.Switch.Break               | A switch case: statement that falls through (generally these are unintentional)                                 |
-| Standard.Switch.BreakMultiple       | A "continue #;" or "break #;" statement (where # is an integer)                                                 |
-| Standard.Unknown.Callable           | A callable that can't be resolved into a class method or function.                                             |
-| Standard.Unknown.Class              | Reference to an undefined class                                                                                 |
-| Standard.Unknown.Class.Constant     | Reference to an undefined constant inside of a class                                                            |
-| Standard.Unknown.Class.Method       | Reference to an unknown class method                                                                            |
-| Standard.Unknown.Class.MethodString | Occurrences of Foo::class."@bar" where Foo::bar doesn't exist.                                                 |
-| Standard.Unknown.Function           | Reference to an unknown function                                                                                |
-| Standard.Unknown.Global.Constant    | Reference to an undefined global constant (define or const)                                                     |
-| Standard.Unknown.Property           | Reference to a property that has not previously been declared                                                   |
-| Standard.Unknown.Variable           | Reference to a variable that has not previously been assigned                                                   |
-| Standard.Unsafe.Timezone            | Functions, such as date() that use a server setting for timezone instead of explicitly passing the timezone.   |
-| Standard.Unused.Variable            | A local variable is assigned but never read from.                                                              |
-| Standard.Unreachable                | Code inside a block after a return, break, continue, etc.                                                      |
-| Standard.VariableFunctionCall       | Call a method $foo() when $foo is a string. (Still ok if $foo is a callable)                                   |
-| Standard.VariableVariable           | Referencing a variable with $$var                                                                               |
+| Name                                                        | Description                                                                                                     |
+|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| Standard.Access.Violation                                   | Accessing a protected/private variable in a context where you are not allowed to access them.                  |
+| Standard.Ambiguous.MethodCall                               | Method call on union type with unrelated classes that cannot use vtable/interface dispatch.                    |
+| Standard.Assign.ScalarType                                  | Type mismatch when assigning a scalar value to a typed variable.                                               |
+| Standard.Assign.Type                                        | Type mismatch when assigning a value to a typed variable.                                                      |
+| Standard.Attribute.NotAttribute                             | Using a class as an attribute that is not marked with #[Attribute].                                            |
+| Standard.Attribute.NotRepeatable                            | Using a non-repeatable attribute multiple times on the same declaration.                                       |
+| Standard.Attribute.WrongTarget                              | Using an attribute on a target that is not allowed by its Attribute declaration.                               |
+| Standard.Autoload.Unsafe                                    | Code that executes any statements other than a class declaration.                                              |
+| Standard.Class.StoredAsVariable                             | Storing a class name in a variable for later instantiation (makes static analysis difficult).                  |
+| Standard.ConditionalAssignment                              | Assigning a variable in conditional expression of an if() statement.                                           |
+| Standard.Const.Type                                         | Type mismatch on a class constant declaration.                                                                 |
+| Standard.Constructor.MissingCall                            | Overriding a constructor without calling the parent constructor.                                               |
+| Standard.Countable.Emptiness                                | Use of `empty()` to check if a countable is empty or not.                                                      |
+| Standard.Debug                                              | Typical debug statements such as var_dump() or print_r().                                                      |
+| Standard.Deprecated.Internal                                | Call to an internal PHP function that is deprecated.                                                           |
+| Standard.Deprecated.User                                    | Call to a user function that has @deprecated in the docblock.                                                  |
+| Standard.DocBlock.Mismatch                                  | DocBlock type annotation doesn't match the actual type hint.                                                   |
+| Standard.DocBlock.Param                                     | DocBlock @param annotation is missing or incorrect.                                                            |
+| Standard.DocBlock.Return                                    | DocBlock @return annotation is missing or incorrect.                                                           |
+| Standard.DocBlock.Type                                      | DocBlock type annotation is invalid or references an unknown type.                                             |
+| Standard.DocBlock.Variable                                  | DocBlock @var annotation is missing or incorrect.                                                              |
+| Standard.Exception.Base                                     | Catching the base \Exception class instead of something more specific.                                         |
+| Standard.Exception.DuplicateVariable                        | Using the same variable name for multiple catch blocks.                                                        |
+| Standard.Function.InsideFunction                            | Declaring a function inside of another function. (Closures/lambdas are still allowed.)                         |
+| Standard.Global.Expression                                  | Referencing $GLOBALS\[ $expr ] with a dynamic expression.                                                      |
+| Standard.Global.Function                                    | Function defined at the global level. Functions should be placed in namespaces, classes, or conditional blocks. |
+| Standard.Global.String                                      | Referencing a global with either global $var or $GLOBALS\['var'].                                              |
+| Standard.Goto                                               | Any instance of a "goto" statement.                                                                            |
+| Standard.Illegal.Enum                                       | Illegal enum declaration or usage.                                                                             |
+| Standard.Inconsistent.Variable                              | Variable may be unset or undefined at point of use.                                                            |
+| Standard.Incorrect.Dynamic                                  | Dynamic reference to a static variable/method.                                                                 |
+| Standard.Incorrect.ReadOnly                                 | Attempting to build an illegal readonly property (default value or non-typed).                                 |
+| Standard.Incorrect.Regex                                    | Invalid regular expression pattern.                                                                            |
+| Standard.Incorrect.Static                                   | Static reference to a dynamic variable/method.                                                                 |
+| Standard.Inheritance.Unimplemented                          | Class implementing an interface fails to implement one of its methods.                                         |
+| Standard.Metrics.Complexity                                 | Any method/function with a cyclomatic complexity of 10 or greater.                                             |
+| Standard.Metrics.Deprecated.API                             | Usage of deprecated API methods (custom metric).                                                               |
+| Standard.Metrics.Deprecated.Service                         | Usage of deprecated service methods (custom metric).                                                           |
+| Standard.Metrics.Lines                                      | Method/function exceeds maximum lines of code threshold.                                                       |
+| Standard.Null.Dereference                                   | Dereferencing a potentially null value (property access on null).                                              |
+| Standard.Null.MethodCall                                    | Calling a method on a potentially null value.                                                                  |
+| Standard.Null.Param                                         | Passing null to a parameter that doesn't accept null.                                                          |
+| Standard.OpenApiAttribute.Documentation                     | Missing or incorrect OpenAPI attribute documentation.                                                          |
+| Standard.OpenApiAttribute.MissingRequiredExtensionProperty  | Required extension property missing from OpenAPI attribute.                                                    |
+| Standard.Override.Base                                      | Attempt to use a #\[Override] attribute on method in a base class.                                             |
+| Standard.Param.Count                                        | Failure to pass all the declared parameters to a function.                                                     |
+| Standard.Param.Count.Excess                                 | Passing too many variables to a function (ignores variadic functions).                                         |
+| Standard.Param.Name                                         | Parameter name in implementation doesn't match the interface/parent declaration.                               |
+| Standard.Param.Type                                         | Type mismatch on a parameter to a function.                                                                    |
+| Standard.Parse.Error                                        | A parse error.                                                                                                 |
+| Standard.Psr4                                               | The namespace of the class must match in the final parts of the path with a ".php" on the end.                 |
+| Standard.Return.Type                                        | Type mismatch on a return from a function.                                                                     |
+| Standard.Scope                                              | Usage of parent:: or self:: when in a context where they are not available.                                    |
+| Standard.Security.Backtick                                  | The backtick operator (shell execution).                                                                       |
+| Standard.Security.Shell                                     | Code that runs a shell (exec, passthru, system, etc).                                                          |
+| Standard.ServiceMethod.Documentation                        | Missing or incorrect service method documentation.                                                             |
+| Standard.Splat.Type                                         | Type mismatch on splat operator usage.                                                                         |
+| Standard.Switch.Break                                       | A switch case: statement that falls through (generally these are unintentional).                               |
+| Standard.Switch.BreakMultiple                               | A "continue #;" or "break #;" statement (where # is an integer).                                               |
+| Standard.Undocumented.Exception                             | Throwing an exception that is not documented in the @throws docblock.                                          |
+| Standard.Unknown.Callable                                   | A callable that can't be resolved into a class method or function.                                             |
+| Standard.Unknown.Class                                      | Reference to an undefined class.                                                                               |
+| Standard.Unknown.Class.Constant                             | Reference to an undefined constant inside of a class.                                                          |
+| Standard.Unknown.Class.Method                               | Reference to an unknown class method.                                                                          |
+| Standard.Unknown.Class.MethodString                         | Occurrences of Foo::class."@bar" where Foo::bar doesn't exist.                                                 |
+| Standard.Unknown.Function                                   | Reference to an unknown function.                                                                              |
+| Standard.Unknown.Global.Constant                            | Reference to an undefined global constant (define or const).                                                   |
+| Standard.Unknown.Property                                   | Reference to a property that has not previously been declared.                                                 |
+| Standard.Unknown.Variable                                   | Reference to a variable that has not previously been assigned.                                                 |
+| Standard.Unreachable                                        | Code inside a block after a return, break, continue, etc.                                                      |
+| Standard.Unsafe.Imagick                                     | Usage of Imagick functions that may have security implications.                                                |
+| Standard.Unsafe.Superglobal                                 | Direct access to superglobal variables ($_GET, $_POST, etc.) without sanitization.                             |
+| Standard.Unsafe.TimeZone                                    | Functions, such as date() that use a server setting for timezone instead of explicitly passing the timezone.   |
+| Standard.Unused.Property                                    | A class property is declared but never used.                                                                   |
+| Standard.Unused.Variable                                    | A local variable is assigned but never read from.                                                              |
+| Standard.Use.CaseSensitive                                  | Use statement with incorrect case sensitivity.                                                                 |
+| Standard.VariableFunctionCall                               | Call a method $foo() when $foo is a string. (Still ok if $foo is a callable).                                  |
+| Standard.VariableVariable                                   | Referencing a variable with $$var.                                                                             |
 
   
  Guardrail has support for advanced PHP features, such as traits, interfaces, anonymous functions & classes, etc.

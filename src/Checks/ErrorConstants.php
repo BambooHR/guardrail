@@ -32,6 +32,7 @@ class ErrorConstants {
 	const TYPE_GLOBAL_EXPRESSION_ACCESSED = 'Standard.Global.Expression';
 	const TYPE_GLOBAL_STRING_ACCESSED = 'Standard.Global.String';
 	const TYPE_GOTO = 'Standard.Goto';
+	const TYPE_INCONSISTENT_VARIABLE = 'Standard.Inconsistent.Variable';
 	const TYPE_READONLY_DECLARATION = "Standard.Incorrect.ReadOnly";
 	const TYPE_ILLEGAL_ENUM = 'Standard.Illegal.Enum';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';
@@ -46,6 +47,7 @@ class ErrorConstants {
 	const TYPE_NULL_DEREFERENCE = "Standard.Null.Dereference";
 
 	const TYPE_NULL_METHOD_CALL = "Standard.Null.MethodCall";
+	const TYPE_AMBIGUOUS_METHOD_CALL = "Standard.Ambiguous.MethodCall";
 	const TYPE_PARSE_ERROR = 'Standard.Parse.Error';
 	const TYPE_SCOPE_ERROR = 'Standard.Scope';
 	const TYPE_SPLAT_MISMATCH = "Standard.Splat.Type";
@@ -82,6 +84,8 @@ class ErrorConstants {
 	const TYPE_VARIABLE_FUNCTION_NAME = 'Standard.VariableFunctionCall';
 	const TYPE_VARIABLE_VARIABLE = 'Standard.VariableVariable';
 	const TYPE_COUNTABLE_EMPTINESS_CHECK = 'Standard.Countable.Emptiness';
+	const TYPE_IMPOSSIBLE_CONDITION = 'Standard.Impossible.Condition';
+	const TYPE_REDUNDANT_CONDITION = 'Standard.Redundant.Condition';
 
 	const TYPE_ATTRIBUTE_NOT_ATTRIBUTE = 'Standard.Attribute.NotAttribute';
 	const TYPE_ATTRIBUTE_WRONG_TARGET = 'Standard.Attribute.WrongTarget';

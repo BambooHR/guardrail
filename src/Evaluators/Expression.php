@@ -5,6 +5,7 @@ namespace BambooHR\Guardrail\Evaluators;
 use BambooHR\Guardrail\NodePatterns;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\TypeInference\TypeAssertion;
 use BambooHR\Guardrail\Evaluators\Expression as Expr;
 use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
@@ -57,16 +58,29 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\BooleanOr) {
+			// For OR: right side only executes if left is falsy
+			// Create scope for right side with left narrowed to falsy
+			$rightScope = $scopeStack->getCurrentScope()->getScopeClone();
+			TypeAssertion::narrowTypes($node->left, $rightScope, false);
+			$scopeStack->pushScope($rightScope);
+			$node->setAttribute('short-circuit-scope-pushed', true);
 			$node->setAttribute('merge-true-assert-on-leave', true);
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\BooleanAnd) {
+			// For AND: right side only executes if left is truthy
+			// Create scope for right side with left narrowed to truthy
+			$rightScope = $scopeStack->getCurrentScope()->getScopeClone();
+			TypeAssertion::narrowTypes($node->left, $rightScope, true);
+			$scopeStack->pushScope($rightScope);
+			$node->setAttribute('short-circuit-scope-pushed', true);
 			$node->left->setAttribute('merge-true-assert-on-leave-left-and-statement', true);
 			$node->setAttribute('merge-true-assert-on-leave', true);
 		}
 
 		if ($node instanceof Node\Expr\Ternary) {
 			$branch = $scopeStack->getCurrentScope()->getScopeClone();
+			TypeAssertion::narrowTypes($node->cond, $branch, true);
 			$scopeStack->pushScope($branch);
 			$cond = If_::getIfCond($node);
 			$cond->setAttribute('grab-if-cond-scope-on-leave', true);
@@ -122,7 +136,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 			$scopeStack->pushScope($node->getAttribute('assertsTrue'));
 		}
 
-		if ($node->hasAttribute('merge-true-assert-on-leave')) {
+		if ($node instanceof BinaryOp && $node->hasAttribute('merge-true-assert-on-leave')) {
 			$neither = $scopeStack->popScope();
 			if ($node->left->hasAttribute('assertsTrue')) {
 				$left = $node->left->getAttribute('assertsTrue');
