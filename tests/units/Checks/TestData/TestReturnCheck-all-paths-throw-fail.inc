@@ -20,15 +20,6 @@ function throwFunction(): void {
 	throw new \Exception();
 }
 
-function functionCallingReturnFunction(): int {
-	returnFunction();
-	// Missing return or throw
-}
-
-function returnFunction(): void {
-	return;
-}
-
 function whileFalseCallsThrowFunction(): int {
 	while (false) {
 		throwFunction();

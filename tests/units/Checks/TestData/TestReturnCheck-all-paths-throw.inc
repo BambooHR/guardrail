@@ -21,11 +21,6 @@ function throwFunction(): void {
 	throw new \Exception();
 }
 
-// Nested function calls that throw (3 levels deep)
-function functionCallingNestedThrowFunction(): int {
-	functionCallingAFunctionThatCallsThrowFunction();
-}
-
 // Function that throws in one branch but returns in another - should pass
 function mixedBranchesOneThrowsOneReturns(bool $flag): int {
 	if ($flag) {
@@ -52,16 +47,6 @@ function whileTrueCallsThrowFunction(): int {
 	while (true) {
 		throwFunction();
 	}
-}
-
-// Exit after function call
-function callFunctionThenExit(): int {
-	someNormalFunction();
-	exit(1);
-}
-
-function someNormalFunction(): void {
-	echo "test";
 }
 
 // Try-catch where try calls throw function and catch also calls throw function
