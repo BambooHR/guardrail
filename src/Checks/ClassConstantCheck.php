@@ -99,7 +99,7 @@ class ClassConstantCheck extends BaseCheck {
 						if ($inside instanceof Class_) {
 							$name = strval($inside->extends);
 						} elseif ($inside instanceof Interface_) {
-							$name = strval($inside->extends);
+							$name = !empty($inside->extends) ? strval($inside->extends[0]) : "";
 						} else {
 							$name = "";
 						}
