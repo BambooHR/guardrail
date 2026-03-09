@@ -211,33 +211,16 @@ class ReturnCheck extends BaseCheck {
 		} elseif ($lastStatement instanceof Node\Stmt\If_) {
 			return $this->allIfBranchesReturnOrThrow($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
-			return $this->checkSwitchCases($lastStatement, $throwOnly);
+			return $this->allTryCatchBranchesReturnOrThrow($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
 			return $this->checkTryCatchBranches($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\While_) {
-			if ($this->isConstantTrue($lastStatement->cond)) {
-				return $this->statementsAllReturnOrThrow($lastStatement->stmts, $throwOnly);
-			}
-			return false;
+			return $this->whileLoopReturnsOrThrows($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\Do_) {
 			return $this->statementsAllReturnOrThrow($lastStatement->stmts, $throwOnly);
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Remove trailing break and nop statements from a list
-	 *
-	 * @param array $stmts The statements
-	 *
-	 * @return array
-	 */
-	private function removeTrailingBreaksAndNops(array $stmts): array {
-		while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
-			$stmts = array_slice($stmts, 0, -1);
-		}
-		return $stmts;
 	}
 
 	/**
@@ -289,26 +272,48 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
-	 * Unified method to check if switch cases meet termination criteria
+	 * Check if all cases of a switch statement either return or throw (with options for throw only)
 	 *
 	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
 	 * @param bool              $throwOnly       If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
-	private function checkSwitchCases(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
+	private function allTryCatchBranchesReturnOrThrow(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
 		$hasDefault = false;
 		foreach ($switchStatement->cases as $case) {
 			if ($case->cond === null) {
 				$hasDefault = true;
 			}
 
-			$stmts = $this->removeTrailingBreaksAndNops($case->stmts);
+			$stmts = $case->stmts;
+			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
+				$stmts = array_slice($stmts, 0, -1);
+			}
 			if ($stmts && !$this->statementsAllReturnOrThrow($stmts, $throwOnly)) {
 				return false;
 			}
 		}
 		return $hasDefault;
+	}
+
+	/**
+	 * @param Node\FunctionLike $insideFunc The method we're inside of
+	 * @param ?ClassLike        $inside     The class we're inside of (if any)
+	 *
+	 * @return string
+	 */
+	protected function getFunctionName(Node\FunctionLike $insideFunc, ?ClassLike $inside = null) {
+		$functionName = "";
+		if ($insideFunc instanceof Node\Stmt\Function_) {
+			$functionName = strval($insideFunc->name);
+		} elseif ($insideFunc instanceof Node\Expr\Closure || $insideFunc instanceof Node\Expr\ArrowFunction) {
+			$functionName = "anonymous function";
+		} elseif ($insideFunc instanceof Node\Stmt\ClassMethod) {
+			$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
+			$functionName = "$class::" . strval($insideFunc->name);
+		}
+		return $functionName;
 	}
 
 
@@ -339,25 +344,6 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param Node\FunctionLike $insideFunc The method we're inside of
-	 * @param ?ClassLike        $inside     The class we're inside of (if any)
-	 *
-	 * @return string
-	 */
-	protected function getFunctionName(Node\FunctionLike $insideFunc, ?ClassLike $inside = null) {
-		$functionName = "";
-		if ($insideFunc instanceof Node\Stmt\Function_) {
-			$functionName = strval($insideFunc->name);
-		} elseif ($insideFunc instanceof Node\Expr\Closure || $insideFunc instanceof Node\Expr\ArrowFunction) {
-			$functionName = "anonymous function";
-		} elseif ($insideFunc instanceof Node\Stmt\ClassMethod) {
-			$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
-			$functionName = "$class::" . strval($insideFunc->name);
-		}
-		return $functionName;
-	}
-
-	/**
 	 * Check if a return type allows a function to have no return statement
 	 *
 	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnType
@@ -379,6 +365,13 @@ class ReturnCheck extends BaseCheck {
 		if ($expr instanceof Node\Expr\ConstFetch) {
 			$name = strtolower($expr->name->toString());
 			return $name === 'true';
+		}
+		return false;
+	}
+
+	private function whileLoopReturnsOrThrows(Node\Stmt\While_ $whileLoop, bool $throwOnly): bool {
+		if ($this->isConstantTrue($whileLoop->cond)) {
+			return $this->statementsAllReturnOrThrow($whileLoop->stmts, $throwOnly);
 		}
 		return false;
 	}
