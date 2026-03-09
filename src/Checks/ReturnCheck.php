@@ -184,17 +184,18 @@ class ReturnCheck extends BaseCheck {
 		if (!$stmts) {
 			return false;
 		}
-		return $this->statementsAllReturnOrThrow($stmts);
+		return $this->statementsAllReturnOrThrow($stmts, false);
 	}
 
 	/**
 	 * Check if all code paths in a list of statements either return or throw
 	 *
-	 * @param array $stmts List of statements
+	 * @param array $stmts     List of statements
+	 * @param bool  $throwOnly If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
-	private function statementsAllReturnOrThrow(array $stmts): bool {
+	private function statementsAllReturnOrThrow(array $stmts, bool $throwOnly): bool {
 		$lastStatement = $this->getLastNonNopStatement($stmts);
 
 		if (!$lastStatement) {
@@ -208,15 +209,18 @@ class ReturnCheck extends BaseCheck {
 		} elseif ($lastStatement instanceof Node\Stmt\Expression && $this->isCallToFunctionThatThrows($lastStatement->expr)) {
 			return true;
 		} elseif ($lastStatement instanceof Node\Stmt\If_) {
-			return $this->checkIfBranches($lastStatement, false);
+			return $this->allIfBranchesReturnOrThrow($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
-			return $this->checkSwitchCases($lastStatement, false);
+			return $this->checkSwitchCases($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
-			return $this->checkTryCatchBranches($lastStatement, false);
+			return $this->checkTryCatchBranches($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\While_) {
-			return $this->whileLoopReturnsOrThrows($lastStatement);
+			if ($this->isConstantTrue($lastStatement->cond)) {
+				return $this->statementsAllReturnOrThrow($lastStatement->stmts, $throwOnly);
+			}
+			return false;
 		} elseif ($lastStatement instanceof Node\Stmt\Do_) {
-			return $this->doWhileLoopReturnsOrThrows($lastStatement);
+			return $this->statementsAllReturnOrThrow($lastStatement->stmts, $throwOnly);
 		} else {
 			return false;
 		}
@@ -234,7 +238,7 @@ class ReturnCheck extends BaseCheck {
 		if ($throwOnly) {
 			return $this->statementsAllThrow($stmts);
 		}
-		return $this->statementsAllReturnOrThrow($stmts);
+		return $this->statementsAllReturnOrThrow($stmts, false);
 	}
 
 	/**
@@ -269,14 +273,14 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
-	 * Unified method to check if branches meet termination criteria
+	 * Check if all branches of an if statement either return or throws (with options for throw only)
 	 *
 	 * @param Node\Stmt\If_ $ifStatement Instance of If_
 	 * @param bool          $throwOnly   If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
-	private function checkIfBranches(Node\Stmt\If_ $ifStatement, bool $throwOnly): bool {
+	private function allIfBranchesReturnOrThrow(Node\Stmt\If_ $ifStatement, bool $throwOnly): bool {
 		if ($this->isConstantTrue($ifStatement->cond)) {
 			return $this->checkStatements($ifStatement->stmts, $throwOnly);
 		}
@@ -321,6 +325,7 @@ class ReturnCheck extends BaseCheck {
 		}
 		return $hasDefault;
 	}
+
 
 	/**
 	 * Unified method to check if try-catch branches meet termination criteria
@@ -391,17 +396,6 @@ class ReturnCheck extends BaseCheck {
 			return $name === 'true';
 		}
 		return false;
-	}
-
-	private function whileLoopReturnsOrThrows(Node\Stmt\While_ $whileLoop): bool {
-		if ($this->isConstantTrue($whileLoop->cond)) {
-			return $this->statementsAllReturnOrThrow($whileLoop->stmts);
-		}
-		return false;
-	}
-
-	private function doWhileLoopReturnsOrThrows(Node\Stmt\Do_ $doWhileLoop): bool {
-		return $this->statementsAllReturnOrThrow($doWhileLoop->stmts);
 	}
 
 	/**
@@ -535,7 +529,7 @@ class ReturnCheck extends BaseCheck {
 		} elseif ($lastStatement instanceof Node\Stmt\Expression && $this->isCallToFunctionThatThrows($lastStatement->expr)) {
 			return true;
 		} elseif ($lastStatement instanceof Node\Stmt\If_) {
-			return $this->checkIfBranches($lastStatement, true);
+			return $this->allIfBranchesReturnOrThrow($lastStatement, true);
 		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
 			return $this->checkSwitchCases($lastStatement, true);
 		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {

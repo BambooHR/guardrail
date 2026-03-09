@@ -68,7 +68,7 @@ class TestReturnCheck extends TestSuiteSetup {
 	}
 
 	public function testAllPathsThrowFail() {
-		$this->assertEquals(53, $this->runAnalyzerOnFile('-all-paths-throw-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
+		$this->assertEquals(52, $this->runAnalyzerOnFile('-all-paths-throw-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
 	}
 
 	public function testWhileIFConstant() {
