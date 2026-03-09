@@ -12,3 +12,6 @@ symbol_table.sqlite3
 /tests/.phpunit.result.cache
 /tests/.phpunit.cache
 /coverage/
+.vscode
+/metrics.json
+/method_usage.json
