@@ -208,11 +208,11 @@ class ReturnCheck extends BaseCheck {
 		} elseif ($lastStatement instanceof Node\Stmt\Expression && $this->isCallToFunctionThatThrows($lastStatement->expr)) {
 			return true;
 		} elseif ($lastStatement instanceof Node\Stmt\If_) {
-			return $this->allIfBranchesReturnOrThrow($lastStatement);
+			return $this->checkIfBranches($lastStatement, false);
 		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
-			return $this->allSwitchCasesReturnOrThrow($lastStatement);
+			return $this->checkSwitchCases($lastStatement, false);
 		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
-			return $this->allTryCatchBranchesReturnOrThrow($lastStatement);
+			return $this->checkTryCatchBranches($lastStatement, false);
 		} elseif ($lastStatement instanceof Node\Stmt\While_) {
 			return $this->whileLoopReturnsOrThrows($lastStatement);
 		} elseif ($lastStatement instanceof Node\Stmt\Do_) {
@@ -269,25 +269,83 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
-	 * Check if all branches of an if statement either return or throw
+	 * Unified method to check if branches meet termination criteria
 	 *
 	 * @param Node\Stmt\If_ $ifStatement Instance of If_
+	 * @param bool          $throwOnly   If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
-	private function allIfBranchesReturnOrThrow(Node\Stmt\If_ $ifStatement): bool {
-		return $this->checkIfBranches($ifStatement, false);
+	private function checkIfBranches(Node\Stmt\If_ $ifStatement, bool $throwOnly): bool {
+		if ($this->isConstantTrue($ifStatement->cond)) {
+			return $this->checkStatements($ifStatement->stmts, $throwOnly);
+		}
+		if (!$ifStatement->else) {
+			return false;
+		}
+		if (!$this->checkStatements($ifStatement->stmts, $throwOnly)) {
+			return false;
+		}
+		if (!$this->checkStatements($ifStatement->else->stmts, $throwOnly)) {
+			return false;
+		}
+		if ($ifStatement->elseifs) {
+			foreach ($ifStatement->elseifs as $elseIf) {
+				if (!$this->checkStatements($elseIf->stmts, $throwOnly)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
-	 * Check if all cases of a switch statement either return or throw
+	 * Unified method to check if switch cases meet termination criteria
 	 *
 	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
+	 * @param bool              $throwOnly       If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
-	private function allSwitchCasesReturnOrThrow(Node\Stmt\Switch_ $switchStatement): bool {
-		return $this->checkSwitchCases($switchStatement, false);
+	private function checkSwitchCases(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
+		$hasDefault = false;
+		foreach ($switchStatement->cases as $case) {
+			if ($case->cond === null) {
+				$hasDefault = true;
+			}
+
+			$stmts = $this->removeTrailingBreaksAndNops($case->stmts);
+			if ($stmts && !$this->checkStatements($stmts, $throwOnly)) {
+				return false;
+			}
+		}
+		return $hasDefault;
+	}
+
+	/**
+	 * Unified method to check if try-catch branches meet termination criteria
+	 *
+	 * @param Node\Stmt\TryCatch $tryCatch  Instance of TryCatch
+	 * @param bool               $throwOnly If true, only throw counts; if false, return or throw counts
+	 *
+	 * @return bool
+	 */
+	private function checkTryCatchBranches(Node\Stmt\TryCatch $tryCatch, bool $throwOnly): bool {
+		if ($tryCatch->finally && $this->checkStatements($tryCatch->finally->stmts, $throwOnly)) {
+			return true;
+		}
+
+		if (!$this->checkStatements($tryCatch->stmts, $throwOnly)) {
+			return false;
+		}
+
+		foreach ($tryCatch->catches as $catch) {
+			if (!$this->checkStatements($catch->stmts, $throwOnly)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -307,17 +365,6 @@ class ReturnCheck extends BaseCheck {
 			$functionName = "$class::" . strval($insideFunc->name);
 		}
 		return $functionName;
-	}
-
-	/**
-	 * Check if all branches of a try-catch statement either return or throw
-	 *
-	 * @param Node\Stmt\TryCatch $tryCatch Instance of TryCatch
-	 *
-	 * @return bool
-	 */
-	private function allTryCatchBranchesReturnOrThrow(Node\Stmt\TryCatch $tryCatch): bool {
-		return $this->checkTryCatchBranches($tryCatch, false);
 	}
 
 	/**
@@ -488,132 +535,14 @@ class ReturnCheck extends BaseCheck {
 		} elseif ($lastStatement instanceof Node\Stmt\Expression && $this->isCallToFunctionThatThrows($lastStatement->expr)) {
 			return true;
 		} elseif ($lastStatement instanceof Node\Stmt\If_) {
-			return $this->allIfBranchesThrow($lastStatement);
+			return $this->checkIfBranches($lastStatement, true);
 		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
-			return $this->allSwitchCasesThrow($lastStatement);
+			return $this->checkSwitchCases($lastStatement, true);
 		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
-			return $this->allTryCatchBranchesThrow($lastStatement);
+			return $this->checkTryCatchBranches($lastStatement, true);
 		} else {
 			return false;
 		}
-	}
-
-	/**
-	 * Check if all branches of an if statement throw
-	 *
-	 * @param Node\Stmt\If_ $ifStatement Instance of If_
-	 *
-	 * @return bool
-	 */
-	private function allIfBranchesThrow(Node\Stmt\If_ $ifStatement): bool {
-		return $this->checkIfBranches($ifStatement, true);
-	}
-
-	/**
-	 * Check if all cases of a switch statement throw
-	 *
-	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
-	 *
-	 * @return bool
-	 */
-	private function allSwitchCasesThrow(Node\Stmt\Switch_ $switchStatement): bool {
-		return $this->checkSwitchCases($switchStatement, true);
-	}
-
-	/**
-	 * Check if all branches of a try-catch statement throw
-	 *
-	 * @param Node\Stmt\TryCatch $tryCatch Instance of TryCatch
-	 *
-	 * @return bool
-	 */
-	private function allTryCatchBranchesThrow(Node\Stmt\TryCatch $tryCatch): bool {
-		return $this->checkTryCatchBranches($tryCatch, true);
-	}
-
-	/**
-	 * Unified method to check if branches meet termination criteria
-	 *
-	 * @param Node\Stmt\If_ $ifStatement Instance of If_
-	 * @param bool          $throwOnly   If true, only throw counts; if false, return or throw counts
-	 *
-	 * @return bool
-	 */
-	private function checkIfBranches(Node\Stmt\If_ $ifStatement, bool $throwOnly): bool {
-		if ($this->isConstantTrue($ifStatement->cond)) {
-			return $this->checkStatements($ifStatement->stmts, $throwOnly);
-		}
-
-		if (!$ifStatement->else) {
-			return false;
-		}
-
-		if (!$this->checkStatements($ifStatement->stmts, $throwOnly)) {
-			return false;
-		}
-
-		if (!$this->checkStatements($ifStatement->else->stmts, $throwOnly)) {
-			return false;
-		}
-
-		if ($ifStatement->elseifs) {
-			foreach ($ifStatement->elseifs as $elseIf) {
-				if (!$this->checkStatements($elseIf->stmts, $throwOnly)) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Unified method to check if switch cases meet termination criteria
-	 *
-	 * @param Node\Stmt\Switch_ $switchStatement Instance of Switch_
-	 * @param bool              $throwOnly       If true, only throw counts; if false, return or throw counts
-	 *
-	 * @return bool
-	 */
-	private function checkSwitchCases(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
-		$hasDefault = false;
-		foreach ($switchStatement->cases as $case) {
-			if ($case->cond === null) {
-				$hasDefault = true;
-			}
-
-			$stmts = $this->removeTrailingBreaksAndNops($case->stmts);
-			if ($stmts && !$this->checkStatements($stmts, $throwOnly)) {
-				return false;
-			}
-		}
-		return $hasDefault;
-	}
-
-	/**
-	 * Unified method to check if try-catch branches meet termination criteria
-	 *
-	 * @param Node\Stmt\TryCatch $tryCatch  Instance of TryCatch
-	 * @param bool               $throwOnly If true, only throw counts; if false, return or throw counts
-	 *
-	 * @return bool
-	 */
-	private function checkTryCatchBranches(Node\Stmt\TryCatch $tryCatch, bool $throwOnly): bool {
-		if ($tryCatch->finally && $this->checkStatements($tryCatch->finally->stmts, $throwOnly)) {
-			return true;
-		}
-
-		if (!$this->checkStatements($tryCatch->stmts, $throwOnly)) {
-			return false;
-		}
-
-		foreach ($tryCatch->catches as $catch) {
-			if (!$this->checkStatements($catch->stmts, $throwOnly)) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 	/**
