@@ -141,7 +141,7 @@ class ReturnCheck extends BaseCheck {
 		}
 
 		if ($returnType && !$this->returnTypeAllowsNoReturn($returnType)) {
-			if (!$this->allPathsReturnOrThrow($node)) {
+			if (!$this->allPathsReturnOrThrow($node, false)) {
 				$functionName = $this->getFunctionName($node, $inside);
 				$this->emitError(
 					$fileName,
@@ -179,12 +179,12 @@ class ReturnCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	private function allPathsReturnOrThrow(Node\FunctionLike $func): bool {
+	private function allPathsReturnOrThrow(Node\FunctionLike $func, $throwOnly): bool {
 		$stmts = $func->getStmts();
 		if (!$stmts) {
 			return false;
 		}
-		return $this->statementsAllReturnOrThrow($stmts, false);
+		return $this->statementsAllReturnOrThrow($stmts, $throwOnly);
 	}
 
 	/**
@@ -211,9 +211,9 @@ class ReturnCheck extends BaseCheck {
 		} elseif ($lastStatement instanceof Node\Stmt\If_) {
 			return $this->allIfBranchesReturnOrThrow($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\Switch_) {
-			return $this->allTryCatchBranchesReturnOrThrow($lastStatement, $throwOnly);
+			return $this->allSwitchCasesReturnOrThrow($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\TryCatch) {
-			return $this->checkTryCatchBranches($lastStatement, $throwOnly);
+			return $this->allTryCatchBranchesReturnOrThrow($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\While_) {
 			return $this->whileLoopReturnsOrThrows($lastStatement, $throwOnly);
 		} elseif ($lastStatement instanceof Node\Stmt\Do_) {
@@ -279,13 +279,12 @@ class ReturnCheck extends BaseCheck {
 	 *
 	 * @return bool
 	 */
-	private function allTryCatchBranchesReturnOrThrow(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
+	private function allSwitchCasesReturnOrThrow(Node\Stmt\Switch_ $switchStatement, bool $throwOnly): bool {
 		$hasDefault = false;
 		foreach ($switchStatement->cases as $case) {
 			if ($case->cond === null) {
 				$hasDefault = true;
 			}
-
 			$stmts = $case->stmts;
 			while (($last = end($stmts)) instanceof Node\Stmt\Break_ || $last instanceof Node\Stmt\Nop) {
 				$stmts = array_slice($stmts, 0, -1);
@@ -318,18 +317,19 @@ class ReturnCheck extends BaseCheck {
 
 
 	/**
-	 * Unified method to check if try-catch branches meet termination criteria
+	 * Check if all branches of a try-catch statement either return or throw (with options for throws only)
 	 *
 	 * @param Node\Stmt\TryCatch $tryCatch  Instance of TryCatch
 	 * @param bool               $throwOnly If true, only throw counts; if false, return or throw counts
 	 *
 	 * @return bool
 	 */
-	private function checkTryCatchBranches(Node\Stmt\TryCatch $tryCatch, bool $throwOnly): bool {
+	private function allTryCatchBranchesReturnOrThrow(Node\Stmt\TryCatch $tryCatch, bool $throwOnly): bool {
 		if ($tryCatch->finally && $this->statementsAllReturnOrThrow($tryCatch->finally->stmts, $throwOnly)) {
 			return true;
 		}
 
+		// Otherwise, both try and all catch blocks must return or throw
 		if (!$this->statementsAllReturnOrThrow($tryCatch->stmts, $throwOnly)) {
 			return false;
 		}
@@ -339,7 +339,6 @@ class ReturnCheck extends BaseCheck {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -412,7 +411,7 @@ class ReturnCheck extends BaseCheck {
 		}
 
 		$functionNode = $this->getFunctionNodeFromAbstraction($function);
-		return $functionNode && $this->allPathsThrow($functionNode);
+		return $functionNode && $this->allPathsReturnOrThrow($functionNode, true);
 	}
 
 	/**
@@ -441,7 +440,7 @@ class ReturnCheck extends BaseCheck {
 			);
 			if ($method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
 				$methodNode = $this->getMethodNodeFromAbstraction($method);
-				if ($methodNode && $this->allPathsThrow($methodNode)) {
+				if ($methodNode && $this->allPathsReturnOrThrow($methodNode, true)) {
 					$allThrow = true;
 				}
 			}
@@ -472,22 +471,7 @@ class ReturnCheck extends BaseCheck {
 		}
 
 		$methodNode = $this->getMethodNodeFromAbstraction($method);
-		return $methodNode && $this->allPathsThrow($methodNode);
-	}
-
-	/**
-	 * Check if all code paths in a function throw an exception (not return)
-	 *
-	 * @param Node\FunctionLike $func The function to check
-	 *
-	 * @return bool
-	 */
-	private function allPathsThrow(Node\FunctionLike $func): bool {
-		$stmts = $func->getStmts();
-		if (!$stmts) {
-			return false;
-		}
-		return $this->statementsAllReturnOrThrow($stmts, true);
+		return $methodNode && $this->allPathsReturnOrThrow($methodNode, true);
 	}
 
 	/**
