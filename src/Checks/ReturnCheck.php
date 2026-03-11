@@ -92,6 +92,10 @@ class ReturnCheck extends BaseCheck {
 				$returnType = $inside->namespacedName;
 			}
 
+			if (TypeComparer::isNamedIdentifier($returnType, "static") && $inside) {
+				$returnType = $inside->namespacedName;
+			}
+
 			if (TypeComparer::isNamedIdentifier($returnType, "Generator")) {
 				return;
 			}
