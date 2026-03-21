@@ -7,24 +7,22 @@ use BambooHR\Guardrail\Exceptions\SocketException;
 class Socket {
 	/* This function adapted from the PHP documentation on php.net */
 	/**
-	 * @param resource $fp
+	 * @param \Socket $fp
 	 * @param string   $string
 	 * @return int
+	 * @throws SocketException
 	 */
 	public static function writeComplete($fp, $string) {
 		$length = strlen($string);
 		$fwrite = 0;
-		echo "SENDING: $string";
 		for ($written = 0; $written < $length; $written += $fwrite) {
 			$fwrite = static::retryOnFalse(function () use ($fp, $string, $written) {
 				return @socket_write($fp, substr($string, $written));
 			}, 3);
 			if ($fwrite === false) {
-				echo "FWRITE failure to send: $string\n";
 				throw new SocketException(socket_strerror(socket_last_error($fp)));
 			}
 		}
-		echo "WRITE: completed $written/$length\n\n";
 		return $written;
 	}
 

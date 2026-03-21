@@ -19,12 +19,18 @@ class EnumCodeAugmenter {
 			$property = new Property("value");
 			$property->makeReadonly();
 			$property->setType($enum->scalarType);
-			$enum->stmts[] = $property->getNode();
+			$propertyNode = $property->getNode();
+			if ($propertyNode !== null) {
+				$enum->stmts[] = $propertyNode;
+			}
 
 			$enumName = $enum->namespacedName->toString();
 			$param = (new Param("fromValue"))->setType($enum->scalarType);
-			$enum->stmts[] = new Node\Stmt\ClassMethod("tryFrom", ["returnType" => $enumName, "flags" => Node\Stmt\Class_::MODIFIER_STATIC, 'params' => [$param->getNode()]]);
-			$enum->stmts[] = new Node\Stmt\ClassMethod("from", ["returnType" => $enumName, "flags" => Node\Stmt\Class_::MODIFIER_STATIC, 'params' => [$param->getNode()]]);
+			$paramNode = $param !== null ? $param->getNode() : null;
+			if ($paramNode !== null) {
+				$enum->stmts[] = new Node\Stmt\ClassMethod("tryFrom", ["returnType" => $enumName, "flags" => Node\Stmt\Class_::MODIFIER_STATIC, 'params' => [$paramNode]]);
+				$enum->stmts[] = new Node\Stmt\ClassMethod("from", ["returnType" => $enumName, "flags" => Node\Stmt\Class_::MODIFIER_STATIC, 'params' => [$paramNode]]);
+			}
 		}
 	}
 }

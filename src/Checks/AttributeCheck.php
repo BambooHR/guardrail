@@ -52,6 +52,18 @@ class AttributeCheck extends BaseCheck {
 	}
 
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null): void {
+		assert(
+			$node instanceof Function_ || 
+			$node instanceof Class_ || 
+			$node instanceof ClassConst || 
+			$node instanceof Property || 
+			$node instanceof ClassMethod || 
+			$node instanceof Param || 
+			$node instanceof Interface_ || 
+			$node instanceof Trait_ || 
+			$node instanceof Enum_
+		);
+
 		$seenAttributes = [];
 		/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 		foreach ($node->attrGroups as $attrGroup) {

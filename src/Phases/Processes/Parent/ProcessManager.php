@@ -27,6 +27,7 @@ abstract class ProcessManager {
 
 	/**
 	 * @param callable $childProcess a closure to run inside the child process.
+	 * @guardrail-ignore Standard.Exception.Base
 	 * @return resource
 	 */
 	function createChild(ChildProcess $childProcess): \Socket {
@@ -36,6 +37,8 @@ abstract class ProcessManager {
 		}
 		$pid = pcntl_fork();
 		if ($pid == -1) {
+			echo "Failure to run child process\n";
+			exit(1);
 			// error
 		} elseif ($pid) {
 			// Server side, $pid=client pid
@@ -50,7 +53,7 @@ abstract class ProcessManager {
 				$childProcess->init($pair[0]);
 				$childProcess->run();
 			}
-			catch(Exception $e) {
+			catch(\Exception $e) {
 				echo "Child thread aborting after exception: ".$e->getMessage()."\n";
 				echo $e->getTraceAsString()."\n";
 			} 
@@ -94,8 +97,10 @@ abstract class ProcessManager {
 				}
 			}
 			foreach ($this->buffers as $index => $buffer) {
-				$messages = $buffer->getMessages();
-				$this->dispatchClientMessages($index, $messages);
+				if ($buffer !== null) {
+					$messages = $buffer->getMessages();
+					$this->dispatchClientMessages($index, $messages);
+				}
 			}
 		}
 	}

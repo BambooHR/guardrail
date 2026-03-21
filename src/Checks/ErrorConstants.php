@@ -35,6 +35,7 @@ class ErrorConstants {
 	const TYPE_INCONSISTENT_VARIABLE = 'Standard.Inconsistent.Variable';
 	const TYPE_READONLY_DECLARATION = "Standard.Incorrect.ReadOnly";
 	const TYPE_ILLEGAL_ENUM = 'Standard.Illegal.Enum';
+	const TYPE_ILLEGAL_PROPERTY_TYPE = 'Standard.Illegal.PropertyType';
 	const TYPE_INCORRECT_DYNAMIC_CALL = 'Standard.Incorrect.Dynamic';
 	const TYPE_INCORRECT_STATIC_CALL = 'Standard.Incorrect.Static';
 	const TYPE_INCORRECT_REGEX = 'Standard.Incorrect.Regex';

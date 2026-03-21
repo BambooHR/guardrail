@@ -26,6 +26,7 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			$currentNextCaseScope = $parentSnapshot->getScopeClone(); // Start with parent for first case
 			
 			foreach ($node->cases as $i => $case) {
+				assert($case instanceof Node\Stmt\Case_);
 				$case->setAttribute('parent-switch', $node);
 				$case->setAttribute('case-index', $i);
 				
@@ -75,7 +76,9 @@ class Switch_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$enterCaseScope = $node->getAttribute('case-enter-scope');
 				
 				// Merge previous case state into this case
-				$enterCaseScope->merge($previousCaseScope);
+				if ($enterCaseScope !== null) {
+					$enterCaseScope->merge($previousCaseScope);
+				}
 				
 				// Continue using the same scope on stack (fall-through)
 				$node->setAttribute('case-fell-through', true);

@@ -12,23 +12,23 @@ class CountsOutput extends XUnitOutput {
 	 * @param string $className  -
 	 * @param string $fileName   -
 	 * @param int    $lineNumber -
-	 * @param string $name       -
+	 * @param string $type       -
 	 * @param string $message    -
 	 * @return void
 	 */
-	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+	public function emitError($className, $fileName, $lineNumber, $type, $message = "") {
 		$this->totalErrors++;
-		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
+		if (!$this->shouldEmit($fileName, $type, $lineNumber)) {
 			return;
 		}
 		$this->displayedErrors++;
 		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}
-		if (!isset($this->errors[$name])) {
-			$this->errors[$name] = 0;
+		if (!isset($this->errors[$type])) {
+			$this->errors[$type] = 0;
 		}
-		$this->errors[$name]++;
+		$this->errors[$type]++;
 	}
 
 	/**

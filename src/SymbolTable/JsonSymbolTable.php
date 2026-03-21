@@ -16,6 +16,7 @@ use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\TypeParser;
 use Exception;
+use InvalidArgumentException;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassConst;
@@ -49,6 +50,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	private $fileName;
 
 	private TypeStringTable $types;
+
+	public TypeParser $parser;
 
 	/**
 	 * SqliteSymbolTable constructor.
@@ -168,7 +171,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 					}
 				}
 			}
-			$table->delete();
+			$table->delete(); // <--- UNCOMMENTED
 		}
 		$this->disconnect();
 	}
@@ -214,6 +217,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function getData($name, $type = self::TYPE_CLASS) {
 
 		$name = strtolower($name);
+		$result = "";
 		if ($type == self::TYPE_FUNCTION) {
 			if (!isset($this->index[$type]) || !isset($this->index[$type][$name])) {
 				return "";
@@ -348,7 +352,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		foreach ($this->index as $type => $arr) {
 			foreach ($arr as $elName => $data) {
 				if ($data['file'] == $name) {
-					unset($this->inset[$type][$elName]);
+					unset($this->index[$type][$elName]);
 				}
 			}
 		}
@@ -492,8 +496,8 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 *
 	 * @return string
 	 */
-	public function getDefineFile($name) {
-		return $this->getType($name, self::TYPE_DEFINE);
+	public function getDefineFile($defineName) {
+		return $this->getType($defineName, self::TYPE_DEFINE);
 	}
 
 	/**
@@ -532,12 +536,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	/**
 	 * getFunctionFile
 	 *
-	 * @param string $functionName The name of the function
+	 * @param string $methodName The name of the function
 	 *
 	 * @return string
 	 */
-	public function getFunctionFile($functionName) {
-		return $this->getType($functionName, self::TYPE_FUNCTION);
+	public function getFunctionFile($methodName) {
+		return $this->getType($methodName, self::TYPE_FUNCTION);
 	}
 
 	/**
@@ -565,10 +569,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		if ($function->returnType !== null || $function->getAttribute("namespacedReturn") !== null) {
 			$ret .= ":";
 			if ($function->returnType !== null) {
-				$ret .= ($this->types->add($function->returnType));
+				$canonicalType = \BambooHR\Guardrail\TypeComparer::canonicalizeType($function->returnType);
+				$ret .= ($this->types->add($canonicalType));
 			}
 			if ($function->getAttribute("namespacedReturn") !== null) {
-				$ret .= "@" . ($this->types->add($function->getAttribute("namespacedReturn")));
+				$canonicalReturn = \BambooHR\Guardrail\TypeComparer::canonicalizeType($function->getAttribute("namespacedReturn"));
+				$ret .= "@" . ($this->types->add($canonicalReturn));
 			}
 		}
 		if (count($function->getAttribute("throws", [])) > 0) {
@@ -587,9 +593,11 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		$flags = $prop->flags;
 		$type = $prop->type;
 		foreach ($prop->props as $propProp) {
-			$ret .= "P" . ($type ? $this->types->add($type) : "");
+			$canonicalType = $type ? \BambooHR\Guardrail\TypeComparer::canonicalizeType($type) : null;
+			$ret .= "P" . ($canonicalType ? $this->types->add($canonicalType) : "");
 			if ($prop->getAttribute("namespacedType")) {
-				$ret .= "@" . $this->types->add($prop->getAttribute("namespacedType"));
+				$canonicalNamespaced = \BambooHR\Guardrail\TypeComparer::canonicalizeType($prop->getAttribute("namespacedType"));
+				$ret .= "@" . $this->types->add($canonicalNamespaced);
 			}
 			$ret .= '$' . $propProp->name . ($flags !== 0 ? " " . ($flags) : "") . ";";
 		}
@@ -604,10 +612,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		if ($method->returnType !== null || $method->getAttribute('DocBlockReturnType') !== null) {
 			$ret .= ":" ;
 			if ($method->returnType !== null) {
-				$ret .= $this->types->add($method->returnType);
+				$canonicalReturn = \BambooHR\Guardrail\TypeComparer::canonicalizeType($method->returnType);
+				$ret .= $this->types->add($canonicalReturn);
 			}
 			if ($method->getAttribute('namespacedReturn')) {
-				$ret .= "@" . $this->types->add($method->getAttribute('namespacedReturn'));
+				$canonicalNamespaced = \BambooHR\Guardrail\TypeComparer::canonicalizeType($method->getAttribute('namespacedReturn'));
+				$ret .= "@" . $this->types->add($canonicalNamespaced);
 			}
 		}
 		if (count($method->getAttribute('throws', [])) > 0) {
@@ -632,15 +642,21 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		return $ret;
 	}
 
+	/**
+	 * @throws \InvalidArgumentException
+	 */
 	function serializeClass(ClassLike $class): string {
+		$ret = "";
 		if ($class instanceof Interface_) {
 			$ret = "I" . ($this->types->add($class->namespacedName));
 		} elseif ($class instanceof Node\Stmt\Enum_) {
 			$ret = "E" . ($this->types->add($class->namespacedName));
-		} else {
+		} else if ($class instanceof Node\Stmt\Class_) {
 			$ret = "C" . ($this->types->add($class->namespacedName)) . ($class->flags ? " " . $class->flags : "");
+		} else {
+			throw new \InvalidArgumentException("Unknown class ".get_class($class));
 		}
-		if (!empty($class->extends)) {
+		if (($class instanceof Class_ || $class instanceof Interface_) && !empty($class->extends)) {
 			if ($class instanceof Interface_) {
 				$ret .= " E" .
 					implode(
@@ -710,6 +726,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				'stmts' => $stmts,
 				'flags' => $flags]);
 		}
+		assert($cls instanceof ClassLike);
 		$cls->namespacedName = $name;
 		return $cls;
 	}
@@ -904,10 +921,12 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$ret .= "...";
 			}
 			if ($param->type !== null) {
-				$ret .= $this->types->add($param->type);
+				$canonicalParamType = \BambooHR\Guardrail\TypeComparer::canonicalizeType($param->type);
+				$ret .= $this->types->add($canonicalParamType);
 			}
 			if ($param->getAttribute("DocBlockName")) {
-				$ret .= "@" . $this->types->add($param->getAttribute("DocBlockName"));
+				$canonicalDocBlock = \BambooHR\Guardrail\TypeComparer::canonicalizeType($param->getAttribute("DocBlockName"));
+				$ret .= "@" . $this->types->add($canonicalDocBlock);
 			}
 			$ret .= $param->byRef ? "&" : " ";
 			$ret .= '$' . $param->var->name;

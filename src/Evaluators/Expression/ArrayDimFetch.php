@@ -35,7 +35,7 @@ class ArrayDimFetch implements ExpressionInterface
 				if ($table->isParentClassOrInterface("ArrayAccess", $type)) {
 					//$class= $table->getClass($type);
 					$method = Util::findAbstractedMethod($type, "offsetGet", $table);
-					if ($type->getAttribute('templates') && count($type->getAttribute('templates')) > 0) {
+					if ($method && $type->getAttribute('templates') && count($type->getAttribute('templates')) > 0) {
 						$arrayType = $type->getAttribute('templates')[0];
 						$returnType = $method->getDocBlockReturnType();
 						return $this->substituteTemplateVars(['T' => $arrayType], $returnType);

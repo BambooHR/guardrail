@@ -12,13 +12,13 @@ class ConsoleOutput extends XUnitOutput {
 	 * @param string $className  -
 	 * @param string $fileName   -
 	 * @param int    $lineNumber -
-	 * @param string $name       -
+	 * @param string $type       -
 	 * @param string $message    -
 	 * @return void
 	 */
-	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+	public function emitError($className, $fileName, $lineNumber, $type, $message = "") {
 		$this->totalErrors++;
-		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
+		if (!$this->shouldEmit($fileName, $type, $lineNumber)) {
 			return;
 		}
 		$this->displayedErrors++;

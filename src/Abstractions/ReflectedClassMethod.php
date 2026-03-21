@@ -21,7 +21,7 @@ class ReflectedClassMethod implements MethodInterface {
 	/**
 	 * @var \ReflectionMethod
 	 */
-	private $refl;
+	private \ReflectionMethod $refl;
 
 	private ClassInterface $class;
 
@@ -191,7 +191,7 @@ class ReflectedClassMethod implements MethodInterface {
 
 	public function getAttributes(string $name): array {
 		$attributes = $this->refl->getAttributes($name);
-		return array_map(function ($attr) {
+		return array_map(function (\ReflectionAttribute $attr) {
 			return new Attribute(new Name($attr->getName()));
 		}, $attributes);
 	}

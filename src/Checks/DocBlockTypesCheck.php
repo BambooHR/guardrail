@@ -79,7 +79,7 @@ class DocBlockTypesCheck extends BaseCheck {
 	 *
 	 * @param string $typeName The type name
 	 * @param string $fileName The file name
-	 * @param string $node     The node
+	 * @param Node   $node     The node
 	 * @param string $class    The class
 	 * @param string $message  The message
 	 *

@@ -9,7 +9,7 @@ namespace BambooHR\Guardrail\Filters;
 
 use const DIRECTORY_SEPARATOR;
 
-class UnifiedDiffFilter implements FilterInterface {
+final class UnifiedDiffFilter implements FilterInterface {
 	/**
 	 * @var array
 	 */
@@ -74,9 +74,9 @@ class UnifiedDiffFilter implements FilterInterface {
 	/**
 	 * @param string $fileName    -
 	 * @param int    $ignoreParts Number of top level directories to ignore
-	 * @return UnifiedDiffFilter
+	 * @return static
 	 */
-	static function importFile($fileName, $ignoreParts = 1) {
+	static function importFile($fileName, $ignoreParts = 1):UnifiedDiffFilter {
 		return new UnifiedDiffFilter(self::parse(file($fileName), $ignoreParts));
 	}
 

@@ -40,6 +40,9 @@ where: -p #/#                               = Define the number of partitions an
        -i                                   = run the \"index\" operation.
                                               Defaults to yes if using in memory index.       
         
+       -f {filename}                        = scan an individual file for indexing or analysis
+                                              instead of using the paths from the config file
+        
        -j                                   = prefer json index
 
        -m                                   = prefer in memory index (only available when -n=1 and -p=1/1)
@@ -141,6 +144,7 @@ where: -p #/#                               = Define the number of partitions an
 	 * @param int    $errline
 	 */
 	public static function handleErrors(int $errno, string $errstr, string $errfile, int $errline): void {
+		echo $errstr."\n";
 		// Get the current error reporting level
 		$currentErrorReporting = error_reporting();
 
@@ -153,6 +157,17 @@ where: -p #/#                               = Define the number of partitions an
 			// This is a suppressed error (@), just return without terminating
 			return;
 		}
+		
+		// Print error information before exiting
+		$errorType = match($errno) {
+			E_ERROR => 'Error',
+			E_WARNING => 'Warning',
+			E_USER_ERROR => 'User Error',
+			E_USER_WARNING => 'User Warning',
+			default => "Error ($errno)"
+		};
+		
+		echo "PHP $errorType: $errstr in $errfile on line $errline\n";
 		exit(1);
 	}
 }

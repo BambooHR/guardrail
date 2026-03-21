@@ -79,6 +79,9 @@ class AnalyzingPhase {
 		$traverser3 = new NodeTraverser();
 		$traverser3->addVisitor($this->analyzer = new StaticAnalyzer($config->getSymbolTable(), $output, $output, $config, $resolver->getNameContext()));
 
+		// Make SymbolTable available to TypeAssertion for instanceof hierarchy checks
+		\BambooHR\Guardrail\TypeInference\TypeAssertion::setSymbolTable($config->getSymbolTable());
+
 		$this->output = $output;
 
 		$this->traversers = [$traverser1, $traverser2, $traverser3];
@@ -308,6 +311,9 @@ class AnalyzingPhase {
 
 				$this->analyzer->setFile($name, $config);
 				foreach ($this->traversers as $traverser) {
+					if ($traverser === null) {
+						continue;
+					}
 					$traverser->traverse($stmts);
 				}
 				return strlen($fileData);

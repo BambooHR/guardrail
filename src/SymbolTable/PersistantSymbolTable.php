@@ -7,7 +7,7 @@
 
 namespace BambooHR\Guardrail\SymbolTable;
 
-interface PersistantSymbolTable {
+interface PersistantSymbolTable  {
 	/**
 	 * @param int $processNumber Used for persistence per thread.
 	 * @return void

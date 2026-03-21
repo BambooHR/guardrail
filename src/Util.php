@@ -24,6 +24,7 @@ use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Nop;
@@ -158,6 +159,10 @@ class Util {
 		return false;
 	}
 
+	/**
+	 * @throws \ReflectionException
+	 * @throws \InvalidArgumentException
+	 */
 	public static function reflectionTypeToPhpParserType(?\ReflectionType $type) {
 		if ($type instanceof \ReflectionNamedType) {
 			if ($type->isBuiltin()) {
@@ -349,7 +354,8 @@ class Util {
 	 *
 	 * @param string $baseDirectory The base directory
 	 * @param array  $paths         The list of paths to test from the config file
-	 *
+	 * 
+	 * @throws \InvalidArgumentException
 	 * @return bool
 	 */
 	public static function configDirectoriesAreValid($baseDirectory, $paths) {
@@ -383,6 +389,7 @@ class Util {
 	 * jsonFileContentIsValid
 	 *
 	 * @param string $jsonFile The path to the json file to validate
+	 * @throws \InvalidArgumentException
 	 *
 	 * @return array
 	 */
@@ -461,6 +468,7 @@ class Util {
 		}
 		if ($lastStatement->elseifs) {
 			foreach ($lastStatement->elseifs as $elseIf) {
+				assert($elseIf instanceof ElseIf_);
 				if (!self::allBranchesExit($elseIf->stmts)) {
 					return false;
 				}

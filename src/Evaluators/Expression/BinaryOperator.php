@@ -17,6 +17,9 @@ class BinaryOperator implements ExpressionInterface {
 		return Node\Expr\BinaryOp::class;
 	}
 
+	/**
+	 * @throws \InvalidArgumentException
+	 */
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		/** @var Node\Expr\BinaryOp $expr */
 		$expr = $node;
@@ -111,16 +114,25 @@ class BinaryOperator implements ExpressionInterface {
 		if ($and->left->hasAttribute('assertsTrue') && $and->right->hasAttribute('assertsTrue')) {
 			$left = $and->left->getAttribute('assertsTrue');
 			$right = $and->right->getAttribute('assertsTrue');
+			
+			if ($left === null || $right === null) {
+				return;
+			}
 
 			$current = $scope->getCurrentScope();
 			$changed = $left->getTypeChangedVars();
 			foreach ($changed as $name => $var) {
-				$current->setVarType($name, $var->type, $var->modifiedLine);
+				assert($var instanceof \BambooHR\Guardrail\Scope\ScopeVar);
+				if ($var->type !== null && $var->modifiedLine !== null) {
+					$current->setVarType($name, $var->type, $var->modifiedLine);
+				}
 			}
 
 			$changed = $right->getTypeChangedVars();
 			foreach ($changed as $name => $var) {
-				$current->setVarType($name, $var->type, $var->modifiedLine);
+				if ($var->type !== null && $var->modifiedLine !== null) {
+					$current->setVarType($name, $var->type, $var->modifiedLine);
+				}
 			}
 
 			$and->setAttribute('assertsTrue', $current);
@@ -134,24 +146,33 @@ class BinaryOperator implements ExpressionInterface {
 			/** @var Scope\Scope $right */
 			$right = $or->right->getAttribute('assertsTrue');
 
-			$new = $left->getScopeClone();
+			if ($left !== null && $right !== null) {
+				$new = $left->getScopeClone();
 
-			$leftChanged = $left->getTypeChangedVars();
-			$rightChanged = $right->getTypeChangedVars();
-			foreach ($leftChanged as $name => $var) {
-				if (isset($rightChanged[$name])) {
-					$newType = TypeComparer::getUniqueTypes($var->type, $rightChanged[$name]->type);
-					$new->setVarType($name, $newType, $rightChanged[$name]->modifiedLine);
+				$leftChanged = $left->getTypeChangedVars();
+				$rightChanged = $right->getTypeChangedVars();
+				foreach ($leftChanged as $name => $var) {
+					assert($var instanceof \BambooHR\Guardrail\Scope\ScopeVar);
+					if (isset($rightChanged[$name]) && $var->type !== null && $rightChanged[$name]->type !== null && $rightChanged[$name]->modifiedLine !== null) {
+						$newType = TypeComparer::getUniqueTypes($var->type, $rightChanged[$name]->type);
+						$new->setVarType($name, $newType, $rightChanged[$name]->modifiedLine);
+					}
 				}
 			}
 		}
 
-		if ($or->left->getAttribute('assertsFalse') && $or->right->getAttribute('assertsFalse')) {
+		if ($or->left->hasAttribute('assertsFalse') && $or->right->hasAttribute('assertsFalse')) {
 			/** @var Scope $right */
-			$new = $or->left->getAttribute('assertsFalse')->getScopeClone();
-			$right = $or->right->getAttribute('assertsFalse');
-			$new->merge($right);
-			$or->setAttribute('assertsFalse', $new);
+			$leftFalse = $or->left->getAttribute('assertsFalse');
+			$rightFalse = $or->right->getAttribute('assertsFalse');
+		
+			if ($leftFalse !== null && $rightFalse !== null) {
+				$new = $leftFalse->getScopeClone();
+				if ($new !== null) {
+					$new->merge($rightFalse);
+				}
+				$or->setAttribute('assertsFalse', $new);
+			}
 		}
 	}
 

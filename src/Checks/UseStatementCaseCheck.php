@@ -15,7 +15,7 @@ class UseStatementCaseCheck extends BaseCheck {
 	function getCheckNodeTypes() {
 		return [ Node\Stmt\Use_::class ];
 	}
-
+	
 	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
 		if ($node instanceof Node\Stmt\Use_ && ($node->type == Use_::TYPE_NORMAL)) {
 			foreach ($node->uses as $useNode) {
@@ -24,6 +24,7 @@ class UseStatementCaseCheck extends BaseCheck {
 		}
 		if ($node instanceof Node\Stmt\Use_ && ($node->type == Use_::TYPE_UNKNOWN)) {
 			foreach ($node->uses as $useNode) {
+				assert($useNode instanceof UseUse);
 				if ($useNode->type == Use_::TYPE_NORMAL) {
 					$this->verifyCaseOfUseStatement($useNode, $fileName);
 				}
@@ -34,7 +35,7 @@ class UseStatementCaseCheck extends BaseCheck {
 	function verifyCaseOfUseStatement(UseUse $useNode, string $fileName) {
 		static $classNames = [];
 		$type = strval($useNode->name);
-		$className = "";
+		$className = null;
 
 		if (!isset($classNames[$type])) {
 
@@ -46,9 +47,14 @@ class UseStatementCaseCheck extends BaseCheck {
 				}
 			}
 			$classNames[$type] = $className;
+		} else {
+			$className = $classNames[$type];
 		}
 		if ($className && $type !== $className) {
-			$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type . ' !== ' . $class->getName());
+			$class = $this->symbolTable->getAbstractedClass($type);
+			if ($class !== null) {
+				$this->emitError($fileName, $useNode, ErrorConstants::TYPE_USE_CASE_SENSITIVE, "Use statement must use the same case as the class declaration: " . $type . ' !== ' . $class->getName());
+			}
 		}
 	}
 }

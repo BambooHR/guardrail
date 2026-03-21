@@ -5,6 +5,7 @@ namespace BambooHR\Guardrail\Evaluators;
 use BambooHR\Guardrail\Scope\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 
 class TryCatch implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
@@ -26,6 +27,7 @@ class TryCatch implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			
 			// Catch scopes - one for each catch block
 			foreach ($node->catches as $i => $catch) {
+				assert($catch instanceof Node\Stmt\Catch_);
 				$catchScope = $parentSnapshot->getScopeClone();
 				$catch->setAttribute('catch-scope', $catchScope);
 				$catch->setAttribute('catch-index', $i);
@@ -62,42 +64,59 @@ class TryCatch implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 		if ($node instanceof Node\Stmt\TryCatch) {
-			// Collect branch scopes from node attributes
-			$branches = [];
-			
 			// Pop last scope (last catch or finally)
 			$scopeStack->popScope();
 			
-			// Add try scope
-			$tryScope = $node->getAttribute('try-scope');
-			$branches[] = $tryScope;
-			
-			// Add catch scopes
+			// Check if all catch blocks exit or throw
+			$allCatchesExit = true;
 			foreach ($node->catches as $catch) {
-				$catchScope = $catch->getAttribute('catch-scope');
-				if ($catchScope) {
-					$branches[] = $catchScope;
+				assert($catch instanceof Node\Stmt\Catch_);
+				if (!Util::allBranchesExit($catch->stmts)) {
+					$allCatchesExit = false;
+					break;
 				}
 			}
 			
-			// Handle finally block
-			if ($node->finally !== null) {
-				$finallyScope = $node->finally->getAttribute('finally-scope');
+			$parentScope = $scopeStack->getCurrentScope();
+			$tryScope = $node->getAttribute('try-scope');
+			
+			// If all catches exit/throw, the try block always completes successfully
+			// So merge try scope directly into parent (no mayBeUnset)
+			if ($allCatchesExit && count($node->catches) > 0) {
+				// Handle finally block if present
+				if ($node->finally !== null) {
+					$finallyScope = $node->finally->getAttribute('finally-scope');
+					// Finally variables are guaranteed - merge directly into parent
+					$parentScope->merge($finallyScope);
+				}
 				
-				// Finally variables are guaranteed - merge directly into parent
-				$parentScope = $scopeStack->getCurrentScope();
-				$parentScope->merge($finallyScope);
-				
-				// Now merge try/catch branches - variables defined in these get mayBeUnset
-				$parentScope->mergeBranches($branches, [], false);
+				// Merge try scope directly - variables are guaranteed to be defined
+				$parentScope->merge($tryScope);
 			} else {
-				// No finally - add implicit "no exception" branch (parent snapshot)
-				$parentSnapshot = $node->getAttribute('try-parent-scope');
-				$implicitNoExceptionBranch = $parentSnapshot->getScopeClone();
-				$branches[] = $implicitNoExceptionBranch;
+				// Standard behavior: collect all branches
+				$branches = [];
 				
-				// Merge all branches
-				$parentScope = $scopeStack->getCurrentScope();
+				// Add try scope
+				$branches[] = $tryScope;
+				
+				// Add catch scopes
+				foreach ($node->catches as $catch) {
+					$catchScope = $catch->getAttribute('catch-scope');
+					if ($catchScope) {
+						$branches[] = $catchScope;
+					}
+				}
+				
+				// Handle finally block
+				if ($node->finally !== null) {
+					$finallyScope = $node->finally->getAttribute('finally-scope');
+					
+					// Finally variables are guaranteed - merge directly into parent
+					$parentScope->merge($finallyScope);
+				}
+				
+				// Merge try/catch branches
+				// Either the try completes OR a catch executes - no implicit branch needed
 				$parentScope->mergeBranches($branches, [], false);
 			}
 		}

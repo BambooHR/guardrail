@@ -37,6 +37,7 @@ class TypeStringTable implements \JsonSerializable {
 		try {
 			$type = self::$parser->parse($this->ids[$index]);
 		} catch (DocBlockParserException $ex) {
+			echo "PArsing Failure:".$ex->getMessage()."\n";
 			return new Identifier("mixed");
 		}
 		if (!$type) {

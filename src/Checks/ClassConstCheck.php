@@ -25,7 +25,7 @@ class ClassConstCheck extends BaseCheck {
 		if ($node instanceof ClassConst) {
 			foreach ($node->consts as $const) {
 				/** @var Node\Const_ $const */
-				$constValue = $const->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+				$constValue = $const?->value?->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 				if ($node->type && $constValue) {
 					if (!$this->comparer->isCompatibleWithTarget($node->type, $constValue, forceStrict: true)) {
 						$this->emitError(

@@ -92,8 +92,8 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	 */
 	public function getParameters() {
 		$ret = array_map(
-			fn($param) => new FunctionLikeParameter(
-				self::resolveDeclaredParamTypes($param),
+			fn(Param $param) => new FunctionLikeParameter(
+				self::getNativeDeclaredType($param),
 				$param->var->name,
 				$param->variadic || $param->default != null,
 				$param->byRef,
@@ -103,7 +103,8 @@ class FunctionAbstraction implements FunctionLikeInterface {
 						$param->default instanceof ConstFetch &&
 						strcasecmp($param->default->name, "null") == 0
 					)
-				)
+				),
+				$param->getAttribute('DocBlockName')
 			),
 			$this->function->params
 		);
@@ -160,6 +161,20 @@ class FunctionAbstraction implements FunctionLikeInterface {
 	}
 
 	/**
+	 * Get the native declared type (for signature/inheritance checking)
+	 * This returns only the actual PHP type hint, ignoring DocBlock types
+	 * 
+	 * @param Param $param
+	 * @return mixed|Name
+	 */
+	static function getNativeDeclaredType(Param $param): mixed {
+		return $param->type;
+	}
+
+	/**
+	 * Get the effective parameter type for runtime type inference
+	 * This includes DocBlock types when no native type hint exists
+	 * 
 	 * @param mixed $param
 	 * @return mixed|Name
 	 */

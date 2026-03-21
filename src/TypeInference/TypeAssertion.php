@@ -8,6 +8,7 @@ namespace BambooHR\Guardrail\TypeInference;
  */
 
 use BambooHR\Guardrail\Scope\Scope;
+use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
 use PhpParser\Node;
 
@@ -20,6 +21,12 @@ use PhpParser\Node;
  * @package BambooHR\Guardrail\TypeInference
  */
 class TypeAssertion {
+	
+	private static ?SymbolTable $symbolTable = null;
+	
+	public static function setSymbolTable(?SymbolTable $table): void {
+		self::$symbolTable = $table;
+	}
 	
 	/**
 	 * Apply type narrowing based on a condition
@@ -40,8 +47,10 @@ class TypeAssertion {
 			return;
 		}
 		
-		// if ($var) -> $var is non-null in truthy branch
-		if ($condition instanceof Node\Expr\Variable) {
+		// if ($var) or if ($obj->prop) -> variable is non-null in truthy branch
+		if ($condition instanceof Node\Expr\Variable ||
+		    $condition instanceof Node\Expr\PropertyFetch ||
+		    $condition instanceof Node\Expr\NullsafePropertyFetch) {
 			self::handleTruthyCheck($condition, $scope, $truthyBranch);
 			return;
 		}
@@ -101,8 +110,30 @@ class TypeAssertion {
 				// Both sides must be false
 				self::narrowTypes($condition->left, $scope, false);
 				self::narrowTypes($condition->right, $scope, false);
+			} else {
+				// In truthy branch, check if this is a chain of instanceof checks on the same variable
+				// Pattern: $var instanceof A || $var instanceof B || $var instanceof C
+				$instanceofTypes = self::collectInstanceofTypes($condition);
+				if ($instanceofTypes !== null) {
+					// We have a chain of instanceof checks on the same variable
+					// Narrow to the union of all those types
+					[$varName, $types] = $instanceofTypes;
+					
+					if (count($types) > 0) {
+						// Create a union type from all the instanceof types
+						$unionType = count($types) === 1 ? $types[0] : new Node\UnionType($types);
+						$scope->setVarType($varName, $unionType, $condition->getLine());
+						
+						// instanceof proves the variable is not null and is set
+						$var = $scope->getVarObject($varName);
+						if ($var) {
+							$var->mayBeNull = false;
+							$var->mayBeUnset = false;
+						}
+					}
+				}
+				// Otherwise, at least one is true - can't narrow further
 			}
-			// In truthy branch, at least one is true - can't narrow
 			return;
 		}
 	}
@@ -140,7 +171,6 @@ class TypeAssertion {
 				if (preg_match_all('/@var +(?:([-A-Z0-9_|\\\\<>]+(?:\[])*)( +\\$([A-Z0-9_]+))?|(\\$([A-Z0-9_]+)) +([-A-Z0-9_|\\\\<>]+(?:\[])*))/i', $text, $matchArray, PREG_SET_ORDER)) {
 					foreach ($matchArray as $tag) {
 						$varName = null;
-						$type = null;
 						
 						// Handle standard format: @var Type $var (groups 1 and 3)
 						if (isset($tag[3]) && !empty($tag[1])) {
@@ -155,7 +185,7 @@ class TypeAssertion {
 						if ($varName && $typeString && $scope->getVarExists($varName)) {
 							try {
 								// Parse the type string using the TypeParser with proper namespace resolution
-								$resolver = $nameResolver ?: fn($fn)=>$fn;
+								$resolver = $nameResolver ? \Closure::fromCallable($nameResolver) : fn($fn)=>$fn;
 								$typeParser = new \BambooHR\Guardrail\TypeParser($resolver);
 								$parsedType = $typeParser->parse($typeString);
 								
@@ -171,7 +201,7 @@ class TypeAssertion {
 										$var->mayBeUnset = false;
 									}
 								}
-							} catch (\Exception $e) {
+							} catch (\BambooHR\Guardrail\Exceptions\DocBlockParserException $e) {
 								// Ignore parsing errors
 								continue;
 							}
@@ -191,18 +221,48 @@ class TypeAssertion {
 	 * @return void
 	 */
 	private static function handleInstanceOf(Node\Expr\Instanceof_ $node, Scope $scope, bool $truthyBranch): void {
-		if (!($node->expr instanceof Node\Expr\Variable) || 
-		    !is_string($node->expr->name) ||
-		    !($node->class instanceof Node\Name)) {
+		if (!($node->class instanceof Node\Name)) {
 			return;
 		}
 		
-		$varName = $node->expr->name;
+		// Extract variable name - supports both simple variables and property fetches
+		$varName = TypeComparer::getChainedPropertyFetchName($node->expr);
+		if (!$varName) {
+			return;
+		}
+		
 		$className = $node->class;
 		
 		if ($truthyBranch) {
-			// In truthy branch, variable IS this class
-			$scope->setVarType($varName, $className, $node->getLine());
+			$currentType = $scope->getVarType($varName);
+			$currentNonNull = TypeComparer::removeNullOption($currentType);
+			$instanceOfName = $className->toString();
+			
+			// Determine if we should replace the type with the instanceof class.
+			// Always replace if: unknown, mixed, object, union, or nullable.
+			// For a specific class type: only replace if the instanceof class is
+			// more specific (a child), not less specific (a parent).
+			$shouldReplace = true;
+			if ($currentNonNull instanceof Node\Name && 
+				!TypeComparer::isNamedIdentifier($currentNonNull, 'mixed') &&
+				!TypeComparer::isNamedIdentifier($currentNonNull, 'object') &&
+				!($currentType instanceof Node\UnionType) &&
+				!($currentType instanceof Node\NullableType)) {
+				$currentName = $currentNonNull->toString();
+				if (strcasecmp($currentName, $instanceOfName) === 0) {
+					// Same class - no need to replace
+					$shouldReplace = false;
+				} elseif (self::$symbolTable) {
+					// Check hierarchy: if current is already a child of instanceof class, keep it
+					if (self::$symbolTable->isParentClassOrInterface($instanceOfName, $currentName)) {
+						$shouldReplace = false;
+					}
+				}
+			}
+			
+			if ($shouldReplace) {
+				$scope->setVarType($varName, $className, $node->getLine());
+			}
 			
 			// instanceof proves the variable is not null and is set
 			$var = $scope->getVarObject($varName);
@@ -218,19 +278,20 @@ class TypeAssertion {
 	}
 	
 	/**
-	 * Handle truthiness checks (if ($var))
+	 * Handle truthiness checks (if ($var) or if ($obj->prop))
 	 * 
-	 * @param Node\Expr\Variable $node
+	 * @param Node\Expr\Variable|Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch $node
 	 * @param Scope $scope
 	 * @param bool $truthyBranch
 	 * @return void
 	 */
-	private static function handleTruthyCheck(Node\Expr\Variable $node, Scope $scope, bool $truthyBranch): void {
-		if (!is_string($node->name)) {
+	private static function handleTruthyCheck(Node\Expr\Variable|Node\Expr\PropertyFetch|Node\Expr\NullsafePropertyFetch $node, Scope $scope, bool $truthyBranch): void {
+		// Extract variable name - supports both simple variables and property fetches
+		$varName = TypeComparer::getChainedPropertyFetchName($node);
+		if (!$varName) {
 			return;
 		}
 		
-		$varName = $node->name;
 		$var = $scope->getVarObject($varName);
 		
 		if (!$var) {
@@ -262,11 +323,12 @@ class TypeAssertion {
 	private static function handleIsset(Node\Expr\Isset_ $node, Scope $scope, bool $truthyBranch): void {
 		// isset() can check multiple variables: isset($a, $b, $c)
 		foreach ($node->vars as $varNode) {
-			if (!($varNode instanceof Node\Expr\Variable) || !is_string($varNode->name)) {
+			// Support both simple variables and property fetches
+			$varName = TypeComparer::getChainedPropertyFetchName($varNode);
+			if (!$varName) {
 				continue;
 			}
 			
-			$varName = $varNode->name;
 			$var = $scope->getVarObject($varName);
 			
 			if ($truthyBranch) {
@@ -284,6 +346,12 @@ class TypeAssertion {
 					// Remove null from type
 					$var->type = self::removeNull($var->type);
 				}
+				
+				// If this is a property fetch (e.g., isset($obj->prop)), also narrow all parent objects
+				// because you can't access properties on null
+				if ($varNode instanceof Node\Expr\PropertyFetch || $varNode instanceof Node\Expr\NullsafePropertyFetch) {
+					self::narrowParentChain($varNode->var, $scope, $node->getLine());
+				}
 			} else {
 				// Variable is either unset or null
 				if ($var) {
@@ -292,6 +360,37 @@ class TypeAssertion {
 					// Add null to type
 					$var->type = self::addNull($var->type);
 				}
+			}
+		}
+	}
+	
+	/**
+	 * Narrow all parent objects in a property fetch chain to non-null.
+	 * For example, $a->b->c->d means $a, $a->b, and $a->b->c must all be non-null.
+	 */
+	private static function narrowParentChain(Node $currentNode, Scope $scope, int $line): void {
+		while ($currentNode) {
+			$parentName = TypeComparer::getChainedPropertyFetchName($currentNode);
+			if ($parentName) {
+				$parentVar = $scope->getVarObject($parentName);
+				if (!$parentVar) {
+					// Create the var with inferred type so we can narrow it
+					$inferredType = $currentNode->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+					$scope->setVarType($parentName, $inferredType, $line);
+					$parentVar = $scope->getVarObject($parentName);
+				}
+				if ($parentVar) {
+					$parentVar->mayBeNull = false;
+					$parentVar->mayBeUnset = false;
+					$parentVar->type = self::removeNull($parentVar->type);
+				}
+			}
+			
+			// Move up the chain
+			if ($currentNode instanceof Node\Expr\PropertyFetch || $currentNode instanceof Node\Expr\NullsafePropertyFetch) {
+				$currentNode = $currentNode->var;
+			} else {
+				break;
 			}
 		}
 	}
@@ -349,19 +448,28 @@ class TypeAssertion {
 		}
 		
 		$funcName = strtolower($node->name->toString());
-		
-		// Get the first argument (the variable being checked)
-		if (empty($node->args) || !($node->args[0]->value instanceof Node\Expr\Variable)) {
-			return;
-		}
-		
-		$varNode = $node->args[0]->value;
-		if (!is_string($varNode->name)) {
-			return;
-		}
-		
-		$varName = $varNode->name;
+	
+	// Get the first argument (the variable or property being checked)
+	if (empty($node->args)) {
+		return;
+	}
+	
+	$varNode = $node->args[0]->value;
+	
+	// Support both simple variables and property fetches
+	$varName = TypeComparer::getChainedPropertyFetchName($varNode);
+	if (!$varName) {
+		return;
+	}
+	
+	$var = $scope->getVarObject($varName);
+	if($var === null) {
+		// Initialize with inferred type from AST so narrowing has something to work with
+		$inferredType = $varNode?->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		$scope->setVarType($varName, $inferredType, $node->getLine());
+		// Re-fetch from scope so modifications below affect the actual scope var
 		$var = $scope->getVarObject($varName);
+	}
 		
 		switch ($funcName) {
 			case 'is_null':
@@ -375,12 +483,16 @@ class TypeAssertion {
 					$var->mayBeUnset = false; // It's set, just null
 					// Set type to null
 					$scope->setVarType($varName, TypeComparer::identifierFromName('null'), $node->getLine());
-				} else {
+				} else if ($var) {
 					// Variable is NOT null
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
 					// Remove null from type
 					$var->type = self::removeNull($var->type);
+					// Also narrow parent chain for property fetches
+					if ($varNode instanceof Node\Expr\PropertyFetch || $varNode instanceof Node\Expr\NullsafePropertyFetch) {
+						self::narrowParentChain($varNode->var, $scope, $node->getLine());
+					}
 				}
 				break;
 				
@@ -392,9 +504,7 @@ class TypeAssertion {
 						// Variable doesn't exist yet - create it with mixed type
 						$scope->setVarType($varName, TypeComparer::identifierFromName('mixed'), $node->getLine());
 						$var = $scope->getVarObject($varName);
-					}
-					
-					if ($var) {
+					} else {
 						$var->mayBeNull = false;
 						$var->mayBeUnset = false;
 						// Remove null from type
@@ -415,10 +525,18 @@ class TypeAssertion {
 			case 'is_string':
 				if ($truthyBranch) {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('string'), $node->getLine());
-					$var->mayBeNull = false;
+					$var = $scope->getVarObject($varName);
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
+				} else if ($var) {
+					$var->mayBeNull = true;
 					$var->mayBeUnset = false;
-					// Remove null from type
-					$var->type = self::removeNull($var->type);
+					// Add null to type
+					$var->type = self::removeNamedTypeFromUnion(self::addNull($var->type),'string');
 				}
 				break;
 				
@@ -427,10 +545,18 @@ class TypeAssertion {
 			case 'is_long':
 				if ($truthyBranch) {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('int'), $node->getLine());
-					$var->mayBeNull = false;
+					$var = $scope->getVarObject($varName);
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
+				} else if ($var) {
+					$var->mayBeNull = true;
 					$var->mayBeUnset = false;
-					// Remove null from type
-					$var->type = self::removeNull($var->type);
+					// Add null to type
+					$var->type = self::removeNamedTypeFromUnion(self::addNull($var->type),'int');
 				}
 				break;
 				
@@ -439,49 +565,89 @@ class TypeAssertion {
 			case 'is_real':
 				if ($truthyBranch) {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('float'), $node->getLine());
-					$var->mayBeNull = false;
-					$var->mayBeUnset = false;
-					// Remove null from type
-					$var->type = self::removeNull($var->type);
+					$var = $scope->getVarObject($varName);
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
 				}
 				break;
 				
 			case 'is_bool':
 				if ($truthyBranch) {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('bool'), $node->getLine());
-					$var->mayBeNull = false;
-					$var->mayBeUnset = false;
-					// Remove null from type
-					$var->type = self::removeNull($var->type);
+					$var = $scope->getVarObject($varName);
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
 				}
 				break;
 				
 			case 'is_array':
 				if ($truthyBranch) {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('array'), $node->getLine());
-					$var->mayBeNull = false;
-					$var->mayBeUnset = false;
-					// Remove null from type
-					$var->type = self::removeNull($var->type);
+					$var = $scope->getVarObject($varName);
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
+				} else {
+					// In falsy branch, we know it's NOT an array
+					// Remove 'array' from union types
+					// First get the current type - either from scope or from the variable object
+					$currentType = $scope->getVarType($varName);
+					if (!$currentType && $var) {
+						$currentType = $var->type;
+					}
+					
+					if ($currentType) {
+						$newType = self::removeNamedTypeFromUnion($currentType, 'array');
+						if ($newType !== null) {
+							$scope->setVarType($varName, $newType, $node->getLine());
+						}
+					}
 				}
 				break;
 				
 			case 'is_object':
 				if ($truthyBranch) {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('object'), $node->getLine());
-					$var->mayBeNull = false;
-					$var->mayBeUnset = false;
-					// Remove null from type
-					$var->type = self::removeNull($var->type);
+					$var = $scope->getVarObject($varName);
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
 				}
 				break;
 				
 			case 'is_resource':
 				if ($truthyBranch) {
 					$scope->setVarType($varName, TypeComparer::identifierFromName('resource'), $node->getLine());
+					$var = $scope->getVarObject($varName);
+					if ($var) {
+						$var->mayBeNull = false;
+						$var->mayBeUnset = false;
+						// Remove null from type
+						$var->type = self::removeNull($var->type);
+					}
+				}
+				break;
+				
+			case 'property_exists':
+				// property_exists($obj, "prop") - if true, $obj must not be null
+				// Only narrow if both arguments are present and the second is a string literal
+				if ($truthyBranch && $var && count($node->args) >= 2 && $node->args[1]->value instanceof Node\Scalar\String_) {
 					$var->mayBeNull = false;
 					$var->mayBeUnset = false;
-					// Remove null from type
 					$var->type = self::removeNull($var->type);
 				}
 				break;
@@ -498,27 +664,34 @@ class TypeAssertion {
 	 */
 	private static function handleNotEqualNull(Node\Expr\BinaryOp $node, Scope $scope, bool $truthyBranch): void {
 		$varNode = null;
-		$nullNode = null;
 		
-		// Check if left is variable and right is null
-		if ($node->left instanceof Node\Expr\Variable && self::isNullNode($node->right)) {
+		// Check if left is variable/property and right is null
+		if (self::isNullNode($node->right)) {
 			$varNode = $node->left;
-			$nullNode = $node->right;
 		}
-		// Check if right is variable and left is null
-		elseif ($node->right instanceof Node\Expr\Variable && self::isNullNode($node->left)) {
+		// Check if right is variable/property and left is null
+		elseif (self::isNullNode($node->left)) {
 			$varNode = $node->right;
-			$nullNode = $node->left;
 		}
 		
-		if (!$varNode || !is_string($varNode->name)) {
+		if (!$varNode) {
 			return;
 		}
 		
-		$varName = $varNode->name;
+		// Extract variable name - supports both simple variables and property fetches
+		$varName = TypeComparer::getChainedPropertyFetchName($varNode);
+		if (!$varName) {
+			return;
+		}
+		
 		$var = $scope->getVarObject($varName);
 		
-		// If variable doesn't exist, we can't narrow it
+		// If variable doesn't exist, create it with inferred type so narrowing works
+		if (!$var) {
+			$inferredType = $varNode->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+			$scope->setVarType($varName, $inferredType, $node->getLine());
+			$var = $scope->getVarObject($varName);
+		}
 		if (!$var) {
 			return;
 		}
@@ -548,24 +721,26 @@ class TypeAssertion {
 	 */
 	private static function handleEqualNull(Node\Expr\BinaryOp $node, Scope $scope, bool $truthyBranch): void {
 		$varNode = null;
-		$nullNode = null;
 		
-		// Check if left is variable and right is null
-		if ($node->left instanceof Node\Expr\Variable && self::isNullNode($node->right)) {
+		// Check if left is variable/property and right is null
+		if (self::isNullNode($node->right)) {
 			$varNode = $node->left;
-			$nullNode = $node->right;
 		}
-		// Check if right is variable and left is null
-		elseif ($node->right instanceof Node\Expr\Variable && self::isNullNode($node->left)) {
+		// Check if right is variable/property and left is null
+		elseif (self::isNullNode($node->left)) {
 			$varNode = $node->right;
-			$nullNode = $node->left;
 		}
 		
-		if (!$varNode || !is_string($varNode->name)) {
+		if (!$varNode) {
 			return;
 		}
 		
-		$varName = $varNode->name;
+		// Extract variable name - supports both simple variables and property fetches
+		$varName = TypeComparer::getChainedPropertyFetchName($varNode);
+		if (!$varName) {
+			return;
+		}
+		
 		$var = $scope->getVarObject($varName);
 		
 		if (!$var) {
@@ -641,6 +816,100 @@ class TypeAssertion {
 		
 		// Otherwise return as-is
 		return $type;
+	}
+	
+	/**
+	 * Remove a named type from a union type
+	 * 
+	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
+	 * @param string $typeName The type name to remove (e.g., 'array', 'string')
+	 * @return Node\Name|Node\Identifier|Node\ComplexType|null
+	 */
+	private static function removeNamedTypeFromUnion(Node\Name|Node\Identifier|Node\ComplexType|null $type, string $typeName): Node\Name|Node\Identifier|Node\ComplexType|null {
+		if ($type === null) {
+			return null;
+		}
+		
+		// If it's a UnionType, filter out the named type
+		if ($type instanceof Node\UnionType) {
+			$remainingTypes = [];
+			foreach ($type->types as $subType) {
+				if (!TypeComparer::isNamedIdentifier($subType, $typeName)) {
+					$remainingTypes[] = $subType;
+				}
+			}
+			
+			if (empty($remainingTypes)) {
+				return null;
+			}
+			
+			if (count($remainingTypes) === 1) {
+				return $remainingTypes[0];
+			}
+			
+			return new Node\UnionType($remainingTypes);
+		}
+		
+		// If it's just the named type we're removing, return null
+		if (TypeComparer::isNamedIdentifier($type, $typeName)) {
+			return null;
+		}
+		
+		// Otherwise return as-is
+		return $type;
+	}
+	
+	/**
+	 * Collect instanceof types from a chain of OR expressions
+	 * Returns [varName, [types]] if all checks are on the same variable, null otherwise
+	 * 
+	 * @param Node $node
+	 * @return array|null
+	 */
+	private static function collectInstanceofTypes(Node $node): ?array {
+		$varName = null;
+		$types = [];
+		
+		if (!self::collectInstanceofTypesFromNode($node, $varName, $types)) {
+			return null;
+		}
+		
+		return [$varName, $types];
+	}
+	
+	/**
+	 * Recursively collect instanceof types from a node
+	 * 
+	 * @param Node $node
+	 * @param string|null $varName
+	 * @param array $types
+	 * @return bool True if all instanceof checks are on the same variable
+	 */
+	private static function collectInstanceofTypesFromNode(Node $node, ?string &$varName, array &$types): bool {
+		if ($node instanceof Node\Expr\Instanceof_) {
+			// Extract variable name
+			$currentVarName = TypeComparer::getChainedPropertyFetchName($node->expr);
+			if ($currentVarName === null || !($node->class instanceof Node\Name)) {
+				return false;
+			}
+			
+			// Check if this is the same variable as previous checks
+			if ($varName === null) {
+				$varName = $currentVarName;
+			} elseif ($varName !== $currentVarName) {
+				// Different variable - can't create union
+				return false;
+			}
+			
+			$types[] = $node->class;
+			return true;
+		} elseif ($node instanceof Node\Expr\BinaryOp\BooleanOr) {
+			// Recursively check both sides
+			return self::collectInstanceofTypesFromNode($node->left, $varName, $types) &&
+			       self::collectInstanceofTypesFromNode($node->right, $varName, $types);
+		}
+		
+		return false;
 	}
 	
 	/**

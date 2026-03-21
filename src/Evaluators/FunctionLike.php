@@ -2,6 +2,7 @@
 
 namespace BambooHR\Guardrail\Evaluators;
 
+use BambooHR\Guardrail\Abstractions\FunctionAbstraction;
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Metrics\Metric;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
@@ -52,7 +53,9 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 			if ($param->variadic) {
 				$scope->setVarType(strval($param->var->name), TypeComparer::identifierFromName("array"), $param->getLine());
 			} else {
-				$scope->setVarType(strval($param->var->name), $param->type, $param->getLine());
+				// Use resolveDeclaredParamTypes to get type from native hint or docblock
+				$paramType = FunctionAbstraction::resolveDeclaredParamTypes($param);
+				$scope->setVarType(strval($param->var->name), $paramType, $param->getLine());
 			}
 			$scope->setVarWritten($param->var->name, $func->getLine());
 			$scope->setVarUsed(strval($param->var->name)); // It's ok to leave a parameter unused, so we just mark it used.
@@ -73,6 +76,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 		}
 		if ($func instanceof Closure) {
 			foreach ($func->uses as $variable) {
+				assert($variable instanceof Node\Expr\ClosureUse);
 				// We don't track variables in global scope, so we'll have to assume those are ok.
 				$varExists = $scopeStack->getVarExists($variable->var->name);
 				if (!$varExists && !$scopeStack->isGlobal() && !$variable->byRef) {
@@ -80,6 +84,7 @@ class FunctionLike implements OnEnterEvaluatorInterface, OnExitEvaluatorInterfac
 					$scopeStack->getOutput()->emitError(__CLASS__, $fileName, $variable->getLine(), ErrorConstants::TYPE_UNKNOWN_VARIABLE, "Attempt to use unknown variable \$" . $variable->var->name . " in uses() clause");
 				} else {
 					$type = $scopeStack->getVarType($variable->var->name);
+					assert($type!=null);
 					$scopeStack->setVarUsed($variable->var->name);
 					if ($varExists && $variable->byRef) {
 						// This is kind of fun, it's passed by reference, so we literally reference the exact same

@@ -77,7 +77,7 @@ class InconsistentVariableCheck extends BaseCheck {
 					return;
 				}
 				
-				// Skip if variable is used inside isset(), empty(), or array_key_exists()
+				// Skip if variable is used inside isset(), empty(), array_key_exists(), or assert()
 				// These functions are specifically designed to handle potentially unset variables
 				$parent = $parentNodes[count($parentNodes) - 1] ?? null;
 				
@@ -86,12 +86,12 @@ class InconsistentVariableCheck extends BaseCheck {
 					return;
 				}
 				
-				// Check for array_key_exists() function call
-				if ($parent instanceof Node\Arg) {
-					$grandparent = $parentNodes[count($parentNodes) - 2] ?? null;
-					if ($grandparent instanceof Node\Expr\FuncCall && $grandparent->name instanceof Node\Name) {
-						$funcName = strtolower($grandparent->name->toString());
-						if ($funcName === 'array_key_exists') {
+				// Check for array_key_exists() and assert() function calls
+				// Need to check all parent nodes since variable might be inside an expression (e.g., assert($var instanceof Type))
+				foreach ($parentNodes as $parentNode) {
+					if ($parentNode instanceof Node\Expr\FuncCall && $parentNode->name instanceof Node\Name) {
+						$funcName = strtolower($parentNode->name->toString());
+						if ($funcName === 'array_key_exists' || $funcName === 'assert') {
 							return;
 						}
 					}

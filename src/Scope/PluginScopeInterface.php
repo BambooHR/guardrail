@@ -23,6 +23,7 @@ interface PluginScopeInterface
 	public function markAllVarsUsed(): void;
 	public function getUnusedVars(): array;
 	public function getUsedVars(): array;
+	public function getAllVars(): array;
 	public function getTypeChangedVars(): array;
 	function getVarType($name): Name|Identifier|ComplexType|null;
 	function getVarExists(string $name): bool;

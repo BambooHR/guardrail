@@ -13,7 +13,9 @@ use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\Expr\NullsafePropertyFetch;
 use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\ClassLike;
 
 /**
@@ -64,7 +66,11 @@ class PropertyFetchCheck extends BaseCheck {
 				$currentScope = $scopeStack ? $scopeStack->getCurrentScope() : $scope;
 				$var = $currentScope?->getVarObject($chainedParent);
 				
-				$isNullable = TypeComparer::ifAnyTypeIsNull($type) || ($var && $var->mayBeNull);
+				// Report null dereference errors if:
+				// 1. Type is known to be nullable, OR
+				// 2. Type is unknown but variable may be null (untyped parameters/properties)
+				$isNullable = ($type !== null && TypeComparer::ifAnyTypeIsNull($type)) || 
+				              ($var && $var->mayBeNull);
 				
 				if ($isNullable && !NodePatterns::parentIgnoresNulls($scope?->getParentNodes(), $node)) {
 					$variable = TypeComparer::getChainedPropertyFetchName($node) ?? "";
@@ -94,22 +100,23 @@ class PropertyFetchCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param string $fileName -
-	 * @param Node   $node     -
-	 * @param string $type     -
+	 * @param string $fileName                          -
+	 * @param PropertyFetch|NullSafePropertyFetch $node -
+	 * @param string $type                              - 
 	 * @return void
 	 */
-	private function handleUndeclaredProperty($fileName, Node $node, $type) {
+	private function handleUndeclaredProperty($fileName,PropertyFetch|NullsafePropertyFetch $node, $type) {
+
 		// Unknown property, but maybe they use magic methods to retrieve.
 		$hasGet = Util::findAbstractedMethod($type, "__get", $this->symbolTable);
 		if (!$hasGet) {
-			$method = Util::findAbstractedMethod($type, $node->name, $this->symbolTable);
+			$method = Util::findAbstractedMethod($type, strval($node->name), $this->symbolTable);
 			if ($method) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_INCORRECT_DYNAMIC_CALL, "Attempt to fetch a property rather than call method " . $node->name);
 			}
 
 			static $reported = [];
-			if (!isset($reported[$type . '::' . $node->name])) {
+			if (!isset($reported[$type . '::' . strval($node->name)])) {
 				//$reported[$type . '::' . $node->name] = true;
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_PROPERTY, "Accessing unknown property of $type::" . $node->name);
 			}
@@ -117,15 +124,15 @@ class PropertyFetchCheck extends BaseCheck {
 	}
 
 	/**
-	 * @param string    $fileName   -
-	 * @param Node      $node       -
-	 * @param string    $type       -
-	 * @param Property  $property   -
-	 * @param string    $declaredIn -
-	 * @param ClassLike $inside     -
+	 * @param string    $fileName                       - 
+	 * @param PropertyFetch|NullSafePropertyFetch $node -
+	 * @param string    $type                           - 
+	 * @param Property  $property                       -
+	 * @param string    $declaredIn                     -
+	 * @param ClassLike $inside                         -
 	 * @return void
 	 */
-	private function handleDeclaredProperty($fileName, Node $node, $type, Property $property, $declaredIn, ?ClassLike $inside = null) {
+	private function handleDeclaredProperty($fileName, PropertyFetch|NullsafePropertyFetch $node, $type, Property $property, $declaredIn, ?ClassLike $inside = null) {
 		$access = $property->getAccess();
 
 		if ($access == "protected" || $access == "private") {

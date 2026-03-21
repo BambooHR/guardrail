@@ -17,9 +17,7 @@ class Clone_ implements ExpressionInterface {
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
-
-		/** @var Node\Expr\Clone_ $clone */
-		$clone = $node;
-		return $clone->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
+		assert($node instanceof Node\Expr\Clone_);
+		return $node->expr->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 	}
 }

@@ -40,6 +40,12 @@ class InstanceOf_ implements ExpressionInterface {
 				$trueScope = $scopeStack->getCurrentScope()->getScopeClone();
 				$falseScope = $trueScope->getScopeClone();
 				$trueScope->setVarType($varName, $className, $node->getLine());
+				// instanceof proves the variable is not null and is set
+				$var = $trueScope->getVarObject($varName);
+				if ($var) {
+					$var->mayBeNull = false;
+					$var->mayBeUnset = false;
+				}
 				$falseScope->setVarType($varName, TypeComparer::removeNamedOption($falseScope->getVarType($varName), strval($className)), $node->getLine());
 				$node->setAttribute('assertsTrue', $trueScope);
 				$node->setAttribute('assertsFalse', $falseScope);

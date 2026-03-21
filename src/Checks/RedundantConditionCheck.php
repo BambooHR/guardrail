@@ -58,7 +58,7 @@ class RedundantConditionCheck extends BaseCheck {
 	 * @param Scope|null           $scope    -
 	 * @return void
 	 */
-	public function run(string $fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null): void {
+	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null): void {
 		// TODO: Add assert() exclusion once we have access to parent nodes
 		
 		if ($node instanceof Instanceof_) {
@@ -141,6 +141,9 @@ class RedundantConditionCheck extends BaseCheck {
 
 		// Get the non-null side
 		$varNode = $leftIsNull ? $node->right : $node->left;
+		if ($varNode === null) {
+			return;
+		}
 		$varType = $varNode->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		
 		// If no inferred type and it's a variable, try scope lookup
@@ -202,10 +205,10 @@ class RedundantConditionCheck extends BaseCheck {
 		
 		// Try scope lookup for variables
 		if (!$leftType && $node->left instanceof Variable && is_string($node->left->name) && $scope) {
-			$leftType = $scope->getVarType($node->left->name);
+			$leftType = $scope?->getVarType($node->left->name);
 		}
 		if (!$rightType && $node->right instanceof Variable && is_string($node->right->name) && $scope) {
-			$rightType = $scope->getVarType($node->right->name);
+			$rightType = $scope?->getVarType($node->right->name);
 		}
 
 		// Skip if either type is unknown or mixed

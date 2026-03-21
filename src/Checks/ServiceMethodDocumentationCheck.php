@@ -6,6 +6,7 @@ use BambooHR\Guardrail\Metrics\Metric;
 use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
+use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -46,7 +47,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 			}
 
 			$docCommentData = $this->extractDocCommentData($docComment);
-			$actualParams = array_map(fn($param) => $param->var, $node->getParams());
+			$actualParams = $node->getParams();
 			$docCommentParams = $docCommentData['params'];
 
 			$this->validateParameters($actualParams, $docCommentParams, $fileName, $node, $inside);
@@ -85,6 +86,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 	 * @return void
 	 */
 	private function emitMetricsForNode(Node $node, ?Node\Stmt\ClassLike $inside): void {
+		assert($node instanceof ClassMethod || $node instanceof Node\Stmt\Function_);	
 		$docComment = $node->getDocComment()?->getText();
 		if ($docComment !== null && str_contains($docComment, '@deprecated')) {
 			$this->metricOutput->emitMetric(new Metric(
@@ -123,16 +125,16 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function validateParameter($actualParam, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
-		$actualParamName = $actualParam->name ?? $actualParam->getString();
+	private function validateParameter(Param $actualParam, $docCommentParams, string $fileName, Node\Stmt\ClassMethod $node, ?Node\Stmt\ClassLike $inside): void {
+		$actualParamName = strval($actualParam->var->name ?? '');
 		$docCommentParam = $docCommentParams[$actualParamName] ?? null;
 		if (!$docCommentParam) {
 			$this->emitParameterMismatchError($fileName, $node, $inside, $actualParamName);
 			return;
 		}
 
-		$actualParamAttribute = $actualParam->getAttribute('inferrer-type');
-		if ($this->isComplexType($actualParamAttribute)) {
+		$actualParamAttribute = $actualParam->type;
+		if ($actualParamAttribute !== null && $this->isComplexType($actualParamAttribute)) {
 			$this->validateComplexType($actualParamAttribute->types, $docCommentParam['type'], $fileName, $node, $inside, $actualParamName);
 		} elseif ($actualParamAttribute instanceof Node\NullableType) {
 			$this->validateNullableType($actualParamAttribute, $docCommentParam['type'], $fileName, $node, $inside, $actualParamName);
@@ -170,7 +172,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 
 		foreach ($actualParamTypes as $typeObject) {
-			$actualParamType = $typeObject->name ?? $typeObject->toString();
+			$actualParamType = $typeObject->name ?? $typeObject?->toString();
 			if (in_array($actualParamType, self::BLOCKED_SERVICE_DOCUMENTATION_TYPES)) {
 				$this->emitTypeMismatchError($fileName, $node, $inside, $propertyName, 'The following Types are not allowed: ' . implode(', ', self::NULLABLE_BLOCKED_SERVICE_DOCUMENTATION_TYPES) . ', or null');
 				break;
@@ -253,7 +255,7 @@ class ServiceMethodDocumentationCheck extends BaseCheck {
 		}
 
 		$actualReturn = $node->getReturnType();
-		if ($this->isComplexType($actualReturn)) {
+		if ($actualReturn !== null && $this->isComplexType($actualReturn)) {
 			$this->validateComplexType($actualReturn->types, $docCommentReturn, $fileName, $node, $inside, $propertyName);
 		} elseif ($actualReturn instanceof Node\NullableType) {
 			$this->validateNullableType($actualReturn, $docCommentReturn, $fileName, $node, $inside, $propertyName);

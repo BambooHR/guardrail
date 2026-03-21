@@ -6,13 +6,24 @@ class CsvOutput extends XUnitOutput
 {
 	private $errors = [];
 
-	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+	/**
+	 * emitError
+	 *
+	 * @param string $className  The class name
+	 * @param string $fileName   The file name
+	 * @param int    $lineNumber The line number
+	 * @param string $name       The name
+	 * @param string $message    The message
+	 *
+	 * @return void
+	 */
+	public function emitError($className, $fileName, $lineNumber, $type, $message = "") {
 		$this->totalErrors++;
-		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
+		if (!$this->shouldEmit($fileName, $type, $lineNumber)) {
 			return;
 		}
 		$this->displayedErrors++;
-		$this->errors[$fileName][] = ["name" => $name,"line" => $lineNumber, "message" => $message];
+		$this->errors[$fileName][] = ["name" => $type,"line" => $lineNumber, "message" => $message];
 	}
 
 	public function renderResults() {

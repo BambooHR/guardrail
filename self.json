@@ -41,6 +41,7 @@
     "Standard.Global.String",
     "Standard.Goto",
     "Standard.Illegal.Enum",
+    "Standard.Illegal.PropertyType",
     "Standard.Impossible.Condition",
     "Standard.Inconsistent.Variable",
     "Standard.Incorrect.Dynamic",

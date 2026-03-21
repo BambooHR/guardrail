@@ -68,8 +68,10 @@ readonly class ConstantExpressionEvaluator {
 				"this", "self", "static", "parent" => throw new ConstExprEvaluationException(),
 				default => $class->toString()
 			};
-		} else {
+		} elseif ($class instanceof Expr) {
 			return $this->evaluate($class);
+		} else {
+			throw new ConstExprEvaluationException();
 		}
 	}
 
@@ -79,8 +81,10 @@ readonly class ConstantExpressionEvaluator {
 	private function resolveConstantName(Expr|Error|Identifier $name): string {
 		if ($name instanceof Identifier) {
 			return $name->toString();
-		} else {
+		} elseif ($name instanceof Expr) {
 			return $this->evaluate($name);
+		} else {
+			throw new ConstExprEvaluationException();
 		}
 	}
 

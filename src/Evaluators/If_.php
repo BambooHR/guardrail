@@ -4,6 +4,7 @@
 
 namespace BambooHR\Guardrail\Evaluators;
 
+use BambooHR\Guardrail\Scope\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeInference\TypeAssertion;
@@ -27,25 +28,22 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			
 			// Set reference to this if node on all elseif and else nodes
 			foreach ($node->elseifs as $elseIf) {
+				assert($elseIf instanceof ElseIf_);
 				$elseIf->setAttribute('parent-if', $node);
 			}
-			if ($node->else !== null) {
+			if ($node->else instanceof Node\Stmt\Else_) {
 				$node->else->setAttribute('parent-if', $node);
 			}
 			
-			// Note: At this point, the condition hasn't been evaluated yet.
-			// The condition will be evaluated as part of normal AST traversal,
-			// and any assignments in the condition (like if ($x = foo())) will
-			// modify the parent scope that's currently on the stack.
-			// We'll capture those changes in onExit when we have access to the
-			// post-condition scope state.
+			// Push un-narrowed scope for condition evaluation.
+			// Narrowing will be applied AFTER the condition is evaluated
+			// (via the 'if-narrow-on-leave' attribute on the cond node)
+			// to avoid pre-narrowing the scope before checks run on the condition.
+			$condScope = $parentSnapshot->getScopeClone();
+			$scopeStack->pushScope($condScope);
 			
-			// For now, create then-branch from pre-condition snapshot
-			$thenBranch = $parentSnapshot->getScopeClone();
-			TypeAssertion::narrowTypes($node->cond, $thenBranch, true);
-			
-			$node->setAttribute('if-then-scope', $thenBranch);
-			$scopeStack->pushScope($thenBranch);
+			// Mark condition to apply narrowing when it finishes evaluating
+			$node->cond->setAttribute('if-narrow-on-leave', $node);
 			
 		} elseif ($node instanceof Node\Stmt\ElseIf_) {
 			// ElseIf nodes are children of the If_ node, so we need to find it
@@ -54,10 +52,41 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			// This will be set when we process the If_ node
 			$ifNode = $node->getAttribute('parent-if');
 			if ($ifNode) {
+				// Pop the previous branch scope and update its attribute with the executed scope
+				$executedScope = $scopeStack->popScope();
+				
+				// Determine which branch we're coming from and update its attribute
+				$elseifIndex = $node->getAttribute('elseif-index');
+				if ($elseifIndex === null || $elseifIndex === 0) {
+					// Coming from then-branch
+					$ifNode->setAttribute('if-then-scope', $executedScope);
+				} else {
+					// Coming from a previous elseif
+					$prevElseIf = $ifNode->elseifs[$elseifIndex - 1];
+					if ($prevElseIf) {
+						$prevElseIf->setAttribute('elseif-scope', $executedScope);
+					}
+				}
+				
+				/** @var Scope $parentScope */
 				$parentScope = $ifNode->getAttribute('if-parent-scope');
 				
 				// Create independent scope for elseif-branch from parent
+				/** @var Scope $elseIfBranch */
 				$elseIfBranch = $parentScope->getScopeClone();
+				
+				// Apply inverse narrowing from the if condition (it was false to reach here)
+				TypeAssertion::narrowTypes($ifNode->cond, $elseIfBranch, false);
+				
+				// Apply inverse narrowing from all previous elseif conditions
+				$currentElseifIndex = $node->getAttribute('elseif-index') ?? 0;
+				for ($i = 0; $i < $currentElseifIndex; $i++) {
+					if (isset($ifNode->elseifs[$i])) {
+						TypeAssertion::narrowTypes($ifNode->elseifs[$i]->cond, $elseIfBranch, false);
+					}
+				}
+				
+				// Apply narrowing for this elseif's own condition (it must be true)
 				TypeAssertion::narrowTypes($node->cond, $elseIfBranch, true);
 				
 				// Store on the elseif node and push to stack
@@ -69,6 +98,22 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 			// Else node is a child of the If_ node
 			$ifNode = $node->getAttribute('parent-if');
 			if ($ifNode) {
+				// Pop the previous branch scope and update its attribute with the executed scope
+				$executedScope = $scopeStack->popScope();
+				
+				// Determine which branch we're coming from and update its attribute
+				if (count($ifNode->elseifs) > 0) {
+					// Coming from last elseif
+			
+					/** @var Node\Stmt\ElseIf_ $lastElseIf */
+					$lastElseIf = $ifNode->elseifs[count($ifNode->elseifs) - 1];
+					$lastElseIf->setAttribute('elseif-scope', $executedScope);
+				} else {
+					// Coming from then-branch
+					$ifNode->setAttribute('if-then-scope', $executedScope);
+				}
+				
+				/** @var \BambooHR\Guardrail\Scope\Scope $parentScope */
 				$parentScope = $ifNode->getAttribute('if-parent-scope');
 				
 				// Create independent scope for else-branch from parent
@@ -77,6 +122,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				// Apply inverse narrowing from if and all elseif conditions
 				TypeAssertion::narrowTypes($ifNode->cond, $elseBranch, false);
 				foreach ($ifNode->elseifs as $elseIf) {
+					assert($elseIf instanceof Node\Stmt\ElseIf_);
 					TypeAssertion::narrowTypes($elseIf->cond, $elseBranch, false);
 				}
 				
@@ -102,18 +148,27 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				$scopeStack->popScope();
 				$parentScope = $scopeStack->getCurrentScope();
 				TypeAssertion::narrowTypes($node->cond, $parentScope, false);
-				
-				if ($node->cond->hasAttribute('assertsFalse')) {
-					$else = $node->cond->getAttribute('assertsFalse');
-					$parentScope->merge($else);
-				}
 			} else {
 				// Collect all branch scopes from node attributes (independent clones)
 				$branches = [];
 				$exitedBranches = [];
 				
-				// Pop then-branch from stack (we're done executing it)
-				$scopeStack->popScope();
+				// Pop the last branch from stack and update its attribute
+				$lastBranchScope = $scopeStack->popScope();
+				
+				// Update the attribute for the last branch
+				if ($node->else !== null) {
+					// Last branch is else
+					$node->else->setAttribute('else-scope', $lastBranchScope);
+				} elseif (count($node->elseifs) > 0) {
+					// Last branch is last elseif
+					$lastElseIf = $node->elseifs[count($node->elseifs) - 1];
+					assert($lastElseIf instanceof Node\Stmt\ElseIf_);
+					$lastElseIf->setAttribute('elseif-scope', $lastBranchScope);
+				} else {
+					// Last branch is then
+					$node->setAttribute('if-then-scope', $lastBranchScope);
+				}
 				
 				// Add then-branch scope from node attribute
 				$thenScope = $node->getAttribute('if-then-scope');
@@ -125,10 +180,13 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				// Add elseif branches from node attributes
 				for ($i = 0; $i < count($node->elseifs); ++$i) {
 					$elseIfNode = $node->elseifs[$i];
-					$scopeStack->popScope(); // Pop from stack
+					assert($elseIfNode instanceof ElseIf_);	
+					// Note: elseif scopes were already popped in onEnter when transitioning to next branch
 					
+					/** @var Scope $elseIfScope */
 					$elseIfScope = $elseIfNode->getAttribute('elseif-scope');
 					$branches[] = $elseIfScope;
+					
 					
 					$elseIfStmts = $elseIfNode->stmts;
 					if (!empty($elseIfStmts) && 
@@ -142,7 +200,7 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 				
 				// Add else branch if it exists
 				if ($node->else !== null) {
-					$scopeStack->popScope(); // Pop from stack
+					// Note: else scope was already popped above (it's the last branch)
 					
 					$elseScope = $node->else->getAttribute('else-scope');
 					$branches[] = $elseScope;
@@ -156,11 +214,21 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 						$exitedBranches[] = count($branches) - 1;
 					}
 				} else {
-					// No else - create implicit else branch from parent scope
-					$parentScope = $node->getAttribute('if-parent-scope');
-					$implicitElseBranch = $parentScope->getScopeClone();
-					$branches[] = $implicitElseBranch;
+				// No else - create implicit else branch from parent scope
+				/** @var Scope $parentScope */
+				$parentScope = $node->getAttribute('if-parent-scope');
+				$implicitElseBranch = $parentScope->getScopeClone();
+				
+				// Apply inverse narrowing from the if condition (it was false to reach implicit else)
+				TypeAssertion::narrowTypes($node->cond, $implicitElseBranch, false);
+				
+				// Apply inverse narrowing from all elseif conditions (they were all false)
+				foreach ($node->elseifs as $elseIfNode) {
+					TypeAssertion::narrowTypes($elseIfNode->cond, $implicitElseBranch, false);
 				}
+				
+				$branches[] = $implicitElseBranch;
+			}	
 				
 				// Merge all branches into parent scope
 				$parentScope = $scopeStack->getCurrentScope();
@@ -173,13 +241,13 @@ class If_ implements OnEnterEvaluatorInterface, OnExitEvaluatorInterface {
 
 		$cond = self::getIfCond($node);
 // If there is an asserts true, then use it over the state on the stack.
-		if ($cond->hasAttribute('assertsTrue')) {
+		if ($cond && $cond->hasAttribute('assertsTrue')) {
 			$scopeStack->popScope();
 			$condScope = $cond->getAttribute('assertsTrue');
 			$scopeStack->pushScope($condScope);
 		}
 		$scopeStack->swapTopTwoScopes();
-		if ($cond->hasAttribute('assertsFalse')) {
+		if ($cond && $cond->hasAttribute('assertsFalse')) {
 			$notCondScope = $cond->getAttribute('assertsFalse');
 			$scopeStack->popScope();
 		} else {

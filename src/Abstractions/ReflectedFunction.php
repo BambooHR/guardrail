@@ -21,7 +21,7 @@ class ReflectedFunction implements FunctionLikeInterface {
 	/**
 	 * @var \ReflectionFunction
 	 */
-	private $refl;
+	private \ReflectionFunction $refl;
 
 	/**
 	 * ReflectedFunction constructor.

@@ -36,7 +36,7 @@ class ScopeStack implements ScopeInterface {
 		$this->nameContext = $nameContext;
 	}
 	
-	function getNameContext(): ?\PhpParser\NameContext {
+	public function getNameContext(): ?\PhpParser\NameContext {
 		return $this->nameContext;
 	}
 
@@ -121,6 +121,10 @@ class ScopeStack implements ScopeInterface {
 
 	public function setVarReference($name, ScopeVar $ref): void {
 		$this->getCurrentScope()->setVarReference($name, $ref);
+	}
+
+	public function getAllVars(): array {
+		return $this?->getCurrentScope()?->getAllVars() ?? [];
 	}
 
 	public function setVarWritten($name, $line): void {

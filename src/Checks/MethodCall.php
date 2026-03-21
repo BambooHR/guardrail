@@ -13,6 +13,7 @@ use BambooHR\Guardrail\Metrics\MetricOutputInterface;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
+use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
@@ -81,11 +82,7 @@ class MethodCall extends CallCheck {
 			}
 
 			$name = TypeComparer::getChainedPropertyFetchName($var);
-			if ($scope && $name && $scope->getVarType($name)) {
-				$className = $scope->getVarType($name);
-			} else {
-				$className = $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
-			}
+			$className = $scope?->getVarType($name) ?? $node->var->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 
 			if ($node instanceof Expr\NullsafeMethodCall) {
 				$className = TypeComparer::removeNullOption($className);
@@ -95,7 +92,11 @@ class MethodCall extends CallCheck {
 			$scopeStack = $scope instanceof ScopeStack ? $scope : null;
 			$currentScope = $scopeStack ? $scopeStack->getCurrentScope() : $scope;
 			$var = $currentScope?->getVarObject($name);
-			$isNullable = TypeComparer::ifAnyTypeIsNull($className) || ($var && $var->mayBeNull);
+			// Report null method call errors if:
+			// 1. Type is known to be nullable, OR
+			// 2. Type is unknown but variable may be null (untyped parameters)
+			$isNullable = ($className !== null && TypeComparer::ifAnyTypeIsNull($className)) || 
+			              ($var && $var->mayBeNull);
 
 			if ($isNullable && !($node instanceof Expr\NullsafeMethodCall)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_NULL_METHOD_CALL, "Attempt to call $methodName() on a potentially null object");
@@ -107,6 +108,7 @@ class MethodCall extends CallCheck {
 				$this->checkForAmbiguousMethodCall($fileName, $node, $className, $methodName);
 			}
 
+			assert($scope instanceof Scope);
 			TypeComparer::forEachType($className, function ($classNameOb) use ($fileName, $methodName, $node, $scope, $inside, $className) {
 				if ($classNameOb instanceof Node\IntersectionType) {
 					// Only one interface of the intersection has to implement the method.
@@ -164,6 +166,7 @@ class MethodCall extends CallCheck {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_ACCESS_VIOLATION, "Attempt to call protected method $className->" . $methodName);
 		}
 
+		assert($node instanceof Node\Expr\MethodCall || $node instanceof Node\Expr\StaticCall);
 		$params = $method->getParameters();
 		$minimumArgs = $method->getMinimumRequiredParameters();
 		if (count($node->args) < $minimumArgs && !$node->isFirstClassCallable()) {
@@ -424,10 +427,10 @@ class MethodCall extends CallCheck {
 			$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Unknown class $typeClassName in method call to $methodName()");
 			return false;
 		}
-		//$templates= ["T"]; //$class->getTemplates()
-
+		//$templates= ["T"]; //$class->getTemplates()	
 		$method = Util::findAbstractedSignature($typeClassName, $methodName, $this->symbolTable);
 		if ($method) {
+			
 			$this->checkMethod($fileName, $node, $method->getClass()->getName(), $methodName, $scope, $method, $inside);
 			return true;
 		} else {

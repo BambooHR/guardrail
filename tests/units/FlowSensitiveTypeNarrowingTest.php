@@ -567,4 +567,74 @@ class FlowSensitiveTypeNarrowingTest {
 		// $x should still be known
 		echo $x; // OK: $x is set
 	}
+	
+	// ========================================
+	// TEST: Match Expression Type Narrowing
+	// ========================================
+	
+	function testMatchAllNonNull($format) {
+		// All arms return non-null objects, including default
+		$output = match ($format) {
+			'text'   => new \stdClass(),
+			'counts' => new \ArrayObject(),
+			'csv'    => new \DateTime(),
+			default  => new \Exception()
+		};
+		
+		// $output should be non-null (union of all return types)
+		$output->method(); // OK: all match arms return non-null
+	}
+	
+	function testMatchWithNullableArm($format) {
+		// One arm returns null
+		$output = match ($format) {
+			'text'   => new \stdClass(),
+			'counts' => null,
+			default  => new \Exception()
+		};
+		
+		// $output may be null
+		$output->method(); // ERROR: mayBeNull (one arm returns null)
+	}
+	
+	function testMatchNoDefault($value) {
+		// No default arm - could throw UnhandledMatchError
+		$result = match ($value) {
+			1 => 'one',
+			2 => 'two',
+			3 => 'three'
+		};
+		
+		// $result should be string (all arms return string)
+		// Note: No default means runtime error is possible, but type is still string
+		echo strlen($result); // OK: type is string
+	}
+	
+	function testMatchMixedTypes($value) {
+		// Different types in different arms
+		$result = match ($value) {
+			'int'    => 42,
+			'string' => 'hello',
+			'bool'   => true,
+			default  => null
+		};
+		
+		// $result is int|string|bool|null
+		$result->method(); // ERROR: mayBeNull and not all types have method()
+	}
+	
+	function testMatchInAssignment($config) {
+		// Real-world example: match result assigned to variable
+		$output = match ($config->getFormat()) {
+			'text'   => new \stdClass(),
+			'counts' => new \ArrayObject(),
+			default  => new \DateTime()
+		};
+		
+		// Use $output later - should be non-null
+		if ($output->someProperty) { // OK: $output is non-null
+			return true;
+		}
+		return false;
+	}
 }

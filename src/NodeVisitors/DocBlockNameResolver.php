@@ -14,6 +14,8 @@ use BambooHR\Guardrail\TypeParser;
 use PhpParser\NameContext;
 use PhpParser\Node;
 use PhpParser\Node\Name;
+use PhpParser\Node\Param;
+use PhpParser\Node\Stmt\ClassMethod as StmtClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\NodeVisitorAbstract;
@@ -91,9 +93,12 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 			}
 
 			foreach ($node->getParams() as $param) {
-				if (is_string($param->var->name)) {
-					$name = $param->var->name;
+				assert($param instanceof Param);
+				$paramVar = $param->var;
+				if ($paramVar !== null && is_string($paramVar->name)) {
+					$name = $paramVar->name;
 					if (isset($params[$name])) {
+						$paramVar->setAttribute('DocBlockName', $params[$name]);
 						$param->setAttribute('DocBlockName', $params[$name]);
 					}
 				}
@@ -123,13 +128,13 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	/**
 	 * importReturnValue
 	 *
-	 * @param Function_|ClassMethod $node Instance of FunctionAbstraction ClassMethod
+	 * @param Function_|\PhpParser\Node\Stmt\ClassMethod $node Instance of FunctionAbstraction ClassMethod
 	 *
 	 * @return void
 	 */
 	private function importFunctionValues($node) {
 		$comment = $node->getDocComment();
-		if ($comment) {
+		if ($comment !== null) {
 			$str = $comment->getText();
 			try {
 				$this->processDocBlockParams($node, $str);
@@ -170,17 +175,19 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 	/**
 	 * processDockBlockReturn
 	 *
-	 * @param Function_|ClassMethod $node Instance of FunctionAbstraction ClassMethod
+	 * @param Function_|\PhpParser\Node\Stmt\ClassMethod $node Instance of FunctionAbstraction ClassMethod
 	 * @param string                $str  The docBlock text
 	 *
 	 * @return void
 	 */
 	private function processDocBlockReturn($node, $str) {
-		if ($str && preg_match('/@return +([-A-Z0-9_|\\\\<>,]+(\[])*)( +\\$([A-Z0-9_]+))?/i', $str, $matchArray)) {
+		if ($str && preg_match('/@return +([-A-Z0-9_|\\\\<>,\$]+(\[])*)( +\\$([A-Z0-9_]+))?/i', $str, $matchArray)) {
 			$returnType = $matchArray[1];
 			try {
 				$v = $this->parser->parse($returnType);
-				$node->setAttribute("namespacedReturn", $v);
+				if ($v !== null) {
+					$node->setAttribute("namespacedReturn", $v);
+				}
 			} catch (DocBlockParserException) {
 				// Ignore it.
 			}
@@ -192,7 +199,7 @@ class DocBlockNameResolver extends NodeVisitorAbstract {
 			$list = [];
 			foreach ($matchArray as $matches) {
 				try {
-					$list[] = $this->parser->parse($matches[0]);
+					$list[] = $this->parser->parse($matches[1]);
 				} catch (DocBlockParserException) {
 					// Ignore
 				}

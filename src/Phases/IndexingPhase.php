@@ -89,7 +89,6 @@ class IndexingPhase {
 	 * @guardrail-ignore Standard.Exception.Base
 	 */
 	function indexFile($pathName) {
-		echo "Index Path:$pathName\n";
 		$baseDir = $this->config->getBasePath();
 		$name = Util::removeInitialPath($baseDir, $pathName);
 		// If the $fileName is in our phar then make it a relative path so that files that we index don't
@@ -118,7 +117,7 @@ class IndexingPhase {
 	 * @param \Iterator       $itr    A generator function that yields filenames to scan.
 	 * @return void
 	 */
-	function indexList(Config $config, OutputInterface $output, $itr) {
+	function indexList(Config $config, OutputInterface $output, \Iterator $itr) {
 		$table = $config->getSymbolTable();
 		if ($table instanceof PersistantSymbolTable) {
 			//$table->disconnect();
@@ -175,6 +174,7 @@ class IndexingPhase {
 			$table->indexTable($config->getProcessCount());
 		}
 
+		assert($table instanceof SymbolTable);
 		$this->indexTraitClasses($table, $output);
 	}
 
@@ -182,6 +182,7 @@ class IndexingPhase {
 		if ($table instanceof PersistantSymbolTable) {
 			$table->connect(0);
 		}
+		assert($table instanceof SymbolTable);
 		$classes = $table->getClassesThatUseAnyTrait();
 		$manager = new TraitIndexingParent($classes, $this->config, $table, $output);
 		$manager->run();
@@ -197,22 +198,16 @@ class IndexingPhase {
 	 */
 	public function indexString(string $name, string $fileData): int {
 		$this->indexer->setFilename($name);
-		echo "Indexing file:$name\n";
 		try {
-			echo "Parsing\n";
 			$statements = $this->parser->parse($fileData);
 		
 			if ($statements) {
-				echo "Traverse 1\n";
 				$this->traverser1->traverse($statements);
-				echo "Traverse 2\n";
 				$this->traverser2->traverse($statements);
-				echo "End traverse\n";
 			}
 		} catch (Throwable $exc) {
 			echo "\n[$name] ERROR " . $exc->getMessage() . "\n";
 		}
-		echo "Indexed file:$name\n";
 		return strlen($fileData);
 	}
 }

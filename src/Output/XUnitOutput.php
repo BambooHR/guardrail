@@ -86,6 +86,9 @@ class XUnitOutput implements OutputInterface {
 	public function getClass($className) {
 		if (!isset($this->suites[$className])) {
 			$suite = $this->doc->addTestSuite();
+			if ($suite === null) {
+				return null;
+			}
 			$suite->setName($className);
 			$this->suites[$className] = $suite;
 		}
@@ -259,17 +262,24 @@ class XUnitOutput implements OutputInterface {
 	 *
 	 * @return void
 	 */
-	public function emitError($className, $fileName, $lineNumber, $name, $message = "") {
+	public function emitError($className, $fileName, $lineNumber, $type, $message = "") {
 
 		++$this->totalErrors;
-		if (!$this->shouldEmit($fileName, $name, $lineNumber)) {
+		if (!$this->shouldEmit($fileName, $type, $lineNumber)) {
 			return;
 		}
 		++$this->displayedErrors;
 
 		$suite = $this->getClass($className);
+		if ($suite === null) {
+			return;
+		}
+		
 		if (!isset($this->files[$className][$fileName])) {
 			$case = $suite->addTestCase();
+			if ($case === null) {
+				return;
+			}
 			$case->setName($fileName);
 			$case->setClassname($className);
 			if (!isset($this->files[$className])) {
@@ -281,16 +291,18 @@ class XUnitOutput implements OutputInterface {
 		}
 
 		$message .= " on line " . $lineNumber;
-		$case->addFailure($this->escapeText($name . ":" . $message), "error");
+		if ($case !== null) {
+			$case->addFailure($this->escapeText($type . ":" . $message), "error");
+		}
 		if ($this->emitErrors && !$this->isTTY()) {
 			echo "E";
 		}
-		if (!isset($this->counts[$name])) {
-			$this->counts[$name] = 1;
+		if (!isset($this->counts[$type])) {
+			$this->counts[$type] = 1;
 		} else {
-			++$this->counts[$name];
+			++$this->counts[$type];
 		}
-		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $name: $message\n");
+		$this->outputExtraVerbose("ERROR: $fileName $lineNumber: $type: $message\n");
 	}
 
 	public function ttyContent($content): string {
@@ -360,6 +372,9 @@ class XUnitOutput implements OutputInterface {
 	 */
 	public function getErrorCount() {
 		$failures = $this->doc->getElementsByTagName("failure");
+		if ($failures === null) {
+			return 0;
+		}
 		return $failures->length;
 	}
 
@@ -385,8 +400,15 @@ class XUnitOutput implements OutputInterface {
 	public function getErrorsByFile() {
 		$fileCount = [];
 		$failures = $this->doc->getElementsByTagName("failure");
+		if ($failures === null) {
+			return $fileCount;
+		}
+		
 		for ($length = 0; $length < $failures->length; ++$length) {
 			$item = $failures->item($length);
+			if ($item === null || $item->parentNode === null) {
+				continue;
+			}
 			$name = $item->parentNode->attributes->getNamedItem("name")->textContent;
 			$fileCount[$name]++;
 		}

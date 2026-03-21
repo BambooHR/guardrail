@@ -30,7 +30,9 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 				$newStmts = [];
 				$newProps = [];
 				foreach ($constructor->getParams() as $param) {
-					if ($param->flags & (Class_::MODIFIER_READONLY | Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC)) {
+					assert($param instanceof Node\Param);
+					$flags = $param->flags;
+					if ($flags !== null && ($flags & (Class_::MODIFIER_READONLY | Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC))) {
 						$newProps[] = $this->buildProp($param);
 						$newStmts[] = $this->buildAssign($param);
 					}
@@ -71,6 +73,8 @@ class PromotedPropertyVisitor extends NodeVisitorAbstract {
 			$prop->setType($param->type);
 		}
 
+
+		/** @var Node\Stmt\Property $propNode */
 		$propNode = $prop->getNode();
 		// Make sure to copy attributes, so that we get the line numbers
 		$propNode->props[0]->setAttributes($param->getAttributes());

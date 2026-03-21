@@ -149,7 +149,48 @@ if (($x = getValue()) && $x->isValid()) {
 }
 ```
 
-## Test Suite
+```
+($a instanceof  Foo) && ($a->bar());
+
+// Equivalent to:
+if ($a instanceof Foo) {
+    $a->bar(); // $a is known to be Foo here
+} else {
+    // $a is known to NOT be Foo here
+}
+$a->bar(); // ERROR: $a might not be Foo
+```
+
+
+```
+$a=foo() || throw new Exception("foo failed"); 
+$a->bar(); // OK: $a is assigned and not null.
+
+// Equivalent to
+if ($a=foo()) {
+    // $a is known to be truthy
+} else {
+    throw new Exception("foo failed");
+}
+// $a is known to be truthy
+```
+       
+
+Evaluation of &&:
+1. Left side is produces a scope with assertions.
+2. Right side is evaluated in the context of the left side's scope.
+3. If the right side is never returns (&&exit(1)), the expression becomes the inversion of the left side assertions.
+4. If the right side is does return, it is already merged, so it becomes the state of the expression.
+
+Evaluation of ||:
+1. Left side is produces a scope with assertions.
+2. We push the left side result scope for later.
+3. Right side is evaluated in the context of the inverse of the left side's scope.
+4. We pop the left side scope back off the stack.
+4. If the right side is unreachable (|| exit(1)), the left side is truthy even after the expression.
+4. If the right side is reachable, then we merge the left and right side scopes.
+
+## Test Suite   `
 
 **Comprehensive Test File** (`tests/FlowSensitiveTypeNarrowingTest.php`):
 

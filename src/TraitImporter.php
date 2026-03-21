@@ -59,7 +59,7 @@ class TraitImporter {
 					$method = $methods[$adaptationMethodStr][strval($adaptation->trait)];
 				}
 
-				if ($adaptation->newModifier != null) {
+				if ($adaptation->newModifier != null && $method !== null) {
 					$method->flags = $method->flags & ~(Class_::MODIFIER_PRIVATE | Class_::MODIFIER_PROTECTED | Class_::MODIFIER_PUBLIC) | $adaptation->newModifier;
 				}
 

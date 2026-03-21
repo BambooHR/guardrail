@@ -25,6 +25,7 @@ class SocketBuffer {
 	/**
 	 * @param \Socket $socket Connection to read
 	 * @return void
+	 * @throws SocketException
 	 */
 	function read($socket) {
 		$read = "";
@@ -59,6 +60,7 @@ class SocketBuffer {
 	 *
 	 * @param  mixed $socket
 	 * @return int
+	 * @throws SocketException
 	 */
 	protected function waitForActionOnSocket($socket) {
 		$readSockets = [$socket];

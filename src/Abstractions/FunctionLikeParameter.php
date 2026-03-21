@@ -42,6 +42,11 @@ class FunctionLikeParameter {
 	private $nullable;
 
 	/**
+	 * @var Node|null
+	 */
+	private $docBlockType;
+
+	/**
 	 * FunctionLikeParameter constructor.
 	 *
 	 * @param Node   $type      The type
@@ -49,13 +54,15 @@ class FunctionLikeParameter {
 	 * @param bool   $optional  Is it optional
 	 * @param bool   $reference Is it a reference
 	 * @param bool   $nullable  Is it nullable
+	 * @param Node|null $docBlockType The docblock type (for template resolution)
 	 */
-	public function __construct(?Node $type, $name, $optional, $reference, $nullable) {
+	public function __construct(?Node $type, $name, $optional, $reference, $nullable, ?Node $docBlockType = null) {
 		$this->type = $type;
 		$this->name = $name;
 		$this->optional = $optional;
 		$this->reference = $reference;
 		$this->nullable = $nullable;
+		$this->docBlockType = $docBlockType;
 	}
 
 	/**
@@ -98,5 +105,12 @@ class FunctionLikeParameter {
 	 */
 	public function isNullable() {
 		return $this->nullable;
+	}
+
+	/**
+	 * @return Node|null
+	 */
+	public function getDocBlockType() {
+		return $this->docBlockType;
 	}
 }

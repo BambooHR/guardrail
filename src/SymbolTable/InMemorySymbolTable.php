@@ -45,6 +45,15 @@ class InMemorySymbolTable extends SymbolTable {
 	 */
 	private $defines = [];
 
+	/** @var ClassLike[] */
+	private $classNodes = [];
+
+	/** @var Interface_[] */
+	private $interfaceNodes = [];
+
+	/** @var Trait_[] */
+	private $traitNodes = [];
+
 	/**
 	 * addFunction
 	 *
@@ -69,6 +78,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 */
 	public function addClass($name, ClassLike $class, $file) {
 		$this->classes[strtolower($name)] = $this->basePath . '/' . $file;
+		$this->classNodes[strtolower($name)] = $class;
 	}
 
 	/**
@@ -82,6 +92,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 */
 	public function addInterface($name, Interface_ $interface, $file) {
 		$this->interfaces[strtolower($name)] = $this->basePath . '/' . $file;
+		$this->interfaceNodes[strtolower($name)] = $interface;
 	}
 
 	/**
@@ -95,6 +106,7 @@ class InMemorySymbolTable extends SymbolTable {
 	 */
 	public function addTrait($name, Trait_ $trait, $file) {
 		$this->traits[strtolower($name)] = $this->basePath . '/' . $file;
+		$this->traitNodes[strtolower($name)] = $trait;
 	}
 
 	/**
@@ -113,12 +125,12 @@ class InMemorySymbolTable extends SymbolTable {
 	/**
 	 * getDefineFile
 	 *
-	 * @param string $name The name
+	 * @param string $defineName The name
 	 *
 	 * @return mixed
 	 */
-	public function getDefineFile($name) {
-		return isset($this->defines[strtolower($name)]) ? $this->defines[strtolower($name)] : null;
+	public function getDefineFile($defineName) {
+		return isset($this->defines[strtolower($defineName)]) ? $this->defines[strtolower($defineName)] : null;
 	}
 
 	/**
@@ -150,41 +162,41 @@ class InMemorySymbolTable extends SymbolTable {
 	/**
 	 * getInterfaceFile
 	 *
-	 * @param string $name The name
+	 * @param string $interfaceName The name
 	 *
 	 * @return mixed
 	 */
-	public function getInterfaceFile($name) {
-		if (!isset($this->interfaces[strtolower($name)])) {
+	public function getInterfaceFile($interfaceName) {
+		if (!isset($this->interfaces[strtolower($interfaceName)])) {
 			return "";
 		}
-		return $this->interfaces[strtolower($name)];
+		return $this->interfaces[strtolower($interfaceName)];
 	}
 
 	/**
 	 * getClassFile
 	 *
-	 * @param string $name The name
+	 * @param string $className The name
 	 *
 	 * @return mixed
 	 */
-	public function getClassFile($name) {
-		if (!isset($this->classes[strtolower($name)])) {
+	public function getClassFile($className) {
+		if (!isset($this->classes[strtolower($className)])) {
 			return "";
 		}
-		return $this->classes[strtolower($name)];
+		return $this->classes[strtolower($className)];
 	}
 
 	/**
 	 * getFunctionFile
 	 *
-	 * @param string $name The name
+	 * @param string $methodName The name
 	 *
 	 * @return mixed
 	 */
-	public function getFunctionFile($name) {
-		if (isset($this->functions[strtolower($name)])) {
-			return $this->functions[strtolower($name)];
+	public function getFunctionFile($methodName) {
+		if (isset($this->functions[strtolower($methodName)])) {
+			return $this->functions[strtolower($methodName)];
 		}
 		return "";
 	}
@@ -242,6 +254,30 @@ class InMemorySymbolTable extends SymbolTable {
 	 *
 	 * @return bool
 	 */
+	public function getClass($name) {
+		$cacheName = strtolower($name);
+		if (isset($this->classNodes[$cacheName])) {
+			return $this->classNodes[$cacheName];
+		}
+		return parent::getClass($name);
+	}
+
+	public function getInterface($name) {
+		$cacheName = strtolower($name);
+		if (isset($this->interfaceNodes[$cacheName])) {
+			return $this->interfaceNodes[$cacheName];
+		}
+		return parent::getInterface($name);
+	}
+
+	public function getTrait($name) {
+		$cacheName = strtolower($name);
+		if (isset($this->traitNodes[$cacheName])) {
+			return $this->traitNodes[$cacheName];
+		}
+		return parent::getTrait($name);
+	}
+
 	public function isDefinedClass($name) {
 		$class = $this->getAbstractedClass($name);
 		if ($class) {

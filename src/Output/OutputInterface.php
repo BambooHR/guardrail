@@ -15,15 +15,15 @@ interface OutputInterface {
 	/**
 	 * emitError
 	 *
-	 * @param string $className The name of the class
-	 * @param string $file      The name of the file
-	 * @param int    $line      The line number
-	 * @param string $type      The type
-	 * @param string $message   The message
+	 * @param string $className  The name of the class
+	 * @param string $fileName   The name of the file
+	 * @param int    $lineNumber The line number
+	 * @param string $type       The type
+	 * @param string $message    The message
 	 *
 	 * @return mixed
 	 */
-	function emitError($className, $file, $line, $type, $message = "");
+	function emitError($className, $fileName, $lineNumber, $type, $message = "");
 
 	/**
 	 * output

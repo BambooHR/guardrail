@@ -3,6 +3,7 @@
 namespace BambooHR\Guardrail\Checks;
 
 use BambooHR\Guardrail\Checks\BaseCheck;
+use BambooHR\Guardrail\Evaluators\Catch_;
 use BambooHR\Guardrail\NodeVisitors\ForEachNode;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\TypeComparer;
@@ -61,11 +62,13 @@ class ThrowsCheck extends BaseCheck {
 		}
 	}
 
-	function isDocumentedThrow(?Node $node, string $throw) {
+	function isDocumentedThrow(?Node $node, Node\Name|string $throw) {
 		if ($node) {
 			$documentedThrows = $node->getAttribute('throws', []);
+			$throwString = strval($throw);
 			foreach ($documentedThrows as $documentedThrow) {
-				if ($this->symbolTable->isParentClassOrInterface($documentedThrow, $throw)) {
+				$documentedThrowString = strval($documentedThrow);
+				if ($this->symbolTable->isParentClassOrInterface($documentedThrowString, $throwString)) {
 					return true;
 				}
 			}
@@ -77,6 +80,7 @@ class ThrowsCheck extends BaseCheck {
 		foreach (array_reverse($parents) as $parent) {
 			if ($parent instanceof Node\Stmt\TryCatch) {
 				foreach ($parent->catches as $catch) {
+					assert($catch instanceof \PhpParser\Node\Stmt\Catch_);
 					foreach ($catch->types as $type) {
 						if ($this->symbolTable->isParentClassOrInterface($type, $throws)) {
 							return true;

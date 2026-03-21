@@ -130,7 +130,6 @@ abstract class CallCheck extends BaseCheck {
 				// Type mismatch
 				$checker = new TypeComparer($this->symbolTable);
 
-				//echo "Type ".TypeComparer::typeToString($type)." vs ".TypeComparer::typeToString($expectedType)."\n";
 				if ($type && !$checker->isCompatibleWithTarget($expectedType, $type, $scope?->isStrict())) {
 					$nullOnlyError = false;
 					$typeStr = TypeComparer::typeToString($type);
@@ -138,6 +137,7 @@ abstract class CallCheck extends BaseCheck {
 						$typeWithOutNull = TypeComparer::removeNullOption($type);
 						$nullOnlyError = $checker->isCompatibleWithTarget($expectedType, $typeWithOutNull, $scope?->isStrict());
 					}
+					
 					$this->emitError(
 						$fileName,
 						$node,

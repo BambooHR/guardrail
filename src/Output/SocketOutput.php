@@ -21,20 +21,20 @@ class SocketOutput extends XUnitOutput implements MetricOutputInterface {
 	}
 
 	/**
-	 * @param string $className The type of error
-	 * @param string $file      The file it occurred in
-	 * @param int    $line      The line number it occurred on
-	 * @param string $type      The type of error
-	 * @param string $message   A human readable message about the error
+	 * @param string $className  The type of error
+	 * @param string $fileName   The file it occurred in
+	 * @param int    $lineNumber The line number it occurred on
+	 * @param string $type       The type of error
+	 * @param string $message    A human readable message about the error
 	 * @return void
 	 */
-	function emitError($className, $file, $line, $type, $message = "") {
+	function emitError($className, $fileName, $lineNumber, $type, $message = "") {
 		if (($this->silenced[$type] ?? 0) > 0) {
 			return;
 		}
 		$arr = [
-			"file" => $file,
-			"line" => $line,
+			"file" => $fileName,
+			"line" => $lineNumber,
 			"type" => $type,
 			"message" => $message,
 			"className" => $className

@@ -10,6 +10,7 @@ namespace BambooHR\Guardrail\Checks;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\Case_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Switch_;
 
@@ -72,6 +73,8 @@ class SwitchCheck extends BaseCheck {
 				   final case clause.  A missing break there has no effect.
 				*/
 				foreach ($node->cases as $index => $case) {
+					assert($case instanceof Case_);
+				
 					if ($nextError) {
 						$nextError = $this->processCases($fileName, $case, $nextError);
 					}
@@ -86,13 +89,13 @@ class SwitchCheck extends BaseCheck {
 	/**
 	 * processCases
 	 *
-	 * @param string    $fileName  The file name
-	 * @param string    $case      The case
-	 * @param Case|null $nextError Optional instance of Case
+	 * @param string     $fileName  The file name
+	 * @param Case_      $case      The case (cond is null for default)
+	 * @param Case_|null $nextError Optional instance of Case_
 	 *
-	 * @return null
+	 * @return Case_|null
 	 */
-	private function processCases($fileName, $case, $nextError = null) {
+	private function processCases($fileName, Case_ $case, ?Case_ $nextError = null): ?Case_ {
 		$comments = $case->getAttribute('comments');
 		if (is_array($comments)) {
 			/** @var \PhpParser\Comment\Doc $comment */

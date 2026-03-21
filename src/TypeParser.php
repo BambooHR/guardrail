@@ -15,11 +15,11 @@ use PhpParser\Node\Name;
 use PhpParser\Node\UnionType;
 
 class TypeParser {
-	function __construct(private \closure $resolver) { }
+	function __construct(private \Closure $resolver) { }
 
 	private function adjustTypeString($type) {
 		// Clean up a few DocBlock eccentricities.
-		if ($type == 'mixed') {
+		if ($type == 'mixed' || $type == '(unknown)') {
 			$type = '';
 		}
 		if ($type == 'boolean') {
@@ -31,15 +31,18 @@ class TypeParser {
 
 	private function generateNameOrIdentifier($type, array $templateVars = []) {
 		if ($type && strval($type) != "") {
-			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type)) {
+			if (Util::isLegalNonObject($type) || Util::isSelfOrStaticType($type) || $type == '$this') {
 				return new Node\Identifier($type);
 			} elseif (str_starts_with($type, "\\")) {
 				return new Name\FullyQualified(substr($type, 1), ["templates" => $templateVars]);
 			} elseif ($type == "T" || $type == "class-string") {
 				return new Name\FullyQualified($type, ["templates" => $templateVars]);
 			} else {
-				$var = call_user_func($this->resolver, new Name($type));
-				if (count($templateVars)) {
+				$var = call_user_func($this->resolver, $type);
+				if (is_string($var)) {
+					$var = new Name($var);
+				}
+				if ($var !== null && count($templateVars)) {
 					$var->setAttribute('templates', $templateVars);
 				}
 				return $var;
@@ -58,7 +61,7 @@ class TypeParser {
 	 */
 	private function parseString(string $type, int &$i): Name|Node\Identifier|null {
 		$this->skipWs($type, $i);
-		if (preg_match("/^([-A-Z0-9_\\\\]+)(?:((?:\[])+)|<([\\\\A-Z0-9_]+(,[\\\\A-Z0-9_]+)*)>)?/i", substr($type, $i), $matches, 0)) {
+		if (preg_match("/^([-A-Z0-9_\\\\\$]+)(?:((?:\[])+)|<([\\\\A-Z0-9_]+(,[\\\\A-Z0-9_]+)*)>)?/i", substr($type, $i), $matches, 0)) {
 			$i += strlen($matches[0]);
 			$name = $this->adjustTypeString($matches[1]);
 			if (!empty($matches[2])) {
@@ -93,6 +96,7 @@ class TypeParser {
 		}
 	}
 
+	/** @throws DocBlockParserException */
 	private function parseIntersection(string $type, int &$i): IntersectionType|Name|Node\Identifier|null {
 		$this->skipWs($type, $i);
 		if ($i < strlen($type)) {
@@ -120,6 +124,7 @@ class TypeParser {
 		throw new DocBlockParserException("Invalid type name: \"$type\"");
 	}
 
+	/** @throws DocBlockParserException */
 	function parse(string $type): Name|Identifier|Node\ComplexType|null {
 		$i = 0;
 		$this->skipWs($type, $i);

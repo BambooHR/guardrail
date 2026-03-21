@@ -37,6 +37,10 @@ class Scope implements PluginScopeInterface {
 	
 	function __construct(public bool $isStatic, public bool $isGlobal, public bool $isStrict, private ?FunctionLike $inside = null) {
 	}
+	
+	public function getScopeVersion(): int {
+		return $this->scopeVersion;
+	}
 
 	/**
 	 * isStatic
@@ -83,6 +87,8 @@ class Scope implements PluginScopeInterface {
 	 * @return void
 	 */
 	public function setVarType($name, Name|Identifier|ComplexType|null $type, $line): void {
+		// Canonicalize the type to ensure consistent representation
+		$type = \BambooHR\Guardrail\TypeComparer::canonicalizeType($type);
 
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
@@ -99,6 +105,8 @@ class Scope implements PluginScopeInterface {
 		$var->type = $type;
 		$var->typeChanged = true;
 		$var->modifiedLine = $line;
+		// Setting a variable's type means it's definitely set
+		$var->mayBeUnset = false;
 		if (str_contains($name, "->")) {
 		// Assigning a shorter variable, means the longer chains are invalidated.
 			// IE: $a->b->c invalidates $a->b->c->d
@@ -137,10 +145,13 @@ class Scope implements PluginScopeInterface {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
+			$var->scopeVersion = $this->scopeVersion;
 			$this->vars[$name] = $var;
 		}
 		$this->vars[$name]->modified = true;
 		$this->vars[$name]->modifiedLine = $line;
+		// Writing to a variable means it's definitely set
+		$this->vars[$name]->mayBeUnset = false;
 	}
 
 	/**
@@ -155,6 +166,7 @@ class Scope implements PluginScopeInterface {
 		if (!isset($this->vars[$name])) {
 			$var = new ScopeVar();
 			$var->name = $name;
+			$var->scopeVersion = $this->scopeVersion;
 			$this->vars[$name] = $var;
 		}
 
@@ -209,7 +221,7 @@ class Scope implements PluginScopeInterface {
 
 	public function getUsedVars(): array {
 
-		return array_filter($this->vars, fn($var)=>$var->used);
+		return array_filter($this->vars, fn($var)=>$var !== null && $var->used);
 	}
 
 	/**
@@ -276,6 +288,10 @@ class Scope implements PluginScopeInterface {
 		return (isset($this->vars[$name]) ? $this->vars[$name] : null);
 	}
 
+	public function getAllVars(): array {
+		return $this->vars;
+	}
+
 	/**
 	 * @param Scope $other -
 	 * @return void
@@ -283,7 +299,7 @@ class Scope implements PluginScopeInterface {
 	public function merge(PluginScopeInterface $other): void {
 
 		// See if any new vars were added to the scope or if existing ones were changed.
-		foreach ($other->vars as $name => $otherVar) {
+		foreach ($other->getAllVars() as $name => $otherVar) {
 			if (!isset($this->vars[$name])) {
 				$this->vars[$name] = $otherVar;
 			} else {
@@ -370,11 +386,16 @@ class Scope implements PluginScopeInterface {
 				}
 			}
 			
-			// If variable doesn't exist in all branches, OR if it was newly defined in some 
-			// branches but not all, then it may be unset
-			if (!$existsInAllBranches || ($branchesWhereVarWasNew > 0 && $branchesWhereVarWasNew < count($completedBranches))) {
+			// Determine if the variable may be unset after merging branches
+			// The variable is definitely set if:
+			// 1. It exists in all branches AND
+			// 2. It has mayBeUnset=false in all branches (was assigned in all branches)
+			// Otherwise, if it doesn't exist in all branches, it may be unset
+			if (!$existsInAllBranches) {
 				$mayBeUnsetInAny = true;
 			}
+			// Note: If variable exists in all branches and mayBeUnset=false in all branches,
+			// then mayBeUnsetInAny is already false (from line 362), so we don't need to override it
 			
 			// Union all types together
 			$mergedType = $this->unionTypes($types);
@@ -383,7 +404,14 @@ class Scope implements PluginScopeInterface {
 			if (!isset($this->vars[$varName])) {
 				$var = new ScopeVar();
 				$var->name = $varName;
+				$var->scopeVersion = $this->scopeVersion;
 				$this->vars[$varName] = $var;
+			} else {
+				// Variable already exists - update scopeVersion if it was redefined in all branches
+				// (meaning it's effectively a new definition in this scope)
+				if ($existsInAllBranches && $branchesWhereVarWasNew == count($completedBranches)) {
+					$this->vars[$varName]->scopeVersion = $this->scopeVersion;
+				}
 			}
 			
 			$this->vars[$varName]->type = $mergedType;

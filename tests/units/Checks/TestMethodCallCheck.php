@@ -58,4 +58,37 @@ class TestMethodCallCheck extends TestSuiteSetup {
 		// Expecting 6 errors: doc comment formats should not work with incorrect type
 		$this->assertEquals(6, $this->runAnalyzerOnFile('.inline-var-error.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
 	}
+
+	/**
+	 * Test that chained method calls with docblock return types work correctly
+	 * When a method returns a type specified in a docblock, and the result is assigned
+	 * to a variable, subsequent method calls on that variable should use the inferred type.
+	 *
+	 * @return void
+	 */
+	public function testChainedMethodCallsWithDocblockReturnTypes(): void {
+		// Expecting 0 errors: all method calls should resolve correctly
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.chained-docblock.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
+
+	/**
+	 * Test the exact scenario: $var=(new Foo())->chainableFoo(); $var->chainableFoo();
+	 * where chainableFoo()'s return type is specified in a docblock.
+	 *
+	 * @return void
+	 */
+	public function testChainedMethodCallExactScenario(): void {
+		// Expecting 0 errors: the type should be inferred from the docblock
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.chained-specific.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
+
+	/**
+	 * Test that @return $this in docblocks works correctly for fluent interfaces
+	 *
+	 * @return void
+	 */
+	public function testReturnThisDocblock(): void {
+		// Expecting 0 errors: @return $this should infer the class type
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.return-this.inc', ErrorConstants::TYPE_UNKNOWN_METHOD));
+	}
 }

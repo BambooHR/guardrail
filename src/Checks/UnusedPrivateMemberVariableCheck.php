@@ -62,7 +62,11 @@ class UnusedPrivateMemberVariableCheck extends BaseCheck {
 			foreach ($node->stmts as $stmt) {
 				if ($stmt instanceof Property && $stmt->flags == Class_::MODIFIER_PRIVATE) {
 					foreach ($stmt->props as $prop) {
-						$props[$prop->name->name] = $prop;
+						assert($prop instanceof \PhpParser\Node\Stmt\PropertyProperty);
+						$propName = $prop->name;
+						if ($propName !== null) {
+							$props[$propName->name] = $prop;
+						}
 					}
 				}
 			}

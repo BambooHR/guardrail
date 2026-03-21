@@ -8,6 +8,7 @@ use BambooHR\Guardrail\Scope;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\ClassMethod;
 
 class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	private const string ATTRIBUTE_NAMESPACE = 'OpenApi\Attributes';
@@ -48,11 +49,14 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	 * @return void
 	 */
 	public function run($fileName, Node $node, ?ClassLike $inside = null, ?Scope $scope = null) {
+		assert($node instanceof Node\Stmt\ClassMethod);
 		if ($this->isApiMethod($node) && $this->isControllerClass($inside, $node)) {
 			$containsOpenApiAttribute = false;
 			foreach ($node->attrGroups as $attrGroup) {
+				assert($attrGroup instanceof Node\AttributeGroup);
 				foreach ($attrGroup->attrs as $attribute) {
-					$attributeName = $attribute?->name?->toString();
+					assert($attribute instanceof Node\Attribute);
+					$attributeName = $attribute->name->toString();
 					if (in_array($attributeName, self::OPEN_API_ATTRIBUTES)) {
 						$containsOpenApiAttribute = true;
 						$hasDescription = false;
@@ -95,7 +99,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 		}
 	}
 
-	private function isControllerClass(?ClassLike $inside, Node $node): bool {
+	private function isControllerClass(?ClassLike $inside, ClassMethod $node): bool {
 		if ($inside instanceof Class_) {
 			$parentClass = $inside->extends?->toString();
 			if (
@@ -117,7 +121,7 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 		return $node instanceof Node\Stmt\ClassMethod && $node->isPublic() && $node->name->name !== '__construct';
 	}
 
-	private function checkDeprecatedAttribute($arg, $fileName, $node, $inside) {
+	private function checkDeprecatedAttribute($arg, $fileName, Node $node, $inside) {
 		if ($arg?->name?->name === self::DEPRECATED_KEY && $arg?->value?->name?->toString() == 'true') {
 			$this->metricOutput->emitMetric(new Metric(
 				$fileName,
@@ -144,11 +148,19 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 		return $arg?->name?->name === self::DESCRIPTION_KEY && !empty($arg->value->value);
 	}
 
-	private function hasTeamName($arg): bool {
+	private function hasTeamName(\PhpParser\Node\Arg $arg): bool {
+
 		if ($arg?->name?->name === self::X_KEY && $arg->value instanceof Node\Expr\Array_) {
 			foreach ($arg->value->items as $item) {
-				if ($item->key->value === self::TEAM_NAME_KEY && !empty($item->value->value)) {
-					return true;
+				if($item instanceof Node\Expr\ArrayItem) {
+					if (
+						$item->key instanceof Node\Scalar\String_ &&
+						$item->value instanceof Node\Scalar\String_ &&
+						$item->key->value === self::TEAM_NAME_KEY &&
+						!empty($item->value->value)
+					) {
+						return true;
+					}
 				}
 			}
 		}

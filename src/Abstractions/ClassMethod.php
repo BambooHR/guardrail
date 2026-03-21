@@ -101,8 +101,8 @@ class ClassMethod implements MethodInterface {
 	 */
 	public function getParameters() {
 		return array_map(
-			fn($param) => new FunctionLikeParameter(
-				FunctionAbstraction::resolveDeclaredParamTypes($param),
+			fn(\PhpParser\Node\Param $param) => new FunctionLikeParameter(
+				FunctionAbstraction::getNativeDeclaredType($param),
 				$param->var->name,
 				$param->variadic || $param->default != null,
 				$param->byRef,

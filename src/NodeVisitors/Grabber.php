@@ -116,9 +116,7 @@ class Grabber extends NodeVisitorAbstract {
 	 */
 	public static function filterByType($stmts, string|array $type) {
 		$ret = [];
-		if (is_string($type)) {
-			$type = [$type];
-		}
+		$type = is_string($type) ? [$type] : (array)$type;
 		foreach ($stmts as $stmt) {
 			if (in_array(get_class($stmt), $type)) {
 				$ret[] = $stmt;
@@ -168,7 +166,6 @@ class Grabber extends NodeVisitorAbstract {
 			try {
 				$stmts = $parser->parse($contents);
 			} catch (Error $error) {
-				echo "Error parsing: $contents\n";
 				return null;
 			}
 

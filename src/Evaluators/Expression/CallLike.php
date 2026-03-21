@@ -3,6 +3,7 @@
 namespace BambooHR\Guardrail\Evaluators\Expression;
 
 use BambooHR\Guardrail\Abstractions\FunctionLikeInterface;
+use BambooHR\Guardrail\Abstractions\FunctionLikeParameter;
 use BambooHR\Guardrail\Config;
 use BambooHR\Guardrail\Evaluators\ExpressionInterface;
 use BambooHR\Guardrail\Evaluators\OnEnterEvaluatorInterface;
@@ -29,27 +30,30 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 		$this->onExit($node, $table, $scopeStack, 1);
 	}
 
+	/**
+	 * 
+	 * @throws \InvalidArgumentException
+	 */
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack, int $pass = 2): ?Node {
-		/** @var Node\Expr\CallLike $call */
-		$call = $node;
+		assert($node instanceof Node\Expr\CallLike);
 
 		// intval(...) syntax.  At runtime this evaluates to a callable.
-		if ($call->isFirstClassCallable()) {
+		if ($node->isFirstClassCallable()) {
 			return TypeComparer::identifierFromName("callable");
 		}
 
-		if ($call instanceof Node\Expr\StaticCall) {
-			return $this->onStaticCall($call, $table, $scopeStack, $pass);
-		} elseif ($call instanceof Node\Expr\FuncCall) {
-			return $this->onFunctionCall($call, $table, $scopeStack, $pass);
-		} elseif ($call instanceof Node\Expr\New_) {
-			return $this->onNew($call, $table, $scopeStack, $pass);
-		} elseif ($call instanceof Node\Expr\MethodCall || $call instanceof Node\Expr\NullsafeMethodCall) {
-			return $this->onMethodCall($call, $table, $scopeStack, $pass);
-		} elseif ($call instanceof Node\Expr\Closure) {
+		if ($node instanceof Node\Expr\StaticCall) {
+			return $this->onStaticCall($node, $table, $scopeStack, $pass);
+		} elseif ($node instanceof Node\Expr\FuncCall) {
+			return $this->onFunctionCall($node, $table, $scopeStack, $pass);
+		} elseif ($node instanceof Node\Expr\New_) {
+			return $this->onNew($node, $table, $scopeStack, $pass);
+		} elseif ($node instanceof Node\Expr\MethodCall || $node instanceof Node\Expr\NullsafeMethodCall) {
+			return $this->onMethodCall($node, $table, $scopeStack, $pass);
+		} elseif ($node instanceof Node\Expr\Closure) {
 			return TypeComparer::identifierFromName("Closure");
 		}
-		throw new \InvalidArgumentException("Unknown call type " . get_class($call));
+		throw new \InvalidArgumentException("Unknown call type " . get_class($node));
 	}
 
 	function onNew(Node $node, SymbolTable $table, ScopeStack $scopeStack, $pass): ?Node {
@@ -121,19 +125,21 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 			//echo "Returns ".$function->getName()."() returns T\n";
 			$params = $function->getParameters();
 			foreach ($params as $index => $param) {
+				assert($param instanceof FunctionLikeParameter);
+				// Prefer docblock type for template resolution (T, class-string), fall back to native type
+				$type = $param->getDocBlockType() ?? $param->getType();
 			//	echo " Index: $index ".TypeComparer::typeToString($param->getType())."\n";
-				if ($param->getType() instanceof Name) {
-					$type = $param->getType();
-					if (strcasecmp($type, "T") === 0) {
+				if ($type instanceof Name) {
+					if (strcasecmp(strval($type), "T") === 0) {
 			//			echo "Return via param type T " . $type . "\n";
 						return $args[$index]->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 					}
 
-					if (strcasecmp($type, "class-string") === 0) {
+					if (strcasecmp(strval($type),"class-string") === 0) {
 			//			echo "Looking for class-string at index $index\n";
-						if (isset($args[$index]) && $args[$index]->value instanceof Node\Expr\ClassConstFetch) {
+						if (isset($args[$index])) {
 							$fetch = $args[$index]->value;
-							if (
+							if ($fetch instanceof Node\Expr\ClassConstFetch  &&
 								TypeComparer::isNamedIdentifier($fetch->name, "class") &&
 								$fetch->class instanceof Name
 							) {
@@ -178,7 +184,9 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 				$func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch
 			)
 		) {
-			$varName = NodePatterns::getVariableOrPropertyName($func->args[0]->value);
+			
+			$arg0 = $func->args[0]->value;
+			$varName = NodePatterns::getVariableOrPropertyName($arg0);
 			$type = $this->getCastedCallType(strtolower($func->name));
 
 			if (!is_null($type) && !is_null($varName)) {
@@ -186,13 +194,12 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 
 				// If the last node in the chain is a specific type, then no node in the chain is null.
 				if (
-					$func->args[0]->value instanceof Node\Expr\PropertyFetch ||
-					$func->args[0]->value instanceof Node\Expr\NullsafePropertyFetch
+					$arg0 instanceof Node\Expr\PropertyFetch ||
+					$arg0 instanceof Node\Expr\NullsafePropertyFetch
 				) {
-					$earlier = $func->args[0]->value;
 					$this->tagScopeAsType($func, $scopeStack, $varName, $type);
 					$falseScope = $func->getAttribute('assertsFalse');
-					TypeComparer::removeNullInferences($earlier, $table, $falseScope, $earlier->getLine());
+					TypeComparer::removeNullInferences($arg0, $table, $falseScope, $arg0->getLine());
 					$func->setAttribute('assertsFalse', $falseScope);
 				}
 			}
@@ -215,7 +222,7 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	function tagScopeAsType(Node $node, ScopeStack $parent, string $name, string $type) {
 		$trueScope = $parent->getCurrentScope()->getScopeClone();
 		$falseScope = $trueScope->getScopeClone();
-		/** @var Node\Expr\CallLike $node */
+		/** @var Node\Expr\FuncCall $node */
 
 		$trueScope->setVarType($name, TypeComparer::identifierFromName($type), $node->getLine());
 		$falseVarType = $falseScope->getVarType($name) ?? $node->args[0]->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
@@ -244,12 +251,12 @@ class CallLike implements ExpressionInterface, OnEnterEvaluatorInterface {
 	}
 
 	static function mapReturnType(Node $selfClass, ?Node $complexType): ?Node {
-		if (TypeComparer::isNamedIdentifier($complexType, "self") || TypeComparer::isNamedIdentifier($complexType, "static")) {
+		if (TypeComparer::isNamedIdentifier($complexType, "self") || TypeComparer::isNamedIdentifier($complexType, "static") || TypeComparer::isNamedIdentifier($complexType, "\$this")) {
 			return $selfClass;
 		} elseif ($complexType instanceof Node\UnionType) {
 			$types = [];
 			TypeComparer::forEachType($complexType, function ($type) use (&$types, $selfClass) {
-				$types[] = (TypeComparer::isNamedIdentifier($type, "self") || TypeComparer::isNamedIdentifier($type, "static")) ? $selfClass : $type;
+				$types[] = (TypeComparer::isNamedIdentifier($type, "self") || TypeComparer::isNamedIdentifier($type, "static") || TypeComparer::isNamedIdentifier($type, "\$this")) ? $selfClass : $type;
 			});
 			return TypeComparer::getUniqueTypes($types);
 		}

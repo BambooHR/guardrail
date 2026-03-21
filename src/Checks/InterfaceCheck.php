@@ -90,16 +90,18 @@ class InterfaceCheck extends BaseCheck {
 			$this->emitError($fileName, $class, self::TYPE_SIGNATURE_COUNT, "Parameter count mismatch $childParameterCount vs $parentParameterCount in method " . $className . "->" . $method->getName());
 		} else {
 			foreach ($params as $index => $childParam) {
-				/** @var FunctionLikeParameter $childParam */
+				assert($childParam instanceof FunctionLikeParameter);
 				// Only parameters specified by the parent need to match.  (Child can add more as long as they have a default.)
 				if ($index < $parentParameterCount) {
 					$parentParam = $parentMethodParams[$index];
+					assert($parentParam instanceof FunctionLikeParameter);
 					if ($oldVisibility !== 'private') {
 						$isContravariant = $this->typeComparer->isContravariant($parentParam->getType(), $childParam->getType());
 						if (!$isContravariant) {
+							
 							$childParamType = TypeComparer::typeToString($childParam->getType());
 							$parentParamType = TypeComparer::typeToString($parentParam->getType());
-							$this->emitError($fileName, $astNode, self::TYPE_SIGNATURE_TYPE, "Child method parameter " . $childParam->getName() . " type mismatch " . $className . "::" . $method->getName() . " : $parentParamType -> $childParamType");
+							$this->emitError($fileName, $astNode, self::TYPE_SIGNATURE_TYPE, "Child method parameter \$" . $childParam->getName() . " type mismatch " . $className . "::" . $method->getName() . " : $parentParamType -> $childParamType");
 						}
 					}
 					if ($childParam->getName() != $parentParam->getName()) {
@@ -248,6 +250,7 @@ class InterfaceCheck extends BaseCheck {
 		} else {
 			foreach ($node->stmts as $stmt) {
 				if ($stmt instanceof Node\Stmt\ClassMethod && strcasecmp($stmt->name, $interfaceMethod) == 0) {
+			
 					$this->checkMethod($fileName, $node, $stmt, $classMethod, $interface->getMethod($interfaceMethod));
 					break;
 				}

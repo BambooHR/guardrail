@@ -175,7 +175,13 @@ abstract class SymbolTable {
 		if ($ob) {
 			return $ob;
 		}
-		$ob = $class->getProperty($propertyName);
+		try {
+			$ob = $class->getProperty($propertyName);
+		} catch (\Throwable $e) {
+			echo "Caught Exception " . (get_class($e)) . ": " . $e->getMessage() . "\n\n" . $e->getTraceAsString() . "\n";
+			exit(1);
+			$ob = null;
+		}
 		if ($ob) {
 			$this->cache->add("AProp:" . $cacheName, $ob);
 		}
@@ -219,6 +225,7 @@ abstract class SymbolTable {
 	 */
 	public function getAbstractedFunction($name) {
 		$func = $this->getFunction($name);
+		$ob = null;
 		if ($func) {
 			$ob = new AbstractionFunction($func);
 		} else {

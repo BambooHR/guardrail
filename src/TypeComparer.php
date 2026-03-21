@@ -9,6 +9,7 @@ use PhpParser\Node\ComplexType;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\UnionType;
 
 class TypeComparer
@@ -23,6 +24,25 @@ class TypeComparer
 			$identifier[$str] = new Identifier($str);
 		}
 		return $identifier[$str];
+	}
+
+	/**
+	 * Normalize a type to canonical form:
+	 * - Flatten nested unions
+	 * - Deduplicate union members (case-insensitive)
+	 * - Convert single type + null to NullableType
+	 * - Sort union members for consistency
+	 * 
+	 * @param ComplexType|Name|Identifier|null $type
+	 * @return ComplexType|Name|Identifier|null
+	 */
+	public static function canonicalizeType(ComplexType|Name|Identifier|null $type): ComplexType|Name|Identifier|null {
+		if ($type === null) {
+			return null;
+		}
+		
+		// Use getUniqueTypes to flatten and deduplicate
+		return self::getUniqueTypes($type);
 	}
 
 	private static function compareUnionElements(Name|Identifier|IntersectionType $a, Name|Identifier|IntersectionType $b) {
@@ -135,7 +155,7 @@ class TypeComparer
 	}
 
 	function areSimpleTypesCompatible(Name|Identifier|null $target, Name|Identifier|UnionType|Node\NullableType|null $value, bool $strict): bool {
-		if ($target == null) {
+		if ($target === null) {
 			return true;
 		}
 		if ($value == null) {
@@ -150,7 +170,6 @@ class TypeComparer
 		$targetName = strtolower($target->getAttribute('namespacedName') ?: strval($target));
 		$valueName = strtolower($value->getAttribute('namespacedName') ?: strval($value));
 
-		//echo "Checking compatibility of $targetName and $valueName\n";
 		if ($targetName == $valueName || $targetName == "mixed") {
 			return true;
 		}
@@ -200,7 +219,7 @@ class TypeComparer
 				return true;
 			}
 		}
-		return $valueName == $targetName;
+		return false;
 	}
 
 	/**
@@ -235,7 +254,7 @@ class TypeComparer
 		} elseif ($type instanceof Identifier) {
 			return strval($type);
 		} elseif ($type instanceof Node\NullableType) {
-			return "null|" . strval($type->type);
+			return strval($type->type) . "|null";
 		} elseif ($type instanceof UnionType) {
 			return implode("|", array_map(fn($type)=>self::typeToString($type), $type->types));
 		} elseif ($type instanceof IntersectionType) {
@@ -359,7 +378,7 @@ class TypeComparer
 				self::forEachAnyEveryType($classType, function ($type) use (&$types, $name, $symbolTable) {
 					$property = Util::findAbstractedProperty(strval($type), $name, $symbolTable);
 					if ($property?->getType()) {
-						$types[] = $property->getType();
+						$types[] = $property?->getType();
 					}
 				});
 				$classType = self::removeNullOption(self::getUniqueTypes(...$types));
@@ -387,6 +406,8 @@ class TypeComparer
 			$types = [$node];
 		} elseif ($node instanceof UnionType) {
 			$types = $node->types;
+		} else {
+			$types= [];
 		}
 		foreach ($types as $type) {
 			if (!call_user_func($fn, $type)) {
@@ -403,8 +424,10 @@ class TypeComparer
 			$types = [self::identifierFromName("null"), $node->type];
 		} elseif ($node instanceof Identifier || $node instanceof Name || $node instanceof IntersectionType) {
 			$types = [$node];
-		} else {
+		} elseif ($node instanceof UnionType) {
 			$types = $node->types;
+		} else {
+			$types = [];
 		}
 
 		foreach ($types as $type) {
@@ -458,7 +481,8 @@ class TypeComparer
 			call_user_func($fn, $node);
 		} elseif ($node instanceof UnionType) {
 			foreach ($node->types as $type) {
-				call_user_func($fn, $type);
+				// Recursively flatten nested unions and nullables
+				self::forEachType($type, $fn);
 			}
 		}
 	}
@@ -507,28 +531,71 @@ class TypeComparer
 	static function getUniqueTypes(...$types) {
 		$used = [];
 		$unknown = 0;
+		$hasNull = false;
 		foreach ($types as $list) {
-			self::forEachType($list, function ($typeA) use (&$used, &$unknown) {
+			self::forEachType($list, function ($typeA) use (&$used, &$unknown, &$hasNull) {
 				if ($typeA == null) {
 					$unknown = 1;
+				} elseif (TypeComparer::isNamedIdentifier($typeA, "null")) {
+					$hasNull = true;
 				} elseif (TypeComparer::isNamedIdentifier($typeA, "mixed") && $unknown != 1) {
 					$unknown = 2;
 				} else {
-					$used[TypeComparer::typeToString($typeA)] = $typeA;
+				// All other types (Name, Identifier, IntersectionType)
+				// Note: NullableType is already unwrapped by forEachType
+				
+				// Normalize the type string for deduplication
+				$typeString = TypeComparer::typeToString($typeA);
+				// Remove leading backslash if present for consistent comparison
+				$typeString = ltrim($typeString, '\\');
+				$key = strtolower($typeString);
+				
+				if (!isset($used[$key])) {
+					$used[$key] = $typeA;
 				}
+			}
 			});
 		}
-		if ($unknown == 1 || count($used) == 0) {
+		
+		// If we have both unknown (null value) and hasNull (null identifier), treat as just unknown
+		if ($unknown == 1) {
 			return null;
-		} elseif ($unknown == 2) {
+		}
+		
+		if ($unknown == 2) {
 			return self::identifierFromName("mixed");
 		}
+		
+		if (count($used) == 0) {
+			// Only null type(s)
+			if ($hasNull) {
+				return self::identifierFromName('null');
+			}
+			return null;
+		}
 
-		$used = array_values($used);
-		if (count($used) == 1) {
-			return $used[0];
+		$usedTypes = array_values($used);
+		
+		// If we have exactly one non-null type and null, return as NullableType for consistency
+		if (count($usedTypes) == 1 && $hasNull) {
+			return new NullableType($usedTypes[0]);
+		}
+		
+		// Build final union type with null if needed
+		if ($hasNull) {
+			// Add null to the associative array to ensure deduplication
+			if (!isset($used['null'])) {
+				$used['null'] = self::identifierFromName('null');
+			}
+			$usedTypes = array_values($used);
+		}
+		
+		if (count($usedTypes) == 1) {
+			return $usedTypes[0];
 		} else {
-			return new UnionType($used);
+			// Sort union members for canonical representation
+			usort($usedTypes, [self::class, 'compareUnionElements']);
+			return new UnionType($usedTypes);
 		}
 	}
 

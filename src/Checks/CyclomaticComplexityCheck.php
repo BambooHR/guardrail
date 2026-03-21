@@ -9,6 +9,8 @@ use BambooHR\Guardrail\Output\OutputInterface;
 use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Function_;
 
 class CyclomaticComplexityCheck extends BaseCheck {
 	function __construct(SymbolTable $symbolTable, OutputInterface $doc, private MetricOutputInterface $metricOutput) {
@@ -93,6 +95,7 @@ class CyclomaticComplexityCheck extends BaseCheck {
 	 * @return void
 	 */
 	function run($fileName, Node $node, ?Node\Stmt\ClassLike $inside = null, ?Scope $scope = null) {
+		assert($node instanceof ClassMethod || $node instanceof Function_);
 		if ($node->stmts) {
 			if ($node instanceof Node\Stmt\ClassMethod) {
 				$this->checkStatements($fileName, $inside, $node, $node->stmts);

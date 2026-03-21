@@ -191,7 +191,7 @@ class ReflectedClass implements ClassInterface {
 	}
 
 	public function isReadOnly(): bool {
-		if (method_exists($this->refl, "isReadOnly")) {
+		if ($this->refl !== null && method_exists($this->refl, "isReadOnly")) {
 			return $this->refl->isReadOnly();
 		}
 		return false;

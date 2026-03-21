@@ -16,12 +16,9 @@ class Cast implements ExpressionInterface {
 		return Node\Expr\Cast::class;
 	}
 
+
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
-		$expr = $this->lookupCastType($node);
-		if ($expr) {
-			return $expr;
-		}
-		throw new  InvalidArgumentException("Unknown cast type " . get_class($node));
+		return $this->lookupCastType($node);
 	}
 
 

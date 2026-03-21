@@ -121,6 +121,7 @@ class Config {
 							self::$useDocBlockForReturnValue = true;
 							break;
 						case "DocBlockParams":
+						case "DocBlockParamTypes":
 							self::$useDocBlockForParameters = true;
 							break;
 						case "DocBlockProperties":
@@ -382,7 +383,9 @@ class Config {
 					$filter = UnifiedDiffFilter::importFile(
 						realpath($this->filterFileName)
 					);
-					$filter->display();
+					if ($filter !== null) {
+						$filter->display();
+					}
 					$this->filter = $filter;
 					break;
 				case '-h':

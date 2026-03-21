@@ -34,6 +34,7 @@ use BambooHR\Guardrail\Checks\MethodCall;
 use BambooHR\Guardrail\Checks\ParamTypesCheck;
 use BambooHR\Guardrail\Checks\PropertyFetchCheck;
 use BambooHR\Guardrail\Checks\PropertyStoreCheck;
+use BambooHR\Guardrail\Checks\PropertyTypesCheck;
 use BambooHR\Guardrail\Checks\Psr4Check;
 use BambooHR\Guardrail\Checks\ReadOnlyPropertyCheck;
 use BambooHR\Guardrail\Checks\RedundantConditionCheck;
@@ -142,7 +143,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new InterfaceCheck($this->index, $output),
 			new ParamTypesCheck($this->index, $output),
 			new StaticCallCheck($this->index, $output),
-			new InstantiationCheck($this->index, $output),
+			new InstantiationCheck($this->index	, $output),
 			new InstanceOfCheck($this->index, $output),
 			new CatchCheck($this->index, $output),
 			new ClassConstantCheck($this->index, $output),
@@ -163,6 +164,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 			new UnusedPrivateMemberVariableCheck($this->index, $output),
 			new SplatCheck($this->index, $output),
 			new PropertyStoreCheck($this->index, $output),
+			new PropertyTypesCheck($this->index, $output),
 			new ImagickCheck($this->index, $output),
 			new UnsafeSuperGlobalCheck($this->index, $output),
 			new UseStatementCaseCheck($this->index, $output),
@@ -191,6 +193,7 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		}
 	}
 
+	/** @throws \InvalidArgumentException */
 	public function getEvaluator(Node $node): ?Ev\EvaluatorInterface {
 		static $instances = null;
 		if (!$instances) {
@@ -230,11 +233,15 @@ class StaticAnalyzer extends NodeVisitorAbstract
 	 */
 	public function setFile($name, Config $config) {
 		$this->file = $name;
+		$oldNameContext = $this->scopeStack->getNameContext();
 		$this->scopeStack = new ScopeStack(
 			$this->scopeStack->getOutput(),
 			$this->scopeStack->getMetricOutput(),
 			$config
 		);
+		if ($oldNameContext) {
+			$this->scopeStack->setNameContext($oldNameContext);
+		}
 		$this->scopeStack->pushScope(new Scope(true, true, false));
 		$this->scopeStack->setCurrentFile($name);
 	}
@@ -352,6 +359,9 @@ class StaticAnalyzer extends NodeVisitorAbstract
 		if (isset($this->checks[$class])) {
 			$last = microtime(true);
 			foreach ($this->checks[$class] as $check) {
+				if ($check === null) {
+					continue;
+				}
 				$start = $last;
 				$check->run($this->file, $node, $inside, $this->scopeStack);
 				$last = microtime(true);

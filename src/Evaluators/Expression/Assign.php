@@ -22,6 +22,7 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 	}
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
+		
 		if ($node instanceof List_) {
 			return TypeComparer::identifierFromName("array");
 		}
@@ -98,8 +99,9 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 			
 			// Always check for docblock type assertions, regardless of DocBlockInlineVars config
 			$nameContext = $scope->getNameContext();
-			$nameResolver = $nameContext ? fn($fn) => $nameContext->getResolvedClassName(new Name($fn)) : null;
-			TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver);
+			$nameResolver = $nameContext !== null ? fn($fn) => $nameContext?->getResolvedClassName(new Name($fn)) : null;
+			$parentNodes = $scope->getParentNodes();
+			TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver, $parentNodes);
 			
 		} elseif ($var instanceof Node\Expr\PropertyFetch) {
 			$varName = TypeComparer::getChainedPropertyFetchName($var);
@@ -116,8 +118,11 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 				
 				// Check for docblock type assertions on the assignment statement
 				$nameContext = $scope->getNameContext();
-				$nameResolver = $nameContext ? fn($fn) => $nameContext->getResolvedClassName(new Name($fn)) : null;
-				TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver);
+				$nameResolver = $nameContext !== null ? fn($fn) => $nameContext?->getResolvedClassName(new Name($fn)) : null;
+				$parentNodes = $scope->getParentNodes();
+				if ($nameResolver !== null) {
+					TypeAssertion::handleDocblockTypeAssertion($var, $scope->getCurrentScope(), true, $nameResolver, $parentNodes);
+				}
 			}
 		}
 	}
@@ -154,7 +159,7 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 				$subVar = $subVar->var ?? null;
 			} while (!empty($subVar) && !$subVar instanceof Variable);
 
-			if (!empty($subVar) && gettype($subVar->name) == "string") {
+			if ($subVar instanceof Variable && gettype($subVar->name) == "string") {
 				$subVar->setAttribute('assignment', true);
 				$scope->setVarWritten($subVar->name, $var->getLine());
 			}
@@ -162,7 +167,7 @@ class Assign implements ExpressionInterface, OnEnterEvaluatorInterface
 	}
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-		if (!$node instanceof List_) {
+		if (!$node instanceof List_ && ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef)) {
 			$this->handleAssignment($node->var, $scopeStack);
 		}
 	}

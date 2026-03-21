@@ -100,10 +100,13 @@ class ParamTypesCheck extends BaseCheck {
 
 		if ($node instanceof Node\FunctionLike) {
 			foreach ($node->getParams() as $index => $param) {
-				if ($param->type) {
-					$name = $param->type;
-					if (!$this->isAllowed($name, $inside)) {
-						$name = TypeComparer::typeToString($name);
+				if ($param === null) {
+					continue;
+				}
+				$paramType = $param->type;
+				if ($paramType !== null) {
+					if (!$this->isAllowed($paramType, $inside)) {
+						$name = TypeComparer::typeToString($paramType);
 						$this->emitError($fileName, $node, ErrorConstants::TYPE_UNKNOWN_CLASS, "Reference to an unknown type '$name'' in parameter $index of $displayName");
 					}
 				}

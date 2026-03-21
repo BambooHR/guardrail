@@ -20,8 +20,7 @@ class Catch_ implements OnEnterEvaluatorInterface
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
 		assert( $node instanceof Node\Stmt\Catch_ );
-		/** @var Node\Stmt\Catch_ $catch */
-		if ($node->var) {
+		if ($node->var instanceof Node\Expr\Variable) {
 			$name = strval($node->var->name);
 			$scope = $scopeStack->getCurrentScope();
 			if ($scope->getVarExists($name)) {
@@ -35,6 +34,11 @@ class Catch_ implements OnEnterEvaluatorInterface
 			$node->var->setAttribute('assignment', true);
 			$scopeStack->setVarType($name, TypeComparer::getUniqueTypes($node->types), $node->getLine());
 			$scopeStack->setVarUsed($name);
+			// Exception variables are always defined and never null when caught
+			$varObject = $scope->getVarObject($name);
+			if ($varObject) {
+				$varObject->mayBeNull = false;
+			}
 		}
 	}
 }

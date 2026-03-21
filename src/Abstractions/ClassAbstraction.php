@@ -113,14 +113,15 @@ class ClassAbstraction implements ClassInterface {
 	 */
 	public function getInterfaceNames() {
 		$ret = [];
-		$class = $this->class;
-		if ($class instanceof Interface_) {
-			foreach ($class->extends as $extend) {
+		if ($this->class instanceof Interface_) {
+			foreach ($this->class->extends as $extend) {
 				$ret[] = strval($extend);
 			}
 		} else {
-			/** @var Class_ $class */
+			/** @var \PhpParser\Node\Stmt\Class_ $class */
+			$class=$this->class;
 			foreach ($class->implements as $implement) {
+				assert($implement instanceof \PhpParser\Node\Name);
 				$ret[] = strval($implement);
 			}
 		}
@@ -155,8 +156,7 @@ class ClassAbstraction implements ClassInterface {
 		if ($this->isEnum()) {
 			$constants = Grabber::filterByType($this->class->stmts, EnumCase::class);
 			foreach ($constants as $enumOption) {
-				/** @var EnumCase $enumOption */
-				if (strcasecmp($enumOption->name, $name) == 0) {
+				if ($enumOption && $enumOption->name && strcasecmp($enumOption->name, $name) == 0) {
 					return $this->class->namespacedName;
 				}
 			}
@@ -165,6 +165,7 @@ class ClassAbstraction implements ClassInterface {
 		foreach ($constants as $constList) {
 			if ($constList instanceof ClassConst) {
 				foreach ($constList->consts as $const) {
+					assert($const instanceof \PhpParser\Node\Const_);
 					if (strcasecmp($const->name, $name) == 0) {
 						if ($const->value instanceof LNumber) {
 							return TypeComparer::identifierFromName("int");
@@ -223,8 +224,7 @@ class ClassAbstraction implements ClassInterface {
 			if ($prop instanceof \PhpParser\Node\Stmt\Property) {
 				/** @var \PhpParser\Node\Stmt\Property $prop */
 				foreach ($prop->props as $propertyProperty) {
-					/** @var PropertyProperty $propertyProperty */
-					if ($propertyProperty->name == $name) {
+					if ($propertyProperty !== null && $propertyProperty->name == $name) {
 						if ($prop->isPrivate()) {
 							$access = "private";
 						} else {
@@ -235,9 +235,9 @@ class ClassAbstraction implements ClassInterface {
 							}
 						}
 						$type = $prop->type;
-						//if (Config::shouldUseDocBlockForProperties() && empty($type)) {
-						//	$type = Scope::nameFromName($propertyProperty->namespacedType);
-						//}
+						if (\BambooHR\Guardrail\Config::shouldUseDocBlockForProperties() && empty($type)) {
+							$type = $propertyProperty->getAttribute("namespacedType");
+						}
 						return new Property($this, $propertyProperty->name, $type, $access, $prop->isStatic(), $prop->isReadOnly());
 					}
 				}

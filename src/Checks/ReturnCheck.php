@@ -204,7 +204,7 @@ class ReturnCheck extends BaseCheck {
 		} elseif ($insideFunc instanceof Node\Expr\Closure || $insideFunc instanceof Node\Expr\ArrowFunction) {
 			$functionName = "anonymous function";
 		} elseif ($insideFunc instanceof Node\Stmt\ClassMethod) {
-			$class = isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
+			$class = isset($inside) && isset($inside->namespacedName) ? strval($inside->namespacedName) : "";
 			$functionName = "$class::" . strval($insideFunc->name);
 		}
 		return $functionName;
