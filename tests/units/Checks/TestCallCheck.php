@@ -82,4 +82,35 @@ class TestCallCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallCheck:Does not emit error when splat operator used on traversable array
+	 */
+	public function testSplatTraversable() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallCheck:Does not emit error when passing value to template type parameter
+	 */
+	public function testTemplateTypeParameter() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_SIGNATURE_TYPE, ['DocBlockGenerics' => true]));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallCheck:Does not emit error when splat used on nullable array via docblock
+	 */
+	public function testNullUnionIteratableSplat() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.12.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallCheck:Does not emit error when splat used on nullable property type
+	 */
+	public function testNullablePropertySplat() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.13.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }
