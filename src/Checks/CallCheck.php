@@ -94,7 +94,11 @@ abstract class CallCheck extends BaseCheck {
 		$type = $arg->value->getAttribute(TypeComparer::INFERRED_TYPE_ATTR);
 		if ($arg->unpack) {
 			$tc = new TypeComparer($this->symbolTable);
-			if (!$tc->isTraversable($type)) {
+			$typeToCheck = $type;
+			if ($type instanceof Node\NullableType || $type instanceof Node\UnionType) {
+				$typeToCheck = TypeComparer::removeNullOption($type);
+			}
+			if ($typeToCheck && !$tc->isTraversable($typeToCheck)) {
 				$this->emitError($fileName, $node, ErrorConstants::TYPE_SIGNATURE_TYPE, "Splat (...) operator requires an array or traversable object.  Passing " . TypeComparer::typeToString($type) . " from \$$variableName.");
 			}
 			return;// After we unpack an arg, we can't check the remaining parameters.
