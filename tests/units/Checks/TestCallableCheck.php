@@ -187,4 +187,34 @@ class TestCallableCheck extends TestSuiteSetup {
 		$check->run(__FILE__, $array, null, null);
 	}
 
+	/**
+	 * @return void
+	 * @rapid-unit Checks:CallableCheck:Emits error when array callable with ClassConstFetch references undefined method
+	 */
+	public function testArrayCallableWithClassConstFetch() {
+		$output = $this->getMockBuilder(OutputInterface::class)
+			->onlyMethods(['emitError'])
+			->getMockForAbstractClass();
+		
+		$output->expects($this->once())
+			->method('emitError')
+			->with(
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->anything(),
+				$this->stringContains("methodThatDoesNotExist")
+			);
+		
+		$symbolTable = new InMemorySymbolTable(__DIR__);
+		$check = new CallableCheck($symbolTable, $output);
+			
+		$array = new Node\Expr\Array_([
+			new Node\Expr\ArrayItem(new Node\Expr\ClassConstFetch(new Node\Name('Exception'), new Node\Identifier('class'))),
+			new Node\Expr\ArrayItem(new Node\Scalar\String_("methodThatDoesNotExist"))
+		]);
+		
+		$check->run(__FILE__, $array, null, null);
+
+	}
 }

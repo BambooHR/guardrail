@@ -31,7 +31,7 @@ class Expression implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		Expr\NoOp::class,
 		Expr\Print_::class,
 		Expr\PropertyFetch::class,
-		EXpr\Scalar::class,
+		Expr\Scalar::class,
 		Expr\ShellExec::class,
 		Expr\Ternary::class,
 		Expr\UnaryMinus::class,

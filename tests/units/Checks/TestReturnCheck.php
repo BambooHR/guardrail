@@ -81,4 +81,22 @@ class TestReturnCheck extends TestSuiteSetup {
 	public function testWhileIFConstantFail() {
 		$this->assertEquals(12, $this->runAnalyzerOnFile('-while-if-constant-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
 	}
+
+	public function testStatic() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-static.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass functions with valid static return types");
+	}
+
+	public function testStaticFail() {
+		// Expected errors:
+		// - returnsString, returnsInt, returnsNull, returnsArray (4)
+		// - returnsOtherClass (1)
+		// - returnsParent (1)
+		// - StaticMethodWrongReturn::create (1)
+		// - noReturn, conditionalMissingReturn (2)
+		// - voidReturn (1)
+		// - traitWrongReturn (1)
+		// - WrongImplementation::getStatic (1)
+		// - WrongConcreteReturn::getStatic (1)
+		$this->assertEquals(13, $this->runAnalyzerOnFile('-static-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch invalid static return types");
+	}
 }

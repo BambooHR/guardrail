@@ -453,10 +453,10 @@ class TypeComparer
 					if (strcasecmp($typeStr, "array") == 0) {
 						return true;
 					}
-					if (!$this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
+					if ($this->symbolTable->isParentClassOrInterface(\Traversable::class, $typeStr)) {
 						return true;
 					}
-					if (!$this->symbolTable->isParentClassOrInterface('iterable', $typeStr)) {
+					if ($this->symbolTable->isParentClassOrInterface('iterable', $typeStr)) {
 						return true;
 					}
 				}
