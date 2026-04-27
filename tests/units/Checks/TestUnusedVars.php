@@ -32,4 +32,8 @@ class TestUnusedVars extends TestSuiteSetup {
 	public function testVariablesUsedInArrowFunctionTernaryAreNotFlaggedAsUnused() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_UNUSED_VARIABLE), "");
 	}
+
+	public function testVariableNotUsedInArrowFunctionTernaryIsFlagged() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_UNUSED_VARIABLE), "");
+	}
 }
