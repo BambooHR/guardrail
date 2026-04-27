@@ -17,21 +17,28 @@ class FunctionLike implements ExpressionInterface
 
 	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): ?Node {
 		\BambooHR\Guardrail\Evaluators\FunctionLike::handleUnusedVars($scopeStack);
-		$closureScope = $scopeStack->popScope();
+		$scopeStack->popScope();
+
+		// Use the function-scope attribute directly rather than the popped top-of-stack scope.
+		// When the function body contains a ternary, scope branching can leave a cloned scope
+		// (with stale `used` flags) on top of the stack instead of the original function-scope.
+		// The function-scope attribute is always written to by setVarUsed(), so it is the
+		// authoritative source for which variables were actually referenced.
+		$fnScope = $node->getAttribute('function-scope');
 
 		if ($node instanceof Node\Expr\Closure) {
 			$uses = array_map(
 				fn(Node\Expr\ClosureUse $closureUse): string => $closureUse->var->name,
 				$node->uses
 			);
-			foreach ($closureScope->getUsedVars() as $var) {
+			foreach ($fnScope->getUsedVars() as $var) {
 				/** @var Scope\ScopeVar $var */
 				if ($scopeStack->getVarExists($var->name) && $var->used && in_array($var->name, $uses)) {
 					$scopeStack->setVarUsed($var->name);
 				}
 			}
 		} elseif ($node instanceof Node\Expr\ArrowFunction) {
-			foreach ($closureScope->getUsedVars() as $var) {
+			foreach ($fnScope->getUsedVars() as $var) {
 				/** @var Scope\ScopeVar $var */
 				if ($scopeStack->getVarExists($var->name) && $var->used) {
 					$scopeStack->setVarUsed($var->name);
