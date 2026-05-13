@@ -62,9 +62,15 @@ class TestReturnCheck extends TestSuiteSetup {
 		// 20 invalid type mismatches (10 in class methods + 10 in standalone functions)
 		$this->assertEquals(20, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail standard return types");
 	}
+
 	public function testAllPathsThrowNoReturnNoError() {
 		// All function that should pass
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-all-paths-throw.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass functions where all paths throw exceptions");
+	}
+
+	public function testAllPathsThrowNoReturnImportNoError() {
+		// All function that should pass
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-all-paths-throw-import.inc', ErrorConstants::TYPE_SIGNATURE_RETURN, ['additionalFilesToIndex' => [__DIR__ . '/TestData/ThrowHelper.php']]), "Failed to pass functions where all paths throw exceptions");
 	}
 
 	public function testAllPathsThrowFail() {
