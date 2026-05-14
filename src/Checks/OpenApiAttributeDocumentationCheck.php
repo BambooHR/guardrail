@@ -12,6 +12,7 @@ use PhpParser\Node\Stmt\ClassLike;
 class OpenApiAttributeDocumentationCheck extends BaseCheck {
 	private const string ATTRIBUTE_NAMESPACE = 'OpenApi\Attributes';
 	private const string TEAM_NAME_KEY = 'team-name';
+	private const string MULTI_SOURCED_OWNERSHIP_KEY = 'multi-sourced-ownership';
 	private const string X_KEY = 'x';
 	private const string DEPRECATED_KEY = 'deprecated';
 	private const string DESCRIPTION_KEY = 'description';
@@ -53,14 +54,16 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 			foreach ($node->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attribute) {
 					$attributeName = $attribute?->name?->toString();
-					if (in_array($attributeName, self::OPEN_API_ATTRIBUTES)) {
+				if (in_array($attributeName, self::OPEN_API_ATTRIBUTES)) {
 						$containsOpenApiAttribute = true;
 						$hasDescription = false;
 						$hasTeamName = false;
+						$hasMultiSourcedOwnership = false;
 						foreach ($attribute->args as $arg) {
 							$this->checkDeprecatedAttribute($arg, $fileName, $node, $inside);
 							$hasDescription = $hasDescription ?: $this->hasDescription($arg);
 							$hasTeamName = $hasTeamName ?: $this->hasTeamName($arg);
+							$hasMultiSourcedOwnership = $hasMultiSourcedOwnership ?: $this->hasMultiSourcedOwnership($arg);
 						}
 						if (!$hasDescription) {
 							$this->emitErrorOnLine(
@@ -155,4 +158,21 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 
 		return false;
 	}
+
+	private function hasMultiSourcedOwnership($arg): bool {
+		if ($arg?->name?->name === self::X_KEY && $arg->value instanceof Node\Expr\Array_) {
+			foreach ($arg->value->items as $item) {
+				if (
+					$item->key->value === self::MULTI_SOURCED_OWNERSHIP_KEY
+					&& $item->value instanceof Node\Expr\ConstFetch
+					&& $item->value->name->toString() === 'true'
+				) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 }

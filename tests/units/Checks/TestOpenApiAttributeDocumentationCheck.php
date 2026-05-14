@@ -36,4 +36,5 @@ class TestOpenApiAttributeDocumentationCheck extends TestSuiteSetup {
 	public function testWithAndWithoutRequiredProperties() {
 		$this->assertEquals(8, $this->runAnalyzerOnFile('.4.inc', ErrorConstants::TYPE_OPEN_API_ATTRIBUTE_MISSING_REQUIRED_EXTENSION_PROPERTY), "");
 	}
+
 }
