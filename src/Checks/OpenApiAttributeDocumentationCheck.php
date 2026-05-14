@@ -53,8 +53,8 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 			$containsOpenApiAttribute = false;
 			foreach ($node->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attribute) {
-					$attributeName = $attribute?->name?->toString();
-				if (in_array($attributeName, self::OPEN_API_ATTRIBUTES)) {
+				$attributeName = $attribute?->name?->toString();
+					if (in_array($attributeName, self::OPEN_API_ATTRIBUTES)) {
 						$containsOpenApiAttribute = true;
 						$hasDescription = false;
 						$hasTeamName = false;
@@ -174,5 +174,4 @@ class OpenApiAttributeDocumentationCheck extends BaseCheck {
 
 		return false;
 	}
-
 }
