@@ -380,6 +380,26 @@ class ReturnCheck extends BaseCheck {
 	}
 
 	/**
+	 * Returns true if the given function/method always exits via throw, exit, etc.
+	 *
+	 * Prefers the cached `always_throws` attribute (set at indexing time when the
+	 * function body has already been stripped). Falls back to walking the statements
+	 * when the body is still present (in-memory symbol tables, or the function
+	 * currently being analyzed).
+	 *
+	 * @param Node\FunctionLike $node The function/method node to check
+	 *
+	 * @return bool
+	 */
+	private function functionAlwaysThrows(Node\FunctionLike $node): bool {
+		$cached = $node->getAttribute('always_throws');
+		if ($cached !== null) {
+			return (bool)$cached;
+		}
+		return $this->allPathsReturnOrThrow($node, true);
+	}
+
+	/**
 	 * Check if an expression is a call to a function that never returns
 	 *
 	 * @param Node\Expr $expr The expression to check
@@ -415,7 +435,7 @@ class ReturnCheck extends BaseCheck {
 		}
 
 		$functionNode = $this->getFunctionNodeFromAbstraction($function);
-		return $functionNode && $this->allPathsReturnOrThrow($functionNode, true);
+		return $functionNode && $this->functionAlwaysThrows($functionNode);
 	}
 
 	/**
@@ -444,7 +464,7 @@ class ReturnCheck extends BaseCheck {
 			);
 			if ($method instanceof \BambooHR\Guardrail\Abstractions\ClassMethod) {
 				$methodNode = $this->getMethodNodeFromAbstraction($method);
-				if ($methodNode && $this->allPathsReturnOrThrow($methodNode, true)) {
+				if ($methodNode && $this->functionAlwaysThrows($methodNode)) {
 					$allThrow = true;
 				}
 			}
@@ -475,7 +495,7 @@ class ReturnCheck extends BaseCheck {
 		}
 
 		$methodNode = $this->getMethodNodeFromAbstraction($method);
-		return $methodNode && $this->allPathsReturnOrThrow($methodNode, true);
+		return $methodNode && $this->functionAlwaysThrows($methodNode);
 	}
 
 	/**
