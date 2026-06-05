@@ -1,0 +1,26 @@
+name: TechDocs
+
+# Publishes this repo's TechDocs (rendered HTML + raw markdown) to the
+# bhr-techdocs S3 bucket via the org-standard reusable workflow. Runs after
+# merge to master so the Backstage Docs tab reflects the published source.
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - docs/**
+      - mkdocs.yml
+      - .github/workflows/techdocs.yaml
+  workflow_dispatch:
+
+jobs:
+  techdocs:
+    uses: BambooHR/actions/.github/workflows/techdocs.yaml@main
+    permissions:
+      id-token: write # required for OIDC -> assume-role
+      contents: read
+    with:
+      entity-namespace: default
+      entity-kind: Component
+      entity-name: guardrail

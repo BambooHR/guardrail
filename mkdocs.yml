@@ -1,0 +1,5 @@
+site_name: Guardrail
+docs_dir: docs
+
+plugins:
+  - techdocs-core
