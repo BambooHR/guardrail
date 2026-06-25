@@ -12,6 +12,7 @@ use BambooHR\Guardrail\Abstractions\ClassAbstraction as AbstractClass;
 use BambooHR\Guardrail\Abstractions\ReflectedClass;
 use BambooHR\Guardrail\Abstractions\ReflectedFunction;
 use BambooHR\Guardrail\Evaluators\Expression\Scalar;
+use BambooHR\Guardrail\NodeVisitors\ThrowDetector;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\TypeParser;
@@ -330,6 +331,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				if ($stmt->getAttribute('variadic_implementation', null) === null) {
 					$stmt->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic($stmt->stmts));
 				}
+				if ($stmt->getAttribute('always_throws', null) === null) {
+					$stmt->setAttribute('always_throws', ThrowDetector::functionAlwaysThrows($stmt));
+				}
 				$stmt->stmts = [];
 			}
 		}
@@ -371,7 +375,24 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 				$usesTrait = 1;
 			}
 		}
+		self::annotateMethodAlwaysThrows($class);
 		$this->addType($name, $file, self::TYPE_CLASS, $usesTrait, $this->serializeClass($class));
+	}
+
+	/**
+	 * Set the `always_throws` attribute on every ClassMethod under this ClassLike
+	 * before its body gets dropped during serialization.
+	 *
+	 * @param ClassLike $class The class/interface/trait to annotate
+	 *
+	 * @return void
+	 */
+	public static function annotateMethodAlwaysThrows(ClassLike $class): void {
+		foreach ($class->stmts as $stmt) {
+			if ($stmt instanceof ClassMethod && $stmt->getAttribute('always_throws', null) === null) {
+				$stmt->setAttribute('always_throws', ThrowDetector::functionAlwaysThrows($stmt));
+			}
+		}
 	}
 
 	/**
@@ -440,6 +461,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	 * @return void
 	 */
 	public function addInterface($name, Interface_ $interface, $file) {
+		self::annotateMethodAlwaysThrows($interface);
 		$this->addType($name, $file, self::TYPE_INTERFACE, 0, $this->serializeClass($interface));
 	}
 
@@ -455,8 +477,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	public function addFunction($name, Function_ $function, $file) {
 		$clone = clone $function;
 		$clone->setAttribute("variadic_implementation", VariadicCheckVisitor::isVariadic($function->stmts));
+		$clone->setAttribute('always_throws', ThrowDetector::functionAlwaysThrows($function));
 		$clone->stmts = [];
-		$this->addType($name, $file, self::TYPE_FUNCTION, 0, $this->serializeFunction($function));
+		$this->addType($name, $file, self::TYPE_FUNCTION, 0, $this->serializeFunction($clone));
 	}
 
 	/**
@@ -577,6 +600,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		if ($function->getAttribute("variadic_implementation")) {
 			$ret .= "V";
 		}
+		if ($function->getAttribute("always_throws")) {
+			$ret .= "R";
+		}
 		$ret .= ";";
 		return $ret;
 	}
@@ -615,6 +641,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		}
 		if ($method->getAttribute('variadic_implementation')) {
 			$ret .= "V";
+		}
+		if ($method->getAttribute('always_throws')) {
+			$ret .= "R";
 		}
 		$ret .= ";";
 		return $ret;
@@ -715,7 +744,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 	}
 
 	function unserializeMethod(string $serializedMethod): ClassMethod {
-		preg_match('/^M([^ &]+)([ &])?([0-9]+)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?$/', $serializedMethod, $matches);
+		preg_match('/^M([^ &]+)([ &])?([0-9]+)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?(R)?$/', $serializedMethod, $matches);
 		$name = $matches[1];
 		$returnsByRef = isset($matches[2]) && $matches[2] == "&";
 		$flags = !empty($matches[3]) ? intval($matches[3]) : 0;
@@ -742,6 +771,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		}
 		if (!empty($matches[8])) {
 			$method->setAttribute('variadic_implementation', true);
+		}
+		if (!empty($matches[9])) {
+			$method->setAttribute('always_throws', true);
 		}
 		return $method;
 	}
@@ -772,7 +804,7 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 
 
 	function unserializeFunction(string $serializedFunction): Function_ {
-		preg_match('/^F([^ &]+)(&)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?;$/', $serializedFunction, $matches);
+		preg_match('/^F([^ &]+)(&)?\(([^)]*)\)(?::([0-9]+)?(?:@([0-9]+))?)?(?:T([0-9,]+))?(V)?(R)?;$/', $serializedFunction, $matches);
 		$name = new Node\Name\FullyQualified($matches[1]);
 		$returnsByRef = $matches[2] == "&";
 		if (trim($matches[3]) !== "") {
@@ -801,6 +833,9 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		}
 		if (!empty($matches[7])) {
 			$func->setAttribute('variadic_implementation', true);
+		}
+		if (!empty($matches[8])) {
+			$func->setAttribute('always_throws', true);
 		}
 		return $func;
 	}
