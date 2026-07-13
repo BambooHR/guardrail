@@ -3,8 +3,6 @@ kind: Component
 metadata:
   name: guardrail
   description: BambooHR tool to run Static Analysis
-  annotations:
-    backstage.io/techdocs-ref: dir:.
 spec:
   type: library
   owner: speed-demons
