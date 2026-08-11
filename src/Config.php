@@ -288,6 +288,16 @@ class Config {
 	}
 
 	/**
+	 * Dispalys release version from metadata
+	 *
+	 * @return void
+	 */
+	public function showVersion() {
+		$release = ReleaseInfo::metadata();
+		printf("%s %s\n", $release['name'], $release['version']);
+	}
+
+	/**
 	 * parseArgv
 	 *
 	 * @param array $argv List of arguments
@@ -297,6 +307,12 @@ class Config {
 	 */
 	private function parseArgv(array $argv) {
 		$nextArg = 0;
+
+		if (in_array($argv[1] ?? null, ['--version', '-V'], true)) {
+			$this->showVersion();
+			exit(0);
+		}
+
 		for ($argCount = 1; $argCount < count($argv); ++$argCount) {
 			switch ($argv[$argCount]) {
 				case '-a':
