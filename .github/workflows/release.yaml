@@ -43,4 +43,4 @@ jobs:
       - name: Upload phar to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.release-please.outputs.tag_name }} guardrail.phar guardrail.phar.sha256
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} guardrail.phar guardrail.phar.sha256 --clobber
