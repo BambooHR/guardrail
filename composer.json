@@ -1,5 +1,6 @@
 {
   "name": "bamboohr/guardrail",
+  "version": "0.10.0",
   "description": "BambooHR's home grown PHP Static Analysis tool",
   "license": "Apache-2.0",
   "authors": [

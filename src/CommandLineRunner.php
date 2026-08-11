@@ -57,7 +57,7 @@ where: -p #/#                               = Define the number of partitions an
        -l  or --list                        = Ignore all other options and list standard test names.
 
        --timings                            = Output a summary of how long each check ran for.
-";
+       --version or -V                      = Display current name and version";
 	}
 
 	/**
