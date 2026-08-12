@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.1](https://github.com/BambooHR/guardrail/compare/v0.10.0...v0.10.1) (2026-08-12)
+
+
+### Bug Fixes
+
+* Uses composer.json to add version info ([#178](https://github.com/BambooHR/guardrail/issues/178)) ([42791fa](https://github.com/BambooHR/guardrail/commit/42791faa2e19d046e830444aef4afc68b7aded47))
+
 ## [0.10.0](https://github.com/BambooHR/guardrail/compare/v0.9.8...v0.10.0) (2026-08-11)
 
 
