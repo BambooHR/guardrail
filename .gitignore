@@ -1,6 +1,5 @@
 .DS_STORE
 vendor
-composer.lock
 .vagrant
 Vagrantfile
 nbproject

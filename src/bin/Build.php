@@ -7,15 +7,21 @@
 
 // Usage: php -d phar.readonly=false Build.php
 
+$baseDir = dirname(dirname(__DIR__));
+require $baseDir . '/vendor/autoload.php';
+
 if (file_exists("guardrail.phar")) {
 	unlink("guardrail.phar");
 }
 try {
 	$phar = new Phar('guardrail.phar');
+	$metadata = \BambooHR\Guardrail\ReleaseInfo::fromComposer(
+		$baseDir . '/composer.json'
+	);
+	$phar->setMetadata($metadata);
 	$phar->startBuffering();
 
 	$phar->setDefaultStub('/src/bin/guardrail.php');
-	$baseDir = dirname(dirname(__DIR__));
 	echo "Building relative to $baseDir\n";
 	$it = new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS);
 	$it2 = new class ($it) extends \RecursiveFilterIterator {

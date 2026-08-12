@@ -288,6 +288,16 @@ class Config {
 	}
 
 	/**
+	 * Dispalys release version from metadata
+	 *
+	 * @return void
+	 */
+	public function showVersion() {
+		$release = ReleaseInfo::metadata();
+		printf("%s %s\n", $release['name'], $release['version']);
+	}
+
+	/**
 	 * parseArgv
 	 *
 	 * @param array $argv List of arguments
@@ -297,6 +307,7 @@ class Config {
 	 */
 	private function parseArgv(array $argv) {
 		$nextArg = 0;
+
 		for ($argCount = 1; $argCount < count($argv); ++$argCount) {
 			switch ($argv[$argCount]) {
 				case '-a':
@@ -314,6 +325,11 @@ class Config {
 					$this->timings = true;
 					break;
 
+				case '-V':
+				case '--version':
+					$this->showVersion();
+					exit(0);
+				break;
 				case '-l':
 				case '--list':
 					$this->showStandardTests();
