@@ -32,7 +32,7 @@ jobs:
           ref: ${{ needs.release-please.outputs.tag_name }}
 
       - name: Install dependencies
-        run: composer install -o --no-dev
+        run: composer install -o
 
       - name: Build phar
         run: ./src/bin/Build.sh
