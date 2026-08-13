@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.2](https://github.com/BambooHR/guardrail/compare/v0.10.1...v0.10.2) (2026-08-13)
+
+
+### Bug Fixes
+
+* Remove no-dev from composer install to see if integration tests pass ([aed33ab](https://github.com/BambooHR/guardrail/commit/aed33ab4692deb5abd73f7a516ec1ccd5b813fce))
+
 ## [0.10.1](https://github.com/BambooHR/guardrail/compare/v0.10.0...v0.10.1) (2026-08-12)
 
 
