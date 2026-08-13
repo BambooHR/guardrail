@@ -41,7 +41,7 @@ class Util {
 	/**
 	 * finalPart
 	 *
-	 * @param Object $parts The class we are checking
+	 * @param Object $parts The class we are checking for
 	 *
 	 * @return "mixed"
 	 */
