@@ -201,7 +201,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	 */
 	public function handleDefine(Node\Scalar\String_ $arg0, FuncCall $node): void {
 		$defineName = $arg0->value;
-		$defineFile = $this->index->removeBasePath($this->index->getDefineFile($defineName));
+		$existingFile = $this->index->getDefineFile($defineName);
+		$defineFile = $existingFile ? $this->index->removeBasePath($existingFile) : "";
 		$internal = $this->isInternalDefine($defineName);
 		if (!$internal && $defineFile === "") {
 			$this->index->addDefine($defineName, $node, $this->filename);
@@ -225,7 +226,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 				echo "\nAttempt to unconditionally redeclare internal function $name() found in " . $this->filename . "\n";
 			}
 		} else {
-			$functionFile = $this->index->removeBasePath($this->index->getFunctionFile($name));
+			$existingFile = $this->index->getFunctionFile($name);
+			$functionFile = $existingFile ? $this->index->removeBasePath($existingFile) : "";
 			if ($functionFile === "") {
 				$this->index->addFunction($name, $node, $this->filename);
 			} else {
@@ -248,7 +250,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 					$this->output->outputVerbose("\nAttempt to unconditionally redeclare internal class $name found in " . $this->filename . "\n");
 				}
 			} else {
-				$filename = $this->index->removeBasePath($this->index->getClassFile($name));
+				$existingFile = $this->index->getClassFile($name);
+				$filename = $existingFile ? $this->index->removeBasePath($existingFile) : "";
 				if ($filename === "") {
 					$this->index->addClass($name, $node, $this->filename);
 				} else {
@@ -268,7 +271,8 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	public function handleInterface(Interface_ $node): void {
 		$name = $node->namespacedName->toString();
 
-		$existing = $this->index->removeBasePath($this->index->getInterfaceFile($name));
+		$existingFile = $this->index->getInterfaceFile($name);
+		$existing = $existingFile ? $this->index->removeBasePath($existingFile) : "";
 		if ($existing) {
 			if (!$this->isInsideConditionalDeclaration($node, "interface")) {
 				$this->output->outputExtraVerbose("\nDuplicate interface $name found in file $this->filename and " . ($existing ?? "(internal)") . "\n");
