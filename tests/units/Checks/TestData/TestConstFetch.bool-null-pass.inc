@@ -25,4 +25,5 @@ testBoolParam2(true);
 testBoolParam2(false);
 testBoolParam2(null);
 testNullParam(null);
+testNullParam("test");
 testNullParam2(null);
