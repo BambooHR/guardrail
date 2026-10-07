@@ -99,7 +99,6 @@ class TestClassConstantCheck extends TestSuiteSetup {
 		$this->assertEquals(6, $this->getStringErrorCount($code), "Error with valid class constant.");
 	}
 
-
 	/**
 	 * testParentClassConstantInheritance
 	 *
