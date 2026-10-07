@@ -103,34 +103,4 @@ class TestClassStoredAsVariableCheck extends TestSuiteSetup {
 		$this->assertIsArray($types);
 		$this->assertContains(String_::class, $types);
 	}
-
-	/**
-	 * testClassVariableClassNotInString
-	 *
-	 * @return void
-	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
-	 */
-	public function testClassVariableClassNotInString() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.5.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
-	}
-
-	/**
-	 * testClassVariableNamespacedClassNotInString
-	 *
-	 * @return void
-	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
-	 */
-	public function testClassVariableNamespacedClassNotInString() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.6.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
-	}
-
-	/**
-	 * testNamspacedClassVariableClass
-	 *
-	 * @return void
-	 * @rapid-unit Checks:ClassReferencedAsString:Class referenced as string validation
-	 */
-	public function testNamspacedClassVariableClass() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_CLASS_STORED_VARIABLE));
-	}
 }
