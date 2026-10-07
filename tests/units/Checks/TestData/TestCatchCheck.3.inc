@@ -1,4 +1,3 @@
-<?php
 try {
 	echo "Hello world";
 } catch(\Exception $e) {

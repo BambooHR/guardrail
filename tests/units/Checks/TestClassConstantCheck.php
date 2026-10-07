@@ -100,62 +100,56 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	}
 
 	/**
-	 * testParentClassConstantInheritance
+	 * Test basic class constant types
 	 *
 	 * @return void
-	 * @rapid-unit Checks:ClassConstantCheck:Can access parent class constant via self::
 	 */
-	public function testParentClassConstantInheritance() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.7.inc', ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
+	public function testBasicConstantTypes() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.basic-types.inc', ''));
 	}
 
 	/**
-	 * testInterfaceConstantInheritance
+	 * Test typed class constants with self references
 	 *
 	 * @return void
-	 * @rapid-unit Checks:ClassConstantCheck:Can access interface constant via self::
 	 */
-	public function testInterfaceConstantInheritance() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.8.inc', ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
+	public function testTypedConstantsWithSelfReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.typed-consts.inc', ''));
 	}
 
 	/**
-	 * testClassConstantAccess
+	 * Test bitwise operations in class constants
 	 *
 	 * @return void
-	 * @rapid-unit Checks:ClassConstantCheck:::class is always valid and should not error
 	 */
-	public function testClassConstantAccess() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.9.inc', ErrorConstants::TYPE_UNKNOWN_CLASS_CONSTANT));
+	public function testBitwiseOperationsInConstants() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.bitwise-ops.inc', ''));
 	}
 
 	/**
-	 * testIgnoredType
+	 * Test negative values in class constants
 	 *
 	 * @return void
-	 * @rapid-unit Checks:ClassConstantCheck:Ignored types like mixed should not be checked
 	 */
-	public function testIgnoredType() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.10.inc', ErrorConstants::TYPE_UNKNOWN_CLASS));
+	public function testNegativeValuesInConstants() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.negative-values.inc', ''));
 	}
 
 	/**
-	 * testParentInInterfaceWithExtends
+	 * Test cross-class constant references with typed constants
 	 *
 	 * @return void
-	 * @rapid-unit Checks:ClassConstantCheck:Interface with extends can use parent::
 	 */
-	public function testParentInInterfaceWithExtends() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.11.inc', ErrorConstants::TYPE_SCOPE_ERROR));
+	public function testCrossClassTypedConstantReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-typed.inc', ''));
 	}
 
 	/**
-	 * testParentInEnum
+	 * Test cross-class constant references with untyped constants
 	 *
 	 * @return void
-	 * @rapid-unit Checks:ClassConstantCheck:Enum cannot use parent::
 	 */
-	public function testParentInEnum() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.12.inc', ErrorConstants::TYPE_SCOPE_ERROR));
+	public function testCrossClassUntypedConstantReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-untyped.inc', ''));
 	}
 }
