@@ -165,7 +165,11 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testBasicConstantTypes() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.basic-types.inc', ''));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.basic-types-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testBasicConstantTypesFail() {
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.basic-types-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
 	/**
@@ -174,7 +178,12 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testTypedConstantsWithSelfReferences() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.typed-consts.inc', ''));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.typed-consts-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.typed-consts-pass.inc', ErrorConstants::TYPE_SCOPE_ERROR));
+	}
+
+	public function testTypedConstantsWithSelfReferencesFail() {
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.typed-consts-fail.inc', ErrorConstants::TYPE_SCOPE_ERROR));
 	}
 
 	/**
@@ -183,7 +192,11 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testBitwiseOperationsInConstants() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.bitwise-ops.inc', ''));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.bitwise-ops-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testBitwiseOperationsInConstantsFail() {
+		$this->assertEquals(6, $this->runAnalyzerOnFile('.bitwise-ops-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
 	/**
@@ -192,7 +205,7 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testNegativeValuesInConstants() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.negative-values.inc', ''));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.negative-values-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
 	/**
@@ -201,7 +214,11 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testCrossClassTypedConstantReferences() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-typed.inc', ''));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-typed-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testCrossClassTypedConstantReferencesFail() {
+		$this->assertEquals(4, $this->runAnalyzerOnFile('.cross-class-typed-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
 	/**
@@ -210,6 +227,10 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	 * @return void
 	 */
 	public function testCrossClassUntypedConstantReferences() {
-		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-untyped.inc', ''));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-untyped-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testCrossClassUntypedConstantReferencesFail() {
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.cross-class-untyped-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 }

@@ -21,4 +21,4 @@ class TestClass {
 }
 
 $test = new TestClass();
-$test->publicMethod(self::PUBLIC_TEST_STRING, self::PUBLIC_TEST_ARRAY, self::PUBLIC_TEST_WITH_SPREAD);
+$test->publicMethod(TestClass::PUBLIC_TEST_STRING, TestClass::PUBLIC_TEST_ARRAY, TestClass::PUBLIC_TEST_WITH_SPREAD);

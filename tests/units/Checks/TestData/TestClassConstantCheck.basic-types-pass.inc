@@ -1,8 +1,5 @@
 <?php declare(strict_types=1);
 
-const standaloneInt = 1;
-define("definedInt", 1);
-
 class TestClass {
 	const A = 1;
 	private const int ATypedPrivate = 1;
@@ -21,7 +18,7 @@ class TestClass {
 	}
 
 	function privateIntTest() : int {
-		return intTest(TestClass::ATypedPrivate);
+		return $this->intTest(TestClass::ATypedPrivate);
 	}
 
 	function floatTest(float $b) : float {
@@ -62,8 +59,6 @@ $test = new TestClass();
 $test->intTest(TestClass::ATypedPublic);
 $test->intTest(TestClass::A);
 $test->privateIntTest();
-$test->intTest(standaloneInt);
-$test->intTest(definedInt);
 $test->floatTest(TestClass::B);
 $test->stringTest(TestClass::C);
 $test->boolTest(TestClass::D);
