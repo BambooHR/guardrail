@@ -112,4 +112,8 @@ class TestReturnCheck extends TestSuiteSetup {
 		// - WrongConcreteReturn::getStatic (1)
 		$this->assertEquals(13, $this->runAnalyzerOnFile('-static-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch invalid static return types");
 	}
+
+	public function testStrictTypesAfterOtherDeclare() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('-ticks-strict-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to enable strict mode when strict_types is not the first declare");
+	}
 }
