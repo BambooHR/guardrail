@@ -1,4 +1,6 @@
-<?php namespace BambooHR\Guardrail\Tests\units\Checks;
+<?php
+
+namespace BambooHR\Guardrail\Tests\units\Checks;
 
 use BambooHR\Guardrail\Checks\ErrorConstants;
 use BambooHR\Guardrail\Checks\ClassStoredAsVariableCheck;
@@ -16,7 +18,6 @@ use PhpParser\Node\Scalar\String_;
  * @package BambooHR\Guardrail\Tests\units\Checks
  */
 class TestClassStoredAsVariableCheck extends TestSuiteSetup {
-
 	private function getPluginConfig(): array {
 		return [
 			'plugins' => [__DIR__ . '/TestData/ClassStoredAsVariableCheckPlugin.php'],

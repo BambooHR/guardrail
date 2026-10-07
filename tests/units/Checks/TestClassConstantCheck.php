@@ -158,4 +158,79 @@ class TestClassConstantCheck extends TestSuiteSetup {
 	public function testParentInEnum() {
 		$this->assertEquals(1, $this->runAnalyzerOnFile('.12.inc', ErrorConstants::TYPE_SCOPE_ERROR));
 	}
+
+	/**
+	 * Test basic class constant types
+	 *
+	 * @return void
+	 */
+	public function testBasicConstantTypes() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.basic-types-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testBasicConstantTypesFail() {
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.basic-types-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * Test typed class constants with self references
+	 *
+	 * @return void
+	 */
+	public function testTypedConstantsWithSelfReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.typed-consts-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.typed-consts-pass.inc', ErrorConstants::TYPE_SCOPE_ERROR));
+	}
+
+	public function testTypedConstantsWithSelfReferencesFail() {
+		$this->assertEquals(3, $this->runAnalyzerOnFile('.typed-consts-fail.inc', ErrorConstants::TYPE_SCOPE_ERROR));
+	}
+
+	/**
+	 * Test bitwise operations in class constants
+	 *
+	 * @return void
+	 */
+	public function testBitwiseOperationsInConstants() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.bitwise-ops-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testBitwiseOperationsInConstantsFail() {
+		$this->assertEquals(6, $this->runAnalyzerOnFile('.bitwise-ops-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * Test negative values in class constants
+	 *
+	 * @return void
+	 */
+	public function testNegativeValuesInConstants() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.negative-values-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * Test cross-class constant references with typed constants
+	 *
+	 * @return void
+	 */
+	public function testCrossClassTypedConstantReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-typed-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testCrossClassTypedConstantReferencesFail() {
+		$this->assertEquals(4, $this->runAnalyzerOnFile('.cross-class-typed-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	/**
+	 * Test cross-class constant references with untyped constants
+	 *
+	 * @return void
+	 */
+	public function testCrossClassUntypedConstantReferences() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('.cross-class-untyped-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
+
+	public function testCrossClassUntypedConstantReferencesFail() {
+		$this->assertEquals(2, $this->runAnalyzerOnFile('.cross-class-untyped-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
+	}
 }

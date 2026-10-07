@@ -13,6 +13,16 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  * @package BambooHR\Guardrail\Tests\Checks
  */
 class TestReturnCheck extends TestSuiteSetup {
+	public function testStrictFail() {
+		// 15 class and 15 global functions that are in `strict type` mode
+		$this->assertEquals(30, $this->runAnalyzerOnFile('-strict-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass strict mode");
+	}
+
+	public function testNonStrictPass() {
+		// 15 class and 15 global functions that are in `non-strict type` mode
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-non-strict-pass.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass non-strict mode");
+	}
+
 	public function testGenerators() {
 		// 6 valid generators (2x withYield, 2x withYieldFrom, interface, and abstract) = 0 errors
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-generators.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass generator return types");
@@ -101,5 +111,9 @@ class TestReturnCheck extends TestSuiteSetup {
 		// - WrongImplementation::getStatic (1)
 		// - WrongConcreteReturn::getStatic (1)
 		$this->assertEquals(13, $this->runAnalyzerOnFile('-static-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch invalid static return types");
+	}
+
+	public function testStrictTypesAfterOtherDeclare() {
+		$this->assertEquals(1, $this->runAnalyzerOnFile('-ticks-strict-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to enable strict mode when strict_types is not the first declare");
 	}
 }

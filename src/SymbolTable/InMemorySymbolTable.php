@@ -115,10 +115,10 @@ class InMemorySymbolTable extends SymbolTable {
 	 *
 	 * @param string $name The name
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public function getDefineFile($name) {
-		return isset($this->defines[strtolower($name)]) ? $this->defines[strtolower($name)] : null;
+		return isset($this->defines[strtolower($name)]) ? $this->defines[strtolower($name)] : "";
 	}
 
 	/**
