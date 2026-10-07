@@ -71,10 +71,6 @@ class TestConstFetch extends TestSuiteSetup
 	 * This test verifies that PHP runtime constants (FILE_APPEND, JSON_PRETTY_PRINT,
 	 * FILTER_VALIDATE_EMAIL, etc.) are properly typed based on their actual values
 	 * instead of being typed as 'mixed'.
-	 *
-	 * The fix: ConstFetch::getType() now uses constant() to get the actual value
-	 * and infers the type from that value using getTypeFromValue().
-	 *
 	 * Tests include: int, string, float, bool, array, null, and mixed type constants
 	 *
 	 * @return void
