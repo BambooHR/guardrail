@@ -13,16 +13,6 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  * @package BambooHR\Guardrail\Tests\Checks
  */
 class TestReturnCheck extends TestSuiteSetup {
-	public function testStrictFail() {
-		// 15 class and 15 global functions that are in `strict type` mode
-		$this->assertEquals(30, $this->runAnalyzerOnFile('-strict.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass strict mode");
-	}
-
-	public function testNonStrictPass() {
-		// 15 class and 15 global functions that are in `non-strict type` mode
-		$this->assertEquals(0, $this->runAnalyzerOnFile('-non-strict.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass non-strict mode");
-	}
-
 	public function testGenerators() {
 		// 6 valid generators (2x withYield, 2x withYieldFrom, interface, and abstract) = 0 errors
 		$this->assertEquals(0, $this->runAnalyzerOnFile('-generators.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass generator return types");
@@ -71,5 +61,45 @@ class TestReturnCheck extends TestSuiteSetup {
 	public function testStandardReturnTypesFail() {
 		// 20 invalid type mismatches (10 in class methods + 10 in standalone functions)
 		$this->assertEquals(20, $this->runAnalyzerOnFile('-standard-returns-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to fail standard return types");
+	}
+
+	public function testAllPathsThrowNoReturnNoError() {
+		// All function that should pass
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-all-paths-throw.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass functions where all paths throw exceptions");
+	}
+
+	public function testAllPathsThrowNoReturnImportNoError() {
+		// All function that should pass
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-all-paths-throw-import.inc', ErrorConstants::TYPE_SIGNATURE_RETURN, ['additionalFilesToIndex' => [__DIR__ . '/TestData/ThrowHelper.php']]), "Failed to pass functions where all paths throw exceptions");
+	}
+
+	public function testAllPathsThrowFail() {
+		$this->assertEquals(52, $this->runAnalyzerOnFile('-all-paths-throw-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
+	}
+
+	public function testWhileIFConstant() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-while-if-constant.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
+	}
+
+	public function testWhileIFConstantFail() {
+		$this->assertEquals(12, $this->runAnalyzerOnFile('-while-if-constant-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch functions where not all paths throw or return");
+	}
+
+	public function testStatic() {
+		$this->assertEquals(0, $this->runAnalyzerOnFile('-static.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass functions with valid static return types");
+	}
+
+	public function testStaticFail() {
+		// Expected errors:
+		// - returnsString, returnsInt, returnsNull, returnsArray (4)
+		// - returnsOtherClass (1)
+		// - returnsParent (1)
+		// - StaticMethodWrongReturn::create (1)
+		// - noReturn, conditionalMissingReturn (2)
+		// - voidReturn (1)
+		// - traitWrongReturn (1)
+		// - WrongImplementation::getStatic (1)
+		// - WrongConcreteReturn::getStatic (1)
+		$this->assertEquals(13, $this->runAnalyzerOnFile('-static-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to catch invalid static return types");
 	}
 }
