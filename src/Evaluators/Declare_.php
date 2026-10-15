@@ -8,7 +8,7 @@ use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 
-class Declare_ implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
+class Declare_ implements OnEnterEvaluatorInterface
 {
 	function getInstanceType(): string {
 
@@ -21,20 +21,8 @@ class Declare_ implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 		if ($value === null) {
 			return;
 		}
-		if ($node->stmts != null) {
-			$scopeStack->pushScope($scopeStack->getScopeClone());
-		}
+		// strict_types applies to the whole file. PHP rejects declare(strict_types=1) { ... }.
 		$scopeStack->getCurrentScope()->isStrict = $value;
-	}
-
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-
-		if ($this->strictTypesValue($node) === null) {
-			return;
-		}
-		if ($node->stmts != null) {
-			$scopeStack->popScope();
-		}
 	}
 
 	/**
