@@ -14,8 +14,9 @@ use BambooHR\Guardrail\Tests\TestSuiteSetup;
  */
 class TestReturnCheck extends TestSuiteSetup {
 	public function testStrictFail() {
-		// 15 class and 15 global functions that are in `strict type` mode
-		$this->assertEquals(30, $this->runAnalyzerOnFile('-strict-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass strict mode");
+		// 12 class methods and 12 global functions return a scalar that strict_types rejects.
+		// none, never, and void are unknown constants typed as mixed, which strict_types accepts.
+		$this->assertEquals(24, $this->runAnalyzerOnFile('-strict-fail.inc', ErrorConstants::TYPE_SIGNATURE_RETURN), "Failed to pass strict mode");
 	}
 
 	public function testNonStrictPass() {
