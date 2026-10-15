@@ -1,9 +1,7 @@
 <?php declare(strict_types=1);
 
-// User-defined constants are typed as mixed. strict_types does not reject
-// mixed, so these calls produce no signature errors. nullTest(null) receives
-// the literal null, which is typed as null. nullTest(G) receives a null
-// constant, which is typed as mixed.
+// User constants are typed from their values, the same way PHP evaluates them.
+// nullTest(null) and nullTest(G) both receive null.
 
 const A = 1;
 const B = 1.0;
@@ -51,13 +49,13 @@ function boolOrInt(bool | int $i) : bool | int {
 	return $i;
 }
 
-intTest(A);     // mixed passed to int (A = 1)
-floatTest(B);   // mixed passed to float (B = 1.0)
-stringTest(C);  // mixed passed to string (C = "1")
-boolTest(D);    // mixed passed to bool (D = true)
-arrayTest(E);   // mixed passed to array (E = [1])
-mixedTest(F);   // mixed passed to mixed (F = "1")
-nullTest(null); // literal null, typed as null
-nullTest(G);    // mixed passed to null (G = null)
-nullableInt(H); // mixed passed to ?int (H = 1)
-boolOrInt(I);   // mixed passed to bool|int (I = true)
+intTest(A);     // int (A = 1)
+floatTest(B);   // float (B = 1.0)
+stringTest(C);  // string (C = "1")
+boolTest(D);    // true (D = true)
+arrayTest(E);   // array (E = [1])
+mixedTest(F);   // string (F = "1")
+nullTest(null); // literal null
+nullTest(G);    // null (G = null)
+nullableInt(H); // int (H = 1)
+boolOrInt(I);   // true (I = true)

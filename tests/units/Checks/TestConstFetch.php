@@ -34,8 +34,8 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * define() constants are typed as mixed. strict_types does not reject
-	 * mixed, and literal arguments of the declared types are accepted.
+	 * define() constants are typed from their arguments. Literal arguments of
+	 * the declared types are accepted too.
 	 *
 	 * @return void
 	 */
@@ -44,9 +44,8 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * User-defined constants are typed as mixed. strict_types does not reject
-	 * mixed, so these calls produce no signature errors. nullTest(null)
-	 * receives the literal null, which is typed as null.
+	 * User constants are typed from their values, so these calls match the
+	 * parameter types.
 	 *
 	 * @return void
 	 */
@@ -55,9 +54,8 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * User-defined constants are typed as mixed, including ones defined with
-	 * bitwise expressions. strict_types does not reject mixed, so these calls
-	 * produce no signature errors.
+	 * Bitwise constant expressions evaluate to int, so these calls match the
+	 * int parameter.
 	 *
 	 * @return void
 	 */
@@ -66,8 +64,7 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * User-defined constants are typed as mixed, including a negated int.
-	 * strict_types does not reject mixed, so the call produces no signature error.
+	 * A negated int constant is an int, so the call produces no signature error.
 	 *
 	 * @return void
 	 */
@@ -124,6 +121,17 @@ class TestConstFetch extends TestSuiteSetup
 		ENDCODE;
 		$counts = $this->analyzeString($fallback)->getCounts();
 		$this->assertEquals(1, $counts[ErrorConstants::TYPE_SIGNATURE_TYPE] ?? 0);
+	}
+
+	/**
+	 * A user constant whose value has a different scalar type than the
+	 * parameter is a signature error: string to int, int to string, float to
+	 * int, and a shift expression (int) to string.
+	 *
+	 * @return void
+	 */
+	public function testLiteralConstantsFail() {
+		$this->assertEquals(4, $this->runAnalyzerOnFile('.literal-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
 	/**
