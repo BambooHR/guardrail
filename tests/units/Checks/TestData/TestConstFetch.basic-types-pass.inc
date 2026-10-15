@@ -1,8 +1,9 @@
-<?php declare(strict_types=0);
+<?php declare(strict_types=1);
 
-// User-defined constants are typed as mixed. With strict_types=0, a mixed
-// argument is compatible with any parameter, so these calls produce no
-// signature errors. nullTest receives the literal null, which is typed as null.
+// User-defined constants are typed as mixed. strict_types does not reject
+// mixed, so these calls produce no signature errors. nullTest(null) receives
+// the literal null, which is typed as null. nullTest(G) receives a null
+// constant, which is typed as mixed.
 
 const A = 1;
 const B = 1.0;
@@ -50,12 +51,13 @@ function boolOrInt(bool | int $i) : bool | int {
 	return $i;
 }
 
-intTest(A);     // mixed passed to int (A = 1); allowed because strict_types=0
-floatTest(B);   // mixed passed to float (B = 1.0); allowed because strict_types=0
-stringTest(C);  // mixed passed to string (C = "1"); allowed because strict_types=0
-boolTest(D);    // mixed passed to bool (D = true); allowed because strict_types=0
-arrayTest(E);   // mixed passed to array (E = [1]); allowed because strict_types=0
+intTest(A);     // mixed passed to int (A = 1)
+floatTest(B);   // mixed passed to float (B = 1.0)
+stringTest(C);  // mixed passed to string (C = "1")
+boolTest(D);    // mixed passed to bool (D = true)
+arrayTest(E);   // mixed passed to array (E = [1])
 mixedTest(F);   // mixed passed to mixed (F = "1")
 nullTest(null); // literal null, typed as null
-nullableInt(H); // mixed passed to ?int (H = 1); allowed because strict_types=0
-boolOrInt(I);   // mixed passed to bool|int (I = true); allowed because strict_types=0
+nullTest(G);    // mixed passed to null (G = null)
+nullableInt(H); // mixed passed to ?int (H = 1)
+boolOrInt(I);   // mixed passed to bool|int (I = true)

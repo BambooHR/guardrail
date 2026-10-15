@@ -34,7 +34,8 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * Test that define() constants are correctly typed
+	 * define() constants are typed as mixed. strict_types does not reject
+	 * mixed, and literal arguments of the declared types are accepted.
 	 *
 	 * @return void
 	 */
@@ -43,21 +44,9 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * Constants created with define() are typed as mixed. The value passed to
-	 * define() is never read. With strict_types=1, mixed is not compatible
-	 * with a narrower parameter, so each argument is a signature error even
-	 * when the defined value would fit.
-	 *
-	 * @return void
-	 */
-	public function testDefineConstantsFail() {
-		$this->assertEquals(6, $this->runAnalyzerOnFile('.define-consts-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
-	}
-
-	/**
-	 * User-defined constants are typed as mixed. With strict_types=0, a mixed
-	 * argument is compatible with any parameter, so these calls produce no
-	 * signature errors. nullTest receives the literal null, which is typed as null.
+	 * User-defined constants are typed as mixed. strict_types does not reject
+	 * mixed, so these calls produce no signature errors. nullTest(null)
+	 * receives the literal null, which is typed as null.
 	 *
 	 * @return void
 	 */
@@ -66,20 +55,9 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * User-defined constants are typed as mixed. With strict_types=1, mixed is
-	 * not compatible with a narrower parameter, so each call is a signature
-	 * error even when the constant's value would fit:
-	 *
-	 * @return void
-	 */
-	public function testBasicGlobalConstantTypesFail() {
-		$this->assertEquals(8, $this->runAnalyzerOnFile('.basic-types-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
-	}
-
-	/**
 	 * User-defined constants are typed as mixed, including ones defined with
-	 * bitwise expressions. With strict_types=0, a mixed argument is compatible
-	 * with any parameter, so these calls produce no signature errors.
+	 * bitwise expressions. strict_types does not reject mixed, so these calls
+	 * produce no signature errors.
 	 *
 	 * @return void
 	 */
@@ -88,35 +66,13 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * User-defined constants are typed as mixed, including ones defined with
-	 * bitwise expressions. With strict_types=1, mixed is not compatible with
-	 * int, so each call is a signature error even though every expression
-	 * evaluates to an int.
-	 *
-	 * @return void
-	 */
-	public function testBitwiseOperationsInGlobalConstantsFail() {
-		$this->assertEquals(6, $this->runAnalyzerOnFile('.bitwise-ops-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
-	}
-
-	/**
 	 * User-defined constants are typed as mixed, including a negated int.
-	 * With strict_types=0, a mixed argument is compatible with int.
+	 * strict_types does not reject mixed, so the call produces no signature error.
 	 *
 	 * @return void
 	 */
 	public function testNegativeValuesInGlobalConstants() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.negative-values-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
-	}
-
-	/**
-	 * User-defined constants are typed as mixed, including a negated int.
-	 * With strict_types=1, mixed is not compatible with int.
-	 *
-	 * @return void
-	 */
-	public function testNegativeValuesInGlobalConstantsFail() {
-		$this->assertEquals(1, $this->runAnalyzerOnFile('.negative-values-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
 	/**

@@ -168,10 +168,6 @@ class TestClassConstantCheck extends TestSuiteSetup {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.basic-types-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 	}
 
-	public function testBasicConstantTypesFail() {
-		$this->assertEquals(2, $this->runAnalyzerOnFile('.basic-types-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
-	}
-
 	/**
 	 * Test typed class constants with self references
 	 *

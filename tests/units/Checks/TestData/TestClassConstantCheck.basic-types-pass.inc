@@ -92,3 +92,8 @@ testFunction(1);
 testFunction(TestClass::A);
 testFunction(anotherClass::A);
 testFunction(anotherClass::B);
+
+const standaloneInt = 1;
+define("definedInt", 1);
+$test->intTest(standaloneInt); // mixed passed to int
+$test->intTest(definedInt);    // mixed passed to int
