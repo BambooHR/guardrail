@@ -86,6 +86,27 @@ class TestConstFetch extends TestSuiteSetup
 	 *
 	 * @return void
 	 */
+	/**
+	 * A constant defined in Guardrail's process, rather than by PHP, is not
+	 * given that process value's type. An int constant passed to string stays
+	 * mixed and is not a signature error.
+	 *
+	 * @return void
+	 */
+	public function testProcessUserConstantStaysMixed() {
+		if (!defined('GUARDRAIL_PROCESS_ONLY_CONST')) {
+			define('GUARDRAIL_PROCESS_ONLY_CONST', 1);
+		}
+		$code = <<<'ENDCODE'
+			declare(strict_types=1);
+			function takeString(string $value): void {
+			}
+			takeString(GUARDRAIL_PROCESS_ONLY_CONST);
+		ENDCODE;
+		$counts = $this->analyzeString($code)->getCounts();
+		$this->assertEquals(0, $counts[ErrorConstants::TYPE_SIGNATURE_TYPE] ?? 0);
+	}
+
 	public function testPhpConstantsInStrictMode() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.php-consts-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 		$this->assertEquals(10, $this->runAnalyzerOnFile('.php-consts-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));

@@ -7,6 +7,7 @@ use BambooHR\Guardrail\Scope;
 use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
+use BambooHR\Guardrail\Util;
 use PhpParser\Node;
 
 class ConstFetch implements ExpressionInterface
@@ -28,10 +29,11 @@ class ConstFetch implements ExpressionInterface
 		if (strcasecmp($expr->name, "false") == 0 || strcasecmp($expr->name, "true") == 0) {
 			return TypeComparer::identifierFromName($expr->name);
 		}
-		if (defined($expr->name)) {
-			// Guardrail doesn't declare any global constants. Any that exist are from the runtime,
-			// so their current value has a known type.
-			$value = constant(strval($expr->name));
+		$name = strval($expr->name);
+		if (Util::isInternalConstant($name)) {
+			// Only PHP and extension constants have a known type in this process.
+			// Constants defined by plugins or the target project stay mixed.
+			$value = constant($name);
 			$typeName = match (gettype($value)) {
 				'boolean' => $value ? 'true' : 'false',
 				'integer' => 'int',
