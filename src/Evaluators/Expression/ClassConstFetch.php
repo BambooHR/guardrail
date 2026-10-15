@@ -9,7 +9,6 @@ use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use BambooHR\Guardrail\TypeComparer;
 use BambooHR\Guardrail\Util;
 use PhpParser\Node;
-use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Interface_;
@@ -44,13 +43,10 @@ class ClassConstFetch implements ExpressionInterface
 			}
 		}
 
-		if ($expr instanceof Scalar) {
-			return \BambooHR\Guardrail\Evaluators\Expression\Scalar::inferScalar($expr);
-		} elseif ($expr instanceof Node\Expr\Array_) {
-			return TypeComparer::identifierFromName("array");
-		} else {
-			return null;
+		if ($expr instanceof Node\Expr) {
+			return ConstFetch::typeOfConstExpr($expr, $table);
 		}
+		return null;
 	}
 
 

@@ -15,7 +15,6 @@ use BambooHR\Guardrail\Evaluators\Expression\Scalar;
 use BambooHR\Guardrail\NodeVisitors\ThrowDetector;
 use BambooHR\Guardrail\NodeVisitors\VariadicCheckVisitor;
 use BambooHR\Guardrail\TypeComparer;
-use BambooHR\Guardrail\TypeParser;
 use Exception;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -61,7 +60,6 @@ class JsonSymbolTable extends SymbolTable implements PersistantSymbolTable {
 		parent::__construct($basePath);
 		$this->types = new TypeStringTable();
 		$this->fileName = $fileName;
-		$this->parser = new TypeParser(fn($typeString)=>new Node\Name\FullyQualified($typeString));
 	}
 
 	/**

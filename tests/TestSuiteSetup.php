@@ -116,12 +116,25 @@ abstract class TestSuiteSetup extends TestCase {
 	}
 
 	public function analyzeString($fileData, $additionalConfig=[]) {
+		if (!str_starts_with($fileData, "<?php")) {
+			$fileData = "<?php\n" . $fileData;
+		}
+		// Signature checks re-read the indexed file. A base path of "/" becomes
+		// "//test.php", which is not a readable file, so those checks never run.
+		$directory = sys_get_temp_dir() . "/guardrail-" . uniqid("", true);
+		mkdir($directory);
 		$fileName = "test.php";
+		file_put_contents($directory . "/" . $fileName, $fileData);
 		$emit = ErrorConstants::getConstants();
 		unset( $emit[array_search(ErrorConstants::TYPE_AUTOLOAD_ERROR, $emit)] );
 		unset( $emit[array_search(ErrorConstants::TYPE_GLOBAL_FUNCTION, $emit)] );
-		$additionalConfig = array_merge(["basePath" => "/"], $additionalConfig);
-		return $this->analyzeStringToOutput($fileName, $fileData, $emit, $additionalConfig);
+		$additionalConfig = array_merge($additionalConfig, ["basePath" => $directory]);
+		try {
+			return $this->analyzeStringToOutput($fileName, $fileData, $emit, $additionalConfig);
+		} finally {
+			unlink($directory . "/" . $fileName);
+			rmdir($directory);
+		}
 	}
 
 	public function analyzeStringToOutput(string $fileName, string $fileData, $emit, array $additionalConfig = []) {

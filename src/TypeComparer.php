@@ -176,6 +176,11 @@ class TypeComparer
 			return true;
 		}
 
+		// mixed is an unknown static type. strict_types only rejects scalar coercion.
+		if ($valueName == "mixed") {
+			return true;
+		}
+
 		if (
 			($targetName == "false" || $targetName == "true" || $targetName == "null") &&
 			$valueName != $targetName
@@ -183,16 +188,8 @@ class TypeComparer
 			return false;
 		}
 
-		if (!$strict) {
-			if ($targetName == "mixed") {
-				return true;
-			}
-			if ($valueName == "mixed") {
-				return true;
-			}
-			if (Util::isScalarType($targetName) && (Util::isScalarType($valueName) || $valueName == "null")) {
-				return true;
-			}
+		if (!$strict && Util::isScalarType($targetName) && (Util::isScalarType($valueName) || $valueName == "null")) {
+			return true;
 		}
 		return $valueName == $targetName;
 	}
@@ -274,8 +271,8 @@ class TypeComparer
 	}
 
 	/**
-	 * Null values indicate an unknown type.  Unknown types are always considerable compatible.  Mixed *targets* can
-	 * accept any target.  Specific *targets* are too narrow to accept mixed *values*.
+	 * Null values indicate an unknown type and are always compatible. Mixed values and mixed targets are
+	 * compatible with any type. The strict flag only rejects scalar coercion, matching declare(strict_types=1).
 	 *
 	 * @param ComplexType|Name|Identifier|null $target
 	 * @param ComplexType|Name|Identifier|null $value

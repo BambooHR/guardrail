@@ -9,6 +9,7 @@ namespace BambooHR\Guardrail\NodeVisitors;
 
 use BambooHR\Guardrail\EnumCodeAugmenter;
 use BambooHR\Guardrail\Output\OutputInterface;
+use BambooHR\Guardrail\Util;
 use PhpParser\Builder\Param;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
@@ -122,18 +123,7 @@ class SymbolTableIndexer extends NodeVisitorAbstract {
 	}
 
 	function isInternalDefine($name): bool {
-		static $internalDefines = null;
-		if ($internalDefines === null) {
-			$temp = get_defined_constants(true);
-			foreach ($temp as $area => $defines) {
-				if ($area != 'user') {
-					foreach ($defines as $define => $value) {
-						$internalDefines[$define] = true;
-					}
-				}
-			}
-		}
-		return isset($internalDefines[$name]);
+		return Util::isInternalConstant($name);
 	}
 
 

@@ -71,6 +71,26 @@ class Util {
 		return $name == 'bool' || $name == 'string' || $name == 'int' || $name == 'float' || $name == "false" || $name == "true";
 	}
 
+	/**
+	 * True for a constant provided by PHP or an extension. Constants defined by
+	 * user code, including plugins loaded into this process, are excluded.
+	 */
+	public static function isInternalConstant(string $name): bool {
+		static $internalDefines = null;
+		if ($internalDefines === null) {
+			$internalDefines = [];
+			foreach (get_defined_constants(true) as $area => $defines) {
+				if ($area === 'user') {
+					continue;
+				}
+				foreach ($defines as $define => $value) {
+					$internalDefines[$define] = true;
+				}
+			}
+		}
+		return isset($internalDefines[$name]);
+	}
+
 
 	static function getPhpAttribute(string $name, array $attrGroups): ?Attribute {
 		foreach ($attrGroups as $attrGroup) {

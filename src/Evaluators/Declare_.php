@@ -8,7 +8,7 @@ use BambooHR\Guardrail\Scope\ScopeStack;
 use BambooHR\Guardrail\SymbolTable\SymbolTable;
 use PhpParser\Node;
 
-class Declare_ implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
+class Declare_ implements OnEnterEvaluatorInterface
 {
 	function getInstanceType(): string {
 
@@ -17,21 +17,23 @@ class Declare_ implements OnExitEvaluatorInterface, OnEnterEvaluatorInterface
 
 	function onEnter(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
 
-		if (count($node->declares) > 0 && strval($node->declares[0]->key) == "strict") {
-			$value = ($node->declares[0]->value instanceof Node\Scalar\LNumber && $node->declares[0]->value->value === 1) ? true : false;
-			if ($node->stmts != null) {
-				$this->scopeStack->pushScopeClone();
-			}
-			$this->scopeStack->getCurrentScope()->isStrict = $value;
+		$value = $this->strictTypesValue($node);
+		if ($value === null) {
+			return;
 		}
+		// strict_types applies to the whole file. PHP rejects declare(strict_types=1) { ... }.
+		$scopeStack->getCurrentScope()->isStrict = $value;
 	}
 
-	function onExit(Node $node, SymbolTable $table, ScopeStack $scopeStack): void {
-
-		if (count($node->declares) > 0 && strval($node->declares[0]->key) == "strict") {
-			if ($node->stmts != null) {
-				$scopeStack->popScope();
+	/**
+	 * @return bool|null true when strict_types is 1, false when it is present but not 1, null when absent
+	 */
+	private function strictTypesValue(Node $node): ?bool {
+		foreach ($node->declares as $declare) {
+			if (strval($declare->key) == "strict_types") {
+				return $declare->value instanceof Node\Scalar\LNumber && $declare->value->value === 1;
 			}
 		}
+		return null;
 	}
 }
