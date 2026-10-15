@@ -61,6 +61,8 @@ class ConstFetch implements ExpressionInterface
 	 * Evaluate a constant expression the way PHP would. Returns unknown() when
 	 * the value cannot be determined.
 	 *
+	 * @param Node\Expr           $expr
+	 * @param SymbolTable         $table
 	 * @param array<string, true> $seen
 	 */
 	private static function evaluate(Node\Expr $expr, SymbolTable $table, array &$seen): mixed {
@@ -86,7 +88,9 @@ class ConstFetch implements ExpressionInterface
 	}
 
 	/**
-	 * @param array<string, true> $seen
+	 * @param Node\Expr\ConstFetch $expr
+	 * @param SymbolTable          $table
+	 * @param array<string, true>  $seen
 	 */
 	private static function evaluateConstFetch(Node\Expr\ConstFetch $expr, SymbolTable $table, array &$seen): mixed {
 		$name = strval($expr->name);
@@ -122,6 +126,8 @@ class ConstFetch implements ExpressionInterface
 	}
 
 	/**
+	 * @param SymbolTable         $table
+	 * @param string              $name
 	 * @param array<string, true> $seen
 	 */
 	private static function evaluateDeclared(SymbolTable $table, string $name, array &$seen): mixed {
@@ -150,6 +156,8 @@ class ConstFetch implements ExpressionInterface
 	}
 
 	/**
+	 * @param Node\Expr\Array_    $expr
+	 * @param SymbolTable         $table
 	 * @param array<string, true> $seen
 	 */
 	private static function evaluateArray(Node\Expr\Array_ $expr, SymbolTable $table, array &$seen): mixed {
@@ -189,6 +197,8 @@ class ConstFetch implements ExpressionInterface
 	}
 
 	/**
+	 * @param Node\Expr\Ternary   $expr
+	 * @param SymbolTable         $table
 	 * @param array<string, true> $seen
 	 */
 	private static function evaluateTernary(Node\Expr\Ternary $expr, SymbolTable $table, array &$seen): mixed {
@@ -203,6 +213,8 @@ class ConstFetch implements ExpressionInterface
 	}
 
 	/**
+	 * @param Node\Expr           $expr
+	 * @param SymbolTable         $table
 	 * @param array<string, true> $seen
 	 */
 	private static function evaluateUnary(Node\Expr $expr, SymbolTable $table, array &$seen): mixed {
@@ -224,6 +236,8 @@ class ConstFetch implements ExpressionInterface
 	}
 
 	/**
+	 * @param Node\Expr\BinaryOp  $expr
+	 * @param SymbolTable         $table
 	 * @param array<string, true> $seen
 	 */
 	private static function evaluateBinary(Node\Expr\BinaryOp $expr, SymbolTable $table, array &$seen): mixed {
