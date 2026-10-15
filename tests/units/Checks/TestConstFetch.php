@@ -76,17 +76,6 @@ class TestConstFetch extends TestSuiteSetup
 	}
 
 	/**
-	 * Runtime PHP constants are typed from their current value instead of mixed.
-	 * The pass fixture pairs each constant with a matching parameter.
-	 * The fail fixture is strict_types=1 and passes each constant to a parameter
-	 * of a different type, so all 10 calls are signature errors:
-	 * PHP_VERSION (string) to int, float, bool, and null; M_PI (float) to int
-	 * and string; PHP_INT_MAX (int) to string and bool; TRUE (true) to float;
-	 * FALSE (false) to null.
-	 *
-	 * @return void
-	 */
-	/**
 	 * A constant defined in Guardrail's process, rather than by PHP, is not
 	 * given that process value's type. An int constant passed to string stays
 	 * mixed and is not a signature error.
@@ -107,6 +96,47 @@ class TestConstFetch extends TestSuiteSetup
 		$this->assertEquals(0, $counts[ErrorConstants::TYPE_SIGNATURE_TYPE] ?? 0);
 	}
 
+	/**
+	 * namespace App; const E_ERROR = 'fatal' hides the global int E_ERROR.
+	 * takesString(E_ERROR) uses the namespaced constant and is not a signature error.
+	 * Without that const, the same call falls back to the global int.
+	 *
+	 * @return void
+	 */
+	public function testNamespacedConstantShadowsGlobalConstant() {
+		$shadowed = <<<'ENDCODE'
+			declare(strict_types=1);
+			namespace App;
+			const E_ERROR = 'fatal';
+			function takesString(string $value): void {
+			}
+			takesString(E_ERROR);
+		ENDCODE;
+		$counts = $this->analyzeString($shadowed)->getCounts();
+		$this->assertEquals(0, $counts[ErrorConstants::TYPE_SIGNATURE_TYPE] ?? 0);
+
+		$fallback = <<<'ENDCODE'
+			declare(strict_types=1);
+			namespace App;
+			function takesString(string $value): void {
+			}
+			takesString(E_ERROR);
+		ENDCODE;
+		$counts = $this->analyzeString($fallback)->getCounts();
+		$this->assertEquals(1, $counts[ErrorConstants::TYPE_SIGNATURE_TYPE] ?? 0);
+	}
+
+	/**
+	 * Runtime PHP constants are typed from their current value instead of mixed.
+	 * The pass fixture pairs each constant with a matching parameter.
+	 * The fail fixture is strict_types=1 and passes each constant to a parameter
+	 * of a different type, so all 10 calls are signature errors:
+	 * PHP_VERSION (string) to int, float, bool, and null; M_PI (float) to int
+	 * and string; PHP_INT_MAX (int) to string and bool; TRUE (true) to float;
+	 * FALSE (false) to null.
+	 *
+	 * @return void
+	 */
 	public function testPhpConstantsInStrictMode() {
 		$this->assertEquals(0, $this->runAnalyzerOnFile('.php-consts-pass.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));
 		$this->assertEquals(10, $this->runAnalyzerOnFile('.php-consts-fail.inc', ErrorConstants::TYPE_SIGNATURE_TYPE));

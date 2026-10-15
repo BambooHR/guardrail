@@ -30,6 +30,13 @@ class ConstFetch implements ExpressionInterface
 			return TypeComparer::identifierFromName($expr->name);
 		}
 		$name = strval($expr->name);
+		$namespacedName = $expr->name->getAttribute('namespacedName');
+		$namespacedName = $namespacedName ? strval($namespacedName) : "";
+		// Unqualified names inside a namespace use the namespaced constant when
+		// it exists, and only then fall back to the global constant.
+		if ($namespacedName !== "" && strcasecmp($namespacedName, $name) !== 0 && $table->isDefined($namespacedName)) {
+			return TypeComparer::identifierFromName("mixed");
+		}
 		if (Util::isInternalConstant($name)) {
 			// Only PHP and extension constants have a known type in this process.
 			// Constants defined by plugins or the target project stay mixed.
