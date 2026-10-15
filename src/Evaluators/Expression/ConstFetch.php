@@ -40,17 +40,17 @@ class ConstFetch implements ExpressionInterface
 		if (Util::isInternalConstant($name)) {
 			// Only PHP and extension constants have a known type in this process.
 			// Constants defined by plugins or the target project stay mixed.
-			$value = constant($name);
-			$typeName = match (gettype($value)) {
-				'boolean' => $value ? 'true' : 'false',
-				'integer' => 'int',
-				'double' => 'float',
-				'string' => 'string',
-				'array' => 'array',
-				'NULL' => 'null',
-				default => 'mixed',
-			};
-			return TypeComparer::identifierFromName($typeName);
+			$valueExpr = Util::valueToExpression(constant($name));
+			if ($valueExpr instanceof Node\Scalar) {
+				return Scalar::inferScalar($valueExpr);
+			}
+			if ($valueExpr instanceof Node\Expr\Array_) {
+				return TypeComparer::identifierFromName("array");
+			}
+			if ($valueExpr instanceof Node\Expr\ConstFetch) {
+				return TypeComparer::identifierFromName(strval($valueExpr->name));
+			}
+			return TypeComparer::identifierFromName("mixed");
 		}
 		if ($table->isDefined($expr->name)) {
 			return TypeComparer::identifierFromName("mixed");
